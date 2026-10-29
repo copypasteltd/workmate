@@ -1,7 +1,13 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- controlled-publications-stage125 -->
+当前入口为 `dev/copypaste-delivery/scripts/publish-workmate-v8.mjs`，核查入口为 `docs/tools/audit_workmate_publication_v8.py`。V8绑定阶段125的确切源码、原回执、实际四端发布旅程和媒体；候选分支仅普通fast-forward整合。所有独立仓库及中央文档提交后，核对远端祖先，普通原子推送八个映射引用并读取实际SHA。已执行验证器和原始证据禁止覆写，未知结果和失败不能改写为成功；不强推。Desktop保留本机Codex、原根属性文件及无边框窗口，Extension保留原生右侧栏。
+
+V8 checks current controlled-publication Git proofs and archived receipts without requiring candidate worktrees. It retains all historical proof identities, bilingual guides and real captures before an ordinary atomic eight-ref push and SHA readback. [Behavior](../technical/125-controlled-publishing-and-native-media.md) · [Evidence](../quality/publications-checkpoint-125.json) · [Open work](../quality/remaining-work-stage125.md).
+
+
 <!-- admin-profile-revisions-stage124 -->
-当前发布入口为 `dev/copypaste-delivery/scripts/publish-workmate-v7.mjs`，核查入口为 `docs/tools/audit_workmate_publication_v7.py`。V7绑定当前专家、品牌与记忆修订的确切源码、68项相关后端、11项后台单元、8项实际页面和四档布局媒体；旧阶段123和更早记录按原源码保留为历史。六个组件及中央文档提交后，普通原子推送八个映射引用并读取实际SHA，不强推。
+阶段124发布入口为 `dev/copypaste-delivery/scripts/publish-workmate-v7.mjs`，核查入口为 `docs/tools/audit_workmate_publication_v7.py`。V7绑定当前专家、品牌与记忆修订的确切源码、68项相关后端、11项后台单元、8项实际页面和四档布局媒体；旧阶段123和更早记录按原源码保留为历史。六个组件及中央文档提交后，普通原子推送八个映射引用并读取实际SHA，不强推。
 
 V7 verifies exact current profile-revision sources, related tests, actual UI and media while preserving historical proof identities and their original scope. It retains six independent repositories and an ordinary atomic eight-ref push with actual SHA readback. See [behavior](../technical/124-admin-profile-revisions.md), [evidence](../quality/admin-profile-checkpoint-124.json) and [numbered remaining work](../quality/remaining-work-stage124.md).
 

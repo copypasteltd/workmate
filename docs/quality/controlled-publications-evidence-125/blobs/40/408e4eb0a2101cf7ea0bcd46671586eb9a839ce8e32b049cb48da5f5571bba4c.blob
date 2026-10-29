@@ -1,0 +1,80 @@
+import type { Tx } from "./db.js";
+import { publicationTerminal } from "./publication-model.js";
+import { updatePublication } from "./publication-service.js";
+type PublicationErasureTx = Pick<Tx, "query">;
+
+/** Caller holds explicit content-erasure authority. Keep effect identities and safe receipts. */
+export async function erasePublicationContent(tx: PublicationErasureTx, id: string, jobId?: string) {
+  const row = (await tx.query("SELECT * FROM publication_operations WHERE id=$1 FOR UPDATE", [id])).rows[0];
+  if (!row || row.erased_at) return [] as string[];
+  const sources = (await tx.query("SELECT rendition_key FROM publication_sources WHERE operation_id=$1 AND erased_at IS NULL", [id])).rows;
+  const effects = (await tx.query("SELECT * FROM publication_effects WHERE operation_id=$1 FOR UPDATE", [id])).rows;
+  const unknown = effects.some(effect => ["dispatched", "unknown"].includes(effect.state) || effect.step_key === "publish" && effect.state === "applied");
+  for (const effect of effects) if (effect.state === "dispatched") await tx.query(`UPDATE publication_effects SET state='unknown',version=version+1,
+    finished_at=clock_timestamp(),error_code='PUBLICATION_CONTENT_REMOVED' WHERE id=$1`, [effect.id]);
+  if (!publicationTerminal.has(row.state)) await updatePublication(tx, row, { state: unknown || row.state === "unknown" ? "unknown" : "cancelled",
+    error_code: "PUBLICATION_CONTENT_REMOVED", lease_token: null, lease_until: null, next_check_at: null, finished_at: unknown || row.state === "unknown" ? null : new Date() });
+  await tx.query("UPDATE publication_media_grants SET revoked_at=clock_timestamp(),encrypted_token=NULL WHERE operation_id=$1 AND revoked_at IS NULL", [id]);
+  await tx.query("UPDATE publication_effects SET request_encrypted=NULL,erased_at=clock_timestamp() WHERE operation_id=$1 AND erased_at IS NULL", [id]);
+  await tx.query("UPDATE publication_sources SET rendition_key=NULL,erased_at=clock_timestamp() WHERE operation_id=$1 AND erased_at IS NULL", [id]);
+  await tx.query("UPDATE publication_operations SET specification='{}',resolution=resolution-'reason',erased_at=clock_timestamp() WHERE id=$1", [id]);
+  if (jobId) for (const source of sources) await tx.query(`INSERT INTO deletion_items(job_id,kind,locator)
+    VALUES($1,'object',$2) ON CONFLICT DO NOTHING`, [jobId, source.rendition_key]);
+  return sources.map(source => source.rendition_key as string);
+}
+
+export async function erasePublicationDependents(tx: PublicationErasureTx, tenant: string, kind: string, id: string, jobId?: string) {
+  if (!["assets", "tasks", "conversations"].includes(kind)) return [] as string[];
+  const sourceMatch = kind === "assets" ? "v.asset_id=$2" : kind === "tasks" ? "v.metadata->>'task_id'=$2::text" : "v.metadata->>'conversation_id'=$2::text";
+  const taskMatch = kind === "tasks" ? "o.task_id=$2" : kind === "conversations"
+    ? "o.task_id IN(SELECT task_id FROM conversation_messages WHERE conversation_id=$2 AND task_id IS NOT NULL)" : "false";
+  const rows = (await tx.query(`SELECT o.id FROM publication_operations o WHERE o.tenant_id=$1 AND o.erased_at IS NULL
+    AND (${taskMatch} OR EXISTS(SELECT 1 FROM publication_sources s JOIN asset_versions v ON v.id=s.asset_version_id
+      WHERE s.operation_id=o.id AND ${sourceMatch})) ORDER BY o.id`, [tenant, id])).rows;
+  const keys: string[] = [];
+  for (const row of rows) keys.push(...await erasePublicationContent(tx, row.id, jobId));
+  const previews = (await tx.query(`SELECT p.id,p.specification FROM publication_previews p WHERE p.tenant_id=$1 AND p.erased_at IS NULL
+    AND (${kind === "tasks" ? "p.task_id=$2" : kind === "conversations" ? "p.task_id IN(SELECT task_id FROM conversation_messages WHERE conversation_id=$2 AND task_id IS NOT NULL)" : "false"}
+      OR EXISTS(SELECT 1 FROM jsonb_array_elements(coalesce(p.specification->'sources','[]')) source JOIN asset_versions v
+      ON v.id=(source->>'asset_version_id')::uuid WHERE ${sourceMatch})) ORDER BY p.id FOR UPDATE`, [tenant, id])).rows;
+  for (const preview of previews) {
+    keys.push(...(preview.specification.sources ?? []).map((source: any) => source.storage_key));
+    await tx.query("UPDATE publication_previews SET specification='{}',erased_at=clock_timestamp() WHERE id=$1", [preview.id]);
+    if (jobId) for (const source of preview.specification.sources ?? []) await tx.query(`INSERT INTO deletion_items(job_id,kind,locator)
+      VALUES($1,'object',$2) ON CONFLICT DO NOTHING`, [jobId, source.storage_key]);
+  }
+  return [...new Set(keys)];
+}
+
+/** Snapshot rollback cannot prove whether a post-snapshot request was sent. Require reconciliation. */
+export async function fenceRestoredPublications(tx: PublicationErasureTx) {
+  if (!(await tx.query("SELECT to_regclass('publication_operations') AS name")).rows[0].name) return;
+  await tx.query(`UPDATE publication_effects SET state='unknown',version=version+1,error_code='PUBLICATION_RECOVERY_REVIEW_REQUIRED',
+    finished_at=clock_timestamp() WHERE state='dispatched'`);
+  const rows = (await tx.query(`SELECT * FROM publication_operations WHERE state IN('awaiting_confirmation','queued','preparing','waiting_media','publishing','processing','unknown')
+    ORDER BY id FOR UPDATE`)).rows;
+  for (const row of rows) await updatePublication(tx, row, { state: "unknown", error_code: "PUBLICATION_RECOVERY_REVIEW_REQUIRED",
+    lease_token: null, lease_until: null, next_check_at: null, finished_at: null });
+  await tx.query("UPDATE publication_media_grants SET revoked_at=clock_timestamp(),encrypted_token=NULL WHERE revoked_at IS NULL");
+  await tx.query(`UPDATE publication_connections SET state='reauth_required',encrypted_secret=NULL,auth_version=auth_version+1,version=version+1,
+    updated_at=clock_timestamp() WHERE state<>'disconnected'`);
+  await tx.query("UPDATE publication_targets SET enabled=false,encrypted_secret=NULL,auth_version=auth_version+1");
+}
+
+/** Approval and preview expiry are independent from the 90-day retained publication body. */
+export async function expirePublicationContent(tx: PublicationErasureTx, limit = 100) {
+  const previous = (await tx.query("SELECT current_setting('app.erasing_content',true) AS value")).rows[0].value || "false";
+  await tx.query("SELECT set_config('app.erasing_content','true',true)");
+  try {
+    const previews = (await tx.query(`SELECT id FROM publication_previews WHERE erased_at IS NULL AND expires_at<=clock_timestamp()
+      ORDER BY expires_at,id FOR UPDATE SKIP LOCKED LIMIT $1`, [limit])).rows;
+    for (const row of previews) await tx.query("UPDATE publication_previews SET specification='{}',erased_at=clock_timestamp() WHERE id=$1", [row.id]);
+    const expired = (await tx.query(`SELECT * FROM publication_operations WHERE state IN('awaiting_confirmation','queued') AND expires_at<=clock_timestamp()
+      ORDER BY expires_at,id FOR UPDATE SKIP LOCKED LIMIT $1`, [limit])).rows;
+    for (const row of expired) await updatePublication(tx, row, { state: "expired", error_code: "PUBLICATION_EXPIRED", finished_at: new Date(), next_check_at: null });
+    const retained = (await tx.query(`SELECT id FROM publication_operations WHERE erased_at IS NULL AND retention_expires_at<=clock_timestamp()
+      ORDER BY retention_expires_at,id FOR UPDATE SKIP LOCKED LIMIT $1`, [limit])).rows;
+    for (const row of retained) await erasePublicationContent(tx, row.id);
+    return { publication_previews: previews.length, publication_approvals: expired.length, publication_bodies: retained.length };
+  } finally { await tx.query("SELECT set_config('app.erasing_content',$1,true)", [previous]); }
+}

@@ -1,0 +1,151 @@
+{
+  "schema": "copypaste-controlled-publication-release-1",
+  "previous_role_sha256": "b57493dcef08b8e5cece130cf0814fb214f4a4ad03df86a0747b8f440ab3e7f8",
+  "role": {
+    "role_key": "social-content",
+    "catalog_id": "R10",
+    "version": "1.1.0",
+    "display_name": "社媒内容设计师",
+    "category": "design",
+    "status": "design_only",
+    "runtime_profile": "codex-internal-v1",
+    "skill_bindings": [
+      {
+        "skill_key": "social-content",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "image2-production",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "typography-layout",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "delivery-core",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "controlled-publishing",
+        "version": "1.0.0",
+        "required": true
+      }
+    ],
+    "model_bindings": [
+      {
+        "profile_key": "internal-text-v1",
+        "required": true
+      },
+      {
+        "profile_key": "internal-image2-v1",
+        "required": true
+      }
+    ],
+    "tool_ids": [
+      "asset.read",
+      "asset.write",
+      "delivery.package",
+      "document.render",
+      "font.inspect",
+      "image.edit.internal",
+      "image.generate.internal",
+      "layout.render",
+      "publication.prepare",
+      "publication.read"
+    ],
+    "input_contract": {
+      "required_fields": [
+        "platform",
+        "theme",
+        "language",
+        "quantity"
+      ],
+      "optional_fields": [
+        "brand_assets",
+        "date_range",
+        "product_facts"
+      ]
+    },
+    "workflow": [
+      {
+        "step_key": "step-1",
+        "instruction": "主题与文案"
+      },
+      {
+        "step_key": "step-2",
+        "instruction": "系列视觉和轮播"
+      },
+      {
+        "step_key": "step-3",
+        "instruction": "平台规格检查"
+      },
+      {
+        "step_key": "step-4",
+        "instruction": "日历与素材包"
+      }
+    ],
+    "deliverables": [
+      {
+        "label": "系列帖文轮播",
+        "format": "png",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "可编辑文字布局",
+        "format": "json",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "内容日历",
+        "format": "csv",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      }
+    ],
+    "sample_task": "准备下周五篇 Instagram 内容和两组轮播。",
+    "acceptance_checks": [
+      "轮播顺序、视觉、文案和日历逐项对应，文件可编辑复用。",
+      "改一篇内容时系列规范保留，日历和素材关系同步。",
+      "平台发布授权缺失不影响素材交付，也不宣称已发布。",
+      "发布绑定确切账户、原始素材版本与实际出站文件；客户逐次确认，未知结果不得重发。"
+    ],
+    "qualification_cases": {
+      "normal": "轮播顺序、视觉、文案和日历逐项对应，文件可编辑复用。",
+      "revision": "改一篇内容时系列规范保留，日历和素材关系同步。",
+      "dependency_or_permission_failure": "平台发布授权缺失不影响素材交付，也不宣称已发布。",
+      "execution_status": "not_run"
+    },
+    "initial_stage": "M1",
+    "readiness_evidence": []
+  },
+  "skill_package": {
+    "key": "controlled-publishing",
+    "version": "1.0.0",
+    "sha256": "87b32678862fc6aaf8c25ad04908e9cd923bccbe2d3a77398485166623a5dae8",
+    "path": "skills/controlled-publishing/1.0.0/SKILL.md",
+    "qualification": "pending_live_validation"
+  },
+  "skill_definition": {
+    "skill_key": "controlled-publishing",
+    "version": "1.0.0",
+    "purpose": "确切媒体与客户逐次确认的社交内容发布及未知结果核对",
+    "candidate_sources": [],
+    "package_state": "installed",
+    "package_sha256": "87b32678862fc6aaf8c25ad04908e9cd923bccbe2d3a77398485166623a5dae8",
+    "ai_network_policy": "internal_only",
+    "tool_ids": [
+      "publication.read",
+      "publication.prepare"
+    ],
+    "required_model_profiles": [],
+    "supported_clients": [
+      "web",
+      "extension",
+      "desktop"
+    ]
+  }
+}

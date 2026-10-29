@@ -1,0 +1,64 @@
+{
+  "at": "2026-10-29T10:14:12.212Z",
+  "status": "passed",
+  "stage": "unconfigured form destination remains blocked by the actual browser",
+  "checks": [
+    "actual form approve and two-origin redirect chain",
+    "actual form deny and two-origin redirect chain",
+    "unconfigured form destination remains blocked by the actual browser"
+  ],
+  "errors": [],
+  "requests": [
+    {
+      "origin": "http://127.0.0.1:6726",
+      "pathname": "/approve",
+      "status": 302
+    },
+    {
+      "origin": "http://localhost:6724",
+      "pathname": "/v1/publication/callback",
+      "status": 302
+    },
+    {
+      "origin": "http://localhost:6723",
+      "pathname": "/app/publications",
+      "status": 200
+    },
+    {
+      "origin": "http://127.0.0.1:6726",
+      "pathname": "/approve",
+      "status": 302
+    },
+    {
+      "origin": "http://localhost:6724",
+      "pathname": "/v1/publication/callback",
+      "status": 302
+    },
+    {
+      "origin": "http://localhost:6723",
+      "pathname": "/app/publications",
+      "status": 200
+    }
+  ],
+  "callback_requests": 2,
+  "web_landings": 2,
+  "hostile_posts": 0,
+  "source_files": {
+    "copypaste-platform/src/publication-fixture.ts": "a95c7c36fe84a0be47c527bf10b63958305fe8e13f862371d772f9c80daffb7f",
+    "copypaste-platform/src/publication-provider.ts": "8c5206458376a53ca9d94bf46a877dc5b1352920de5e628c71863695702f6ae3",
+    "copypaste-platform/src/config.ts": "ada30e49e2923b819a7d303ecca1f2528cac40f947beecccbe29da9484f416fd"
+  },
+  "source_unchanged": true,
+  "browser_closed": true,
+  "fixture_closed": true,
+  "ports_closed": {
+    "6723": true,
+    "6724": true,
+    "6725": true,
+    "6726": true
+  },
+  "verifier_sha256": "4451b8fd7601d1c6ec4fcf7ef50025a5a22cde6c632f98a5dd2ea6458ceacc51",
+  "limits": [
+    "Actual browser and synthetic consent provider with owned callback/landing servers; no database, live account or full publishing acceptance"
+  ]
+}

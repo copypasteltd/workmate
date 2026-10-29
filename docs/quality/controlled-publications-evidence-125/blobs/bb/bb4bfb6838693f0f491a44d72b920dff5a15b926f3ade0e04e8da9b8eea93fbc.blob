@@ -1,0 +1,95 @@
+import type { Database, Tx } from "./db.js";
+import type { Principal } from "./auth.js";
+import { projectAccess } from "./access.js";
+import { currentUserAuthority, lockUserAuthorities } from "./user-authority.js";
+import { Problem, unseal } from "./lib.js";
+import { publicationDigest, publicationPolicyBody, publicationSpecification,
+  type PublicationDraft, type PublicationSpecification } from "./publication-model.js";
+import { parsePublicationCredential, publicationSettings } from "./publication-provider.js";
+import type { PublicationSourceRow } from "./publication-media.js";
+
+export const publicationMode = (db: Database) => db.config.DEMO_MODE ? "simulated" : "configured_services";
+export async function publicationProjectAuthority(tx: Tx, p: Principal, tenant: string, project: string,
+  action: "read" | "write" | "manage", additionalUsers: string[] = []) {
+  const users = [...new Set([p.id, ...additionalUsers])].sort();
+  // Callers can already hold the acting user's authority lock (request replay
+  // and Codex tool admission). Never acquire another user's advisory lock
+  // afterwards. Shared user/membership rows fence credential-owner revocation.
+  await lockUserAuthorities(tx, [p.id]);
+  await tx.query("SELECT id FROM users WHERE id=ANY($1::uuid[]) ORDER BY id FOR SHARE", [users]);
+  await tx.query("SELECT id FROM tenants WHERE id=$1 FOR SHARE", [tenant]);
+  await tx.query("SELECT user_id FROM memberships WHERE tenant_id=$1 AND user_id=ANY($2::uuid[]) ORDER BY user_id FOR SHARE", [tenant, users]);
+  await tx.query("SELECT id FROM projects WHERE id=$1 AND tenant_id=$2 FOR SHARE", [project, tenant]);
+  await tx.query("SELECT user_id FROM project_members WHERE tenant_id=$1 AND project_id=$2 AND user_id=ANY($3::uuid[]) ORDER BY user_id FOR SHARE", [tenant, project, users]);
+  await currentUserAuthority(tx, p);
+  await projectAccess(tx, p, tenant, project, action);
+}
+export async function currentPublicationPolicy(tx: Tx, project: string, target: string) {
+  return (await tx.query("SELECT * FROM publication_policies WHERE project_id=$1 AND target_id=$2 ORDER BY version DESC LIMIT 1", [project, target])).rows[0] ?? null;
+}
+/** Locks authorities first, then the connection/target grant, matching revoke admission. */
+export async function publicationContext(db: Database, tx: Tx, p: Principal, tenant: string, project: string,
+  target: string, action: "read" | "write" | "manage" = "write", frozen?: PublicationSpecification) {
+  const owner = (await tx.query(`SELECT c.created_by FROM publication_targets t JOIN publication_connections c ON c.id=t.connection_id
+    WHERE t.id=$1 AND t.tenant_id=$2`, [target, tenant])).rows[0];
+  if (!owner) throw new Problem(404, "NOT_FOUND", "Publishing account not found");
+  await publicationProjectAuthority(tx, p, tenant, project, action, [owner.created_by]);
+  const row = (await tx.query(`SELECT t.*,c.created_by,c.owner_auth_version,c.state AS connection_state,
+    c.auth_version AS connection_auth_version,c.version AS connection_version,c.configuration_sha256,c.data_mode,
+    c.encrypted_secret AS connection_secret FROM publication_targets t JOIN publication_connections c ON c.id=t.connection_id
+    JOIN publication_connection_projects g ON g.connection_id=c.id AND g.project_id=$3 AND g.tenant_id=$2
+    WHERE t.id=$1 AND t.tenant_id=$2 FOR SHARE OF t,c,g`, [target, tenant, project])).rows[0];
+  if (!row) throw new Problem(404, "NOT_FOUND", "Publishing account not found");
+  const settings = publicationSettings(db.config);
+  if (!settings.available || row.configuration_sha256 !== settings.configuration_sha256 || row.data_mode !== publicationMode(db) ||
+      row.connection_state !== "connected" || !row.encrypted_secret || !row.connection_secret)
+    throw new Problem(409, "PUBLICATION_RECONNECT_REQUIRED", "Reconnect this publishing account");
+  const ownerUser = (await tx.query("SELECT * FROM users WHERE id=$1", [row.created_by])).rows[0];
+  if (!ownerUser || ownerUser.status !== "active" || ownerUser.auth_version !== row.owner_auth_version)
+    throw new Problem(409, "PUBLICATION_OWNER_AUTHORITY_CHANGED", "The connection owner's authorization changed");
+  const ownerPrincipal: Principal = { id: ownerUser.id, name: ownerUser.name, email: ownerUser.email,
+    audience: "user", authVersion: ownerUser.auth_version, sessionId: "", sessionHash: "" };
+  await projectAccess(tx, ownerPrincipal, tenant, project, "write");
+  await tx.query("SELECT set_config('app.actor_id',$1,true)", [p.id]);
+  const credential = parsePublicationCredential(JSON.parse(unseal(db.config.MASTER_KEY!, row.connection_secret)));
+  if (Date.parse(credential.expires_at) <= Date.now())
+    throw new Problem(409, "PUBLICATION_RECONNECT_REQUIRED", "The publishing credential expired");
+  if (action === "write" && !row.enabled)
+    throw new Problem(409, "PUBLICATION_TARGET_DISABLED", "Explicitly enable this publishing account first");
+  const policy = await currentPublicationPolicy(tx, project, target);
+  if (frozen) {
+    const s = publicationSpecification.parse(frozen);
+    if (s.tenant_id !== tenant || s.project_id !== project || s.actor_id !== p.id || s.actor_auth_version !== p.authVersion ||
+        s.connection_id !== row.connection_id || s.connection_auth_version !== row.connection_auth_version ||
+        s.configuration_sha256 !== row.configuration_sha256 || s.target.auth_version !== row.auth_version ||
+        s.target.kind !== row.kind || s.target.external_id !== row.external_id || s.target.page_id !== row.page_id ||
+        !policy || policy.id !== s.policy_id || policy.version !== s.policy_version || policy.payload_sha256 !== s.policy_sha256)
+      throw new Problem(409, "PUBLICATION_APPROVAL_STALE", "Account, scope or policy changed; review a fresh preview");
+    const body = publicationPolicyBody.parse(policy.body);
+    if (!body.enabled || Date.parse(body.expires_at) <= Date.now() || !body.formats.includes(s.draft.format) ||
+        publicationDigest(body) !== policy.payload_sha256 || !row.capabilities?.formats?.includes(s.draft.format))
+      throw new Problem(409, "PUBLICATION_POLICY_UNAVAILABLE", "The publishing policy no longer permits this operation");
+  }
+  return { row, policy, access_token: unseal(db.config.MASTER_KEY!, row.encrypted_secret) };
+}
+export async function publicationSourceRows(tx: Tx, p: Principal, tenant: string, project: string, draft: PublicationDraft) {
+  const rows: PublicationSourceRow[] = [];
+  for (const input of [...draft.sources].sort((a, b) => a.asset_id.localeCompare(b.asset_id))) {
+    const row = (await tx.query(`SELECT v.*,a.name FROM asset_versions v JOIN assets a ON a.id=v.asset_id
+      WHERE a.id=$1 AND a.tenant_id=$2 AND a.project_id=$3 AND v.version=$4 AND a.state='active'
+      AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL
+      AND (a.private_owner IS NULL OR a.private_owner=$5) AND task_asset_version_sources_available(v.id)
+      AND analysis_asset_available(a.id) AND matrix_asset_available(a.id) AND video_asset_available(a.id) FOR SHARE OF a,v`,
+      [input.asset_id, tenant, project, input.version, p.id])).rows[0];
+    if (!row || row.sha256 !== input.expected_sha256)
+      throw new Problem(404, "PUBLICATION_SOURCE_UNAVAILABLE", "An approved source version is unavailable");
+    rows.push(row);
+  }
+  return draft.sources.map(input => rows.find(row => row.asset_id === input.asset_id && row.version === input.version)!);
+}
+export async function assertPublicationSources(tx: Tx, p: Principal, tenant: string, project: string, frozen: PublicationSpecification) {
+  const rows = await publicationSourceRows(tx, p, tenant, project, frozen.draft);
+  if (rows.some((row, i) => row.id !== frozen.sources[i].asset_version_id || row.sha256 !== frozen.sources[i].source_sha256))
+    throw new Problem(409, "PUBLICATION_SOURCE_CHANGED", "Review the exact source versions again");
+  return rows;
+}

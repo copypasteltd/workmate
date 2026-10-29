@@ -1,0 +1,185 @@
+import type { FastifyInstance, FastifyRequest } from "fastify";
+import { z } from "zod";
+import type { Database, Tx } from "./db.js";
+import { audit, requireUser } from "./auth.js";
+import { key, replay } from "./access.js";
+import { hash, Problem, seal, token, unseal, uuid } from "./lib.js";
+import { publicationConnectionInput, publicationScopeInput, publicationRevisionInput } from "./publication-model.js";
+import { publicationAuthorizationURL, publicationSettings, exchangePublicationCode, discoverPublicationTargets } from "./publication-provider.js";
+import { publicationMode, publicationProjectAuthority } from "./publication-authority.js";
+
+const base = "/v1/tenants/:tenant/projects/:project/publications";
+const scope = (req: FastifyRequest) => z.object({ tenant: uuid, project: uuid }).passthrough().parse(req.params);
+const cookieName = (id: string) => "cp_publication_" + id;
+async function liveBrowserSession(tx: Tx, req: FastifyRequest) {
+  if (req.principal.audience !== "user")
+    throw new Problem(409, "PUBLICATION_BROWSER_REQUIRED", "Connect the publishing account in the signed-in Web workspace");
+  const row = (await tx.query(`SELECT id FROM sessions WHERE id=$1 AND user_id=$2 AND audience='user'
+    AND auth_version=$3 AND revoked_at IS NULL AND expires_at>clock_timestamp() FOR SHARE`,
+    [req.principal.sessionId, req.principal.id, req.principal.authVersion])).rows[0];
+  if (!row) throw new Problem(401, "SESSION_EXPIRED", "Sign in before connecting a publishing account");
+}
+async function connectionForUpdate(tx: Tx, req: FastifyRequest, id: string) {
+  const s = scope(req), row = (await tx.query(`SELECT c.* FROM publication_connections c
+    JOIN publication_connection_projects p ON p.connection_id=c.id AND p.project_id=$3 AND p.tenant_id=$2
+    WHERE c.id=$1 AND c.tenant_id=$2 FOR UPDATE OF c`, [id, s.tenant, s.project])).rows[0];
+  if (!row) throw new Problem(404, "NOT_FOUND", "Publishing connection not found");
+  return row;
+}
+export function registerPublicationConnections(app: FastifyInstance, db: Database) {
+  app.get(base + "/settings", { preHandler: requireUser(db) }, async (req, reply) => {
+    const s = scope(req); reply.header("cache-control", "private, no-store");
+    return db.tx(async tx => {
+      await publicationProjectAuthority(tx, req.principal, s.tenant, s.project, "read");
+      const role = (await tx.query("SELECT role FROM memberships WHERE tenant_id=$1 AND user_id=$2", [s.tenant, req.principal.id])).rows[0];
+      return { available: publicationSettings(db.config).available, data_mode: publicationMode(db),
+        can_manage: ["owner", "admin"].includes(role.role), browser_connection_url: db.config.WEB_ORIGIN + "/?view=connections" };
+    }, s.tenant, true, req.principal.id);
+  });
+  app.get(base + "/connections", { preHandler: requireUser(db) }, async (req, reply) => {
+    const s = scope(req); reply.header("cache-control", "private, no-store");
+    return db.tx(async tx => {
+      await publicationProjectAuthority(tx, req.principal, s.tenant, s.project, "read");
+      const rows = (await tx.query(`SELECT c.* FROM publication_connections c JOIN publication_connection_projects p ON p.connection_id=c.id
+        WHERE p.project_id=$1 AND p.tenant_id=$2 AND c.data_mode=$3 ORDER BY c.created_at DESC LIMIT 100`, [s.project, s.tenant, publicationMode(db)])).rows;
+      return { data_mode: publicationMode(db), items: await Promise.all(rows.map(async row => ({
+        id: row.id, version: row.version, state: row.configuration_sha256 === publicationSettings(db.config).configuration_sha256 ? row.state : "reauth_required",
+        created_by: row.created_by, created_at: row.created_at.toISOString(),
+        project_ids: (await tx.query("SELECT project_id FROM publication_connection_projects WHERE connection_id=$1 ORDER BY project_id", [row.id])).rows.map(r => r.project_id),
+        targets: (await tx.query("SELECT id,kind,external_id,page_id,name,enabled,capabilities FROM publication_targets WHERE connection_id=$1 ORDER BY kind,name,id", [row.id])).rows,
+      }))) };
+    }, s.tenant, true, req.principal.id);
+  });
+  app.post(base + "/connections/authorize", { preHandler: requireUser(db), config: { rateLimit: { max: 10, timeWindow: 60000 } } }, async (req, reply) => {
+    const s = scope(req), input = publicationConnectionInput.parse(req.body), requestKey = key(req), settings = publicationSettings(db.config);
+    if (input.project_id !== s.project) throw new Problem(400, "PUBLICATION_SCOPE_MISMATCH", "Choose the current project");
+    if (!settings.available) throw new Problem(503, "PUBLICATION_NOT_CONFIGURED", "Publishing is not configured");
+    const row = await db.tx(async tx => {
+      await publicationProjectAuthority(tx, req.principal, s.tenant, s.project, "manage"); await liveBrowserSession(tx, req);
+      const result = await replay(tx, req.principal.id, `publication.authorize:${s.project}`, requestKey, input, async () => {
+        let expectedAuthVersion: number | null = null;
+        if (input.connection_id) {
+          const previous = await connectionForUpdate(tx, req, input.connection_id);
+          if (previous.created_by !== req.principal.id) throw new Problem(403, "PUBLICATION_OWNER_REQUIRED", "The original connection owner must reconnect it");
+          if (previous.version !== input.expected_version) throw new Problem(409, "VERSION_CONFLICT", "Reload the current connection");
+          expectedAuthVersion = (await tx.query("UPDATE publication_connections SET state='reauth_required',version=version+1,auth_version=auth_version+1,updated_at=clock_timestamp() WHERE id=$1 RETURNING auth_version", [previous.id])).rows[0].auth_version;
+        }
+        const pending = await tx.query("SELECT 1 FROM publication_oauth_states WHERE actor_id=$1 AND consumed_at IS NULL AND expires_at>clock_timestamp()", [req.principal.id]);
+        if (pending.rowCount! >= 10) throw new Problem(429, "PUBLICATION_AUTHORIZATION_LIMIT", "Finish or wait for the previous authorization attempts");
+        const opaque = token(), cookie = token();
+        const state = (await tx.query(`INSERT INTO publication_oauth_states(tenant_id,project_id,actor_id,actor_auth_version,session_id,
+          state_sha256,cookie_sha256,encrypted_state,encrypted_cookie,configuration_sha256,connection_id,expected_connection_auth_version,expires_at)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,clock_timestamp()+interval '5 minutes') RETURNING *`,
+          [s.tenant, s.project, req.principal.id, req.principal.authVersion, req.principal.sessionId, hash(opaque), hash(cookie),
+            seal(db.config.MASTER_KEY!, opaque), seal(db.config.MASTER_KEY!, cookie), settings.configuration_sha256, input.connection_id ?? null, expectedAuthVersion])).rows[0];
+        await audit(tx, req.principal, "publication.authorization.start", state.id, "succeeded", { reconnect: !!input.connection_id }, s.tenant);
+        return { state_id: state.id };
+      });
+      const state = (await tx.query(`SELECT * FROM publication_oauth_states WHERE id=$1 AND actor_id=$2 AND session_id=$3
+        AND consumed_at IS NULL AND expires_at>clock_timestamp()`, [result.state_id, req.principal.id, req.principal.sessionId])).rows[0];
+      if (!state || state.configuration_sha256 !== settings.configuration_sha256)
+        throw new Problem(410, "PUBLICATION_AUTHORIZATION_EXPIRED", "Start a new publishing authorization");
+      return state;
+    }, s.tenant, true, req.principal.id);
+    reply.header("cache-control", "private, no-store").setCookie(cookieName(row.id), unseal(db.config.MASTER_KEY!, row.encrypted_cookie), {
+      httpOnly: true, secure: db.config.NODE_ENV === "production", sameSite: "lax", path: "/v1/publication/callback", maxAge: 300,
+    });
+    return { state_id: row.id, expires_at: row.expires_at.toISOString(),
+      authorization_url: publicationAuthorizationURL(db.config, unseal(db.config.MASTER_KEY!, row.encrypted_state)) };
+  });
+  app.get("/v1/publication/callback", { preHandler: requireUser(db) }, async (req, reply) => {
+    const q = z.object({ state: z.string().min(40).max(100), code: z.string().min(1).max(4096).optional(),
+      error: z.string().max(200).optional(), error_reason: z.string().max(1000).optional(), error_description: z.string().max(4000).optional(),
+    }).strict().parse(req.query);
+    const state = await db.tx(async tx => {
+      const initial = (await tx.query("SELECT * FROM publication_oauth_states WHERE state_sha256=$1", [hash(q.state)])).rows[0];
+      if (!initial || initial.actor_id !== req.principal.id || initial.session_id !== req.principal.sessionId)
+        throw new Problem(409, "PUBLICATION_OAUTH_STATE", "This authorization belongs to another browser session");
+      await publicationProjectAuthority(tx, req.principal, initial.tenant_id, initial.project_id, "manage"); await liveBrowserSession(tx, req);
+      const row = (await tx.query("SELECT * FROM publication_oauth_states WHERE id=$1 FOR UPDATE", [initial.id])).rows[0];
+      if (row.actor_auth_version !== req.principal.authVersion || row.expires_at.valueOf() <= Date.now() ||
+          row.configuration_sha256 !== publicationSettings(db.config).configuration_sha256 ||
+          hash(req.cookies[cookieName(row.id)] ?? "") !== row.cookie_sha256)
+        throw new Problem(409, "PUBLICATION_OAUTH_STATE", "This authorization expired or changed");
+      if (row.consumed_at) {
+        if (row.connection_id && row.completed_at) return { ...row, already_completed: true };
+        throw new Problem(409, "PUBLICATION_OAUTH_CONSUMED", "Start a new publishing authorization");
+      }
+      await tx.query("UPDATE publication_oauth_states SET consumed_at=clock_timestamp() WHERE id=$1", [row.id]);
+      return { ...row, already_completed: false };
+    }, undefined, true, req.principal.id);
+    reply.header("cache-control", "private, no-store").header("referrer-policy", "no-referrer");
+    if (state.already_completed) return reply.redirect(db.config.WEB_ORIGIN + "/?publication=connected");
+    if (!q.code || q.error) {
+      reply.clearCookie(cookieName(state.id), { path: "/v1/publication/callback" });
+      return reply.redirect(db.config.WEB_ORIGIN + "/?publication=denied");
+    }
+    const secret = await exchangePublicationCode(db.config, q.code), targets = await discoverPublicationTargets(db.config, secret);
+    if (!targets.length) throw new Problem(409, "PUBLICATION_NO_TARGETS", "No Page with content publishing permission was found");
+    await db.tx(async tx => {
+      await publicationProjectAuthority(tx, req.principal, state.tenant_id, state.project_id, "manage"); await liveBrowserSession(tx, req);
+      const locked = (await tx.query("SELECT * FROM publication_oauth_states WHERE id=$1 FOR UPDATE", [state.id])).rows[0];
+      if (locked.completed_at || locked.expires_at.valueOf() <= Date.now() ||
+          locked.configuration_sha256 !== publicationSettings(db.config).configuration_sha256)
+        throw new Problem(409, "PUBLICATION_OAUTH_STATE", "This authorization changed while the provider was responding");
+      let connectionId = state.connection_id;
+      if (connectionId) {
+        const previous = (await tx.query("SELECT * FROM publication_connections WHERE id=$1 AND tenant_id=$2 FOR UPDATE", [connectionId, state.tenant_id])).rows[0];
+        if (!previous || previous.created_by !== req.principal.id || previous.state !== "reauth_required" || previous.auth_version !== state.expected_connection_auth_version ||
+            previous.external_user_id && previous.external_user_id !== secret.user_id)
+          throw new Problem(409, "PUBLICATION_ACCOUNT_CHANGED", "Create a separate connection for a different provider identity");
+        await tx.query(`UPDATE publication_connections SET state='connected',version=version+1,auth_version=auth_version+1,
+          owner_auth_version=$2,configuration_sha256=$3,scopes=$4,encrypted_secret=$5,external_user_id=$6,updated_at=clock_timestamp() WHERE id=$1`,
+          [connectionId, req.principal.authVersion, locked.configuration_sha256, secret.scopes, seal(db.config.MASTER_KEY!, JSON.stringify(secret)), secret.user_id]);
+        await tx.query("UPDATE publication_targets SET enabled=false,encrypted_secret=NULL,auth_version=auth_version+1 WHERE connection_id=$1", [connectionId]);
+      } else connectionId = (await tx.query(`INSERT INTO publication_connections(tenant_id,created_by,owner_auth_version,state,
+        configuration_sha256,data_mode,scopes,encrypted_secret,external_user_id) VALUES($1,$2,$3,'connected',$4,$5,$6,$7,$8) RETURNING id`,
+        [state.tenant_id, req.principal.id, req.principal.authVersion, locked.configuration_sha256, publicationMode(db), secret.scopes,
+          seal(db.config.MASTER_KEY!, JSON.stringify(secret)), secret.user_id])).rows[0].id;
+      await tx.query("INSERT INTO publication_connection_projects(tenant_id,connection_id,project_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING", [state.tenant_id, connectionId, state.project_id]);
+      for (const target of targets) await tx.query(`INSERT INTO publication_targets(tenant_id,connection_id,kind,external_id,page_id,name,auth_version,capabilities,encrypted_secret)
+        VALUES($1,$2,$3,$4,$5,$6,1,$7,$8) ON CONFLICT(connection_id,kind,external_id) DO UPDATE
+        SET page_id=EXCLUDED.page_id,name=EXCLUDED.name,capabilities=EXCLUDED.capabilities,encrypted_secret=EXCLUDED.encrypted_secret`,
+        [state.tenant_id, connectionId, target.kind, target.external_id, target.page_id, target.name, target.capabilities, seal(db.config.MASTER_KEY!, target.access_token)]);
+      await tx.query("UPDATE publication_oauth_states SET connection_id=$2,completed_at=clock_timestamp() WHERE id=$1", [state.id, connectionId]);
+      await audit(tx, req.principal, "publication.authorization.complete", connectionId, "succeeded", { target_count: targets.length }, state.tenant_id);
+    }, state.tenant_id, true, req.principal.id);
+    // Keep the short-lived binding for a lost callback response; replay never exchanges the code again.
+    return reply.redirect(db.config.WEB_ORIGIN + "/?publication=connected");
+  });
+  app.put(base + "/connections/:id/scope", { preHandler: requireUser(db) }, async req => {
+    const s = scope(req), id = uuid.parse((req.params as any).id), b = publicationScopeInput.parse(req.body), requestKey = key(req);
+    return db.tx(async tx => {
+      for (const project of [...new Set([s.project, ...b.project_ids])].sort())
+        await publicationProjectAuthority(tx, req.principal, s.tenant, project, "manage");
+      return replay(tx, req.principal.id, `publication.scope:${id}`, requestKey, b, async () => {
+        const row = await connectionForUpdate(tx, req, id);
+        if (row.version !== b.expected_version || row.state !== "connected") throw new Problem(409, "VERSION_CONFLICT", "Reload the connected publishing account");
+        const selected = await tx.query("SELECT id FROM publication_targets WHERE connection_id=$1 AND id=ANY($2::uuid[]) AND encrypted_secret IS NOT NULL", [id, b.target_ids]);
+        if (selected.rowCount !== b.target_ids.length) throw new Problem(404, "NOT_FOUND", "Publishing account not found");
+        await tx.query("DELETE FROM publication_connection_projects WHERE connection_id=$1", [id]);
+        for (const project of b.project_ids) await tx.query("INSERT INTO publication_connection_projects(tenant_id,connection_id,project_id) VALUES($1,$2,$3)", [s.tenant, id, project]);
+        await tx.query("UPDATE publication_targets SET enabled=(id=ANY($2::uuid[])),auth_version=auth_version+1 WHERE connection_id=$1", [id, b.target_ids]);
+        const updated = (await tx.query("UPDATE publication_connections SET version=version+1,auth_version=auth_version+1,updated_at=clock_timestamp() WHERE id=$1 RETURNING version", [id])).rows[0];
+        await audit(tx, req.principal, "publication.scope.update", id, "succeeded", { project_ids: b.project_ids, target_ids: b.target_ids }, s.tenant);
+        return { id, version: updated.version };
+      });
+    }, s.tenant, true, req.principal.id);
+  });
+  app.post(base + "/connections/:id/disconnect", { preHandler: requireUser(db) }, async req => {
+    const s = scope(req), id = uuid.parse((req.params as any).id), b = publicationRevisionInput.parse(req.body), requestKey = key(req);
+    return db.tx(async tx => {
+      await publicationProjectAuthority(tx, req.principal, s.tenant, s.project, "manage");
+      return replay(tx, req.principal.id, `publication.disconnect:${id}`, requestKey, b, async () => {
+        const row = await connectionForUpdate(tx, req, id);
+        if (row.version !== b.expected_version) throw new Problem(409, "VERSION_CONFLICT", "Reload the publishing account");
+        const updated = (await tx.query(`UPDATE publication_connections SET state='disconnected',encrypted_secret=NULL,
+          auth_version=auth_version+1,version=version+1,updated_at=clock_timestamp() WHERE id=$1 RETURNING version`, [id])).rows[0];
+        await tx.query("UPDATE publication_targets SET encrypted_secret=NULL,enabled=false,auth_version=auth_version+1 WHERE connection_id=$1", [id]);
+        await tx.query("UPDATE publication_media_grants SET revoked_at=clock_timestamp(),encrypted_token=NULL WHERE revoked_at IS NULL AND operation_id IN(SELECT id FROM publication_operations WHERE connection_id=$1)", [id]);
+        await audit(tx, req.principal, "publication.disconnect", id, "succeeded", {}, s.tenant);
+        return { id, version: updated.version, state: "disconnected" };
+      });
+    }, s.tenant, true, req.principal.id);
+  });
+}

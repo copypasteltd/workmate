@@ -1,0 +1,358 @@
+import { useEffect, useRef, useState } from "react";
+import { api } from "./api";
+
+export const publicationFormats = {
+  facebook_post: ["Facebook 文字／連結", "Facebook text / link"],
+  facebook_photo: ["Facebook 單圖", "Facebook photo"],
+  facebook_gallery: ["Facebook 多圖", "Facebook gallery"],
+  facebook_video: ["Facebook 影片", "Facebook video"],
+  instagram_photo: ["Instagram 單圖", "Instagram photo"],
+  instagram_reel: ["Instagram Reel", "Instagram Reel"],
+  instagram_carousel: ["Instagram 輪播", "Instagram carousel"],
+  instagram_story: ["Instagram 限時動態", "Instagram story"],
+} as const;
+export type PublicationFormat = keyof typeof publicationFormats;
+export function publicationFormatName(
+  format: PublicationFormat,
+  translate: (zh: string, en: string) => string,
+) {
+  const label = publicationFormats[format];
+  return translate(label[0], label[1]);
+}
+export const publicationStates: Record<string, readonly [string, string]> = {
+  awaiting_confirmation: ["待你確認", "Awaiting your confirmation"],
+  queued: ["已排隊", "Queued"],
+  preparing: ["準備素材", "Preparing media"],
+  waiting_media: ["平台處理素材中", "Provider processing media"],
+  publishing: ["正在發送", "Sending"],
+  processing: ["平台處理影片中", "Provider processing video"],
+  succeeded: ["平台已確認發布", "Publication confirmed by provider"],
+  failed: ["未完成", "Failed"],
+  cancelled: ["已取消", "Cancelled"],
+  expired: ["已過期", "Expired"],
+  unknown: ["結果不明，待核對", "Outcome unknown · review required"],
+  closed_unknown: [
+    "已人工關閉，歸因仍不明",
+    "Manually closed · attribution unknown",
+  ],
+};
+export type PublicationTarget = {
+  id: string;
+  kind: string;
+  name: string;
+  external_id: string;
+  page_id: string;
+  enabled: boolean;
+  capabilities: { formats: PublicationFormat[] };
+};
+export type PublicationConnection = {
+  id: string;
+  version: number;
+  state: string;
+  created_by: string;
+  project_ids: string[];
+  targets: PublicationTarget[];
+};
+export type PublicationPolicy = {
+  id: string;
+  version: number;
+  policy: {
+    enabled: boolean;
+    formats: PublicationFormat[];
+    maximum_daily_publications: number;
+    expires_at: string;
+    confirmation: "each_operation";
+  };
+};
+export type PublicationSource = {
+  ordinal: number;
+  asset_id: string;
+  asset_version_id: string;
+  version: number;
+  name: string;
+  source_sha256: string;
+  source_mime: string;
+  source_bytes: number;
+  sha256: string;
+  mime: string;
+  bytes: number;
+  width: number;
+  height: number;
+  duration_ms: number | null;
+  alt_text: string;
+  jpeg_background: string | null;
+};
+export type PublicationSelectedSource = {
+  asset_id: string;
+  version: number;
+  expected_sha256: string;
+  alt_text: string;
+  jpeg_background: string;
+};
+export type PublicationDraft = {
+  target_id: string;
+  format: PublicationFormat;
+  caption: string;
+  title: string;
+  link: string | null;
+  share_to_feed: boolean;
+  sources: PublicationSelectedSource[];
+};
+export type PublicationContent = {
+  target: Pick<
+    PublicationTarget,
+    "id" | "kind" | "external_id" | "page_id" | "name"
+  >;
+  draft: PublicationDraft;
+  sources: PublicationSource[];
+  previous_unknown_ids: string[];
+  policy_version?: number;
+};
+export type PublicationPreview = PublicationContent & {
+  preview_id: string;
+  payload_sha256: string;
+  expires_at: string;
+  operation_expires_at: string;
+  data_mode: string;
+};
+export type PublicationOperation = {
+  id: string;
+  tenant_id: string;
+  project_id: string;
+  target_id: string;
+  actor_id: string;
+  format: PublicationFormat;
+  state: string;
+  version: number;
+  payload_sha256: string;
+  data_mode: string;
+  error_code: string | null;
+  created_at: string;
+  expires_at: string;
+  confirmed_at: string | null;
+  finished_at: string | null;
+};
+export type PublicationDetail = PublicationOperation & {
+  can_view_content: boolean;
+  content: PublicationContent | null;
+  effects: {
+    id: string;
+    step_key: string;
+    state: string;
+    remote_id: string | null;
+    error_code: string | null;
+  }[];
+  events: { version: number; state: string; created_at: string }[];
+  result: { remote_id?: string; attribution?: string } | null;
+  observation: { sha256?: string; [key: string]: unknown } | null;
+  resolution: { reason?: string; [key: string]: unknown } | null;
+};
+export type PendingPublication = {
+  key: string;
+  action: "prepare" | "decision" | "cancel" | "close";
+  operation_id?: string;
+};
+
+/** Keep data only for its exact scope; a failed authorization withdraws old content. */
+export function usePublicationData<T>(
+  url: string | null,
+  refresh = 0,
+  interval = 5000,
+) {
+  const [snapshot, setSnapshot] = useState<{
+    url: string | null;
+    data: T | null;
+    error: unknown;
+  }>({ url: null, data: null, error: null });
+  useEffect(() => {
+    let live = true,
+      timer: ReturnType<typeof setTimeout> | undefined;
+    const controller = new AbortController();
+    const end = () => {
+      live = false;
+      controller.abort();
+      clearTimeout(timer);
+      setSnapshot({ url: null, data: null, error: null });
+    };
+    window.addEventListener("copypaste:session-ended", end);
+    const load = async () => {
+      if (!url) {
+        setSnapshot({ url, data: null, error: null });
+        return;
+      }
+      try {
+        const data = await api<T>(url, { signal: controller.signal });
+        if (live) setSnapshot({ url, data, error: null });
+      } catch (error) {
+        if (live && !controller.signal.aborted)
+          setSnapshot({ url, data: null, error });
+      } finally {
+        if (live && interval > 0) timer = setTimeout(load, interval);
+      }
+    };
+    void load();
+    return () => {
+      live = false;
+      controller.abort();
+      clearTimeout(timer);
+      window.removeEventListener("copypaste:session-ended", end);
+    };
+  }, [url, refresh, interval]);
+  return snapshot.url === url ? snapshot : { url, data: null, error: null };
+}
+
+export function publicationTime(value: string) {
+  return new Intl.DateTimeFormat(
+    document.documentElement.lang.startsWith("en") ? "en-HK" : "zh-HK",
+    {
+      timeZone: "Asia/Hong_Kong",
+      dateStyle: "medium",
+      timeStyle: "short",
+    },
+  ).format(new Date(value));
+}
+export function publicationBytes(bytes: number) {
+  return bytes < 1024
+    ? `${bytes} B`
+    : bytes < 1024 * 1024
+      ? `${(bytes / 1024).toFixed(1)} KB`
+      : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+export function hkDateInput(iso: string) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Hong_Kong",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(iso));
+  const get = (name: string) => parts.find((p) => p.type === name)?.value;
+  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
+}
+export function readPendingPublication(
+  scope: string,
+): PendingPublication | null {
+  try {
+    const item = JSON.parse(sessionStorage.getItem(scope) ?? "null");
+    if (
+      !item ||
+      !/^[a-f0-9-]{36}$/.test(item.key) ||
+      !["prepare", "decision", "cancel", "close"].includes(item.action) ||
+      (item.operation_id !== undefined &&
+        !/^[a-f0-9-]{36}$/.test(item.operation_id))
+    )
+      return null;
+    return {
+      key: item.key,
+      action: item.action,
+      ...(item.operation_id ? { operation_id: item.operation_id } : {}),
+    };
+  } catch {
+    return null;
+  }
+}
+export function savePendingPublication(
+  scope: string,
+  value: PendingPublication | null,
+) {
+  try {
+    if (value) sessionStorage.setItem(scope, JSON.stringify(value));
+    else sessionStorage.removeItem(scope);
+  } catch {
+    /* Server remains authoritative if storage is unavailable. */
+  }
+}
+
+/** Actual outgoing bytes are read from the company API, never from a provider-public grant. */
+export function usePublicationMedia(
+  path: string,
+  tenant: string,
+  source: PublicationSource,
+  onWithdraw: () => void,
+) {
+  const [result, setResult] = useState<{
+    path: string;
+    src: string;
+    error: unknown;
+  }>({ path: "", src: "", error: null });
+  const withdraw = useRef(onWithdraw);
+  withdraw.current = onWithdraw;
+  useEffect(() => {
+    let live = true,
+      cap: string | undefined,
+      timer: ReturnType<typeof setTimeout> | undefined;
+    const controller = new AbortController();
+    const close = () => {
+      if (cap)
+        void window.copyPasteBridge
+          ?.closePublicationMedia?.(cap)
+          .catch(() => {});
+      cap = undefined;
+    };
+    const stop = () => {
+      live = false;
+      controller.abort();
+      clearTimeout(timer);
+      close();
+      setResult({ path, src: "", error: null });
+    };
+    const verify = async (first = false) => {
+      try {
+        const info = await api<{ sha256: string; bytes: number; mime: string }>(
+          path + "/info",
+          { signal: controller.signal },
+        );
+        if (
+          info.sha256 !== source.sha256 ||
+          info.bytes !== source.bytes ||
+          info.mime !== source.mime
+        )
+          throw new Error("預覽檔案已改變 / Preview file changed");
+        if (!live) return;
+        if (first) {
+          let src: string;
+          if (window.copyPasteBridge) {
+            if (!window.copyPasteBridge.publicationMedia)
+              throw new Error(
+                "請更新桌面版本以預覽發布素材 / Update Desktop to preview publication media",
+              );
+            const media = await window.copyPasteBridge.publicationMedia(
+              path,
+              tenant,
+            );
+            if (!live) {
+              void window.copyPasteBridge
+                .closePublicationMedia?.(media.id)
+                .catch(() => {});
+              return;
+            }
+            cap = media.id;
+            src = media.url;
+          } else src = (import.meta.env.VITE_API_BASE ?? "") + path;
+          setResult({ path, src, error: null });
+        }
+      } catch (error) {
+        if (live && !controller.signal.aborted) {
+          close();
+          setResult({ path, src: "", error });
+          withdraw.current();
+        }
+      } finally {
+        if (live && !controller.signal.aborted)
+          timer = setTimeout(() => void verify(), 5000);
+      }
+    };
+    window.addEventListener("copypaste:session-ended", stop);
+    void verify(true);
+    return () => {
+      live = false;
+      controller.abort();
+      clearTimeout(timer);
+      close();
+      window.removeEventListener("copypaste:session-ended", stop);
+    };
+  }, [path, tenant, source.sha256, source.bytes, source.mime]);
+  return result.path === path ? result : { path, src: "", error: null };
+}

@@ -1,0 +1,261 @@
+-- Approved publishing effects. SQL001-131 and the budget protocol retain their original bytes.
+CREATE TABLE publication_connections (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id uuid NOT NULL REFERENCES tenants(id),
+ created_by uuid NOT NULL REFERENCES users(id), owner_auth_version integer NOT NULL,
+ state text NOT NULL CHECK(state IN('connected','reauth_required','disconnected')),
+ version integer NOT NULL DEFAULT 1 CHECK(version>0), auth_version integer NOT NULL DEFAULT 1 CHECK(auth_version>0),
+ configuration_sha256 text NOT NULL CHECK(configuration_sha256~'^[a-f0-9]{64}$'),
+ data_mode text NOT NULL CHECK(data_mode IN('simulated','configured_services')),
+ scopes text[] NOT NULL, encrypted_secret text, external_user_id text,
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(), updated_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ UNIQUE(tenant_id,id),CHECK(state<>'connected' OR encrypted_secret IS NOT NULL)
+);
+CREATE TABLE publication_connection_projects (
+ tenant_id uuid NOT NULL,connection_id uuid NOT NULL,project_id uuid NOT NULL,
+ PRIMARY KEY(connection_id,project_id),
+ FOREIGN KEY(tenant_id,connection_id) REFERENCES publication_connections(tenant_id,id),
+ FOREIGN KEY(tenant_id,project_id) REFERENCES projects(tenant_id,id)
+);
+CREATE TABLE publication_targets (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,connection_id uuid NOT NULL,
+ kind text NOT NULL CHECK(kind IN('facebook_page','instagram_professional')),
+ external_id text NOT NULL CHECK(external_id~'^[1-9][0-9]{0,29}$'),
+ page_id text NOT NULL CHECK(page_id~'^[1-9][0-9]{0,29}$'),name text NOT NULL,
+ enabled boolean NOT NULL DEFAULT false,auth_version integer NOT NULL,
+ capabilities jsonb NOT NULL CHECK(jsonb_typeof(capabilities)='object'),encrypted_secret text,
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ FOREIGN KEY(tenant_id,connection_id) REFERENCES publication_connections(tenant_id,id),
+ UNIQUE(connection_id,kind,external_id),UNIQUE(tenant_id,id),UNIQUE(tenant_id,connection_id,id)
+);
+CREATE TABLE publication_oauth_states (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,project_id uuid NOT NULL,
+ actor_id uuid NOT NULL REFERENCES users(id),actor_auth_version integer NOT NULL,session_id uuid NOT NULL,
+ state_sha256 text NOT NULL UNIQUE CHECK(state_sha256~'^[a-f0-9]{64}$'),
+ cookie_sha256 text NOT NULL CHECK(cookie_sha256~'^[a-f0-9]{64}$'),
+ encrypted_state text NOT NULL,encrypted_cookie text NOT NULL,
+ configuration_sha256 text NOT NULL CHECK(configuration_sha256~'^[a-f0-9]{64}$'),
+ connection_id uuid,expected_connection_auth_version integer,expires_at timestamptz NOT NULL,consumed_at timestamptz,completed_at timestamptz,
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ FOREIGN KEY(tenant_id,project_id) REFERENCES projects(tenant_id,id),
+ FOREIGN KEY(tenant_id,connection_id) REFERENCES publication_connections(tenant_id,id)
+);
+CREATE TABLE publication_policies (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,project_id uuid NOT NULL,
+ connection_id uuid NOT NULL,target_id uuid NOT NULL,version integer NOT NULL CHECK(version>0),
+ body jsonb NOT NULL CHECK(jsonb_typeof(body)='object'),
+ payload_sha256 text NOT NULL CHECK(payload_sha256~'^[a-f0-9]{64}$'),
+ data_mode text NOT NULL CHECK(data_mode IN('simulated','configured_services')),
+ created_by uuid NOT NULL,created_by_audience text NOT NULL CHECK(created_by_audience IN('user','admin')),
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ FOREIGN KEY(tenant_id,project_id) REFERENCES projects(tenant_id,id),
+ FOREIGN KEY(tenant_id,connection_id,target_id) REFERENCES publication_targets(tenant_id,connection_id,id),
+ UNIQUE(project_id,target_id,version),UNIQUE(tenant_id,id),
+ UNIQUE(tenant_id,project_id,connection_id,target_id,id,version)
+);
+CREATE TABLE publication_previews (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,project_id uuid NOT NULL,
+ actor_id uuid NOT NULL REFERENCES users(id),actor_auth_version integer NOT NULL,session_id uuid,
+ specification jsonb NOT NULL CHECK(jsonb_typeof(specification)='object'),
+ payload_sha256 text NOT NULL CHECK(payload_sha256~'^[a-f0-9]{64}$'),
+ data_mode text NOT NULL CHECK(data_mode IN('simulated','configured_services')),
+ expires_at timestamptz NOT NULL,erased_at timestamptz,
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ FOREIGN KEY(tenant_id,project_id) REFERENCES projects(tenant_id,id)
+);
+CREATE TABLE publication_operations (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,project_id uuid NOT NULL,
+ connection_id uuid NOT NULL,target_id uuid NOT NULL,policy_id uuid NOT NULL,policy_version integer NOT NULL,
+ actor_id uuid NOT NULL REFERENCES users(id),actor_auth_version integer NOT NULL,task_id uuid REFERENCES tasks(id),
+ format text NOT NULL CHECK(format IN('facebook_post','facebook_photo','facebook_gallery','facebook_video','instagram_photo','instagram_reel','instagram_carousel','instagram_story')),
+ specification jsonb NOT NULL CHECK(jsonb_typeof(specification)='object'),
+ payload_sha256 text NOT NULL CHECK(payload_sha256~'^[a-f0-9]{64}$'),
+ duplicate_sha256 text NOT NULL CHECK(duplicate_sha256~'^[a-f0-9]{64}$'),
+ data_mode text NOT NULL CHECK(data_mode IN('simulated','configured_services')),
+ state text NOT NULL CHECK(state IN('awaiting_confirmation','queued','preparing','waiting_media','publishing','processing','succeeded','failed','cancelled','expired','unknown','closed_unknown')),
+ version integer NOT NULL DEFAULT 1 CHECK(version>0),
+ confirmed_by uuid REFERENCES users(id),confirmed_auth_version integer,confirmed_at timestamptz,
+ lease_token uuid,lease_until timestamptz,next_check_at timestamptz,
+ progress jsonb NOT NULL DEFAULT '{}',observation jsonb,resolution jsonb,result jsonb,error_code text,
+ expires_at timestamptz NOT NULL,finished_at timestamptz,erased_at timestamptz,
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ FOREIGN KEY(tenant_id,project_id) REFERENCES projects(tenant_id,id),
+ FOREIGN KEY(tenant_id,connection_id,target_id) REFERENCES publication_targets(tenant_id,connection_id,id),
+ FOREIGN KEY(tenant_id,project_id,connection_id,target_id,policy_id,policy_version)
+ REFERENCES publication_policies(tenant_id,project_id,connection_id,target_id,id,version),
+ FOREIGN KEY(tenant_id,task_id) REFERENCES tasks(tenant_id,id),
+ UNIQUE(tenant_id,id),UNIQUE(tenant_id,project_id,id),
+ CHECK((confirmed_by IS NULL)=(confirmed_auth_version IS NULL)),
+ CHECK((confirmed_by IS NULL)=(confirmed_at IS NULL)),
+ CHECK(confirmed_by IS NULL OR confirmed_by=actor_id),
+ CHECK(state NOT IN('queued','preparing','waiting_media','publishing','processing','succeeded') OR confirmed_by IS NOT NULL)
+);
+CREATE UNIQUE INDEX publication_unresolved_duplicate ON publication_operations(tenant_id,duplicate_sha256)
+ WHERE state IN('awaiting_confirmation','queued','preparing','waiting_media','publishing','processing','unknown');
+CREATE INDEX publication_due ON publication_operations(state,next_check_at,created_at);
+CREATE TABLE publication_sources (
+ tenant_id uuid NOT NULL,project_id uuid NOT NULL,operation_id uuid NOT NULL,
+ ordinal integer NOT NULL CHECK(ordinal BETWEEN 0 AND 9),asset_version_id uuid NOT NULL REFERENCES asset_versions(id),
+ source_sha256 text NOT NULL CHECK(source_sha256~'^[a-f0-9]{64}$'),
+ rendition_key text CHECK(rendition_key~'^objects/[a-f0-9-]{36}$'),
+ rendition_sha256 text NOT NULL CHECK(rendition_sha256~'^[a-f0-9]{64}$'),
+ rendition_mime text NOT NULL CHECK(rendition_mime IN('image/png','image/jpeg','video/mp4')),
+ rendition_bytes bigint NOT NULL CHECK(rendition_bytes BETWEEN 1 AND 1073741824),erased_at timestamptz,
+ CHECK((rendition_key IS NULL)=(erased_at IS NOT NULL)),
+ PRIMARY KEY(operation_id,ordinal),
+ FOREIGN KEY(tenant_id,project_id,operation_id) REFERENCES publication_operations(tenant_id,project_id,id)
+);
+CREATE TABLE publication_effects (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,operation_id uuid NOT NULL,
+ step_key text NOT NULL CHECK(step_key~'^[a-z][a-z0-9_-]{0,49}$'),
+ state text NOT NULL CHECK(state IN('prepared','dispatched','applied','rejected','unknown')),
+ version integer NOT NULL DEFAULT 1 CHECK(version>0),lease_token uuid NOT NULL,
+ request_sha256 text NOT NULL CHECK(request_sha256~'^[a-f0-9]{64}$'),request_encrypted text,
+ remote_id text CHECK(remote_id~'^[1-9][0-9]{0,29}(_[1-9][0-9]{0,29})?$'),
+ dispatched_at timestamptz,result jsonb,error_code text,erased_at timestamptz,
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(),finished_at timestamptz,
+ FOREIGN KEY(tenant_id,operation_id) REFERENCES publication_operations(tenant_id,id),
+ UNIQUE(operation_id,step_key),UNIQUE(tenant_id,id),UNIQUE(tenant_id,operation_id,id),
+ CHECK(state='prepared' OR dispatched_at IS NOT NULL)
+);
+CREATE TABLE publication_receipts (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,operation_id uuid NOT NULL,effect_id uuid NOT NULL,
+ outcome text NOT NULL CHECK(outcome IN('applied','rejected','unknown')),body jsonb NOT NULL,
+ body_sha256 text NOT NULL CHECK(body_sha256~'^[a-f0-9]{64}$'),
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ FOREIGN KEY(tenant_id,operation_id,effect_id) REFERENCES publication_effects(tenant_id,operation_id,id),
+ UNIQUE(effect_id,body_sha256)
+);
+CREATE TABLE publication_events (
+ id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,tenant_id uuid NOT NULL,operation_id uuid NOT NULL,
+ version integer NOT NULL,state text NOT NULL,actor_id text,details jsonb NOT NULL,
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ FOREIGN KEY(tenant_id,operation_id) REFERENCES publication_operations(tenant_id,id),UNIQUE(operation_id,version)
+);
+CREATE TABLE publication_media_grants (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,operation_id uuid NOT NULL,
+ ordinal integer NOT NULL,token_sha256 text NOT NULL UNIQUE CHECK(token_sha256~'^[a-f0-9]{64}$'),
+ encrypted_token text,
+ expires_at timestamptz NOT NULL,revoked_at timestamptz,
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ FOREIGN KEY(tenant_id,operation_id) REFERENCES publication_operations(tenant_id,id),
+ FOREIGN KEY(operation_id,ordinal) REFERENCES publication_sources(operation_id,ordinal),
+ CHECK(revoked_at IS NOT NULL OR encrypted_token IS NOT NULL)
+);
+
+CREATE FUNCTION immutable_publication_record() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN RAISE EXCEPTION 'Publication evidence is append-only' USING ERRCODE='23514'; END $$;
+CREATE TRIGGER publication_policy_immutable BEFORE UPDATE OR DELETE ON publication_policies FOR EACH ROW EXECUTE FUNCTION immutable_publication_record();
+CREATE TRIGGER publication_receipt_immutable BEFORE UPDATE OR DELETE ON publication_receipts FOR EACH ROW EXECUTE FUNCTION immutable_publication_record();
+CREATE TRIGGER publication_event_immutable BEFORE UPDATE OR DELETE ON publication_events FOR EACH ROW EXECUTE FUNCTION immutable_publication_record();
+
+CREATE FUNCTION guard_publication_preview() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ IF current_setting('app.erasing_content',true)='true' AND NEW.specification='{}'::jsonb AND NEW.erased_at IS NOT NULL
+ AND (to_jsonb(NEW)-ARRAY['specification','erased_at'])=(to_jsonb(OLD)-ARRAY['specification','erased_at']) THEN RETURN NEW; END IF;
+ RAISE EXCEPTION 'Publication previews are immutable except explicit erasure' USING ERRCODE='23514';
+END $$;
+CREATE TRIGGER publication_preview_immutable BEFORE UPDATE ON publication_previews FOR EACH ROW EXECUTE FUNCTION guard_publication_preview();
+
+CREATE FUNCTION guard_publication_source() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE s jsonb; BEGIN
+ IF TG_OP='UPDATE' THEN
+  IF current_setting('app.erasing_content',true)='true' AND NEW.rendition_key IS NULL AND NEW.erased_at IS NOT NULL
+  AND (to_jsonb(NEW)-ARRAY['rendition_key','erased_at'])=(to_jsonb(OLD)-ARRAY['rendition_key','erased_at']) THEN RETURN NEW; END IF;
+  RAISE EXCEPTION 'Approved publication media is immutable' USING ERRCODE='23514';
+ END IF;
+ SELECT p.specification->'sources'->NEW.ordinal INTO s FROM publication_operations p
+ JOIN asset_versions v ON v.id=NEW.asset_version_id AND v.tenant_id=NEW.tenant_id
+ JOIN assets a ON a.id=v.asset_id AND a.project_id=NEW.project_id AND a.tenant_id=NEW.tenant_id
+ WHERE p.id=NEW.operation_id AND p.tenant_id=NEW.tenant_id AND p.project_id=NEW.project_id
+ AND p.state='awaiting_confirmation' AND a.state='active' AND v.erased_at IS NULL
+ AND a.retention_expires_at>clock_timestamp() AND (a.private_owner IS NULL OR a.private_owner=p.actor_id)
+ AND task_asset_version_sources_available(v.id) AND analysis_asset_available(a.id)
+ AND matrix_asset_available(a.id) AND video_asset_available(a.id)
+ AND (p.specification->'sources'->NEW.ordinal->>'asset_version_id')::uuid=v.id
+ AND p.specification->'sources'->NEW.ordinal->>'source_sha256'=v.sha256;
+ IF s IS NULL OR ROW(s->>'asset_version_id',s->>'source_sha256',s->>'storage_key',s->>'sha256',s->>'mime',(s->>'bytes')::bigint)
+ IS DISTINCT FROM ROW(NEW.asset_version_id::text,NEW.source_sha256,NEW.rendition_key,NEW.rendition_sha256,NEW.rendition_mime,NEW.rendition_bytes) THEN
+  RAISE EXCEPTION 'Publication source is not bound to the approved version' USING ERRCODE='23514';
+ END IF;
+ RETURN NEW;
+END $$;
+CREATE TRIGGER publication_source_guard BEFORE INSERT OR UPDATE ON publication_sources FOR EACH ROW EXECUTE FUNCTION guard_publication_source();
+
+CREATE FUNCTION guard_publication_operation() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ IF TG_OP='DELETE' THEN RAISE EXCEPTION 'Publication intent cannot be deleted' USING ERRCODE='23514'; END IF;
+ IF current_setting('app.erasing_content',true)='true' AND NEW.specification='{}'::jsonb AND NEW.erased_at IS NOT NULL
+ AND (to_jsonb(NEW)-ARRAY['specification','erased_at'])=(to_jsonb(OLD)-ARRAY['specification','erased_at']) THEN RETURN NEW; END IF;
+ IF NEW.version<>OLD.version+1 OR
+ (to_jsonb(NEW)-ARRAY['state','version','confirmed_by','confirmed_auth_version','confirmed_at','lease_token','lease_until','next_check_at','progress','observation','resolution','result','error_code','finished_at']) IS DISTINCT FROM
+ (to_jsonb(OLD)-ARRAY['state','version','confirmed_by','confirmed_auth_version','confirmed_at','lease_token','lease_until','next_check_at','progress','observation','resolution','result','error_code','finished_at']) OR
+ (OLD.confirmed_by IS NOT NULL AND ROW(NEW.confirmed_by,NEW.confirmed_auth_version,NEW.confirmed_at) IS DISTINCT FROM ROW(OLD.confirmed_by,OLD.confirmed_auth_version,OLD.confirmed_at)) THEN
+  RAISE EXCEPTION 'Frozen publication identity or version changed' USING ERRCODE='23514';
+ END IF;
+ IF OLD.state IN('succeeded','failed','cancelled','expired','closed_unknown') THEN
+  RAISE EXCEPTION 'Terminal publication state is immutable' USING ERRCODE='23514'; END IF;
+ IF NEW.state<>OLD.state AND NOT (
+  (OLD.state='awaiting_confirmation' AND NEW.state IN('queued','cancelled','expired','failed')) OR
+  (OLD.state='queued' AND NEW.state IN('preparing','cancelled','expired','failed')) OR
+  (OLD.state='preparing' AND NEW.state IN('waiting_media','publishing','cancelled','expired','failed','unknown')) OR
+  (OLD.state='waiting_media' AND NEW.state IN('preparing','publishing','cancelled','expired','failed','unknown')) OR
+  (OLD.state='publishing' AND NEW.state IN('processing','succeeded','failed','unknown')) OR
+  (OLD.state='processing' AND NEW.state IN('succeeded','failed','unknown')) OR
+  (OLD.state='unknown' AND NEW.state IN('succeeded','failed','closed_unknown'))
+ ) THEN RAISE EXCEPTION 'Invalid publication transition' USING ERRCODE='23514'; END IF;
+ IF NEW.state IN('cancelled','expired') AND EXISTS(SELECT 1 FROM publication_effects e WHERE e.operation_id=NEW.id AND e.step_key='publish' AND e.state IN('dispatched','applied','unknown')) THEN
+  RAISE EXCEPTION 'A dispatched publication cannot be represented as cancelled' USING ERRCODE='23514'; END IF;
+ IF NEW.state='succeeded' AND NOT EXISTS(SELECT 1 FROM publication_effects e WHERE e.operation_id=NEW.id AND e.step_key='publish' AND e.state='applied') THEN
+  RAISE EXCEPTION 'Publication success requires an attributed applied effect' USING ERRCODE='23514'; END IF;
+ IF NEW.state='succeeded' AND NEW.format='facebook_video' AND (
+  NEW.progress->'video'->>'published'='true' AND NEW.progress->'video'->>'status'='ready') IS DISTINCT FROM true THEN
+  RAISE EXCEPTION 'Video receipt alone does not prove a published video' USING ERRCODE='23514'; END IF;
+ RETURN NEW;
+END $$;
+CREATE TRIGGER publication_operation_guard BEFORE UPDATE OR DELETE ON publication_operations FOR EACH ROW EXECUTE FUNCTION guard_publication_operation();
+
+CREATE FUNCTION guard_publication_effect() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ IF TG_OP='DELETE' THEN RAISE EXCEPTION 'Publication effects cannot be deleted' USING ERRCODE='23514'; END IF;
+ IF current_setting('app.erasing_content',true)='true' AND NEW.request_encrypted IS NULL AND NEW.erased_at IS NOT NULL
+ AND (to_jsonb(NEW)-ARRAY['request_encrypted','erased_at'])=(to_jsonb(OLD)-ARRAY['request_encrypted','erased_at']) THEN RETURN NEW; END IF;
+ IF NEW.version<>OLD.version+1 OR
+ (to_jsonb(NEW)-ARRAY['state','version','dispatched_at','remote_id','result','error_code','finished_at']) IS DISTINCT FROM
+ (to_jsonb(OLD)-ARRAY['state','version','dispatched_at','remote_id','result','error_code','finished_at']) OR
+ (OLD.dispatched_at IS NOT NULL AND NEW.dispatched_at IS DISTINCT FROM OLD.dispatched_at) OR
+ (OLD.remote_id IS NOT NULL AND NEW.remote_id IS DISTINCT FROM OLD.remote_id) THEN
+  RAISE EXCEPTION 'Publication effect identity is immutable' USING ERRCODE='23514'; END IF;
+ IF NEW.state<>OLD.state AND NOT (
+  (OLD.state='prepared' AND NEW.state='dispatched') OR
+  (OLD.state='dispatched' AND NEW.state IN('applied','rejected','unknown')) OR
+  (OLD.state='unknown' AND NEW.state IN('applied','rejected'))
+ ) THEN RAISE EXCEPTION 'An uncertain publication effect cannot be replayed' USING ERRCODE='23514'; END IF;
+ RETURN NEW;
+END $$;
+CREATE TRIGGER publication_effect_guard BEFORE UPDATE OR DELETE ON publication_effects FOR EACH ROW EXECUTE FUNCTION guard_publication_effect();
+
+CREATE FUNCTION record_publication_event() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ IF TG_OP='UPDATE' AND NEW.version=OLD.version THEN RETURN NEW; END IF;
+ INSERT INTO publication_events(tenant_id,operation_id,version,state,actor_id,details)
+ VALUES(NEW.tenant_id,NEW.id,NEW.version,NEW.state,nullif(current_setting('app.actor_id',true),''),
+ jsonb_build_object('payload_sha256',NEW.payload_sha256,'policy_id',NEW.policy_id,'error_code',NEW.error_code,'result',NEW.result,'observation',NEW.observation,'resolution',NEW.resolution));
+ RETURN NEW;
+END $$;
+CREATE TRIGGER publication_operation_event AFTER INSERT OR UPDATE ON publication_operations FOR EACH ROW EXECUTE FUNCTION record_publication_event();
+
+DO $$ DECLARE tab text; BEGIN
+ FOREACH tab IN ARRAY ARRAY['publication_connections','publication_connection_projects','publication_targets','publication_oauth_states','publication_policies','publication_previews','publication_operations','publication_sources','publication_effects','publication_receipts','publication_events','publication_media_grants'] LOOP
+  EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY',tab);
+  EXECUTE format('ALTER TABLE %I FORCE ROW LEVEL SECURITY',tab);
+  EXECUTE format('CREATE POLICY publication_control ON %I TO cp_control USING(true) WITH CHECK(true)',tab);
+  EXECUTE format('REVOKE ALL ON %I FROM PUBLIC,cp_app,cp_queue',tab);
+ END LOOP;
+END $$;
+GRANT SELECT,INSERT,UPDATE ON publication_connections,publication_targets,publication_oauth_states,publication_media_grants TO cp_control;
+GRANT SELECT,INSERT,DELETE ON publication_connection_projects TO cp_control;
+GRANT SELECT,INSERT ON publication_policies,publication_receipts,publication_events TO cp_control;
+GRANT SELECT,INSERT,UPDATE,DELETE ON publication_previews TO cp_control;
+GRANT SELECT,INSERT,UPDATE ON publication_operations,publication_effects TO cp_control;
+GRANT SELECT,INSERT,UPDATE ON publication_sources TO cp_control;
+GRANT USAGE,SELECT ON SEQUENCE publication_events_id_seq TO cp_control;

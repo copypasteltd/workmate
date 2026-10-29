@@ -1,8 +1,8 @@
 # 阶段125：受控营销发布与原生媒体 / Controlled publishing and native media
 
-本阶段把营销素材从“生成与交付”接到客户逐次确认后的社交发布，并提供项目范围的后台管理。当前为开发与验收中的增量，不能据此宣布整个产品、全部角色或正式提供方验收完成。所有正式AI请求仍走公司服务器，Codex仍是唯一Agent内核。
+本阶段把营销素材从“生成与交付”接到客户逐次确认后的社交发布，并提供项目范围的后台管理。当前增量已取得相关后端与实际四端发布旅程通过记录，完整产品、全部角色及正式提供方仍待验收。所有正式AI请求仍走公司服务器，Codex仍是唯一Agent内核。
 
-This increment connects marketing deliverables to explicit customer-approved social publishing and scoped administration. It is under implementation and qualification. It does not close whole-product, professional-role or live-provider acceptance. Codex remains the only Agent kernel and company servers remain the AI gateway.
+This increment connects marketing deliverables to explicit customer-approved social publishing and scoped administration. Its related backend and actual four-client publishing journeys have passing records. It does not close whole-product, professional-role or live-provider acceptance. Codex remains the only Agent kernel and company servers remain the AI gateway.
 
 ## 客户的完整流程 / Customer journey
 
@@ -117,9 +117,10 @@ The four scoped tools support account discovery, preview, preparation and status
 | 检查 | 当前记录 | 边界 |
 | --- | --- | --- |
 | 模拟授权浏览器回跳 | `publication-consent-03`，授权/取消/拒绝未配置目标三项通过 | 真实浏览器、模拟提供方和自建回调站点；不含正式账户 |
-| Web/Admin完整发布旅程 | `publications-ui-10`终态失败，已记录5项通过 | 延迟范围响应、OAuth及实际媒体已覆盖；成功状态定位文案错误，四档布局实际仅观察到375/768px，后续Admin未完成 |
-| Desktop媒体与会话逻辑 | `media-03`，21/21通过 | 新增发布页面仍需实际Electron协议与原生操作验收 |
-| Extension查看与跳转逻辑 | `extension-02`，70/70通过 | 新增发布查看仍需实际Chrome原生Side Panel验收 |
+| Web/Admin完整发布旅程 | `publications-ui-12`，14/14通过 | 实际OAuth、PNG/JPEG确切字节、客户明确确认、未知结果、Admin独立身份/MFA/权限、原取消请求恢复及撤权；Web预览及Admin私有审阅实际覆盖375/768/1024/1440px |
+| Desktop媒体与会话逻辑 | `media-03`，21/21通过 | 类型、Range及会话逻辑；新增发布视频播放/拖动和原生Range仍待实际页面验收 |
+| Extension查看与跳转逻辑 | `extension-02`，70/70通过 | 逻辑和构建通过；原生实际查看另见下项，全部文件/账户/项目组合仍待完整验收 |
+| 实际打包Desktop与Chrome右侧栏 | `native-publications-02`，10/10通过 | 本机OTP/PKCE、实际受保护图片、客户确认、无边框/菜单/可见滚动条、三档窗口、真正右侧栏、主动读取/固定Web交接、来源撤销和登出；未签名目录包，不包含新增发布视频或四工具实际Codex调用 |
 | Admin显式授权命令 | `backend-07`，实际原生数据库与子进程5/5通过 | 明确确认、新增授权撤销旧会话、并发幂等及拒绝组合；不代表整个后台验收 |
 | 后端完整相关回归 | `backend-09`，117/117通过；分析专项08为12/12 | 当前捕获源码匹配，包含两个实际原生Codex分析角色；并非全产品回归，旧05偶发超时根因仍未确定 |
 | 正式服务与专业效果 | 尚未验收 | 用户已授权假数据，真实账号、模型质量和专业业务另验 |
@@ -135,3 +136,16 @@ The consent page allows only the configured provider, company API and Web origin
 The current related backend run passes all 117 checks; the explicit Admin upgrade CLI passes all five and the analysis diagnostic run passes all twelve, including two actual native Codex roles. These bounded results do not explain the earlier intermittent timeout. Web/Admin run10 remains failed after five recorded checks: its success locator expects an incorrect label and its actual layout observations cover only 375/768px. Later Admin publishing checks, complete four-width validation, native Desktop/Side Panel acceptance, integration and product-source publication remain open. The latest Desktop directory package is an unsigned development build.
 
 [需求与未完成项 / Requirements and open work](../quality/remaining-work-current-review-125-v7.md)
+
+
+## 源码整合与发布 / Source integration and publication
+
+六个独立仓库分别维护backend、web、admin、desktop、extension和delivery映射分支；中央文档使用docs和main。候选提交以普通fast-forward整合，保留Desktop根属性文件，不改已经执行的验证器和回执。Git字节检查01发现Web/Admin三份TSX的CRLF被转换为LF；只调整精确文件的属性并重新暂存原字节，不改变已验收运行逻辑。失败报告保留，后续检查使用新编号。
+
+V8发布器读取普通开发路径，校验正式提交、双语README、真实截图/GIF/MP4、历史Git对象、配置中的凭据、证据归档及远端祖先关系，再普通原子推送八个引用并读取SHA。归档保存36,702条原文件记录、3,646份不同内容；当前限定通过范围绑定1,750个捕获源码文件和22个实际媒体文件。归档读取器从已提交的内容寻址文件验证原回执，不依赖临时候选目录。
+
+The V8 executor verifies six committed independent repositories and central documentation, exact qualified bytes, original evidence, real media, bilingual guides and non-destructive remote ancestry before an ordinary atomic eight-ref push and SHA readback. Canonical source bindings and archived receipts can be verified without candidate checkout paths. Historical attempts remain immutable. A final successful executor receipt, rather than this design document, proves remote publication.
+
+本轮限定通过不关闭原始完整需求：89条必需、12条未确认扩展及1条可选仍作为102条整体验收记录追踪。独立检出全流程复现、四个工具的实际Codex调用、至少十二个完整专业角色、签名安装与正式服务质量继续开放。继续按授权使用假数据，所有AI仍经公司服务器，不调度Docker/WSL。
+
+[本轮证据](../quality/publications-checkpoint-125.json) · [本轮更新](../changes/125-controlled-publications.md) · [完整未完成清单](../quality/remaining-work-stage125.md)

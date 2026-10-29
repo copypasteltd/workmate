@@ -1,0 +1,169 @@
+{
+  "at": "2026-10-29T10:51:56.234Z",
+  "status": "failed",
+  "stage": "actual image preview and exact customer confirmation",
+  "checks": [
+    "Actual customer email/OTP login reaches the exact publishing workspace and project",
+    "Delayed account scope refresh disables policy edits until current authority arrives; the next editor stays open",
+    "Actual synthetic OAuth returns to the exact project; targets start disabled and require explicit scope and policy",
+    "Actual outgoing image renders with exact source version, response MIME and downloaded SHA-256",
+    "Web publishing preview fits 375/768/1024/1440 widths without horizontal overflow or clipped controls"
+  ],
+  "errors": [
+    "actual image preview and exact customer confirmation: TimeoutError: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.publication-inspector').getByText('Published', { exact: true }).first() to be visible\u001b[22m\n"
+  ],
+  "screenshots": [
+    {
+      "path": "copypaste-web-publication-125/assets/screenshots/workmate-publications-10-accounts-and-policy.png",
+      "sha256": "2b5f53fd04ded45166b13b6968a850ce4faaa5d48d072c06cc55291d7c2f38b4",
+      "source": "Actual customer-scoped synthetic OAuth, explicit account/project scope and publishing policy; no provider writes.",
+      "edited": false
+    },
+    {
+      "path": "copypaste-web-publication-125/assets/screenshots/workmate-publications-10-outgoing-image-preview.png",
+      "sha256": "8e51fef7f1d4e2afc1493e3f2cb0fb6113de06f7b6e5f13b751c8cb684ea3f8d",
+      "source": "Actual outgoing image rendered and matched against the immutable SHA-256; no publishing side effect before customer consent.",
+      "edited": false
+    },
+    {
+      "path": "copypaste-web-publication-125/assets/screenshots/workmate-publications-10-customer-confirmation-375.png",
+      "sha256": "c5f629109e3613683bc2e12d89822a34f1dfdd9ccc54167f5b112d419ddd52fc",
+      "source": "Actual mobile-width customer confirmation starts unchecked and cannot dispatch before explicit approval.",
+      "edited": false
+    },
+    {
+      "path": "copypaste-web-publication-125/assets/screenshots/workmate-publications-10-failed-current-stage.png",
+      "sha256": "39dfe39f9684029e5780412a8246ea3281ccb8d26e602809c3a4c77e8fa5df27",
+      "source": "Actual failure state; this capture is not a passing acceptance artifact.",
+      "edited": false
+    }
+  ],
+  "recordings": [
+    {
+      "component": "web-publication-125",
+      "name": "customer-preview-and-confirm",
+      "source": "Actual Web customer edits text, chooses an immutable file version, reviews actual outgoing media; completed actions are recorded individually in the journey checks.",
+      "started_at": "2026-10-29T10:51:05.035Z",
+      "finished_at": "2026-10-29T10:51:42.121Z",
+      "capture_timing": "Actual wall-clock capture intervals; no accelerated or invented response frames",
+      "observed_frames": 210,
+      "distinct_frames": 18,
+      "skipped_capture_errors": 0,
+      "seconds": 37.2,
+      "width": 1280,
+      "height": 960,
+      "files": [
+        {
+          "path": "copypaste-web-publication-125/assets/screenshots/workmate-publications-10-customer-preview-and-confirm.mp4",
+          "bytes": 525180,
+          "sha256": "6c3d76f56b935fc93f8106dc7af05a3107c9c2cdae7a0884813602afc7c78ca5"
+        },
+        {
+          "path": "copypaste-web-publication-125/assets/screenshots/workmate-publications-10-customer-preview-and-confirm.gif",
+          "bytes": 1388765,
+          "sha256": "43493d0f7ec13706d45ce6c51fe9ac475b3edcb85894367f6d01beb40317c04c"
+        }
+      ],
+      "frame_manifest_sha256": "eb62c912d4d3b0abdeb0133ac6c5bd440f236d5dfe1dfab5e032e0dddaca51d4",
+      "raw_capture_directory": "copypaste-delivery/.data/workmate-media/3e28429f-9497-437f-9b53-f16ef4b999db"
+    }
+  ],
+  "layouts": [
+    {
+      "component": "web-preview",
+      "width": 375,
+      "page_fits": true,
+      "dialog_fits": true,
+      "fields_fit": true,
+      "clipped_fields": []
+    },
+    {
+      "component": "web-preview",
+      "width": 768,
+      "page_fits": true,
+      "dialog_fits": true,
+      "fields_fit": true,
+      "clipped_fields": []
+    },
+    {
+      "component": "web-preview",
+      "width": 768,
+      "page_fits": true,
+      "dialog_fits": true,
+      "fields_fit": true,
+      "clipped_fields": []
+    },
+    {
+      "component": "web-preview",
+      "width": 768,
+      "page_fits": true,
+      "dialog_fits": true,
+      "fields_fit": true,
+      "clipped_fields": []
+    },
+    {
+      "component": "web-confirmation",
+      "width": 375,
+      "page_fits": true,
+      "dialog_fits": true,
+      "fields_fit": true,
+      "clipped_fields": []
+    }
+  ],
+  "diagnostic_ui": {
+    "url": "http://localhost:4317/app/publications?tenant=eccc38fd-af48-4179-a377-7d04bac06fb3&project=262a1017-d312-468b-81fc-4d67d9bfe77d&publication=connected",
+    "title": "CopyPaste · Workspace",
+    "console_errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "navigation_responses": [
+      {
+        "origin": "http://localhost:4317",
+        "pathname": "/login",
+        "status": 200
+      },
+      {
+        "origin": "http://localhost:4317",
+        "pathname": "/app/publications",
+        "status": 200
+      },
+      {
+        "origin": "http://127.0.0.1:2561",
+        "pathname": "/consent",
+        "status": 200
+      },
+      {
+        "origin": "http://127.0.0.1:2561",
+        "pathname": "/approve",
+        "status": 302
+      },
+      {
+        "origin": "http://localhost:4310",
+        "pathname": "/v1/publication/callback",
+        "status": 302
+      },
+      {
+        "origin": "http://localhost:4317",
+        "pathname": "/app/publications",
+        "status": 200
+      },
+      {
+        "origin": "http://localhost:4317",
+        "pathname": "/app/publications",
+        "status": 200
+      }
+    ],
+    "alerts": []
+  },
+  "model_calls": -1,
+  "browser_closed": true,
+  "api_closed": true,
+  "fixture_closed": true,
+  "limits": [
+    "Owned synthetic Meta provider; no live social account",
+    "No actual Desktop or Chrome native Side Panel publishing acceptance",
+    "Not full product acceptance"
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "at": "2026-10-29T10:13:26.454Z",
+  "status": "failed",
+  "stage": "unconfigured form destination remains blocked by the actual browser",
+  "checks": [
+    "actual form approve and two-origin redirect chain",
+    "actual form deny and two-origin redirect chain"
+  ],
+  "errors": [
+    "unconfigured form destination remains blocked by the actual browser: TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: '授權模擬帳戶', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <button name=\"decision\" value=\"approve\">授權模擬帳戶</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - performing click action\u001b[22m\n\u001b[2m    - click action done\u001b[22m\n\u001b[2m    - waiting for scheduled navigations to finish\u001b[22m\n"
+  ],
+  "requests": [
+    {
+      "origin": "http://127.0.0.1:5944",
+      "pathname": "/approve",
+      "status": 302
+    },
+    {
+      "origin": "http://localhost:5942",
+      "pathname": "/v1/publication/callback",
+      "status": 302
+    },
+    {
+      "origin": "http://localhost:5941",
+      "pathname": "/app/publications",
+      "status": 200
+    },
+    {
+      "origin": "http://127.0.0.1:5944",
+      "pathname": "/approve",
+      "status": 302
+    },
+    {
+      "origin": "http://localhost:5942",
+      "pathname": "/v1/publication/callback",
+      "status": 302
+    },
+    {
+      "origin": "http://localhost:5941",
+      "pathname": "/app/publications",
+      "status": 200
+    }
+  ],
+  "callback_requests": 2,
+  "web_landings": 2,
+  "hostile_posts": 0,
+  "source_files": {
+    "copypaste-platform/src/publication-fixture.ts": "a95c7c36fe84a0be47c527bf10b63958305fe8e13f862371d772f9c80daffb7f",
+    "copypaste-platform/src/publication-provider.ts": "8c5206458376a53ca9d94bf46a877dc5b1352920de5e628c71863695702f6ae3",
+    "copypaste-platform/src/config.ts": "ada30e49e2923b819a7d303ecca1f2528cac40f947beecccbe29da9484f416fd"
+  },
+  "source_unchanged": true,
+  "browser_closed": true,
+  "fixture_closed": true,
+  "ports_closed": {
+    "5941": true,
+    "5942": true,
+    "5943": true,
+    "5944": true
+  },
+  "verifier_sha256": "5c1c9ca327ecaa401d2fa4aaea0a2f253354545546b6a09ca67ff6e8d83ffbda",
+  "limits": [
+    "Actual browser and synthetic consent provider with owned callback/landing servers; no database, live account or full publishing acceptance"
+  ]
+}

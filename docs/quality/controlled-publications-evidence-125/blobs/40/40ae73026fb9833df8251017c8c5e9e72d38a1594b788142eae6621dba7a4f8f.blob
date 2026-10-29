@@ -1,0 +1,125 @@
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import type { AddressInfo } from "node:net";
+import { createHash } from "node:crypto";
+import type { Config } from "./config.js";
+import { hmac, token } from "./lib.js";
+import { publicationScopes } from "./publication-provider.js";
+
+export type PublicationFixtureFault = "reject" | "apply_then_disconnect" | "disconnect_before_apply" | "malformed_receipt" | "rate_limit";
+const escape = (value: string) => value.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+export async function startPublicationFixture(c: Config) {
+  if (!c.DEMO_MODE || c.NODE_ENV === "production" || !["127.0.0.1", "localhost", "::1"].includes(c.HOST))
+    throw new Error("Publishing fixture requires loopback DEMO_MODE");
+  const key = token(), codes = new Map<string, { redirect: string; expires: number; used: boolean }>(), credentials = new Map<string, number>(),
+    consents = new Map<string, { redirect: string; state: string; expires: number }>();
+  const objects = new Map<string, { owner: string; kind: string; parameters: Record<string, string>; reads: number; status: string; published: boolean }>();
+  const faults = new Map<string, PublicationFixtureFault[]>(), calls: Array<{ method: string; owner: string; edge: string; applied: boolean }> = [];
+  let origin = "", sequence = 1251000, missingScope = false, quota = { usage: 0, total: 37 };
+  const send = (res: ServerResponse, status: number, body: unknown) => { res.writeHead(status, {
+    "content-type": "application/json", "cache-control": "no-store", "connection": "close" }); res.end(JSON.stringify(body)); };
+  const reject = (res: ServerResponse, status = 400, code = 100) => send(res, status, { error: { code, type: "OAuthException", message: "Synthetic provider rejection" } });
+  async function form(req: IncomingMessage) {
+    const chunks: Buffer[] = []; let bytes = 0;
+    for await (const part of req) { const chunk = Buffer.from(part); bytes += chunk.length;
+      if (bytes > 2_000_000) throw new Error("Fixture body limit"); chunks.push(chunk); }
+    return new URLSearchParams(Buffer.concat(chunks).toString("utf8"));
+  }
+  async function fetchMedia(value: string) {
+    const u = new URL(value);
+    if (u.origin !== c.API_ORIGIN || !/^\/v1\/publication-media\/[\w-]{43}$/.test(u.pathname) || u.search || u.hash)
+      throw new Error("Synthetic media may only use the owned approved media endpoint");
+    const response = await fetch(u, { redirect: "error", signal: AbortSignal.timeout(30000) });
+    if (!response.ok || !response.body) throw new Error("Synthetic approved media is unavailable");
+    const digest = createHash("sha256"); let bytes = 0;
+    for await (const chunk of response.body) { bytes += chunk.length; if (bytes > 1_073_741_824) throw new Error("Synthetic media limit"); digest.update(chunk); }
+    if (!bytes || response.headers.get("x-content-sha256") !== digest.digest("hex")) throw new Error("Synthetic media integrity mismatch");
+  }
+  async function handle(req: IncomingMessage, res: ServerResponse) {
+    const url = new URL(req.url ?? "/", origin);
+    for (const [id, item] of consents) if (item.expires < Date.now()) consents.delete(id);
+    for (const [id, item] of codes) if (item.expires < Date.now()) codes.delete(id);
+    for (const [id, expiry] of credentials) if (expiry < Date.now()) credentials.delete(id);
+    if (url.pathname === "/consent" && req.method === "GET") {
+      if (url.searchParams.get("client_id") !== "125000" || url.searchParams.get("redirect_uri") !== c.API_ORIGIN + "/v1/publication/callback" ||
+          url.searchParams.get("scope") !== publicationScopes.join(",") || !url.searchParams.get("state") || consents.size >= 100)
+        return reject(res);
+      const consent = token(); consents.set(consent, { redirect: url.searchParams.get("redirect_uri")!, state: url.searchParams.get("state")!, expires: Date.now() + 300000 });
+      res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "referrer-policy": "no-referrer",
+        "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'" });
+      return res.end(`<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>CopyPaste · 模擬發佈授權</title><style>body{font:16px system-ui;background:#f6f6f4;color:#15171a;max-width:520px;margin:9vh auto;padding:24px}main{background:white;border:1px solid #e3e4e5;border-radius:22px;padding:30px}h1{font-size:28px}button{border:0;border-radius:12px;padding:14px 20px;margin:6px;background:#1f5eff;color:white;cursor:pointer}button[value=deny]{background:#edf2ff;color:#1f5eff}small{color:#555}</style><main><small>COPYPASTE / WORKMATE</small><h1>連接你的發佈帳戶</h1><p>模擬模式：香港品牌 Facebook 專頁與 Instagram 專業帳戶。</p><p>連接後仍需選擇帳戶、設定政策，並逐次確認發佈內容。</p><form method="post" action="/approve"><input type="hidden" name="consent" value="${escape(consent)}"><button name="decision" value="approve">授權模擬帳戶</button><button name="decision" value="deny">取消</button></form><p><small>No real social account is contacted.</small></p></main></html>`);
+    }
+    if (url.pathname === "/approve" && req.method === "POST") {
+      const body = await form(req), consent = consents.get(body.get("consent") ?? "");
+      if (!consent || consent.expires < Date.now()) return reject(res);
+      consents.delete(body.get("consent")!); const callback = new URL(consent.redirect);
+      callback.searchParams.set("state", consent.state);
+      if (body.get("decision") !== "approve") callback.searchParams.set("error", "access_denied");
+      else { const code = token(); codes.set(code, { redirect: consent.redirect, expires: Date.now() + 300000, used: false }); callback.searchParams.set("code", code); }
+      res.writeHead(302, { location: callback.href, "cache-control": "no-store", "referrer-policy": "no-referrer" }); return res.end();
+    }
+    if (req.headers["x-copypaste-publication-fixture"] !== key) return reject(res, 403, 10);
+    const match = url.pathname.match(/^\/provider\/(graph(?:-video)?\.facebook\.com)\/v26\.0\/(.+)$/);
+    if (!match) return reject(res, 404);
+    const endpoint = match[2], bearer = req.headers.authorization?.match(/^Bearer (.+)$/)?.[1];
+    if (endpoint === "oauth/access_token" && req.method === "GET") {
+      const code = codes.get(url.searchParams.get("code") ?? "");
+      if (!code || code.used || code.expires < Date.now() || url.searchParams.get("redirect_uri") !== code.redirect ||
+          url.searchParams.get("client_id") !== "125000" || url.searchParams.get("client_secret") !== key) return reject(res, 400, 190);
+      code.used = true; const access = token(); credentials.set(access, Date.now() + 3600000);
+      return send(res, 200, { access_token: access, expires_in: 3600 });
+    }
+    if (endpoint === "debug_token" && req.method === "GET") {
+      if (bearer !== "125000|" + key || !credentials.has(url.searchParams.get("input_token") ?? "")) return reject(res, 400, 190);
+      return send(res, 200, { data: { is_valid: true, app_id: "125000", user_id: "125123", expires_at: Math.floor((Date.now() + 3600000) / 1000),
+        scopes: missingScope ? ["ads_read"] : publicationScopes } });
+    }
+    if (!bearer || !credentials.has(bearer) || url.searchParams.get("appsecret_proof") !== hmac(key, bearer)) return reject(res, 400, 190);
+    if (endpoint === "me/accounts" && req.method === "GET") return send(res, 200, { data: [{ id: "125001", name: "香港品牌 · Facebook", access_token: bearer,
+      tasks: ["CREATE_CONTENT"], instagram_business_account: { id: "125002", username: "hk.brand.studio" } }] });
+    const [owner, edge = ""] = endpoint.split("/");
+    if (req.method === "GET") {
+      if (edge === "content_publishing_limit" && owner === "125002") return send(res, 200, { data: [{ quota_usage: quota.usage, config: { quota_total: quota.total, quota_duration: 86400 } }] });
+      const object = objects.get(owner); if (!object) return reject(res, 404);
+      object.reads++;
+      if (object.kind === "container") return send(res, 200, { id: owner, status_code: object.status === "PUBLISHED" ? "PUBLISHED" : object.reads > 1 ? "FINISHED" : "IN_PROGRESS", status: "Synthetic processing" });
+      if (object.kind === "video") return send(res, 200, { id: owner, from: { id: object.owner }, published: object.reads > 1, status: { video_status: object.reads > 1 ? "ready" : "processing" } });
+      return send(res, 200, { id: owner, owner: { id: object.owner }, from: { id: object.owner }, media_type: object.kind === "image" ? "IMAGE" : "CAROUSEL_ALBUM" });
+    }
+    if (req.method !== "POST" || !["125001", "125002"].includes(owner) || !["photos", "feed", "videos", "media", "media_publish"].includes(edge)) return reject(res, 404);
+    const parameters = Object.fromEntries((await form(req)).entries()), fault = faults.get(edge)?.shift();
+    const call = { method: "POST", owner, edge, applied: false }; calls.push(call);
+    if (fault === "reject") return reject(res);
+    if (fault === "rate_limit") return reject(res, 429, 4);
+    if (fault === "disconnect_before_apply") { res.destroy(); return; }
+    if (parameters.url || parameters.file_url || parameters.image_url || parameters.video_url)
+      await fetchMedia(parameters.url ?? parameters.file_url ?? parameters.image_url ?? parameters.video_url);
+    let id = String(++sequence);
+    if (edge === "media_publish") {
+      const container = objects.get(parameters.creation_id);
+      if (!container || container.owner !== owner || container.kind !== "container" || container.status === "PUBLISHED") return reject(res);
+      container.status = "PUBLISHED"; quota.usage++;
+    }
+    if (edge === "feed") id = owner + "_" + id;
+    objects.set(id, { owner, kind: edge === "media" ? "container" : edge === "videos" ? "video" : edge === "photos" ? "image" : "post",
+      parameters, reads: 0, status: "IN_PROGRESS", published: ["feed", "media_publish"].includes(edge) });
+    call.applied = true;
+    if (fault === "apply_then_disconnect") { res.destroy(); return; }
+    return send(res, 200, fault === "malformed_receipt" ? { success: true } : { id });
+  }
+  const server = createServer((req, res) => void handle(req, res).catch(() => {
+    if (!res.headersSent) reject(res, 400); else res.destroy();
+  }));
+  const sockets = new Set<import("node:net").Socket>();
+  server.on("connection", socket => { sockets.add(socket); socket.once("close", () => sockets.delete(socket)); });
+  await new Promise<void>((resolve, rejectPromise) => { server.once("error", rejectPromise); server.listen(0, "127.0.0.1", resolve); });
+  origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  return { origin, key, config: { ...c, PUBLICATION_FIXTURE_ORIGIN: origin, PUBLICATION_FIXTURE_KEY: key },
+    calls, objects,
+    setFaults(edge: string, values: PublicationFixtureFault[]) { faults.set(edge, [...values]); },
+    setMissingScope(value: boolean) { missingScope = value; },
+    setQuota(usage: number, total: number) { quota = { usage, total }; },
+    resetEffects() { faults.clear(); calls.splice(0); objects.clear(); quota = { usage: 0, total: 37 }; },
+    async close() { for (const socket of sockets) socket.destroy(); server.closeAllConnections();
+      await new Promise<void>((resolve, rejectPromise) => server.close(error => error ? rejectPromise(error) : resolve())); },
+  };
+}

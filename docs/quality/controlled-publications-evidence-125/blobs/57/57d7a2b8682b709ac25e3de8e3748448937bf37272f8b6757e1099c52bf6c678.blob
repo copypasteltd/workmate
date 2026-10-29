@@ -1,0 +1,120 @@
+import { mkdir, lstat, open, readFile, readdir, rename, unlink } from "node:fs/promises";
+import path from "node:path";
+import { randomUUID } from "node:crypto";
+import { z } from "zod";
+import type { Database } from "./db.js";
+import { canonical, Problem, seal, unseal, uuid } from "./lib.js";
+import { publicationDigest, publicationSha, remotePublicationIdentifier } from "./publication-model.js";
+import { updatePublication } from "./publication-service.js";
+
+const receiptBody = z.object({
+  request_sha256: publicationSha,
+  attribution: z.enum(["original_provider_response", "explicit_provider_rejection", "transport_outcome_unknown", "bound_container_status"]),
+  remote_id: remotePublicationIdentifier.nullable().optional(),
+  container_id: z.string().regex(/^[1-9][0-9]{0,29}$/).optional(),
+  observed_status: z.literal("PUBLISHED").optional(),
+  provider_body_sha256: publicationSha.optional(),
+  error_code: z.string().regex(/^PUBLICATION_[A-Z0-9_]{1,100}$/).optional(),
+  reauthorize: z.boolean().optional(),
+}).strict();
+const envelope = z.object({
+  protocol: z.literal("marketing-publication-receipt/1"),
+  operation_id: uuid, tenant_id: uuid, project_id: uuid, effect_id: uuid, lease_token: uuid,
+  payload_sha256: publicationSha, request_sha256: publicationSha,
+  data_mode: z.enum(["simulated", "configured_services"]),
+  outcome: z.enum(["applied", "rejected", "unknown"]), body: receiptBody, body_sha256: publicationSha,
+}).strict();
+type Envelope = z.infer<typeof envelope>;
+const filename = (e: Envelope) => `${e.effect_id}-${publicationDigest(e)}.sealed`;
+async function directory(db: Database) {
+  const root = path.resolve(db.config.DATA_DIR, "publication-receipts");
+  await mkdir(root, { recursive: true, mode: 0o700 });
+  const stat = await lstat(root);
+  if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Problem(503, "PUBLICATION_RECEIPT_STORAGE", "Receipt storage is unavailable");
+  return root;
+}
+async function stage(db: Database, e: Envelope) {
+  const root = await directory(db), temp = path.join(root, randomUUID() + ".tmp"), target = path.join(root, filename(e));
+  const file = await open(temp, "wx", 0o600);
+  try { await file.writeFile(seal(db.config.MASTER_KEY!, canonical(e)), "utf8"); await file.sync(); }
+  finally { await file.close(); }
+  try { await rename(temp, target); } catch (error) { await unlink(temp).catch(() => {}); throw error; }
+  return target;
+}
+async function commit(db: Database, e: Envelope) {
+  await db.tx(async tx => {
+    const operation = (await tx.query("SELECT * FROM publication_operations WHERE id=$1 AND tenant_id=$2 AND project_id=$3 FOR UPDATE", [e.operation_id, e.tenant_id, e.project_id])).rows[0];
+    const effect = (await tx.query("SELECT * FROM publication_effects WHERE id=$1 AND operation_id=$2 AND tenant_id=$3 FOR UPDATE", [e.effect_id, e.operation_id, e.tenant_id])).rows[0];
+    const invalid = () => new Problem(409, "PUBLICATION_RECEIPT_BINDING", "The receipt does not match its exact dispatched intent");
+    if (!operation || !effect || operation.payload_sha256 !== e.payload_sha256 || operation.data_mode !== e.data_mode ||
+        effect.request_sha256 !== e.request_sha256 || effect.lease_token !== e.lease_token || effect.state === "prepared" ||
+        e.body.request_sha256 !== e.request_sha256 || publicationDigest(e.body) !== e.body_sha256) throw invalid();
+    if (e.outcome === "applied") {
+      if (e.body.attribution === "original_provider_response") {
+        if (!e.body.remote_id || !e.body.provider_body_sha256 || effect.remote_id && effect.remote_id !== e.body.remote_id) throw invalid();
+      } else if (e.body.attribution === "bound_container_status") {
+        if (effect.step_key !== "publish" || e.body.observed_status !== "PUBLISHED" || !e.body.container_id ||
+            !operation.format.startsWith("instagram_") || !effect.request_encrypted) throw invalid();
+        const request = JSON.parse(unseal(db.config.MASTER_KEY!, effect.request_encrypted));
+        const container = (await tx.query("SELECT remote_id FROM publication_effects WHERE operation_id=$1 AND step_key='container' AND state='applied'", [operation.id])).rows[0];
+        if (!container || container.remote_id !== e.body.container_id || request.edge !== "media_publish" ||
+            request.parameters?.creation_id !== e.body.container_id) throw invalid();
+      } else throw invalid();
+    } else if (e.outcome === "rejected" ? e.body.attribution !== "explicit_provider_rejection" : e.body.attribution !== "transport_outcome_unknown") throw invalid();
+    const inserted = await tx.query(`INSERT INTO publication_receipts(tenant_id,operation_id,effect_id,outcome,body,body_sha256)
+      VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(effect_id,body_sha256) DO NOTHING RETURNING id`,
+      [e.tenant_id, e.operation_id, e.effect_id, e.outcome, e.body, e.body_sha256]);
+    if (!inserted.rowCount || !["dispatched", "unknown"].includes(effect.state)) return;
+    await tx.query(`UPDATE publication_effects SET state=$2,version=version+1,remote_id=coalesce(remote_id,$3),
+      result=$4,error_code=$5,finished_at=clock_timestamp() WHERE id=$1`,
+      [effect.id, e.outcome, e.body.remote_id ?? null, e.body, e.body.error_code ?? null]);
+    // Evidence survives revoked credentials, lost workers and explicit manual closure.
+    if (!["preparing", "waiting_media", "publishing", "processing", "unknown"].includes(operation.state)) return;
+    if (e.outcome === "unknown") {
+      if (operation.state !== "unknown") await updatePublication(tx, operation, { state: "unknown", error_code: e.body.error_code ?? "PUBLICATION_OUTCOME_UNKNOWN",
+        lease_token: null, lease_until: null, next_check_at: null });
+      return;
+    }
+    if (e.outcome === "rejected") {
+      await updatePublication(tx, operation, { state: "failed", error_code: e.body.error_code ?? "PUBLICATION_PROVIDER_REJECTED",
+        finished_at: new Date(), lease_token: null, lease_until: null, next_check_at: null }); return;
+    }
+    if (effect.step_key === "publish") {
+      if (operation.format === "facebook_video") {
+        if (operation.state !== "unknown") await updatePublication(tx, operation, { state: "processing", lease_token: null, lease_until: null,
+          next_check_at: new Date(), result: e.body, error_code: null });
+      } else await updatePublication(tx, operation, { state: "succeeded", finished_at: new Date(), lease_token: null,
+        lease_until: null, next_check_at: null, error_code: null, result: e.body });
+    }
+  }, e.tenant_id, true);
+}
+
+/** Durable encrypted provider response, independently recoverable after a DB commit failure. */
+export async function persistPublicationReceipt(db: Database, operation: any, effect: any,
+  outcome: Envelope["outcome"], input: z.infer<typeof receiptBody>) {
+  const body = receiptBody.parse(input), e = envelope.parse({ protocol: "marketing-publication-receipt/1",
+    operation_id: operation.id, tenant_id: operation.tenant_id, project_id: operation.project_id,
+    effect_id: effect.id, lease_token: effect.lease_token, payload_sha256: operation.payload_sha256,
+    request_sha256: effect.request_sha256, data_mode: operation.data_mode, outcome, body, body_sha256: publicationDigest(body) });
+  const staged = await stage(db, e).catch(() => null);
+  await commit(db, e);
+  if (staged) await unlink(staged).catch(() => {});
+}
+export async function recoverPublicationReceipts(db: Database) {
+  const root = await directory(db);
+  let recovered = 0;
+  for (const name of (await readdir(root)).filter(n => /^[a-f0-9-]{36}-[a-f0-9]{64}\.sealed$/.test(n)).sort().slice(0, 100)) {
+    const file = path.join(root, name);
+    try {
+      const stat = await lstat(file);
+      if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 100_000) throw new Error("Invalid publication receipt file");
+      const e = envelope.parse(JSON.parse(unseal(db.config.MASTER_KEY!, await readFile(file, "utf8"))));
+      if (filename(e) !== name) throw new Error("Publication receipt filename mismatch");
+      if (e.data_mode !== (db.config.DEMO_MODE ? "simulated" : "configured_services")) continue;
+      await commit(db, e); await unlink(file); recovered++;
+    } catch (error) {
+      console.error(JSON.stringify({ component: "publication.receipt_recovery", error_code: error instanceof Problem ? error.code : "PUBLICATION_RECEIPT_RECOVERY_FAILED" }));
+    }
+  }
+  return recovered;
+}

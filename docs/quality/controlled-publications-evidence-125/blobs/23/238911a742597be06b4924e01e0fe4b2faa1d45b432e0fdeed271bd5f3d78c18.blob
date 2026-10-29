@@ -1,0 +1,382 @@
+import { before, beforeEach, after, test } from "node:test";
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { createServer } from "node:net";
+import { readFile, readdir } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import path from "node:path";
+import { createCanvas } from "@napi-rs/canvas";
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+import { buildApp } from "../src/server.js";
+import { loadConfig } from "../src/config.js";
+import { saveAsset } from "../src/storage.js";
+import { advancePublications } from "../src/publication-worker.js";
+import { publicationFormats, type PublicationFormat } from "../src/publication-model.js";
+import { ErasureService } from "../src/erasure.js";
+import { fenceRestoredPublications, expirePublicationContent } from "../src/publication-erasure.js";
+import { recoverPublicationReceipts } from "../src/publication-receipts.js";
+import { seal, unseal } from "../src/lib.js";
+import * as OTPAuth from "otpauth";
+import { TaskBusinessTools } from "../src/task-business-tools.js";
+
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
+let s: Awaited<ReturnType<typeof buildApp>>;
+let video: Buffer, serial = 0;
+type Client = { id: string; cookie: string; csrf: string; ip: string };
+before(async () => {
+  isolated = await isolatedTestEnvironment();
+  const port = await new Promise<number>((resolve, reject) => {
+    const server = createServer(); server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => { const address = server.address() as any;
+      server.close(error => error ? reject(error) : resolve(address.port)); });
+  });
+  s = await buildApp(loadConfig({ ...isolated.env, NODE_ENV: "test", DEMO_MODE: "true", WORKER_ENABLED: "false",
+    DEV_MAILBOX: "true", PORT: String(port), API_ORIGIN: `http://127.0.0.1:${port}` }), { worker: false });
+  await s.app.listen({ host: "127.0.0.1", port });
+  const file = path.resolve(s.db.config.DATA_DIR, "publication-test.mp4");
+  await promisify(execFile)(process.env.FFMPEG_BIN ?? "ffmpeg", ["-nostdin", "-v", "error", "-f", "lavfi", "-i",
+    "color=c=0x1f5eff:s=360x640:r=12", "-t", "1", "-an", "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p",
+    "-movflags", "+faststart", file], { windowsHide: true, timeout: 60_000 });
+  video = await readFile(file);
+});
+beforeEach(() => s.publicationFixture!.resetEffects());
+after(async () => { try { await s?.app.close(); } finally { await isolated?.cleanup(); } });
+async function call(c: Client | undefined, method: string, url: string, body?: unknown, key = randomUUID()) {
+  const raw = await s.app.inject({ method: method as any, url, remoteAddress: c?.ip ?? "127.0.0.1", headers: {
+    origin: url.startsWith("/v1/admin/") ? s.db.config.ADMIN_ORIGIN : s.db.config.WEB_ORIGIN, "idempotency-key": key,
+    ...(c ? { cookie: c.cookie, "x-csrf-token": c.csrf } : {}),
+    ...(body === undefined ? {} : { "content-type": "application/json" }),
+  }, ...(body === undefined ? {} : { payload: JSON.stringify(body) }) });
+  let data: any; try { data = raw.json(); } catch { data = null; }
+  return { raw, status: raw.statusCode, data };
+}
+const ok = (response: Awaited<ReturnType<typeof call>>, status = 200) => {
+  assert.equal(response.status, status, JSON.stringify(response.data)); return response.data;
+};
+async function user(): Promise<Client> {
+  const challenge = ok(await call(undefined, "POST", "/v1/auth/challenge", { email: `publication-${randomUUID()}@example.invalid` }));
+  const mail = JSON.parse(await readFile(path.join(s.db.config.DATA_DIR, "mailbox", challenge.challenge_id + ".json"), "utf8"));
+  const result = await call(undefined, "POST", "/v1/auth/verify", { challenge_id: challenge.challenge_id, code: mail.text.match(/\b\d{6}\b/)[0] });
+  const value = ok(result);
+  return { id: value.user.id, csrf: value.csrf_token, cookie: result.raw.cookies[0].name + "=" + result.raw.cookies[0].value,
+    ip: `127.0.2.${++serial}` };
+}
+async function fixture() {
+  const owner = await user(), workspace = ok(await call(owner, "POST", "/v1/tenants", { name: "Publishing QA", project_name: "HK brand" }));
+  const tenant = workspace.tenant.id as string, project = workspace.project.id as string;
+  const base = `/v1/tenants/${tenant}/projects/${project}/publications`;
+  const pending = await call(owner, "POST", base + "/connections/authorize", { project_id: project });
+  const authorization = ok(pending), consent = await fetch(authorization.authorization_url, { redirect: "manual" });
+  assert.equal(consent.status, 200);
+  const html = await consent.text(), nonce = html.match(/name="consent" value="([\w-]+)"/)?.[1]; assert.ok(nonce);
+  const approved = await fetch(s.publicationFixture!.origin + "/approve", { method: "POST", redirect: "manual",
+    body: new URLSearchParams({ consent: nonce, decision: "approve" }) });
+  assert.equal(approved.status, 302); const location = new URL(approved.headers.get("location")!);
+  const callbackOwner = { ...owner, cookie: owner.cookie + "; " + pending.raw.cookies.map(c => c.name + "=" + c.value).join("; ") };
+  const callback = await call(callbackOwner, "GET", location.pathname + location.search); assert.equal(callback.status, 302, JSON.stringify(callback.data));
+  const landing = new URL(String(callback.raw.headers.location));
+  assert.equal(landing.pathname, "/app/publications"); assert.equal(landing.searchParams.get("tenant"), tenant);
+  assert.equal(landing.searchParams.get("project"), project); assert.equal(landing.searchParams.get("publication"), "connected");
+  const list = ok(await call(owner, "GET", base + "/connections")), connection = list.items[0];
+  assert.equal(connection.targets.length, 2); assert.ok(connection.targets.every((target: any) => !target.enabled));
+  const scope = ok(await call(owner, "PUT", base + "/connections/" + connection.id + "/scope", {
+    expected_version: connection.version, project_ids: [project], target_ids: connection.targets.map((target: any) => target.id),
+  }));
+  for (const target of connection.targets) ok(await call(owner, "PUT", base + "/policy/" + target.id, {
+    expected_version: 0, policy: { enabled: true, formats: target.capabilities.formats, maximum_daily_publications: 100,
+      expires_at: new Date(Date.now() + 86_400_000).toISOString(), confirmation: "each_operation" },
+  }));
+  return { owner, tenant, project, base, connection: { ...connection, version: scope.version }, callbackOwner,
+    callbackURL: location.pathname + location.search };
+}
+type Fixture = Awaited<ReturnType<typeof fixture>>;
+async function media(f: Fixture, width = 640, height = 640, colour = "#1f5eff", bytes?: Buffer) {
+  const canvas = createCanvas(width, height), context = canvas.getContext("2d");
+  context.fillStyle = colour; context.fillRect(0, 0, width, height);
+  const asset = await s.db.tx(tx => saveAsset(tx, s.storage, { tenant: f.tenant, project: f.project, user: f.owner.id,
+    name: "approved-brand-asset", mime: bytes ? "video/mp4" : "image/png", bytes: bytes ?? canvas.toBuffer("image/png") }), f.tenant, false, f.owner.id);
+  const version = (await s.db.control.query("SELECT * FROM asset_versions WHERE asset_id=$1", [asset.id])).rows[0];
+  return { asset_id: asset.id, version: version.version, expected_sha256: version.sha256 };
+}
+async function proposed(f: Fixture, format: PublicationFormat = "facebook_post") {
+  const sources = [];
+  if (format !== "facebook_post") {
+    sources.push(await media(f, format === "instagram_story" ? 360 : 640, format === "instagram_story" ? 640 : 640,
+      "#1f5eff", ["facebook_video", "instagram_reel"].includes(format) ? video : undefined));
+    if (["facebook_gallery", "instagram_carousel"].includes(format)) sources.push(await media(f, 640, 640, "#15171a"));
+  }
+  const target = f.connection.targets.find((item: any) => item.kind === (format.startsWith("instagram_") ? "instagram_professional" : "facebook_page"));
+  const draft = { target_id: target.id, format, caption: format === "instagram_story" ? "" : "香港品牌 · " + randomUUID(), sources };
+  const preview = ok(await call(f.owner, "POST", f.base + "/previews", draft));
+  const operation = ok(await call(f.owner, "POST", f.base + "/operations", { preview_id: preview.preview_id, payload_sha256: preview.payload_sha256 }));
+  return { draft, preview, operation };
+}
+async function confirm(f: Fixture, operation: any, key = randomUUID()) {
+  return call(f.owner, "POST", f.base + "/operations/" + operation.id + "/decision", {
+    expected_version: operation.version, payload_sha256: operation.payload_sha256, decision: "confirm", acknowledge_publication: true,
+  }, key);
+}
+async function drain(f: Fixture, id: string) {
+  for (let index = 0; index < 40; index++) {
+    const detail = ok(await call(f.owner, "GET", f.base + "/operations/" + id));
+    if (["succeeded", "failed", "unknown", "cancelled", "expired", "closed_unknown"].includes(detail.state)) return detail;
+    await advancePublications(s.db, s.storage, { limit: 1, pollIntervalMs: 0 });
+  }
+  throw new Error("Publishing did not finish within the bounded provider steps");
+}
+
+for (const format of publicationFormats) test(`native SQL and actual media: ${format} requires exact confirmation then publishes once`, async () => {
+  const f = await fixture(), p = await proposed(f, format);
+  await advancePublications(s.db, s.storage, { limit: 2, pollIntervalMs: 0 }); assert.equal(s.publicationFixture!.calls.length, 0);
+  assert.equal(p.operation.state, "awaiting_confirmation");
+  const key = randomUUID(), first = ok(await confirm(f, p.operation, key)); assert.equal(first.state, "queued");
+  assert.deepEqual(ok(await confirm(f, p.operation, key)), first);
+  const result = await drain(f, p.operation.id); assert.equal(result.state, "succeeded", JSON.stringify(result));
+  const publicCalls = s.publicationFixture!.calls.filter(c => ["feed", "videos", "media_publish"].includes(c.edge));
+  assert.equal(publicCalls.length, 1); assert.ok(publicCalls[0].applied);
+  await advancePublications(s.db, s.storage, { limit: 2, pollIntervalMs: 0 }); assert.equal(s.publicationFixture!.calls.filter(c => ["feed", "videos", "media_publish"].includes(c.edge)).length, 1);
+  assert.ok(result.effects.some((effect: any) => effect.step_key === "publish" && effect.state === "applied"));
+  assert.equal(result.events.length, result.version);
+  const serialized = JSON.stringify(result); assert.ok(!serialized.includes("encrypted_secret")); assert.ok(!serialized.includes("objects/"));
+  if (format.startsWith("instagram_") && !["instagram_reel"].includes(format)) assert.ok(p.preview.sources.every((source: any) => source.mime === "image/jpeg"));
+});
+
+test("lost callback response recovers without another code exchange or connection", async () => {
+  const f = await fixture(), replay = await call(f.callbackOwner, "GET", f.callbackURL); assert.equal(replay.status, 302);
+  const items = ok(await call(f.owner, "GET", f.base + "/connections")).items; assert.equal(items.length, 1); assert.equal(items[0].id, f.connection.id);
+  const other = await user(); assert.equal((await call({ ...other, cookie: other.cookie + "; " + f.callbackOwner.cookie }, "GET", f.callbackURL)).status, 409);
+});
+
+test("wrong content hash and cross-tenant author cannot confirm or inspect a private draft", async () => {
+  const f = await fixture(), p = await proposed(f), other = await user();
+  const wrong = await call(f.owner, "POST", f.base + "/operations/" + p.operation.id + "/decision", {
+    expected_version: p.operation.version, payload_sha256: "0".repeat(64), decision: "confirm", acknowledge_publication: true });
+  assert.equal(wrong.status, 409);
+  const foreign = await call(other, "GET", f.base + "/operations/" + p.operation.id);
+  assert.equal(foreign.status, 404); assert.equal(foreign.data.error.code, "NOT_FOUND");
+  assert.ok(!JSON.stringify(foreign.data).includes(p.draft.caption));
+  assert.equal(s.publicationFixture!.calls.length, 0);
+});
+
+test("duplicate proposal and daily allowance are serialized before provider effects", async () => {
+  const f = await fixture(), p = await proposed(f);
+  const again = await call(f.owner, "POST", f.base + "/operations", { preview_id: p.preview.preview_id, payload_sha256: p.preview.payload_sha256 });
+  assert.equal(again.status, 409); assert.equal(again.data.error.code, "PUBLICATION_DUPLICATE");
+  const target = f.connection.targets.find((target: any) => target.kind === "facebook_page"), current = ok(await call(f.owner, "GET", f.base + "/policy?target_id=" + target.id)).policy;
+  ok(await call(f.owner, "PUT", f.base + "/policy/" + target.id, { expected_version: current.version,
+    policy: { ...current.policy, maximum_daily_publications: 1 } }));
+  assert.equal((await confirm(f, p.operation)).status, 409);
+  const a = await proposed(f), b = await proposed(f);
+  const results = await Promise.all([confirm(f, a.operation), confirm(f, b.operation)]);
+  assert.deepEqual(results.map(r => r.status).sort(), [200, 409]); assert.equal(s.publicationFixture!.calls.length, 0);
+  const queued = results.find(r => r.status === 200)!.data; assert.equal((await drain(f, queued.id)).state, "succeeded");
+});
+
+test("connection withdrawal fences a queued publication and permits local cancellation", async () => {
+  const f = await fixture(), p = await proposed(f); ok(await confirm(f, p.operation));
+  ok(await call(f.owner, "POST", f.base + "/connections/" + f.connection.id + "/disconnect", { expected_version: f.connection.version }));
+  const result = await drain(f, p.operation.id); assert.equal(result.state, "failed"); assert.equal(s.publicationFixture!.calls.length, 0);
+  const second = await fixture(), pending = await proposed(second);
+  ok(await call(second.owner, "POST", second.base + "/connections/" + second.connection.id + "/disconnect", { expected_version: second.connection.version }));
+  const cancelled = ok(await call(second.owner, "POST", second.base + "/operations/" + pending.operation.id + "/cancel", { expected_version: pending.operation.version }));
+  assert.equal(cancelled.state, "cancelled");
+});
+
+test("applied but disconnected provider response becomes unknown and never repeats the write", async () => {
+  const f = await fixture(), p = await proposed(f); s.publicationFixture!.setFaults("feed", ["apply_then_disconnect"]);
+  ok(await confirm(f, p.operation)); const result = await drain(f, p.operation.id); assert.equal(result.state, "unknown");
+  assert.equal(s.publicationFixture!.calls.length, 1); assert.ok(s.publicationFixture!.calls[0].applied);
+  for (let index = 0; index < 3; index++) await advancePublications(s.db, s.storage);
+  assert.equal(s.publicationFixture!.calls.length, 1);
+  assert.equal((await call(f.owner, "POST", f.base + "/operations/" + result.id + "/cancel", { expected_version: result.version })).status, 409);
+});
+
+test("database rejects frozen draft edits, counterfeit success and direct application-table access", async () => {
+  const f = await fixture(), p = await proposed(f);
+  await assert.rejects(s.db.control.query("UPDATE publication_operations SET specification=jsonb_set(specification,'{draft,caption}','\"changed\"'),version=version+1 WHERE id=$1", [p.operation.id]), (error: any) => error.code === "23514");
+  await assert.rejects(s.db.control.query("UPDATE publication_operations SET state='succeeded',version=version+1 WHERE id=$1", [p.operation.id]), (error: any) => error.code === "23514");
+  await assert.rejects(s.db.app.query("SELECT * FROM publication_operations"), (error: any) => error.code === "42501");
+});
+
+test("lost Instagram publish response is proven only by its original published container", async () => {
+  const f = await fixture(), p = await proposed(f, "instagram_photo");
+  s.publicationFixture!.setFaults("media_publish", ["apply_then_disconnect"]);
+  ok(await confirm(f, p.operation));
+  const unknown = await drain(f, p.operation.id); assert.equal(unknown.state, "unknown");
+  const writes = s.publicationFixture!.calls.length;
+  const observed = ok(await call(f.owner, "POST", f.base + `/operations/${unknown.id}/observe`, { expected_version: unknown.version }));
+  assert.equal(observed.state, "succeeded"); assert.equal(observed.observation.attribution, "bound_container_status");
+  await advancePublications(s.db, s.storage); assert.equal(s.publicationFixture!.calls.length, writes);
+  assert.equal((await s.db.control.query("SELECT state FROM publication_effects WHERE operation_id=$1 AND step_key='publish'", [unknown.id])).rows[0].state, "applied");
+});
+
+test("an unrelated pasted remote ID never proves a lost Facebook post; closure and replacement require exact risk acknowledgement", async () => {
+  const f = await fixture(), p = await proposed(f); s.publicationFixture!.setFaults("feed", ["apply_then_disconnect"]);
+  ok(await confirm(f, p.operation)); const unknown = await drain(f, p.operation.id); assert.equal(unknown.state, "unknown");
+  const remote = [...s.publicationFixture!.objects.keys()][0]; assert.ok(remote);
+  const observed = ok(await call(f.owner, "POST", f.base + `/operations/${unknown.id}/observe`, { expected_version: unknown.version, remote_id: remote }));
+  assert.equal(observed.state, "unknown"); assert.equal(observed.observation.attribution, "not_proven");
+  const close = { expected_version: observed.version, observation_sha256: observed.observation.sha256,
+    reason: "Reviewed the account; attribution remains unknown", acknowledge_unknown_attribution: true };
+  assert.equal((await call(f.owner, "POST", f.base + `/operations/${unknown.id}/close-unknown`, { ...close, observation_sha256: "0".repeat(64) })).status, 409);
+  assert.equal(ok(await call(f.owner, "POST", f.base + `/operations/${unknown.id}/close-unknown`, close)).state, "closed_unknown");
+  const preview = ok(await call(f.owner, "POST", f.base + "/previews", p.draft)); assert.deepEqual(preview.previous_unknown_ids, [unknown.id]);
+  const replacement = ok(await call(f.owner, "POST", f.base + "/operations", { preview_id: preview.preview_id, payload_sha256: preview.payload_sha256 }));
+  assert.equal((await confirm(f, replacement)).status, 409);
+  ok(await call(f.owner, "POST", f.base + `/operations/${replacement.id}/decision`, { expected_version: replacement.version,
+    payload_sha256: replacement.payload_sha256, decision: "confirm", acknowledge_publication: true, acknowledge_previous_unknown: true }));
+  assert.equal((await drain(f, replacement.id)).state, "succeeded");
+  assert.equal(s.publicationFixture!.calls.filter(c => c.edge === "feed").length, 2);
+});
+
+test("disconnect does not prevent a project manager from disabling its publishing policy", async () => {
+  const f = await fixture(), target = f.connection.targets[0];
+  const old = ok(await call(f.owner, "GET", f.base + "/policy?target_id=" + target.id)).policy;
+  ok(await call(f.owner, "POST", f.base + `/connections/${f.connection.id}/disconnect`, { expected_version: f.connection.version }));
+  const result = ok(await call(f.owner, "PUT", f.base + "/policy/" + target.id, { expected_version: old.version, policy: { ...old.policy, enabled: false } }));
+  assert.equal(result.policy.enabled, false); assert.equal(result.version, old.version + 1);
+});
+
+test("derived JPEG capacity is charged once and stays charged until physical deletion succeeds", async () => {
+  const f = await fixture(), p = await proposed(f, "instagram_photo");
+  const state = async () => (await s.db.control.query("SELECT tenant_resource_state($1) AS value", [f.tenant])).rows[0].value;
+  const original = (await s.db.control.query("SELECT tenant_resource_state_before_publications($1) AS value", [f.tenant])).rows[0].value;
+  const expected = BigInt(original.storage.used_bytes) + BigInt(p.preview.sources[0].bytes);
+  assert.equal(BigInt((await state()).storage.used_bytes), expected);
+  await assert.rejects(s.db.tx(tx => tx.query("SELECT assert_tenant_storage_capacity($1,$2)", [f.tenant, original.storage.remaining_bytes]), f.tenant, true, f.owner.id), /PLAN_STORAGE_LIMIT/);
+  const rendition = (await s.db.control.query("SELECT rendition_key FROM publication_sources WHERE operation_id=$1", [p.operation.id])).rows[0].rendition_key;
+  await s.db.control.query("UPDATE assets SET state='deleted' WHERE id=$1", [p.draft.sources[0].asset_id]);
+  const remove = s.storage.remove.bind(s.storage);
+  s.storage.remove = async key => { if (key === rendition) throw Object.assign(new Error("Synthetic busy object"), { code: "EBUSY" }); await remove(key); };
+  try { await new ErasureService(s.db, s.storage).advance(10); } finally { s.storage.remove = remove; }
+  const detail = ok(await call(f.owner, "GET", f.base + `/operations/${p.operation.id}`));
+  assert.equal(detail.can_view_content, false); assert.equal(detail.content, null); assert.equal(detail.state, "cancelled");
+  assert.equal(BigInt((await state()).storage.used_bytes), BigInt(p.preview.sources[0].bytes));
+  assert.equal((await s.db.control.query("SELECT erased_at FROM publication_retired_objects WHERE storage_key=$1", [rendition])).rows[0].erased_at, null);
+  await s.db.control.query("UPDATE deletion_jobs SET next_attempt_at=clock_timestamp() WHERE target_id=$1", [p.draft.sources[0].asset_id]);
+  await new ErasureService(s.db, s.storage).advance(10);
+  assert.equal((await state()).storage.used_bytes, "0"); await assert.rejects(s.storage.get(rendition), (error: any) => error.code === "ENOENT");
+});
+
+test("private previews and public provider grants serve exact byte ranges and revoke with account authority", async () => {
+  const f = await fixture(), p = await proposed(f, "instagram_photo");
+  const privateImage = await call(f.owner, "GET", f.base + `/previews/${p.preview.preview_id}/media/0`);
+  assert.equal(privateImage.status, 200); assert.equal(privateImage.raw.rawPayload.length, p.preview.sources[0].bytes);
+  const info = ok(await call(f.owner, "GET", f.base + `/previews/${p.preview.preview_id}/media/0/info`));
+  assert.equal(info.sha256, p.preview.sources[0].sha256); assert.equal(info.bytes, p.preview.sources[0].bytes);
+  ok(await confirm(f, p.operation)); await advancePublications(s.db, s.storage, { limit: 1, pollIntervalMs: 0 });
+  const grant = (await s.db.control.query("SELECT * FROM publication_media_grants WHERE operation_id=$1", [p.operation.id])).rows[0];
+  assert.ok(grant); const url = "/v1/publication-media/" + unseal(s.db.config.MASTER_KEY!, grant.encrypted_token);
+  const range = await s.app.inject({ method: "GET", url, headers: { range: "bytes=0-9" } });
+  assert.equal(range.statusCode, 206); assert.equal(range.rawPayload.length, 10);
+  assert.equal(range.headers["content-range"], `bytes 0-9/${p.preview.sources[0].bytes}`);
+  const head = await s.app.inject({ method: "HEAD", url }); assert.equal(head.statusCode, 200); assert.equal(head.rawPayload.length, 0);
+  assert.equal((await s.app.inject({ method: "GET", url, headers: { range: "bytes=999999999-" } })).statusCode, 416);
+  ok(await call(f.owner, "POST", f.base + `/connections/${f.connection.id}/disconnect`, { expected_version: f.connection.version }));
+  assert.ok([403, 404, 409].includes((await s.app.inject({ method: "GET", url })).statusCode));
+  assert.equal((await drain(f, p.operation.id)).state, "failed");
+});
+
+test("a provider receipt survives a failed database commit and recovers without resending", async () => {
+  const f = await fixture(), p = await proposed(f); ok(await confirm(f, p.operation));
+  const tx = s.db.tx.bind(s.db); let failed = false;
+  s.db.tx = (async (fn: any, ...args: any[]) => {
+    if (!failed && fn.toString().includes("INSERT INTO publication_receipts")) { failed = true; throw new Error("Synthetic receipt commit outage"); }
+    return (tx as any)(fn, ...args);
+  }) as typeof s.db.tx;
+  try { await advancePublications(s.db, s.storage, { limit: 1 }); } finally { s.db.tx = tx; }
+  assert.equal(failed, true); assert.equal(s.publicationFixture!.calls.length, 1);
+  const directory = path.join(s.db.config.DATA_DIR, "publication-receipts");
+  assert.ok((await readdir(directory)).some(name => name.endsWith(".sealed")));
+  assert.equal(await recoverPublicationReceipts(s.db), 1);
+  assert.equal(ok(await call(f.owner, "GET", f.base + `/operations/${p.operation.id}`)).state, "succeeded");
+  await advancePublications(s.db, s.storage); assert.equal(s.publicationFixture!.calls.length, 1);
+});
+
+async function operator(tenant: string, role = "super_admin"): Promise<Client> {
+  const email = `publishing-admin-${randomUUID()}@example.invalid`, secret = new OTPAuth.Secret({ size: 20 });
+  const principal = (await s.db.control.query("INSERT INTO admin_principals(email,name,totp_secret) VALUES($1,$2,$3) RETURNING id",
+    [email, role, seal(s.db.config.MASTER_KEY!, secret.base32)])).rows[0];
+  await s.db.control.query("INSERT INTO admin_bindings(principal_id,role_key,scope_kind,scope_id) VALUES($1,$2,'tenant',$3)", [principal.id, role, tenant]);
+  const challenge = ok(await call(undefined, "POST", "/v1/admin/auth/challenge", { email }));
+  const mail = JSON.parse(await readFile(path.join(s.db.config.DATA_DIR, "mailbox", challenge.challenge_id + ".json"), "utf8"));
+  const result = await call(undefined, "POST", "/v1/admin/auth/verify", { challenge_id: challenge.challenge_id,
+    code: mail.text.match(/\b\d{6}\b/)[0], totp: new OTPAuth.TOTP({ secret, digits: 6, period: 30, algorithm: "SHA1" }).generate() });
+  const data = ok(result), cookie = result.raw.cookies.find(c => c.name === "cp_admin_session")!;
+  return { id: principal.id, csrf: data.csrf_token, cookie: cookie.name + "=" + cookie.value, ip: `127.0.3.${++serial}` };
+}
+
+test("Admin publication metadata, private body, scope deny and recent MFA are independent controls", async () => {
+  const f = await fixture(), p = await proposed(f), admin = await operator(f.tenant);
+  const root = `/v1/admin/tenants/${f.tenant}/projects/${f.project}/publications`;
+  const metadata = ok(await call(admin, "GET", root + `/operations/${p.operation.id}`)); assert.equal(metadata.content, null);
+  assert.equal(ok(await call(admin, "GET", root + `/operations/${p.operation.id}?include_content=true`)).content.draft.caption, p.draft.caption);
+  const role = "publication-reader-" + randomUUID();
+  await s.db.control.query("INSERT INTO admin_roles(key,name,permissions) VALUES($1,$1,$2)", [role, JSON.stringify(["admin.publication.read"])]);
+  const reader = await operator(f.tenant, role);
+  assert.equal((await call(reader, "GET", root + `/operations/${p.operation.id}`)).status, 200);
+  assert.equal((await call(reader, "GET", root + `/operations/${p.operation.id}?include_content=true`)).status, 403);
+  assert.equal((await call(admin, "POST", root + `/operations/${p.operation.id}/decision`, { decision: "confirm" })).status, 404);
+  await s.db.control.query("INSERT INTO admin_bindings(principal_id,role_key,scope_kind,scope_id,effect) VALUES($1,'super_admin','project',$2,'deny')", [admin.id, f.project]);
+  assert.equal(ok(await call(admin, "GET", "/v1/admin/publications/operations")).items.length, 0);
+  assert.equal((await call(admin, "GET", root + `/operations/${p.operation.id}`)).status, 403);
+  await s.db.control.query("UPDATE sessions SET mfa_at=clock_timestamp()-interval '11 minutes' WHERE admin_id=$1", [reader.id]);
+  const denied = await call(reader, "GET", "/v1/admin/publications/operations"); assert.equal(denied.status, 403); assert.equal(denied.data.error.code, "MFA_REQUIRED");
+});
+
+test("restoring a snapshot fences even queued publications and invalidates provider credentials", async () => {
+  const f = await fixture(), p = await proposed(f); ok(await confirm(f, p.operation));
+  await s.db.tx(tx => fenceRestoredPublications(tx), undefined, true);
+  const detail = ok(await call(f.owner, "GET", f.base + `/operations/${p.operation.id}`));
+  assert.equal(detail.state, "unknown"); assert.equal(detail.error_code, "PUBLICATION_RECOVERY_REVIEW_REQUIRED");
+  assert.equal((await s.db.control.query("SELECT state FROM publication_connections WHERE id=$1", [f.connection.id])).rows[0].state, "reauth_required");
+  await advancePublications(s.db, s.storage); assert.equal(s.publicationFixture!.calls.length, 0);
+});
+
+test("concurrent preview creation has a database-enforced bounded allowance", async () => {
+  const f = await fixture(), target = f.connection.targets.find((t: any) => t.kind === "facebook_page");
+  const replies = await Promise.all(Array.from({ length: 23 }, () => call(f.owner, "POST", f.base + "/previews",
+    { target_id: target.id, format: "facebook_post", caption: "Preview capacity " + randomUUID() })));
+  assert.equal(replies.filter(r => r.status === 200).length, 20);
+  assert.ok(replies.filter(r => r.status !== 200).every(r => r.status === 409 && r.data.error.code === "PUBLICATION_PREVIEW_LIMIT"));
+  assert.equal(s.publicationFixture!.calls.length, 0);
+});
+
+test("publishing tools belong to an explicit new role version; ask and plan cannot prepare or allocate media", async () => {
+  const role = s.catalog.role("social-content"), old = s.catalog.historicalRoles.find(r => r.role_key === "social-content" && r.version === "1.0.0");
+  assert.equal(role.version, "1.1.0"); assert.ok(old); assert.ok(!old.tool_ids.includes("publication.prepare"));
+  const f = await fixture(), actor = { ...f.owner, name: "Owner", email: "owner@example.invalid", audience: "user" as const, authVersion: 1, sessionId: "", sessionHash: "" };
+  const tools = new TaskBusinessTools(s.db, s.catalog, s.storage, { authorize: async () => {}, inference: async () => { throw new Error("No inference in descriptor test"); } });
+  const names = (r: any, mode: string) => tools.build({ id: randomUUID(), tenant_id: f.tenant, project_id: f.project,
+    role_key: r.role_key, mode, execution_location: "cloud", input_context: {} }, actor, randomUUID(), r).map(t => t.name);
+  const publishing = names(role, "execute").filter(name => name.startsWith("publication_"));
+  assert.deepEqual(publishing.sort(), ["publication_accounts", "publication_prepare", "publication_preview", "publication_status"]);
+  assert.deepEqual(names(old, "execute").filter(name => name.startsWith("publication_")), []);
+  for (const mode of ["ask", "plan"]) assert.deepEqual(names(role, mode).filter(name => name.startsWith("publication_")), ["publication_accounts", "publication_status"]);
+});
+
+test("an explicit expired-token response disables the exact publishing connection and prevents a second dispatch", async () => {
+  const f = await fixture(), p = await proposed(f);
+  s.publicationFixture!.setFaults("feed", ["authorization_expired"]);
+  ok(await confirm(f, p.operation));
+  const detail = await drain(f, p.operation.id);
+  assert.equal(detail.state, "failed"); assert.equal(detail.error_code, "PUBLICATION_AUTH_EXPIRED");
+  const connection = ok(await call(f.owner, "GET", f.base + "/connections")).items[0];
+  assert.equal(connection.state, "reauth_required"); assert.ok(connection.targets.every((t: any) => !t.enabled));
+  assert.equal((await s.db.control.query("SELECT encrypted_secret FROM publication_connections WHERE id=$1", [connection.id])).rows[0].encrypted_secret, null);
+  assert.equal((await call(f.owner, "POST", f.base + "/previews", p.draft)).status, 409);
+  await advancePublications(s.db, s.storage); assert.equal(s.publicationFixture!.calls.length, 1);
+});
+
+test("expired browser authorization secrets are erased without erasing a live attempt", async () => {
+  const f = await fixture();
+  const expired = ok(await call(f.owner, "POST", f.base + "/connections/authorize", { project_id: f.project }));
+  const live = ok(await call(f.owner, "POST", f.base + "/connections/authorize", { project_id: f.project }));
+  await s.db.control.query("UPDATE publication_oauth_states SET expires_at=clock_timestamp()-interval '1 second' WHERE id=$1", [expired.state_id]);
+  await s.db.tx(tx => expirePublicationContent(tx), undefined, true);
+  const rows = (await s.db.control.query("SELECT id,encrypted_state,encrypted_cookie FROM publication_oauth_states WHERE id=ANY($1::uuid[])", [[expired.state_id, live.state_id]])).rows;
+  const removed = rows.find(r => r.id === expired.state_id), retained = rows.find(r => r.id === live.state_id);
+  assert.equal(removed.encrypted_state, ""); assert.equal(removed.encrypted_cookie, "");
+  assert.ok(retained.encrypted_state.length > 0 && retained.encrypted_cookie.length > 0);
+});
