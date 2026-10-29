@@ -1,9 +1,9 @@
 # Workmate · CopyPaste Enterprise Agent
 
 <!-- open-work-review-stage125 -->
-当前未完成项核查：89条必需需求尚未完成整体验收（77条部分验证、12条未证完成），另有12条未确认扩展建议和1条可选功能。阶段125外部发布后端仍在工作分支，首轮原生集成0/14通过，修复尚未复验；三端及Admin界面未接入。本次为检查文档更新，已发布产品仍保持阶段124范围。
+当前未完成项核查v2：89条必需需求尚未完成整体验收（77条部分验证、12条未证完成），另有12条未确认扩展建议和1条可选功能。阶段125后端最新107项回归21通过、86项被同一个角色版本启动校验阻断；三端及Admin发布界面未接入，产品源码仍在未提交工作分支。历史01/02及协议04记录保留原范围。本次为检查文档更新，已发布组件保持阶段124。
 
-[全部102条编号表](quality/remaining-work-current-review-125.md) · [结构化清单](quality/remaining-work-current-review-125.json) · [本次更新](changes/remaining-work-review-stage125.md)
+[全部102条编号表](quality/remaining-work-current-review-125-v2.md) · [结构化清单](quality/remaining-work-current-review-125-v2.json) · [本次更新](changes/remaining-work-review-stage125-v2.md) · [原核查保留](quality/remaining-work-current-review-125.md)
 
 <!-- admin-profile-revisions-stage124 -->
 当前阶段124补齐专家、品牌及记忆管理员修订：68/68相关后端、11/11后台单元、8/8实际页面和14次四档布局观察通过，保留8PNG和3组GIF/MP4。原失败、原源码及旧阶段证据不覆盖。当前发布入口V7，远端状态以执行回执及SHA读取为准。
