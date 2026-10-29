@@ -2,6 +2,30 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- local-startup-stage127 -->
+## Source-bound local startup and delivery · Stage127
+
+Desktop adds main/child authority renewal during startup, a preparation-close barrier, interruptible native startup requests and readable bilingual feedback. Codex remains customer-local and billing retains the original task. Bounded qualification covers 73 related controller, 38 actual pinned-native and five packaged-window checks, bound to exact source/package bytes in the checkpoint. SQL, processes and windows are real; model responses and native-dialog decisions are synthetic.
+
+The journey signs in through browser OTP/PKCE, creates a workspace, chooses a folder and explicitly grants access, waits for startup, checks original completion/billing, then withdraws during another startup without admitting a model request. Actual 1000/1240/1440 windows remain frameless, menu-free and free of visible scroll rails/horizontal overflow. Desktop delivers the actual PNG/GIF/MP4 captures.
+
+```mermaid
+flowchart LR
+  Sources[Exact source and pinned Codex] --> Logic[Controller and native checks]
+  Logic --> Package[Actual unsigned Electron and native SQL]
+  Package --> Evidence[Original logs, screenshots and GIF]
+  Evidence --> Git[Six repositories and central documentation]
+  Git --> Publish[Ordinary atomic eight-ref push and SHA readback]
+```
+
+The current entry is `node scripts/publish-workmate-v10.mjs --push`; `--check` verifies only. V10 checks source, actual committed Git content, bilingual guides, real media, original failures and all historical proofs before an ordinary atomic eight-ref update and SHA readback. Only the final receipt establishes publication; no force push. Earlier results retain their original source scope.
+
+All executed `run-desktop-startup-v1/v2/v3.mjs` and QA scripts remain unchanged. Attempt01 chose the native default decline and stopped at authorization. Attempt02 reused that package and passed, but its capture revealed an internal error code. After correcting bilingual feedback, attempt03 binds new sources, repeats controller/native checks and builds a fresh package. Failed/cancelled records, cleanup receipts and older captures remain preserved. Stage verifiers depend on the recorded adjacent candidate paths, pinned resources and isolated database; use the normal setup instructions for another checkout. Reclaim owned windows, processes and native PostgreSQL. No Docker/WSL.
+
+Automatic Desktop startup recovery, signed installation, complete professional roles and all 89 required full-acceptance records remain open. Recovery must revoke/drain old authority and atomically prove zero admission; zero charge is insufficient.
+
+[Behavior](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/127-desktop-startup-lifecycle.md) · [Checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/local-startup-checkpoint-127.json) · [Changes and open work](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/127-desktop-startup-lifecycle.md) · [Actual captures](https://github.com/copypasteltd/workmate/blob/desktop/README.en.md)
+
 <!-- native-publishing-stage126 -->
 ## Native Codex publication tools and delivery · Stage126
 
@@ -147,7 +171,7 @@ Open Web `http://localhost:4317` and Admin `http://localhost:4318`; API is `4310
 
 ## Configuration and authority
 
-The candidate requires the complete additive SQL001–129 history. API/worker schema admission rejects missing, changed or unsupported versions; recovery identity is fenced independently. Company model aliases, verified media capabilities, exact tariffs and provider secrets live on the backend. Unconfigured capabilities remain unavailable. Current development uses explicitly authorized synthetic data.
+The candidate requires the complete additive SQL001–132 history. API/worker schema admission rejects missing, changed or unsupported versions; recovery identity is fenced independently. Company model aliases, verified media capabilities, exact tariffs and provider secrets live on the backend. Unconfigured capabilities remain unavailable. Current development uses explicitly authorized synthetic data.
 
 Web/Admin use `VITE_API_BASE` or their same-origin proxy; default development ports are 4317/4318. Desktop/Extension compile fixed `COPYPASTE_API_ORIGIN` and `COPYPASTE_WEB_ORIGIN` values; Desktop also pins `COPYPASTE_EXTENSION_ID`. HTTPS is required outside the allowed loopback-development case. No renderer or extension receives company provider secrets.
 

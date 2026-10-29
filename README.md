@@ -2,6 +2,30 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- local-startup-stage127 -->
+## 本机启动的源码、打包与交付 · 阶段127
+
+Desktop补齐主任务/子任务启动期间授权续租、准备阶段关闭屏障、待响应原生请求的撤权及清楚的双语提示。执行仍在客户本机，原任务和原费用不变。当前限定检查为控制层73项、真实固定Codex38项和实际打包窗口5项，最终结果绑定检查点中的确切源码和包。实际SQL、进程及窗口均运行；模型回答和原生对话框选择为测试数据。
+
+先浏览器OTP/PKCE登录并创建工作区，再选择目录及明确本机授权；等待启动、查看原任务完成及费用，另验证启动中撤权无新模型调用。窗口实测1000/1240/1440宽度无边框、无默认菜单、无可见滚动条或横向溢出。实拍截图、GIF和MP4随Desktop仓库交付。
+
+```mermaid
+flowchart LR
+  Sources[确切源码与固定Codex] --> Logic[控制层与真实原生检查]
+  Logic --> Package[实际未签名Electron与原生SQL]
+  Package --> Evidence[原始日志、截图及GIF]
+  Evidence --> Git[六个独立仓库与中央文档]
+  Git --> Publish[普通原子推送八引用并回读SHA]
+```
+
+`node scripts/publish-workmate-v10.mjs --push`为当前发布入口；`--check`只核查。V10检查源码、已提交Git内容、双语说明、真实媒体、原始失败及全部历史证明，再普通原子更新八个映射分支并读取最终SHA。以最终回执为准，不强推。阶段126及更早结果保留原源码范围。
+
+`run-desktop-startup-v1/v2/v3.mjs`与对应QA脚本均保留执行时原文。01因测试选择默认取消而停在授权，02复用相同包通过但实拍显示内部错误码；修改双语提示后，03重新绑定源码、重跑控制层/原生并构建新包。失败、取消、清理回执和旧媒体全部保留。阶段脚本依赖记录的相邻候选目录、固定资源及隔离数据库，不能当成任意检出的通用启动命令。所有自建窗口、进程与原生PostgreSQL必须收尾；禁止Docker/WSL。
+
+Desktop自动启动恢复、签名安装、完整专业角色与89条必需整体验收仍开放。后续恢复必须先撤销并等待旧请求退出，再原子证明零准入，不能凭零费用直接重试。
+
+[方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/127-desktop-startup-lifecycle.md) · [检查点](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/local-startup-checkpoint-127.json) · [本轮变更与待办](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/127-desktop-startup-lifecycle.md) · [实际截图与GIF](https://github.com/copypasteltd/workmate/blob/desktop/README.md)
+
 <!-- native-publishing-stage126 -->
 ## 原生 Codex 发布工具与交付 · 阶段126
 
@@ -147,7 +171,7 @@ Web 为 `http://localhost:4317`，Admin 为 `http://localhost:4318`；API 端口
 
 ## 配置、权限与费用
 
-本候选要求完整 SQL001–129 增量历史。API/Worker 准入拒绝缺失、变更或不支持的版本，并独立检查恢复环境身份。公司模型别名、已验证媒体能力、精确费率及供应商密钥只在后端配置；未配置能力保持不可用。当前开发继续使用已授权假数据。
+本候选要求完整 SQL001–132 增量历史。API/Worker 准入拒绝缺失、变更或不支持的版本，并独立检查恢复环境身份。公司模型别名、已验证媒体能力、精确费率及供应商密钥只在后端配置；未配置能力保持不可用。当前开发继续使用已授权假数据。
 
 Web/Admin 使用 `VITE_API_BASE` 或同源代理，开发端口为 4317/4318。Desktop/Extension 构建时固定 `COPYPASTE_API_ORIGIN`、`COPYPASTE_WEB_ORIGIN`，Desktop 另固定 `COPYPASTE_EXTENSION_ID`。除获准回环开发场景外使用 HTTPS；渲染器与扩展不持有公司供应商密钥。
 
