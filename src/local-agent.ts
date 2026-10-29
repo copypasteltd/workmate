@@ -31,6 +31,11 @@ import {
   LocalProgramError,
   type LocalProgramSession,
 } from "./program-contract.js";
+import {
+  LocalStartupCoordinator,
+  LocalStartupRecoveryPending,
+  type LocalStartupJournal,
+} from "./local-startup.js";
 
 export interface LocalAgentScope {
   tenant: string;
@@ -53,12 +58,14 @@ interface Operation {
   geo?: { experimentId: string; request: Record<string, any> };
   phase: "accepting" | "starting" | "native_running" | "settling" | "uncertain";
   stopped?: boolean;
+  startup?: LocalStartupJournal;
   workflowRunId?: string;
   workflow?: {
     runId: string;
     cursor: number;
     taskId: string;
     phase: "prepared" | "native_running" | "settling" | "finished";
+    startup?: LocalStartupJournal;
     report?: Operation["report"];
   };
   report?: {
@@ -976,6 +983,31 @@ export class LocalAgentController {
             ? "cancelled"
             : "failed";
   }
+  private localStartup(
+    r: LocalRecord,
+    checkpoint: { startup?: LocalStartupJournal },
+    taskId: string,
+    taskURL: string,
+    fields: Record<string, unknown>,
+    signal: AbortSignal,
+    assertOwner: () => Promise<void>,
+    authorize: () => Promise<void>,
+    stopHeartbeat: () => Promise<void>,
+    startHeartbeat: () => void,
+  ) {
+    return new LocalStartupCoordinator({
+      checkpoint, taskId, fields, signal, assertOwner, authorize, stopHeartbeat, startHeartbeat,
+      persist: () => this.persist(),
+      request: (suffix, body, requestKey) => this.io.request(taskURL + suffix, {
+        method: "POST", tenantId: r.tenant, body, idempotencyKey: requestKey, signal,
+      }),
+      event: async value => {
+        r.events.push({ kind: "local.runtime.startup_recovery", value: { ...value, task_id: taskId } });
+        if (r.events.length > 500) r.events.shift();
+        await this.persist();
+      },
+    });
+  }
   private async execute(r: LocalRecord, beforeNative?: () => Promise<void>) {
     if (this.closed) throw new LocalAgentError("LOCAL_APP_CLOSED");
     if (this.busy.has(r.id))
@@ -996,7 +1028,7 @@ export class LocalAgentController {
     let runtime: LocalAgentRuntime | undefined,
       heartbeat: ReturnType<typeof setInterval> | undefined,
       heartbeatRun: Promise<unknown> | undefined;
-    let admitted = false,
+    let admitted = !!op.startup,
       nativeAccepted = false,
       stoppingHeartbeat = false;
     const abort = new AbortController();
@@ -1160,13 +1192,35 @@ export class LocalAgentController {
           await settleReport();
           return this.view(r);
         }
-        const started = await this.api(
-          r,
-          taskURL + "/start",
-          "POST",
-          fields,
-          op.startKey,
+        const authorize = async () => {
+          await assertOwner();
+          const live = await this.api(r, taskURL + "/heartbeat", "POST", {});
+          await assertOwner();
+          if (live.cancel_requested || live.state !== "running" || live.status !== "running")
+            throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
+          r.lastTask = live;
+        };
+        const startHeartbeat = () => {
+          if (heartbeat) clearInterval(heartbeat);
+          stoppingHeartbeat = false;
+          heartbeat = setInterval(() => {
+            if (heartbeatRun || stoppingHeartbeat) return;
+            heartbeatRun = authorize()
+              .catch(() => {
+                abort.abort();
+                void runtime?.close().catch(() => {});
+              })
+              .finally(() => {
+                heartbeatRun = undefined;
+                this.io.changed();
+              });
+          }, 10000);
+        };
+        const startup = this.localStartup(
+          r, op, op.taskId!, taskURL, fields, abort.signal,
+          assertOwner, authorize, stopHeartbeat, startHeartbeat,
         );
+        let started = await startup.admission(op.startKey);
         admitted = true;
         await assertOwner();
         if (
@@ -1185,32 +1239,9 @@ export class LocalAgentController {
           prompt: undefined,
           company_tools: undefined,
         };
-        const authorize = async () => {
-          await assertOwner();
-          const live = await this.api(r, taskURL + "/heartbeat", "POST", {});
-          await assertOwner();
-          if (
-            live.cancel_requested ||
-            live.state !== "running" ||
-            live.status !== "running"
-          )
-            throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
-          r.lastTask = live;
-        };
         // The company lease already runs while the customer-local process is
         // validating its binary, initializing and opening its native thread.
-        heartbeat = setInterval(() => {
-          if (heartbeatRun || stoppingHeartbeat) return;
-          heartbeatRun = authorize()
-            .catch(() => {
-              abort.abort();
-              void runtime?.close().catch(() => {});
-            })
-            .finally(() => {
-              heartbeatRun = undefined;
-              this.io.changed();
-            });
-        }, 10000);
+        startHeartbeat();
         await beforeNative?.();
         await assertOwner();
         const profile: LocalCodexProfile = {
@@ -1222,6 +1253,7 @@ export class LocalAgentController {
           model: started.model,
           effort: started.effort,
         };
+        const native = await startup.start(started, started => {
         const browser =
           r.browserToolsVersion === 1
             ? this.createBrowser(r, active, op.taskId!, r.id, authorize)
@@ -1230,7 +1262,7 @@ export class LocalAgentController {
           r.programToolsVersion === 1
             ? this.createPrograms(r, active, op.taskId!, r.id, authorize)
             : undefined;
-        runtime = this.runtimeFactory(
+        const ownedRuntime = this.runtimeFactory(
           profile,
           {
             sessionId: r.id,
@@ -1295,6 +1327,7 @@ export class LocalAgentController {
                   call_id: call.callId,
                   thread_id: call.threadId,
                   turn_id: call.turnId,
+                  startup_fencing_token: started.startup.fencing_token,
                 },
               });
               await assertOwner();
@@ -1327,10 +1360,16 @@ export class LocalAgentController {
                   authorize,
                   request: async (url, body, requestKey) => {
                     await assertOwner();
+                    let payload = body;
+                    if (url === taskURL + "/tools") {
+                      if (!body || typeof body !== "object" || Array.isArray(body))
+                        throw new LocalCodexError("LOCAL_COMPANY_TOOL_INPUT_INVALID");
+                      payload = { ...body, startup_fencing_token: started.startup.fencing_token };
+                    }
                     const reply = await this.io.request(url, {
                       method: "POST",
                       tenantId: r.tenant,
-                      body,
+                      body: payload,
                       idempotencyKey: requestKey,
                       signal: workflowSignal,
                     });
@@ -1386,19 +1425,27 @@ export class LocalAgentController {
             },
           },
         );
-        active.runtime = runtime;
-        if (op.stopped || abort.signal.aborted)
-          throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
-        await runtime.start({
-          token: started.credential.token,
-          expiresAt: new Date(started.credential.expires_at).getTime(),
+        runtime = ownedRuntime;
+        active.runtime = ownedRuntime;
+        return {
+          runtime: ownedRuntime,
+          closeResources: async () => {
+            await browser?.close();
+            if (browser) active.browsers.delete(browser);
+            await programs?.close();
+            if (programs) active.programs.delete(programs);
+          },
+        };
         });
+        runtime = native.runtime;
+        started = native.receipt;
         await authorize();
         if (op.stopped || abort.signal.aborted)
           throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
         op.phase = "native_running";
         await this.persist();
         nativeAccepted = true;
+        await startup.admitTurn();
         const result: LocalTurnResult = await runtime.turn(
           started.role_instructions +
             "\n\nCustomer request:\n" +
@@ -1407,9 +1454,7 @@ export class LocalAgentController {
         );
         await stopHeartbeat();
         await runtime.close();
-        await browser?.close();
-        await programs?.close();
-        if (programs) active.programs.delete(programs);
+        await native.closeResources();
         op.report = {
           status: result.status,
           output: result.text.slice(0, 100000),
@@ -1428,10 +1473,10 @@ export class LocalAgentController {
           : error instanceof Error
             ? error.message
             : "LOCAL_EXECUTION_FAILED";
-      if (
+      if (!(error instanceof LocalStartupRecoveryPending && op.phase === "starting") && (
         op.phase === "native_running" ||
         (admitted && op.phase === "starting")
-      ) {
+      )) {
         r.uncertain ||= nativeAccepted;
         if (nativeAccepted) r.error = "LOCAL_EXECUTION_RECONCILIATION_REQUIRED";
         op.report = {
@@ -1604,6 +1649,21 @@ export class LocalAgentController {
       )
         throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
     };
+    const startHeartbeat = () => {
+      if (heartbeat) clearInterval(heartbeat);
+      stoppingHeartbeat = false;
+      heartbeat = setInterval(() => {
+        if (heartbeatRun || stoppingHeartbeat) return;
+        heartbeatRun = authorize()
+          .catch(() => {
+            active.abort.abort();
+            shutdownChild();
+          })
+          .finally(() => {
+            heartbeatRun = undefined;
+          });
+      }, 10000);
+    };
     const shutdownChild = () => {
       void runtime
         ?.interrupt()
@@ -1626,13 +1686,11 @@ export class LocalAgentController {
         throw new LocalAgentError("LOCAL_WORKFLOW_RECONCILIATION_REQUIRED");
     };
     try {
-      const started = await this.api(
-        r,
-        taskURL + "/start",
-        "POST",
-        fields,
-        hash("workflow-start:" + child.task_id),
+      const startup = this.localStartup(
+        r, checkpoint, child.task_id, taskURL, { ...fields }, signal,
+        assertOwner, authorize, stopHeartbeat, startHeartbeat,
       );
+      let started = await startup.admission(hash("workflow-start:" + child.task_id));
       admitted = true;
       await assertOwner();
       if (
@@ -1645,18 +1703,10 @@ export class LocalAgentController {
         throw new LocalAgentError("LOCAL_RUNTIME_UPDATE_REQUIRED");
       // Native startup shares the original 45-second lease with execution.
       // Keep both the parent and child authorization current before any turn.
-      heartbeat = setInterval(() => {
-        if (heartbeatRun || stoppingHeartbeat) return;
-        heartbeatRun = authorize()
-          .catch(() => {
-            active.abort.abort();
-            shutdownChild();
-          })
-          .finally(() => {
-            heartbeatRun = undefined;
-          });
-      }, 10000);
-      browser = this.io.browser
+      startHeartbeat();
+      signal.addEventListener("abort", shutdownChild, { once: true });
+      const native = await startup.start(started, started => {
+      const ownedBrowser = browser = this.io.browser
         ? this.createBrowser(
             r,
             active,
@@ -1665,7 +1715,7 @@ export class LocalAgentController {
             authorize,
           )
         : undefined;
-      programs =
+      const ownedPrograms = programs =
         r.programToolsVersion === 1
           ? this.createPrograms(
               r,
@@ -1675,7 +1725,7 @@ export class LocalAgentController {
               authorize,
             )
           : undefined;
-      runtime = this.runtimeFactory(
+      const ownedRuntime = this.runtimeFactory(
         {
           executable: this.io.executable,
           version: this.io.runtime.version,
@@ -1695,28 +1745,28 @@ export class LocalAgentController {
           grant: { ...this.grant(r) },
           skills: started.skills,
           companyTools: started.company_tools ?? [],
-          ...(browser ? { browserToolsVersion: 1 as const } : {}),
-          ...(programs ? { programToolsVersion: 1 as const } : {}),
+          ...(ownedBrowser ? { browserToolsVersion: 1 as const } : {}),
+          ...(ownedPrograms ? { programToolsVersion: 1 as const } : {}),
         },
         {
           authorize,
           approval: (kind, value) => this.io.approval(kind, value),
-          ...(browser
+          ...(ownedBrowser
             ? {
                 browserTool: (
                   call: Parameters<LocalBrowserSession["call"]>[0],
                   inputSignal: AbortSignal,
                 ) =>
-                  browser!.call(call, AbortSignal.any([inputSignal, signal])),
+                  ownedBrowser!.call(call, AbortSignal.any([inputSignal, signal])),
               }
             : {}),
-          ...(programs
+          ...(ownedPrograms
             ? {
                 programTool: (
                   call: Parameters<LocalProgramSession["call"]>[0],
                   inputSignal: AbortSignal,
                 ) =>
-                  programs!.call(call, AbortSignal.any([inputSignal, signal])),
+                  ownedPrograms!.call(call, AbortSignal.any([inputSignal, signal])),
               }
             : {}),
           userInput: (request, inputSignal) =>
@@ -1742,6 +1792,7 @@ export class LocalAgentController {
                 call_id: call.callId,
                 thread_id: call.threadId,
                 turn_id: call.turnId,
+                startup_fencing_token: started.startup.fencing_token,
               },
             });
             await assertOwner();
@@ -1775,18 +1826,28 @@ export class LocalAgentController {
           },
         },
       );
-      active.children.add(runtime);
-      signal.addEventListener("abort", shutdownChild, { once: true });
+      runtime = ownedRuntime;
+      active.children.add(ownedRuntime);
+      return {
+        runtime: ownedRuntime,
+        closeResources: async () => {
+          active.children.delete(ownedRuntime);
+          await ownedBrowser?.close();
+          if (ownedBrowser) active.browsers.delete(ownedBrowser);
+          await ownedPrograms?.close();
+          if (ownedPrograms) active.programs.delete(ownedPrograms);
+        },
+      };
+      });
+      runtime = native.runtime;
+      started = native.receipt;
       if (signal.aborted)
         throw new LocalAgentError("LOCAL_WORKFLOW_INTERRUPTED");
-      await runtime.start({
-        token: started.credential.token,
-        expiresAt: new Date(started.credential.expires_at).getTime(),
-      });
       await authorize();
       checkpoint.phase = "native_running";
       await this.persist();
       accepted = true;
+      await startup.admitTurn();
       const result = await runtime.turn(
         started.role_instructions +
           "\n\nCustomer workflow step:\n" +
@@ -1805,10 +1866,7 @@ export class LocalAgentController {
       checkpoint.phase = "settling";
       await this.persist();
       await runtime.close();
-      await browser?.close();
-      if (browser) active.browsers.delete(browser);
-      await programs?.close();
-      if (programs) active.programs.delete(programs);
+      await native.closeResources();
       await finish();
     } catch (error) {
       await stopHeartbeat();

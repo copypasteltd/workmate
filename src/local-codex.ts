@@ -91,6 +91,13 @@ export class LocalCodexError extends Error {
   constructor(public readonly code: string) { super(code); }
 }
 
+/** Emitted only after a startup transport failure and verified owned cleanup. */
+export class LocalCodexStartupFailure extends LocalCodexError {
+  constructor(code: string, public readonly stage: "initialize" | "thread/start" | "thread/resume") {
+    super(code);
+  }
+}
+
 export function localPermissionPolicy(mode: LocalPermissionMode) {
   if (!modes.has(mode)) throw new LocalCodexError("LOCAL_PERMISSION_INVALID");
   return mode === "full-access"
@@ -224,6 +231,7 @@ export class LocalCodexSession {
     this.operation = true;
     let finishStartup!: () => void;
     this.startupDone = new Promise<void>(resolve => { finishStartup = resolve; });
+    let startupStage: "initialize" | "thread/start" | "thread/resume" | undefined;
     try {
       for (const id of [this.binding.sessionId, this.binding.actorId, this.binding.tenantId, this.binding.projectId])
         if (!uuid.test(id)) throw new LocalCodexError("LOCAL_BINDING_INVALID");
@@ -370,9 +378,11 @@ export class LocalCodexSession {
           catch { this.fail(new LocalCodexError("LOCAL_CODEX_PROTOCOL_INVALID")); this.stopInBackground(); }
         }
       });
+      startupStage = "initialize";
       await this.rpc("initialize", { clientInfo: { name: "copypaste_desktop", title: "CopyPaste Desktop", version: "0.5.0" }, capabilities: { experimentalApi: true } });
       this.assertStartupActive();
       this.notify("initialized", {});
+      startupStage = this.threadId ? "thread/resume" : "thread/start";
       const thread = await this.rpc(this.threadId ? "thread/resume" : "thread/start", {
         ...this.common(), ...(this.threadId ? { threadId: this.threadId, excludeTurns: true } : { allowProviderModelFallback: false,
           ...((companyTools.length || this.binding.browserToolsVersion === 1 || this.binding.programToolsVersion === 1) ? { dynamicTools: [
@@ -386,6 +396,7 @@ export class LocalCodexSession {
               tools: programToolDefinitions.map(tool => ({ type: "function", ...tool })) }] : []),
           ] } : {}) }),
       });
+      startupStage = undefined;
       this.assertStartupActive();
       this.checkThread(thread);
       this.threadId = thread.thread.id;
@@ -400,6 +411,10 @@ export class LocalCodexSession {
       // preparation barrier before joining close, which also awaits it.
       finishStartup();
       await this.close();
+      if (startupStage && !this.revoked && this.grant.expiresAt > Date.now()
+        && error instanceof LocalCodexError
+        && ["LOCAL_CODEX_RPC_TIMEOUT", "LOCAL_CODEX_DISCONNECTED", "LOCAL_CODEX_EXITED"].includes(error.code))
+        throw new LocalCodexStartupFailure(error.code, startupStage);
       throw error;
     } finally { this.operation = false; finishStartup(); }
   }

@@ -11,6 +11,8 @@ import type { LocalInputRequest } from "../../src/local-input.js";
 import { LocalProgramController, type ProgramJournal } from "../../src/local-programs.js";
 import { LocalAgentController, type LocalAgentIO, type LocalAgentJournal } from "../../src/local-agent.js";
 import { withOwnedNativeProcesses, interceptNativeRPC } from "../native-startup-faults.js";
+import { LocalStartupCoordinator, type LocalStartupJournal } from "../../src/local-startup.js";
+import { startupFixture, startupTurnFixture } from "../startup-receipt-fixture.js";
 
 const digest = (data: string | Buffer) => createHash("sha256").update(data).digest("hex");
 const lock = JSON.parse(await readFile(new URL("../../contracts/local-codex-runtime.json", import.meta.url), "utf8"));
@@ -149,6 +151,67 @@ async function fixture() {
 }
 const quoted = (value: string) => "'" + value.replaceAll("'", "''") + "'";
 
+for (const fault of [
+  { method: "initialize", timeout: false, twice: false },
+  { method: "thread/start", timeout: false, twice: false },
+  { method: "thread/start", timeout: true, twice: false },
+  { method: "thread/resume", timeout: false, twice: false },
+  { method: "initialize", timeout: false, twice: true },
+] as const) test(`real pinned native startup recovery at ${fault.method}, timeout=${fault.timeout}, twice=${fault.twice}`, { timeout: 180000 }, async () => {
+  const f = await fixture();
+  try {
+    if (fault.method === "thread/resume") {
+      const seed = f.make(); await f.start(seed); f.actions.push({});
+      await seed.turn("Finish the prior task before testing startup of a new task", new AbortController().signal); await seed.close();
+    }
+    const initialRequests = f.requests.length;
+    const taskId = randomUUID(), fence = randomUUID(), secondFence = randomUUID(), deadline = Date.now() + 300000;
+    const checkpoint: { startup?: LocalStartupJournal } = {}, calls: string[] = [], snapshots: any[] = [];
+    await withOwnedNativeProcesses(f.profile.executable, f.workspace, (row, index) => {
+      if (index === 1 || fault.twice) interceptNativeRPC(row, fault.method, (_request, complete) => {
+        complete(); if (!fault.timeout) row.child.kill("SIGKILL");
+      });
+    }, async owned => {
+      const coordinator = new LocalStartupCoordinator({
+        checkpoint, taskId, fields: { device_id: randomUUID(), local_session_id: f.binding.sessionId }, signal: new AbortController().signal,
+        assertOwner: async () => {}, authorize: async () => {}, persist: async () => { snapshots.push(structuredClone(checkpoint)); },
+        stopHeartbeat: async () => {}, startHeartbeat: () => {}, event: async () => {},
+        request: async (route, body: any) => {
+          calls.push(route);
+          if (route === "/turn-admission") return { status: 200, body: { admitted: true, task_id: taskId, startup_fencing_token: secondFence } };
+          const recovering = route === "/startup-recovery";
+          if (recovering) {
+            assert.equal(owned.length, 1); assert.equal(owned[0].closed, true, "Old process must be terminal before requesting recovery");
+            assert.equal(f.requests.length, initialRequests); assert.equal(body.startup_fencing_token, fence);
+          }
+          return { status: 200, body: { task_id: taskId, state: "running", status: "running",
+            startup: { protocol: "desktop-startup-recovery-v1", attempt: recovering ? 2 : 1, max_attempts: 2,
+              state: "preparing", fencing_token: recovering ? secondFence : fence, contract_sha256: "a".repeat(64), deadline_at: new Date(deadline).toISOString() },
+            credential: { token: f.token, expires_at: new Date(deadline).toISOString() } } };
+        },
+      });
+      const initial = await coordinator.admission(randomUUID());
+      const starting = coordinator.start(initial, () => ({ runtime: f.make(), closeResources: async () => {} }));
+      if (fault.twice) {
+        await assert.rejects(starting, (error: any) => ["LOCAL_CODEX_DISCONNECTED", "LOCAL_CODEX_EXITED"].includes(error?.code));
+        await assert.rejects(coordinator.admission(randomUUID()), { code: "LOCAL_STARTUP_OWNER_REVIEW_REQUIRED" });
+        assert.equal(f.requests.length, initialRequests);
+      } else {
+        const begun = await starting; await coordinator.admitTurn(); f.actions.push({});
+        const result = await begun.runtime.turn("Complete the original task once", new AbortController().signal);
+        assert.equal(result.status, "completed"); await begun.runtime.close(); await begun.closeResources();
+        assert.equal(f.requests.length, initialRequests + 1);
+      }
+      assert.equal(owned.length, 2); assert.ok(owned.every(row => row.closed));
+      assert.equal(calls.filter(route => route === "/start").length, 1);
+      assert.equal(calls.filter(route => route === "/startup-recovery").length, 1);
+      assert.ok(!JSON.stringify(snapshots).includes(f.token));
+      console.log("# native_startup_recovery " + JSON.stringify({ method: fault.method, timeout: fault.timeout, twice: fault.twice,
+        native_processes: owned.length, model_requests: f.requests.length - initialRequests, prior_task_requests: initialRequests, native_processes_closed: owned.every(row => row.closed), company_api: "synthetic; real SQL qualified separately" }));
+    });
+  } finally { await f.clean(); }
+});
+
 for (const phase of ["company-authority", "verified-binary", "owned-lock", "spawn-authority"] as const)
   for (const withdrawal of ["close", "revoke"] as const)
     test(`native startup ${withdrawal} at ${phase} prevents a late process and releases any acquired lock`, { timeout: 120000 }, async () => {
@@ -203,6 +266,7 @@ test("actual customer-local Codex startup exceeding 45 seconds retains the origi
     let journal: LocalAgentJournal | null = null, leaseUntil = 0, heartbeats = 0, creates = 0, starts = 0, finishes = 0;
     const actor = { actorId: f.binding.actorId, epoch: randomUUID() }, taskId = randomUUID();
     let state = "prepared", status = "queued";
+    const task = { task_id: taskId, state: "running", status: "running" };
     const runtime = { pinned_version: lock.runtime_version, windows_x64_sha256: lock.windows_x64_sha256, role_keys: ["fullstack"] };
     const io: LocalAgentIO = {
       read: async () => structuredClone(journal), write: async value => { journal = structuredClone(value); },
@@ -214,10 +278,12 @@ test("actual customer-local Codex startup exceeding 45 seconds retains the origi
         if (url.endsWith("/desktop-executions")) { creates++; return { status: 200, body: { task_id: taskId, state, status } }; }
         if (url.endsWith("/start")) {
           starts++; state = status = "running"; leaseUntil = Date.now() + 45000;
-          return { status: 200, body: { task_id: taskId, state, status, runtime, inference_path: "/v1/desktop-inference/v1", skills: f.binding.skills,
+          const begun = startupFixture(task);
+          return { status: 200, body: { ...begun, runtime, inference_path: "/v1/desktop-inference/v1", skills: f.binding.skills,
             model: f.profile.model, effort: f.profile.effort, prompt: "Complete the retained original customer-local task", role_instructions: "Use the company provider",
-            credential: { token: f.token, expires_at: new Date(Date.now() + 300000).toISOString() } } };
+            credential: { token: f.token, expires_at: begun.credential.expires_at } } };
         }
+        if (url.endsWith("/turn-admission")) return startupTurnFixture(task, options?.body);
         if (url.endsWith("/heartbeat")) {
           assert.ok(Date.now() < leaseUntil, "Real elapsed startup must not expire the original 45-second company lease");
           heartbeats++; leaseUntil = Date.now() + 45000; return { status: 200, body: { task_id: taskId, state, status } };

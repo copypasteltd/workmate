@@ -5,6 +5,7 @@ import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import path from "node:path";
 import { LocalAgentController, type LocalAgentIO, type LocalAgentJournal, type LocalRuntimeFactory } from "../src/local-agent.js";
 import { rendererApiOperation } from "../src/config.js";
+import { startupFixture, startupTurnFixture } from "./startup-receipt-fixture.js";
 
 async function fixture() {
   const parent = path.resolve(".data/geo-controller-tests"); await mkdir(parent, { recursive: true }); const root = await mkdtemp(path.join(parent, "owned-"));
@@ -38,9 +39,10 @@ async function fixture() {
         return { status: 201, body: structuredClone(accepted.get(key)) };
       }
       const task = tasks.get(url.split("/").at(-2)!); assert.ok(task, "Only the original native tasks may be used");
-      if (url.endsWith("/start")) { task.status = task.state = "running"; return { status: 200, body: { ...task, runtime: { pinned_version: runtime.version, windows_x64_sha256: runtime.sha256 },
+      if (url.endsWith("/start")) { task.status = task.state = "running"; return { status: 200, body: { ...startupFixture(task), runtime: { pinned_version: runtime.version, windows_x64_sha256: runtime.sha256 },
         observation_protocol: "codex-desktop-geo-v1", inference_path: "/v1/desktop-inference/v1", skills: [], company_tools: [], project_configuration: null, model: "synthetic-geo", effort: "max", role_instructions: "Pinned observer", prompt: "Fixed question",
-        credential: { token: "synthetic-main-process-only", expires_at: new Date(Date.now() + 300000).toISOString() } } }; }
+        } }; }
+      if (url.endsWith("/turn-admission")) return startupTurnFixture(task, options?.body);
       if (url.endsWith("/heartbeat")) return { status: 200, body: { ...task } };
       if (url.endsWith("/finish")) { const b = options!.body as any; task.state = b.status === "unknown" ? "reconciling" : "finished"; task.status = b.status === "unknown" ? "reconciling" : b.status === "completed" ? "succeeded" : "failed"; return { status: 200, body: { ...task } }; }
       if (url.endsWith("/cancel")) { task.state = "finished"; task.status = "cancelled"; return { status: 200, body: { ...task } }; }

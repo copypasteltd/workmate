@@ -161,6 +161,9 @@ export function LocalAgentWorkspace() {
   }, [session?.id]);
   const lastStart = session?.events.map(e => e.kind).lastIndexOf("turn/started") ?? -1;
   const stream = session?.busy ? session.events.slice(Math.max(0, lastStart)).filter(e => e.kind === "item/agentMessage/delta").map(e => e.value.delta ?? "").join("") : "";
+  const lastMessage = session?.messages.at(-1);
+  const finalMessageReady = lastMessage?.role === "assistant" && !!lastMessage.status;
+  const startupRecovery = session?.phase === "starting" && [...session.events].reverse().find(e => e.kind === "local.runtime.startup_recovery");
   const artifacts = [...new Map((session?.events ?? []).filter(event => event.kind === "local.company-tool.completed")
     .flatMap(event => event.value.artifacts ?? []).filter(artifact => artifact?.id && artifact?.asset_version_id && Number.isSafeInteger(artifact?.version))
     .map(artifact => [artifact.asset_version_id, artifact] as const)).values()];
@@ -221,7 +224,15 @@ export function LocalAgentWorkspace() {
         ? t("本次預算超過專案上限。請降低工作預算，或請專案管理員更新共用指引中的上限。", "This turn exceeds the project budget limit. Reduce the turn budget or ask a project administrator to update the limit in shared guidance.")
         : error === "LOCAL_DISPATCH_RESUME_REQUIRED"
           ? t("此工作由目錄規則建立。請到「目錄工作」核對原檔、額度和剩餘項目，再確認啟用。", "This task belongs to a folder rule. Open Folder work to review the input, limits and remaining items, then confirm activation.")
-        : ["LOCAL_SESSION_CLOSED", "LOCAL_PERMISSION_REVOKED"].includes(error)
+        : error === "LOCAL_STARTUP_RECOVERY_PENDING"
+          ? t("重連結果尚未確認。請選擇「重試連線」取得原工作記錄，或取消此工作。", "The reconnect result is not confirmed. Choose Retry connection to retrieve the original work record, or cancel this task.")
+        : ["LOCAL_STARTUP_OWNER_REVIEW_REQUIRED", "DESKTOP_STARTUP_ADMISSION_EXISTS", "DESKTOP_TURN_ALREADY_ADMITTED"].includes(error)
+          ? t("此工作可能已開始執行。請核對本機檔案、工作記錄與費用，再決定下一步。", "This task may already have started. Review local files, the activity log and billing before continuing.")
+        : ["DESKTOP_STARTUP_RECOVERY_UNAVAILABLE", "DESKTOP_STARTUP_EPOCH_CHANGED", "DESKTOP_STARTUP_CONTRACT_CHANGED", "LOCAL_STARTUP_ADMISSION_INVALID"].includes(error)
+          ? t("無法安全恢復此工作。請核對目前授權與原工作記錄。", "This task could not be safely recovered. Review the current permission and original work record.")
+        : error === "LOCAL_PERMISSION_REQUIRED" && !session?.revoked
+          ? t("本機權限尚未授予或已過期。請核對並設定本機權限後再開始。", "Local permission is missing or expired. Review and set local permission before starting.")
+        : ["LOCAL_SESSION_CLOSED", "LOCAL_PERMISSION_REVOKED", "LOCAL_EXECUTION_CANCELLED"].includes(error) || (error === "LOCAL_PERMISSION_REQUIRED" && session?.revoked)
           ? t("本機工作已停止。請核對目前授權及原工作費用；此工作不會自動重做。", "Local work has stopped. Review the current permission and original billing record. This work will not be replayed automatically.")
         : t("未能完成操作。請檢查工作記錄、目前授權及費用狀態，再決定下一步。", "This action could not be completed. Review the activity log, current permission and billing status before continuing.")}</div>}
     <div className="local-agent-grid"><aside className="local-agent-sessions" tabIndex={0} aria-label={t("本機工作目錄與會話", "Local workspaces and sessions")}>
@@ -244,7 +255,8 @@ export function LocalAgentWorkspace() {
         <div className="local-agent-chat" hidden={panel !== "chat"}><div ref={messages} className="local-agent-messages" tabIndex={0} role="log" aria-label={t("本機工作記錄", "Local work history")} aria-live="polite">
           <ProjectConfigurationSummary taskId={session.task?.task_id} compact />{session.messages.length === 0 && <div className="local-agent-empty"><Terminal size={30}/><h2>{t("把想法變成檔案", "Turn an idea into files")}</h2><p>{t("先設定本機權限，再描述你想完成的工作。完整本機權限需要你在系統對話框中確認。", "Set local permission, then describe the work. Full local access requires your confirmation in a native dialog.")}</p></div>}
           {session.messages.map((m, i) => <article key={i} className={`local-agent-message ${m.role}`}><small>{m.role === "user" ? t("你", "You") : "COPYPASTE"}{m.status ? " · " + m.status : ""}</small><p>{m.text || t("本次未返回文字。請檢查工作記錄。", "No text was returned. Review the activity log.")}</p></article>)}
-          {session.busy && <article className="local-agent-message assistant"><small>COPYPASTE · {session.inputs?.length ? t("等待你的回答", "Waiting for your answer") : t("執行中", "Working")}</small><p>{stream || (session.inputs?.length ? t("回答以下問題後，工作便可繼續。", "Answer below to continue the work.") : t("正在處理本機工作…", "Working on your computer…"))}</p></article>}
+          {session.busy && !finalMessageReady && <article className="local-agent-message assistant"><small>COPYPASTE · {startupRecovery ? t("正在重連", "Reconnecting") : session.inputs?.length ? t("等待你的回答", "Waiting for your answer") : t("執行中", "Working")}</small><p>{startupRecovery ? t("本機連線中斷，正在嘗試恢復。仍使用原工作與預算，最多恢復一次。", "The local connection was interrupted. Reconnecting with the original task and budget, at most once.") : stream || (session.inputs?.length ? t("回答以下問題後，工作便可繼續。", "Answer below to continue the work.") : t("正在處理本機工作…", "Working on your computer…"))}</p></article>}
+          {session.busy && finalMessageReady && <p className="muted" role="status">{t("正在同步工作與費用記錄…", "Updating task and billing records…")}</p>}
           {videos.length > 0 && <LocalVideoJobs key={session.id} jobs={videos}/>}
           {session.role === "video-motion" && currentVideoTask && <>
             {videoTaskIds.length > 1 && <label className="local-agent-video-history">{t("影音工作記錄", "Media task history")}<select value={currentVideoTask} onChange={e => setVideoTask(e.target.value)}>

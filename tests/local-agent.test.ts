@@ -6,9 +6,10 @@ import path from "node:path";
 import { LocalAgentController, type LocalAgentIO, type LocalAgentJournal, type LocalAgentRuntime, type LocalRuntimeFactory } from "../src/local-agent.js";
 import { localRuntimeLock } from "../src/local-runtime.js";
 import { rendererApiOperation } from "../src/config.js";
-import type { LocalCodexHooks } from "../src/local-codex.js";
+import { LocalCodexStartupFailure, type LocalCodexHooks } from "../src/local-codex.js";
 import type { LocalInputRequest } from "../src/local-input.js";
 import { GuardedBrowserSession } from "../src/browser-session.js";
+import { startupFixture, startupTurnFixture } from "./startup-receipt-fixture.js";
 
 test("update checkpoints allow idle sessions and block a live local turn until its settlement finishes", async () => {
   const f = await fixture(); let release!: () => void;
@@ -112,10 +113,12 @@ async function fixture() {
       const id = url.split("/").at(-2)!, task = tasks.get(id);
       if (!task) throw new Error("Unknown fixture task");
       if (url.endsWith("/start")) { task.status = task.state = "running";
+        const startup = startupFixture(task);
         if (startLost) { startLost = false; throw new Error("Fixture lost start response after acceptance"); }
-        return { status: 200, body: { ...task, runtime: runtimeBody,
+        return { status: 200, body: { ...startup, runtime: runtimeBody,
         inference_path: "/v1/desktop-inference/v1", skills: [], model: "synthetic-native", effort: "max", prompt: "fixture", role_instructions: "Use real local tools",
-        credential: { token: "ONLY_THE_TRUSTED_NATIVE_RUNTIME_CAN_RECEIVE_THIS_TOKEN", expires_at: new Date(Date.now() + 300000).toISOString() } } }; }
+        credential: startup.credential } }; }
+      if (url.endsWith("/turn-admission")) return startupTurnFixture(task, options?.body);
       if (url.endsWith("/heartbeat")) return { status: 200, body: { ...task } };
       if (url.endsWith("/cancel")) { task.cancel_requested = true; if (task.state === "prepared") { task.state = "finished"; task.status = "cancelled"; } return { status: 200, body: { ...task } }; }
       if (url.endsWith("/finish")) {
@@ -373,6 +376,7 @@ for (const target of ["main", "child"] as const) test(`a ${target} native startu
     const childId = randomUUID(), active = { abort: new AbortController(), done: Promise.resolve(), children: new Set(), browsers: new Set(), programs: new Set() };
     const request = f.io.request;
     let leaseUntil = 0, checks = 0, finished = false;
+    const childTask = { task_id: childId, state: "running", status: "running" };
     f.io.request = async (url, options) => {
       if (url.endsWith("/start")) leaseUntil = Date.now() + 45000;
       if (url.endsWith("/heartbeat")) {
@@ -383,11 +387,12 @@ for (const target of ["main", "child"] as const) test(`a ${target} native startu
       if (url.endsWith("/finish")) finished = true;
       if (target === "main" || !url.includes("/" + childId + "/")) return request(url, options);
       if (url.endsWith("/start")) return { status: 200, body: {
+        ...startupFixture(childTask),
         runtime: { pinned_version: localRuntimeLock.version, windows_x64_sha256: localRuntimeLock.sha256 },
         inference_path: "/v1/desktop-inference/v1", skills: [], model: "synthetic-native", effort: "max",
         prompt: "A child whose native initialization takes time", role_instructions: "Use the customer-local runtime",
-        credential: { token: "ONLY_THE_TRUSTED_NATIVE_RUNTIME_CAN_RECEIVE_THIS_TOKEN", expires_at: new Date(Date.now() + 300000).toISOString() },
       } };
+      if (url.endsWith("/turn-admission")) return startupTurnFixture(childTask, options?.body);
       if (url.endsWith("/heartbeat")) return { status: 200, body: { state: "running", status: "running" } };
       assert.ok(url.endsWith("/finish"));
       return { status: 200, body: { status: "succeeded" } };
@@ -412,6 +417,51 @@ for (const target of ["main", "child"] as const) test(`a ${target} native startu
     assert.equal(checks, terminalChecks); assert.equal(active.children.size, 0);
     if (target === "main") assert.equal(f.created(), 1);
   } finally { release?.(); await run?.catch(() => {}); t.mock.timers.reset(); await f.clean(); }
+});
+
+for (const target of ["main", "child"] as const) test(`${target} controller recovers a classified startup failure once and gates the original turn`, async () => {
+  const f = await fixture();
+  try {
+    const session = await f.create(); await f.controller.permission(session.id, "full-access");
+    const controller = f.controller as any, journal = await controller.state(), record = journal.sessions[0];
+    const childId = randomUUID(), childTask = { task_id: childId, state: "running", status: "running" };
+    const active = { abort: new AbortController(), done: Promise.resolve(), children: new Set(), browsers: new Set(), programs: new Set() };
+    const request = f.io.request; let current: any, closed = false, recoveries = 0, gates = 0, finishes = 0;
+    f.io.request = async (url, options) => {
+      if (url.endsWith("/start")) {
+        const reply = target === "main" ? await request(url, options) : { status: 200, body: {
+          ...startupFixture(childTask), runtime: { pinned_version: localRuntimeLock.version, windows_x64_sha256: localRuntimeLock.sha256 },
+          inference_path: "/v1/desktop-inference/v1", skills: [], model: "synthetic-native", effort: "max", prompt: "Original child", role_instructions: "Use local tools",
+        } };
+        current = structuredClone(reply.body); return reply;
+      }
+      if (url.endsWith("/startup-recovery")) {
+        recoveries++; assert.equal(recoveries, 1); assert.equal(closed, true);
+        assert.equal((options?.body as any).startup_fencing_token, current.startup.fencing_token);
+        current.startup = { ...current.startup, attempt: 2, fencing_token: randomUUID() };
+        return { status: 200, body: structuredClone(current) };
+      }
+      if (url.endsWith("/turn-admission")) {
+        gates++; return startupTurnFixture(current, options?.body);
+      }
+      if (url.endsWith("/finish")) finishes++;
+      if (target === "child" && url.includes("/" + childId + "/"))
+        return { status: 200, body: { task_id: childId, state: "running", status: url.endsWith("/finish") ? "succeeded" : "running" } };
+      return request(url, options);
+    };
+    let starts = 0;
+    f.starting(async () => {
+      if (++starts === 1) { f.runtimes.at(-1)!.close = async () => { closed = true; }; throw new LocalCodexStartupFailure("LOCAL_CODEX_DISCONNECTED", "initialize"); }
+      assert.equal(recoveries, 1); assert.equal(gates, 0);
+    });
+    if (target === "main") await f.controller.send(session.id, "One original paid turn", 10000);
+    else await controller.executeWorkflowChild(record, { prompt: "Parent", budget: 100000, phase: "native_running" }, active,
+      { task_id: childId, role_key: "fullstack", fields: { device_id: journal.deviceId, local_session_id: randomUUID(), workspace_hash: record.workspaceHash,
+        runtime_version: localRuntimeLock.version, runtime_sha256: localRuntimeLock.sha256 } }, randomUUID(), 0, active.abort.signal, async () => {}, async () => {});
+    assert.equal(starts, 2); assert.equal(f.runtimes.length, 2); assert.equal(f.turns(), 1);
+    assert.equal(recoveries, 1); assert.equal(gates, 1); assert.equal(finishes, 1); assert.equal(active.children.size, 0);
+    assert.equal(f.created(), target === "main" ? 1 : 0);
+  } finally { await f.clean(); }
 });
 
 for (const action of ["company-revocation", "local-revocation"] as const) test(`${action} during a pending native startup prevents every model turn and releases the owned runtime`, async t => {
@@ -451,15 +501,17 @@ test("a completed workflow child stops its heartbeat before native shutdown and 
     const childId = randomUUID(), childSession = randomUUID(), runId = randomUUID();
     const active = { abort: new AbortController(), done: Promise.resolve(), children: new Set(), browsers: new Set() };
     let closing = false, lateChecks = 0, finishes = 0;
+    const childTask = { task_id: childId, state: "running", status: "running" };
     const request = f.io.request;
     f.io.request = async (url, options) => {
       if (!url.includes("/" + childId + "/")) return request(url, options);
       if (url.endsWith("/start")) return { status: 200, body: {
+        ...startupFixture(childTask),
         runtime: { pinned_version: localRuntimeLock.version, windows_x64_sha256: localRuntimeLock.sha256 },
         inference_path: "/v1/desktop-inference/v1", skills: [], model: "synthetic-native", effort: "max",
         prompt: "Verify the completed native child", role_instructions: "Read the actual local checklist",
-        credential: { token: "ONLY_THE_TRUSTED_NATIVE_RUNTIME_CAN_RECEIVE_THIS_TOKEN", expires_at: new Date(Date.now() + 300000).toISOString() },
       } };
+      if (url.endsWith("/turn-admission")) return startupTurnFixture(childTask, options?.body);
       if (url.endsWith("/heartbeat")) {
         if (closing) lateChecks++;
         return { status: 200, body: { state: closing ? "finished" : "running", status: closing ? "succeeded" : "running" } };
