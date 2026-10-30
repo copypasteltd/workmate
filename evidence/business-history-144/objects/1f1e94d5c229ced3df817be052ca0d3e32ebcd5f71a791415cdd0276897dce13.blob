@@ -1,0 +1,1243 @@
+import { before, after, test } from "node:test";
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import pg from "pg";
+import * as OTPAuth from "otpauth";
+import { buildApp } from "../src/server.js";
+import { loadConfig } from "../src/config.js";
+import { canonical, hmac, seal } from "../src/lib.js";
+import { defaults } from "../src/plans.js";
+import { projectAccess } from "../src/access.js";
+import { saveAsset } from "../src/storage.js";
+import { ErasureService } from "../src/erasure.js";
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>,
+  s: Awaited<ReturnType<typeof buildApp>>;
+type Client = {
+  id: string;
+  cookie: string;
+  csrf: string;
+  email: string;
+  admin: boolean;
+  tenant?: string;
+};
+const permissions = [
+  "admin.content.read",
+  "admin.content.body.read",
+  "admin.content.version.create",
+];
+async function call(
+  c: Client | undefined,
+  method: string,
+  url: string,
+  body?: any,
+  key: string = randomUUID(),
+) {
+  const raw = await s.app.inject({
+    method: method as any,
+    url,
+    headers: {
+      origin: url.startsWith("/v1/admin/")
+        ? s.db.config.ADMIN_ORIGIN
+        : s.db.config.WEB_ORIGIN,
+      ...(c ? { cookie: c.cookie, "x-csrf-token": c.csrf } : {}),
+      ...(c?.tenant ? { "x-tenant-id": c.tenant } : {}),
+      "idempotency-key": key,
+      ...(body === undefined ? {} : { "content-type": "application/json" }),
+    },
+    ...(body === undefined ? {} : { payload: JSON.stringify(body) }),
+  });
+  return { status: raw.statusCode, data: raw.json(), raw };
+}
+async function ok(
+  c: Client | undefined,
+  method: string,
+  url: string,
+  body?: any,
+  key?: string,
+) {
+  const r = await call(c, method, url, body, key);
+  assert.ok(
+    r.status >= 200 && r.status < 300,
+    `${method} ${url}: ${r.status} ${JSON.stringify(r.data)}`,
+  );
+  return r.data;
+}
+async function login(
+  email = `${randomUUID()}@example.invalid`,
+  secret?: OTPAuth.Secret,
+): Promise<Client> {
+  const base = secret ? "/v1/admin/auth" : "/v1/auth";
+  const challenge = await ok(undefined, "POST", base + "/challenge", { email });
+  const mail = JSON.parse(
+    await readFile(
+      `${s.db.config.DATA_DIR}/mailbox/${challenge.challenge_id}.json`,
+      "utf8",
+    ),
+  );
+  let code: string | undefined;
+  if (secret) {
+    const previous = Number(
+      (
+        await s.db.control.query(
+          "SELECT last_totp_step FROM admin_principals WHERE email=$1",
+          [email],
+        )
+      ).rows[0].last_totp_step,
+    );
+    // Use the next accepted authenticator step; never reset replay protection.
+    if (previous > Math.floor(Date.now() / 30_000))
+      await new Promise((resolve) =>
+        setTimeout(resolve, previous * 30_000 - Date.now() + 50),
+      );
+    const step = Math.max(Math.floor(Date.now() / 30_000), previous + 1);
+    code = new OTPAuth.TOTP({
+      secret,
+      digits: 6,
+      period: 30,
+      algorithm: "SHA1",
+    }).generate({ timestamp: step * 30_000 });
+  }
+  const r = await call(undefined, "POST", base + "/verify", {
+    challenge_id: challenge.challenge_id,
+    code: mail.text.match(/\b\d{6}\b/)[0],
+    ...(secret
+      ? {
+          totp: code,
+        }
+      : {}),
+  });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  const cookie = r.raw.cookies.find(
+    (v) => v.name === (secret ? "cp_admin_session" : "cp_session"),
+  )!;
+  return {
+    id: r.data.user?.id ?? r.data.admin?.id,
+    email,
+    csrf: r.data.csrf_token,
+    cookie: cookie.name + "=" + cookie.value,
+    admin: !!secret,
+  };
+}
+async function admin(project: string, allowed = permissions) {
+  const email = `revision-${randomUUID()}@example.invalid`,
+    secret = new OTPAuth.Secret({ size: 20 });
+  const id = (
+    await s.db.control.query(
+      "INSERT INTO admin_principals(email,name,totp_secret) VALUES($1,'Scoped revision operator',$2) RETURNING id",
+      [email, seal(s.db.config.MASTER_KEY!, secret.base32)],
+    )
+  ).rows[0].id;
+  const role = "revision_" + randomUUID();
+  await s.db.control.query(
+    "INSERT INTO admin_roles(key,name,permissions) VALUES($1,'Revision fixture',$2)",
+    [role, JSON.stringify(allowed)],
+  );
+  await s.db.control.query(
+    "INSERT INTO admin_bindings(principal_id,role_key,scope_kind,scope_id) VALUES($1,$2,'project',$3)",
+    [id, role, project],
+  );
+  return { client: await login(email, secret), secret, role };
+}
+
+const defaultBrand = () => ({
+  schema_version: 2,
+  name: "Synthetic customer brand",
+  colors: ["#1F5EFF"],
+  tone: "Clear Cantonese and English",
+  approved_copy: "Customer approved",
+  fonts: [],
+  logos: [],
+  facts: [],
+  font_bindings: [
+    {
+      key: "headline",
+      label: "Noto Sans TC",
+      source: { builtin: "noto-sans-tc" },
+      rights: {
+        source: "Bundled Google Noto font",
+        license: "SIL Open Font License 1.1",
+        channels: ["social"],
+        valid_until: null,
+      },
+    },
+  ],
+  locales: ["zh-Hant-HK", "en-HK"],
+  channels: ["social"],
+  restrictions: "Use approved facts only",
+});
+async function fixture() {
+  const owner = await login(),
+    w = await ok(owner, "POST", "/v1/tenants", {
+      name: "Synthetic profile revision company",
+      project_name: "Marketing project",
+    });
+  owner.tenant = w.tenant.id;
+  const tenant = w.tenant.id,
+    project = w.project.id,
+    base = `/v1/tenants/${tenant}/projects/${project}`;
+  await ok(owner, "POST", `/v1/tenants/${tenant}/demo-credit`, {});
+  await s.db.control.query(
+    `INSERT INTO entitlements(tenant_id,plan,starts_at,ends_at,reason,plan_body)
+    VALUES($1,'business',now()-interval '1 minute',now()+interval '1 day','Explicit synthetic test capacity; no payment received',$2)`,
+    [tenant, defaults.business],
+  );
+  const brand = await ok(
+    owner,
+    "POST",
+    base + "/brand/definitions",
+    defaultBrand(),
+  );
+  const agent = await ok(owner, "POST", base + "/agents", {
+    name: "Original specialist",
+    role_key: "assistant",
+    instructions: "Original instructions",
+    brand_id: brand.id,
+  });
+  const conversation = await ok(owner, "POST", base + "/conversations", {
+    name: "Original private conversation",
+    agent_id: agent.id,
+  });
+  const memory = await ok(owner, "POST", base + "/memories", {
+    name: "Original memory",
+    content: "Original customer facts",
+    scope: "project",
+    expires_at: null,
+  });
+  const operator = await admin(project);
+  return {
+    owner,
+    tenant,
+    project,
+    base,
+    agent,
+    brand,
+    conversation,
+    memory,
+    admin: operator.client,
+    secret: operator.secret,
+    role: operator.role,
+  };
+}
+type Fixture = Awaited<ReturnType<typeof fixture>>;
+type Kind = "agents" | "brand_profiles" | "memories";
+function endpoint(f: Fixture, kind: Kind, id?: string) {
+  return `/v1/admin/content-revisions/${kind}/${id ?? (kind === "agents" ? f.agent.id : kind === "brand_profiles" ? f.brand.id : f.memory.id)}`;
+}
+async function preview(f: Fixture, kind: Kind, patch: any = {}, id?: string) {
+  const root = endpoint(f, kind, id),
+    editor = await ok(f.admin, "GET", root);
+  return ok(f.admin, "POST", root + "/previews", {
+    expected_version: editor.version,
+    expected_moderation_version: editor.moderation_version,
+    definition: {
+      ...editor.definition,
+      name: "Reviewed administrator revision",
+      ...patch,
+    },
+    reason: "Correct customer supplied content with administrator attribution",
+  });
+}
+const payload = (p: any) => ({
+  ...p.request,
+  ticket: p.ticket,
+  confirmed: true,
+});
+async function counts(f: Fixture) {
+  return (
+    await s.db.control.query(
+      `SELECT (SELECT count(*)::int FROM tasks WHERE tenant_id=$1) AS tasks,
+    (SELECT count(*)::int FROM reservations WHERE tenant_id=$1) AS reservations,
+    (SELECT count(*)::int FROM ledger WHERE tenant_id=$1) AS ledger,
+    (SELECT count(*)::int FROM admin_profile_revisions WHERE tenant_id=$1) AS revisions`,
+      [f.tenant],
+    )
+  ).rows[0];
+}
+async function tenantOperator(f: Fixture) {
+  await s.db.control.query(
+    "UPDATE admin_bindings SET scope_kind='tenant',scope_id=$2 WHERE principal_id=$1 AND role_key=$3",
+    [f.admin.id, f.tenant, f.role],
+  );
+}
+async function asset(
+  f: Fixture,
+  {
+    privateOwner,
+    project,
+    mime,
+  }: { privateOwner?: string; project?: string; mime?: string } = {},
+) {
+  return s.db.tx(async (tx) => {
+    await projectAccess(
+      tx,
+      { ...f.owner, authVersion: 1 } as any,
+      f.tenant,
+      project ?? f.project,
+      "write",
+    );
+    return saveAsset(tx, s.storage, {
+      tenant: f.tenant,
+      project: project ?? f.project,
+      user: f.owner.id,
+      name: "Synthetic verified pixel.png",
+      mime: mime ?? "image/png",
+      privateOwner,
+      bytes: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==",
+        "base64",
+      ),
+    });
+  }, f.tenant);
+}
+before(async () => {
+  isolated = await isolatedTestEnvironment();
+  s = await buildApp(
+    loadConfig({
+      ...isolated.env,
+      NODE_ENV: "test",
+      DEMO_MODE: "true",
+      WORKER_ENABLED: "false",
+    }),
+    { worker: false },
+  );
+});
+after(async () => {
+  try {
+    await s?.app.close();
+  } finally {
+    await isolated?.cleanup();
+  }
+});
+
+for (const kind of ["agents", "brand_profiles", "memories"] as const)
+  test(`${kind}: actual preview, atomic attributed revision, customer read and no paid execution`, async () => {
+    const f = await fixture(),
+      before = await counts(f),
+      p = await preview(f, kind);
+    assert.deepEqual(await counts(f), before);
+    assert.ok(p.changes.some((v: any) => v.field === "name"));
+    const result = await ok(
+      f.admin,
+      "POST",
+      endpoint(f, kind) + "/apply",
+      payload(p),
+    );
+    assert.equal(result.version, 2);
+    assert.equal(result.created_by_admin, f.admin.id);
+    assert.deepEqual(await counts(f), {
+      ...before,
+      revisions: before.revisions + 1,
+    });
+    const table =
+      kind === "agents"
+        ? "agent_versions"
+        : kind === "brand_profiles"
+          ? "brand_profile_versions"
+          : "memory_versions";
+    const key =
+      kind === "agents"
+        ? "agent_id"
+        : kind === "brand_profiles"
+          ? "brand_id"
+          : "memory_id";
+    const id =
+      kind === "agents"
+        ? f.agent.id
+        : kind === "brand_profiles"
+          ? f.brand.id
+          : f.memory.id;
+    const versions = (
+      await s.db.control.query(
+        `SELECT * FROM ${table} WHERE ${key}=$1 ORDER BY version`,
+        [id],
+      )
+    ).rows;
+    assert.equal(versions.length, 2);
+    assert.equal(versions[0].created_by_admin, null);
+    assert.equal(versions[1].created_by, null);
+    assert.equal(versions[1].created_by_admin, f.admin.id);
+    assert.equal(versions[1].admin_revision_id, result.revision_id);
+    assert.equal(
+      kind === "brand_profiles"
+        ? versions[1].sha256
+        : versions[1].revision_sha256,
+      result.sha256,
+    );
+    assert.equal(
+      (
+        await s.db.control.query(
+          "SELECT count(*)::int AS n FROM audit_log WHERE action='admin.content.revision.create' AND target=$1",
+          [result.revision_id],
+        )
+      ).rows[0].n,
+      1,
+    );
+    if (kind === "agents") {
+      const user = await ok(f.owner, "GET", f.base + `/agents/${id}/versions`);
+      assert.equal(user.items[0].origin, "administrator");
+      assert.equal(user.items[0].body.name, p.request.definition.name);
+      const old = (
+        await s.db.control.query(
+          "SELECT agent_version FROM conversations WHERE id=$1",
+          [f.conversation.id],
+        )
+      ).rows[0];
+      assert.equal(old.agent_version, 1);
+      for (const field of [
+        "runtime_profile_id",
+        "runtime_version",
+        "capability_version_ids",
+        "role_key",
+        "role_hash",
+        "skills",
+        "brand",
+        "template_version_id",
+      ])
+        assert.deepEqual(
+          versions[1].body[field],
+          versions[0].body[field],
+          field,
+        );
+      assert.deepEqual(
+        (
+          await s.db.control.query(
+            "SELECT installation_id,skill_version_id,required FROM agent_skill_bindings WHERE agent_id=$1 AND agent_version=2 ORDER BY installation_id",
+            [id],
+          )
+        ).rows,
+        (
+          await s.db.control.query(
+            "SELECT installation_id,skill_version_id,required FROM agent_skill_bindings WHERE agent_id=$1 AND agent_version=1 ORDER BY installation_id",
+            [id],
+          )
+        ).rows,
+      );
+    } else if (kind === "brand_profiles") {
+      const user = await ok(f.owner, "GET", f.base + `/brand/${id}/versions`);
+      assert.equal(user.items[0].origin, "administrator");
+      assert.equal(user.items[1].body.name, defaultBrand().name);
+      assert.equal(
+        (
+          await s.db.control.query(
+            "SELECT body->'brand' AS b FROM agent_versions WHERE agent_id=$1 AND version=1",
+            [f.agent.id],
+          )
+        ).rows[0].b.version,
+        1,
+      );
+    } else {
+      const user = await ok(f.owner, "GET", f.base + "/memories"),
+        row = user.items.find((v: any) => v.id === id);
+      assert.equal(row.origin, "administrator");
+      assert.equal(row.created_by, f.owner.id);
+      assert.equal(row.scope, "project");
+      assert.equal(versions[0].content, "Original customer facts");
+      assert.equal(versions[1].definition.name, p.request.definition.name);
+    }
+  });
+
+test("specialist edits cannot replace role, runtime, models, skills, brand, ownership or enabled state", async () => {
+  const f = await fixture(),
+    editor = await ok(f.admin, "GET", endpoint(f, "agents"));
+  for (const [field, value] of Object.entries({
+    role_key: "fullstack-developer",
+    kernel: "other",
+    runtime_profile_id: randomUUID(),
+    capability_version_ids: [],
+    skills: [],
+    brand_id: f.brand.id,
+    enabled: true,
+    created_by: f.admin.id,
+  })) {
+    const r = await call(f.admin, "POST", endpoint(f, "agents") + "/previews", {
+      expected_version: editor.version,
+      expected_moderation_version: editor.moderation_version,
+      definition: {
+        ...editor.definition,
+        name: "No binding bypass",
+        [field]: value,
+      },
+      reason: "Test rejected binding replacement",
+    });
+    assert.equal(r.status, 400, field);
+  }
+  assert.equal(
+    (
+      await call(f.admin, "POST", endpoint(f, "agents") + "/previews", {
+        expected_version: 1,
+        expected_moderation_version: editor.moderation_version,
+        definition: {
+          ...editor.definition,
+          tool_ids: ["uninstalled.secret.tool"],
+        },
+        reason: "Reject unavailable tool",
+      })
+    ).data.error.code,
+    "TOOL_SCOPE_EXCEEDED",
+  );
+  assert.equal((await counts(f)).revisions, 0);
+});
+
+test("fixed default assistant and inactive/archived sources cannot be revised", async () => {
+  const f = await fixture();
+  await ok(f.owner, "POST", f.base + "/conversations", {
+    name: "Built-in assistant fixture",
+  });
+  const builtin = (
+    await s.db.control.query(
+      "SELECT id FROM agents WHERE project_id=$1 AND builtin_default",
+      [f.project],
+    )
+  ).rows[0];
+  assert.ok(
+    builtin,
+    "The actual default assistant must be created for this check",
+  );
+  assert.equal(
+    (await call(f.admin, "GET", endpoint(f, "agents", builtin.id))).data.error
+      .code,
+    "DEFAULT_ASSISTANT_IMMUTABLE",
+  );
+  await s.db.control.query(
+    "UPDATE agents SET content_state='quarantined' WHERE id=$1",
+    [f.agent.id],
+  );
+  assert.equal((await call(f.admin, "GET", endpoint(f, "agents"))).status, 409);
+  await s.db.control.query("UPDATE projects SET archived=true WHERE id=$1", [
+    f.project,
+  ]);
+  assert.equal(
+    (await call(f.admin, "GET", endpoint(f, "brand_profiles"))).status,
+    404,
+  );
+});
+
+test("brand revisions validate actual shared PNG bytes and append immutable exact source bindings", async () => {
+  const f = await fixture(),
+    png = await asset(f),
+    p = await preview(f, "brand_profiles", {
+      tone: "Updated 繁中與 English",
+      logos: [
+        {
+          key: "primary",
+          asset_id: png.id,
+          version: 1,
+          usage: "Approved logo",
+          min_width: 64,
+          clear_space: 12,
+        },
+      ],
+      facts: [
+        {
+          key: "price",
+          kind: "price",
+          sku: "DEMO",
+          text: "HK$12.35",
+          amount_minor: 1235,
+          currency: "HKD",
+          valid_from: null,
+          valid_until: null,
+        },
+      ],
+    });
+  assert.ok(p.changes.some((c: any) => c.field === "dependencies"));
+  await ok(
+    f.admin,
+    "POST",
+    endpoint(f, "brand_profiles") + "/apply",
+    payload(p),
+  );
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT asset_version_id FROM brand_version_assets WHERE brand_id=$1 AND version=2",
+        [f.brand.id],
+      )
+    ).rows[0].asset_version_id,
+    png.version.id,
+  );
+  const current = await ok(
+    f.owner,
+    "GET",
+    f.base + `/brand/${f.brand.id}/versions`,
+  );
+  assert.equal(current.items[0].body.facts[0].amount_minor, 1235);
+});
+
+test("brand references cannot use private or foreign project files, unsupported bytes or invalid usage declarations", async () => {
+  const f = await fixture(),
+    privatePng = await asset(f, { privateOwner: f.owner.id });
+  const other = await ok(f.owner, "POST", `/v1/tenants/${f.tenant}/projects`, {
+      name: "Other project",
+    }),
+    foreign = await asset(f, { project: other.id });
+  for (const source of [privatePng, foreign]) {
+    const r = await call(
+      f.admin,
+      "POST",
+      endpoint(f, "brand_profiles") + "/previews",
+      {
+        expected_version: 1,
+        expected_moderation_version: 1,
+        definition: {
+          ...defaultBrand(),
+          name: "Rejected private logo",
+          logos: [
+            {
+              key: "logo",
+              asset_id: source.id,
+              version: 1,
+              usage: "",
+              min_width: 64,
+              clear_space: 12,
+            },
+          ],
+        },
+        reason: "Reject private or unrelated source",
+      },
+    );
+    assert.equal(r.status, 422);
+    assert.equal(r.data.error.code, "BRAND_SOURCE_UNAVAILABLE");
+  }
+  const bad = await s.db.tx(
+    (tx) =>
+      saveAsset(tx, s.storage, {
+        tenant: f.tenant,
+        project: f.project,
+        user: f.owner.id,
+        name: "invalid.png",
+        mime: "image/png",
+        bytes: Buffer.from("Not PNG bytes"),
+      }),
+    f.tenant,
+  );
+  await assert.rejects(
+    preview(f, "brand_profiles", {
+      logos: [
+        {
+          key: "bad",
+          asset_id: bad.id,
+          version: 1,
+          usage: "",
+          min_width: 64,
+          clear_space: 12,
+        },
+      ],
+    }),
+    /BRAND_LOGO_INVALID/,
+  );
+  const b = defaultBrand();
+  b.font_bindings[0].rights.channels = ["unapproved-channel"];
+  await assert.rejects(preview(f, "brand_profiles", b), /400/);
+  assert.equal((await counts(f)).revisions, 0);
+});
+
+test("withdrawn brand sources and disabled pinned specialist methods invalidate a previously reviewed confirmation", async () => {
+  const f = await fixture(),
+    png = await asset(f),
+    p = await preview(f, "brand_profiles", {
+      logos: [
+        {
+          key: "logo",
+          asset_id: png.id,
+          version: 1,
+          usage: "",
+          min_width: 64,
+          clear_space: 12,
+        },
+      ],
+    });
+  await s.db.control.query(
+    "UPDATE assets SET state='quarantined' WHERE id=$1",
+    [png.id],
+  );
+  assert.equal(
+    (
+      await call(
+        f.admin,
+        "POST",
+        endpoint(f, "brand_profiles") + "/apply",
+        payload(p),
+      )
+    ).status,
+    422,
+  );
+  const a = await preview(f, "agents");
+  const installation = f.agent.body.skills[0].installation_id;
+  await s.db.control.query(
+    "UPDATE skill_installations SET enabled=false,version=version+1 WHERE id=$1",
+    [installation],
+  );
+  assert.equal(
+    (await call(f.admin, "POST", endpoint(f, "agents") + "/apply", payload(a)))
+      .status,
+    409,
+  );
+  assert.equal((await counts(f)).revisions, 0);
+});
+
+for (const scope of ["tenant", "personal", "brand", "conversation", "project"])
+  test(`memory ${scope}: exact original owner/scope retained, immutable prior content and distinct admin version`, async () => {
+    const f = await fixture();
+    await tenantOperator(f);
+    const m =
+      scope === "project"
+        ? f.memory
+        : await ok(f.owner, "POST", f.base + "/memories", {
+            name: "Scoped original",
+            content: "Private original scope facts",
+            scope,
+            ...(scope === "brand" ? { brand_id: f.brand.id } : {}),
+            ...(scope === "conversation"
+              ? { conversation_id: f.conversation.id }
+              : {}),
+            expires_at: null,
+          });
+    const expiry = new Date(Date.now() + 7_200_000).toISOString(),
+      p = await preview(
+        f,
+        "memories",
+        { content: "Reviewed scope facts", expires_at: expiry },
+        m.id,
+      );
+    await ok(
+      f.admin,
+      "POST",
+      endpoint(f, "memories", m.id) + "/apply",
+      payload(p),
+    );
+    const current = (
+      await s.db.control.query("SELECT * FROM memories WHERE id=$1", [m.id])
+    ).rows[0];
+    for (const field of [
+      "scope",
+      "tenant_id",
+      "project_id",
+      "brand_id",
+      "conversation_id",
+      "private_owner",
+      "created_by",
+    ])
+      assert.deepEqual(current[field], m[field], field);
+    assert.equal(current.version, 2);
+    assert.equal(current.expires_at.toISOString(), expiry);
+    const rows = (
+      await s.db.control.query(
+        "SELECT * FROM memory_versions WHERE memory_id=$1 ORDER BY version",
+        [m.id],
+      )
+    ).rows;
+    assert.equal(rows[1].definition.scope, scope);
+    assert.equal(rows[1].created_by_admin, f.admin.id);
+    assert.notEqual(rows[0].content, rows[1].content);
+  });
+
+test("project-only administrators cannot edit enterprise/personal memories; project deny constrains tenant-wide revisions", async () => {
+  const f = await fixture(),
+    m = await ok(f.owner, "POST", f.base + "/memories", {
+      name: "Tenant fact",
+      content: "All project scope",
+      scope: "tenant",
+      expires_at: null,
+    });
+  assert.equal(
+    (await call(f.admin, "GET", endpoint(f, "memories", m.id))).status,
+    403,
+  );
+  await tenantOperator(f);
+  assert.equal(
+    (await call(f.admin, "GET", endpoint(f, "memories", m.id))).status,
+    200,
+  );
+  await s.db.control.query(
+    "INSERT INTO admin_bindings(principal_id,role_key,scope_kind,scope_id,effect) VALUES($1,$2,'project',$3,'deny')",
+    [f.admin.id, f.role, f.project],
+  );
+  assert.equal(
+    (await call(f.admin, "GET", endpoint(f, "memories", m.id))).status,
+    403,
+  );
+});
+
+test("memory scope/owner replacement, expired dates and inactive fixed conversations are rejected", async () => {
+  const f = await fixture(),
+    editor = await ok(f.admin, "GET", endpoint(f, "memories"));
+  for (const field of [
+    "scope",
+    "private_owner",
+    "project_id",
+    "brand_id",
+    "conversation_id",
+  ]) {
+    const r = await call(
+      f.admin,
+      "POST",
+      endpoint(f, "memories") + "/previews",
+      {
+        expected_version: 1,
+        expected_moderation_version: 1,
+        definition: {
+          ...editor.definition,
+          name: "Rejected scope edit",
+          [field]: randomUUID(),
+        },
+        reason: "Reject scope replacement",
+      },
+    );
+    assert.equal(r.status, 400, field);
+  }
+  await assert.rejects(
+    preview(f, "memories", { expires_at: "2020-01-01T00:00:00.000Z" }),
+    /EXPIRY_INVALID/,
+  );
+  const m = await ok(f.owner, "POST", f.base + "/memories", {
+    name: "Conversation fact",
+    content: "Original conversation fact",
+    scope: "conversation",
+    conversation_id: f.conversation.id,
+    expires_at: null,
+  });
+  await s.db.control.query(
+    "UPDATE conversations SET content_state='quarantined' WHERE id=$1",
+    [f.conversation.id],
+  );
+  assert.equal(
+    (await call(f.admin, "GET", endpoint(f, "memories", m.id))).status,
+    409,
+  );
+});
+
+test("all three permission scopes, current MFA/session and CSRF apply to every new kind", async () => {
+  const f = await fixture(),
+    another = await fixture();
+  for (const kind of ["agents", "brand_profiles", "memories"] as const) {
+    assert.equal((await call(f.owner, "GET", endpoint(f, kind))).status, 401);
+    assert.equal(
+      (await call(another.admin, "GET", endpoint(f, kind))).status,
+      403,
+    );
+    for (const missing of permissions) {
+      const partial = await admin(
+        f.project,
+        permissions.filter((p) => p !== missing),
+      );
+      assert.equal(
+        (await call(partial.client, "GET", endpoint(f, kind))).status,
+        403,
+      );
+    }
+  }
+  const p = await preview(f, "memories");
+  const noCsrf = await s.app.inject({
+    method: "POST",
+    url: endpoint(f, "memories") + "/apply",
+    headers: { cookie: f.admin.cookie, origin: s.db.config.ADMIN_ORIGIN },
+    payload: payload(p),
+  });
+  assert.equal(noCsrf.statusCode, 403);
+  await s.db.control.query(
+    "UPDATE sessions SET mfa_at=now()-interval '11 minutes' WHERE admin_id=$1",
+    [f.admin.id],
+  );
+  assert.equal(
+    (
+      await call(
+        f.admin,
+        "POST",
+        endpoint(f, "memories") + "/apply",
+        payload(p),
+      )
+    ).status,
+    403,
+  );
+  await s.db.control.query(
+    "UPDATE sessions SET revoked_at=now() WHERE admin_id=$1",
+    [f.admin.id],
+  );
+  assert.equal(
+    (await call(f.admin, "GET", endpoint(f, "memories"))).status,
+    401,
+  );
+});
+
+test("concurrent confirmations and original-request recovery commit exactly one immutable version", async () => {
+  const f = await fixture(),
+    p = await preview(f, "memories"),
+    key = randomUUID(),
+    body = payload(p),
+    before = await counts(f);
+  const [a, b] = await Promise.all([
+    call(f.admin, "POST", endpoint(f, "memories") + "/apply", body, key),
+    call(f.admin, "POST", endpoint(f, "memories") + "/apply", body, key),
+  ]);
+  assert.equal(a.status, 200);
+  assert.equal(b.status, 200);
+  assert.deepEqual(a.data, b.data);
+  const recovered = await ok(
+    f.admin,
+    "POST",
+    endpoint(f, "memories") + "/requests/" + key,
+    { ticket: p.ticket },
+  );
+  assert.equal(recovered.status, "applied");
+  assert.deepEqual(recovered.result, a.data);
+  assert.deepEqual(await counts(f), {
+    ...before,
+    revisions: before.revisions + 1,
+  });
+  assert.equal(
+    (
+      await call(
+        f.admin,
+        "POST",
+        endpoint(f, "memories") + "/apply",
+        body,
+        randomUUID(),
+      )
+    ).status,
+    409,
+  );
+});
+
+test("customer changes and altered tickets cannot overwrite a reviewed specialist version", async () => {
+  const f = await fixture(),
+    p = await preview(f, "agents");
+  const tampered = payload(p);
+  tampered.ticket = { ...p.ticket, after_sha256: "0".repeat(64) };
+  const rejected = await call(
+    f.admin,
+    "POST",
+    endpoint(f, "agents") + "/apply",
+    tampered,
+  );
+  assert.equal(rejected.status, 409);
+  assert.equal(rejected.data.error.code, "CONTENT_REVISION_PREVIEW_INVALID");
+  assert.equal((await counts(f)).revisions, 0);
+  await ok(f.owner, "PATCH", f.base + `/agents/${f.agent.id}`, {
+    expected_version: 1,
+    name: "Customer wins",
+    role_key: "assistant",
+    instructions: "Customer revised",
+    brand_id: f.brand.id,
+  });
+  assert.equal(
+    (await call(f.admin, "POST", endpoint(f, "agents") + "/apply", payload(p)))
+      .status,
+    409,
+  );
+  assert.equal(
+    (
+      await s.db.control.query("SELECT name,version FROM agents WHERE id=$1", [
+        f.agent.id,
+      ])
+    ).rows[0].name,
+    "Customer wins",
+  );
+  assert.equal((await counts(f)).revisions, 0);
+});
+
+test("legacy metadata rename cannot bypass reviewed specialist, brand or memory revisions", async () => {
+  const f = await fixture();
+  for (const id of [f.agent.id, f.brand.id, f.memory.id]) {
+    const r = await call(f.admin, "POST", `/v1/admin/content/${id}/action`, {
+      action: "metadata",
+      name: "Unreviewed name",
+      version: 1,
+      reason: "Reject legacy rename",
+    });
+    // This operator also needs the distinct metadata permission to reach the old handler.
+    assert.equal(r.status, 403);
+  }
+  await s.db.control.query(
+    "UPDATE admin_roles SET permissions=permissions || '[\"admin.content.metadata.write\"]'::jsonb WHERE key=$1",
+    [f.role],
+  );
+  for (const id of [f.agent.id, f.brand.id, f.memory.id])
+    assert.equal(
+      (
+        await call(f.admin, "POST", `/v1/admin/content/${id}/action`, {
+          action: "metadata",
+          name: "Unreviewed name",
+          version: 1,
+          reason: "Reject legacy rename",
+        })
+      ).status,
+      400,
+    );
+  assert.equal((await counts(f)).revisions, 0);
+});
+
+test("new history and original receipts disappear from revoked scope without exposing private bodies", async () => {
+  const f = await fixture(),
+    p = await preview(f, "memories"),
+    key = randomUUID();
+  await ok(
+    f.admin,
+    "POST",
+    endpoint(f, "memories") + "/apply",
+    payload(p),
+    key,
+  );
+  const history = await ok(
+    f.admin,
+    "GET",
+    endpoint(f, "memories") + "/history",
+  );
+  assert.equal(history.items.length, 1);
+  assert.equal(history.items[0].administrator_name, "Scoped revision operator");
+  assert.ok(!JSON.stringify(history).includes("Original customer facts"));
+  await s.db.control.query(
+    "INSERT INTO admin_bindings(principal_id,role_key,scope_kind,scope_id,effect) VALUES($1,$2,'project',$3,'deny')",
+    [f.admin.id, f.role, f.project],
+  );
+  for (const suffix of ["", "/history", "/options"])
+    assert.equal(
+      (await call(f.admin, "GET", endpoint(f, "memories") + suffix)).status,
+      403,
+    );
+  assert.equal(
+    (
+      await call(
+        f.admin,
+        "POST",
+        endpoint(f, "memories") + "/requests/" + key,
+        { ticket: p.ticket },
+      )
+    ).status,
+    403,
+  );
+});
+
+test("control-plane facts/provenance and immutable content cannot be forged or rewritten by SQL roles", async () => {
+  const f = await fixture(),
+    p = await preview(f, "memories"),
+    result = await ok(
+      f.admin,
+      "POST",
+      endpoint(f, "memories") + "/apply",
+      payload(p),
+    );
+  await assert.rejects(
+    s.db.app.query("SELECT * FROM admin_profile_revisions"),
+    /permission denied/,
+  );
+  await assert.rejects(
+    s.db.queue.query("SELECT * FROM admin_profile_revisions"),
+    /permission denied/,
+  );
+  const owner = new pg.Client({
+    connectionString: isolated.env.OWNER_DATABASE_URL,
+  });
+  await owner.connect();
+  try {
+    await assert.rejects(
+      owner.query(
+        "UPDATE admin_profile_revisions SET reason='Rewritten reason' WHERE id=$1",
+        [result.revision_id],
+      ),
+      /immutable/,
+    );
+    await assert.rejects(
+      owner.query("DELETE FROM admin_profile_revisions WHERE id=$1", [
+        result.revision_id,
+      ]),
+      /immutable/,
+    );
+    await assert.rejects(
+      owner.query(
+        "UPDATE memory_versions SET content='Rewritten private history' WHERE memory_id=$1 AND version=2",
+        [f.memory.id],
+      ),
+      /immutable/,
+    );
+    await assert.rejects(
+      owner.query(
+        "UPDATE memory_versions SET created_by_admin=NULL WHERE memory_id=$1 AND version=2",
+        [f.memory.id],
+      ),
+      /provenance/,
+    );
+    await assert.rejects(
+      owner.query(
+        `INSERT INTO memory_versions(tenant_id,memory_id,version,content,created_by,created_by_admin,admin_revision_id)
+      VALUES($1,$2,3,'Forged version',NULL,$3,$4)`,
+        [f.tenant, f.memory.id, f.admin.id, result.revision_id],
+      ),
+      /control plane/,
+    );
+  } finally {
+    await owner.end();
+  }
+});
+
+test("audit failure rolls back profile version, parent pointer, immutable fact and idempotency receipt", async () => {
+  const f = await fixture(),
+    p = await preview(f, "brand_profiles"),
+    key = randomUUID(),
+    owner = new pg.Client({
+      connectionString: isolated.env.OWNER_DATABASE_URL,
+    });
+  await owner.connect();
+  try {
+    await owner.query(`CREATE FUNCTION fail_profile_audit_fixture() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+      IF NEW.principal_id='${f.admin.id}'::uuid AND NEW.action='admin.content.revision.create' THEN RAISE EXCEPTION 'Synthetic audit unavailable'; END IF; RETURN NEW; END $$`);
+    await owner.query(
+      "CREATE TRIGGER fail_profile_audit_fixture BEFORE INSERT ON audit_log FOR EACH ROW EXECUTE FUNCTION fail_profile_audit_fixture()",
+    );
+    const before = await counts(f);
+    assert.equal(
+      (
+        await call(
+          f.admin,
+          "POST",
+          endpoint(f, "brand_profiles") + "/apply",
+          payload(p),
+          key,
+        )
+      ).status,
+      500,
+    );
+    assert.deepEqual(await counts(f), before);
+    assert.equal(
+      (
+        await s.db.control.query(
+          "SELECT version FROM brand_profiles WHERE id=$1",
+          [f.brand.id],
+        )
+      ).rows[0].version,
+      1,
+    );
+    assert.equal(
+      (
+        await s.db.control.query(
+          "SELECT count(*)::int AS n FROM request_replays WHERE actor_id=$1 AND key=$2",
+          [f.admin.id, key],
+        )
+      ).rows[0].n,
+      0,
+    );
+  } finally {
+    await owner.query(
+      "DROP TRIGGER IF EXISTS fail_profile_audit_fixture ON audit_log",
+    );
+    await owner.query("DROP FUNCTION IF EXISTS fail_profile_audit_fixture()");
+    await owner.end();
+  }
+});
+
+test("admin deletion erases every memory snapshot while preserving attributed metadata and financial facts", async () => {
+  const f = await fixture(),
+    p = await preview(f, "memories", {
+      content: "Admin private facts to erase",
+    });
+  await ok(f.admin, "POST", endpoint(f, "memories") + "/apply", payload(p));
+  await s.db.control.query(
+    "UPDATE admin_roles SET permissions=permissions || '[\"admin.content.delete\"]'::jsonb WHERE key=$1",
+    [f.role],
+  );
+  const before = await counts(f),
+    row = (
+      await s.db.control.query(
+        "SELECT moderation_version FROM memories WHERE id=$1",
+        [f.memory.id],
+      )
+    ).rows[0];
+  await ok(f.admin, "POST", `/v1/admin/content/${f.memory.id}/action`, {
+    action: "delete",
+    version: row.moderation_version,
+    reason: "Customer requested erasure",
+  });
+  const rows = (
+    await s.db.control.query(
+      "SELECT content,definition,created_by_admin,admin_revision_id FROM memory_versions WHERE memory_id=$1 ORDER BY version",
+      [f.memory.id],
+    )
+  ).rows;
+  assert.ok(rows.every((r) => r.content === null && r.definition === null));
+  assert.equal(rows[1].created_by_admin, f.admin.id);
+  assert.deepEqual(await counts(f), before);
+});
+
+test("ordinary customer edits after admin revisions retain their real creator and do not inherit admin context", async () => {
+  const f = await fixture();
+  for (const kind of ["agents", "brand_profiles", "memories"] as const) {
+    const p = await preview(f, kind);
+    await ok(f.admin, "POST", endpoint(f, kind) + "/apply", payload(p));
+    if (kind === "agents")
+      await ok(f.owner, "PATCH", f.base + `/agents/${f.agent.id}`, {
+        expected_version: 2,
+        name: "Customer's next specialist",
+        role_key: "assistant",
+        instructions: "Customer settings",
+        brand_id: f.brand.id,
+      });
+  }
+  await ok(f.owner, "PUT", f.base + `/brand/${f.brand.id}`, {
+    expected_version: 2,
+    definition: { ...defaultBrand(), name: "Customer's next brand" },
+  });
+  await ok(f.owner, "PATCH", f.base + `/memories/${f.memory.id}`, {
+    expected_version: 2,
+    name: "Customer's next memory",
+    content: "Customer facts",
+    scope: "project",
+    expires_at: null,
+  });
+  for (const [table, field, id] of [
+    ["brand_profile_versions", "brand_id", f.brand.id],
+    ["memory_versions", "memory_id", f.memory.id],
+    ["agent_versions", "agent_id", f.agent.id],
+  ]) {
+    const current = (
+      await s.db.control.query(
+        `SELECT created_by,created_by_admin,admin_revision_id FROM ${table} WHERE ${field}=$1 AND version=3`,
+        [id],
+      )
+    ).rows[0];
+    assert.equal(current.created_by, f.owner.id);
+    assert.equal(current.created_by_admin, null);
+    assert.equal(current.admin_revision_id, null);
+  }
+});
+
+test("legacy brand guidance requires explicit font/use completion and keeps old unattributed history", async () => {
+  const f = await fixture(),
+    old = (
+      await s.db.control.query(
+        "INSERT INTO brand_profiles(tenant_id,project_id,name,body) VALUES($1,$2,'Legacy guidance',$3) RETURNING *",
+        [f.tenant, f.project, { colors: ["#101010"], tone: "Legacy notes" }],
+      )
+    ).rows[0];
+  const editor = await ok(
+    f.admin,
+    "GET",
+    endpoint(f, "brand_profiles", old.id),
+  );
+  assert.equal(editor.source_context.legacy_brand, true);
+  assert.deepEqual(editor.definition.font_bindings, []);
+  const p = await preview(
+    f,
+    "brand_profiles",
+    { ...defaultBrand(), name: "Explicitly completed guidance" },
+    old.id,
+  );
+  await ok(
+    f.admin,
+    "POST",
+    endpoint(f, "brand_profiles", old.id) + "/apply",
+    payload(p),
+  );
+  const versions = (
+    await s.db.control.query(
+      "SELECT body,created_by,created_by_admin FROM brand_profile_versions WHERE brand_id=$1 ORDER BY version",
+      [old.id],
+    )
+  ).rows;
+  assert.equal(versions[0].body.schema_version, undefined);
+  assert.equal(versions[0].created_by_admin, null);
+  assert.equal(versions[1].created_by, null);
+  assert.equal(versions[1].created_by_admin, f.admin.id);
+});
