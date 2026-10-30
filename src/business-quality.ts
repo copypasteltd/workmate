@@ -41,6 +41,7 @@ async function snapshot(tx: Tx, t: any) {
     WHERE a.tenant_id=$1 AND a.project_id=$2 AND v.metadata->>'task_id'=$3 ORDER BY a.id FOR SHARE OF a`, [t.tenant_id, t.project_id, t.id]);
   return (await tx.query("SELECT business_delivery_snapshot($1) AS snapshot", [t.id])).rows[0].snapshot;
 }
+export { taskAccess as deliveryTaskAccess, snapshot as deliverySnapshot };
 export async function recordDeliveryReview(tx: Tx, p: Principal, t: any, input: {
   expected_version?: number; expected_delivery_hash?: string; artifact_ids?: string[]; decision: z.infer<typeof decision>; comment?: string;
 }) {
