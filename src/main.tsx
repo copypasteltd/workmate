@@ -21,6 +21,7 @@ import "./support.css";
 import { RoleTemplateCards, roleEnglish } from "./role-templates";
 import { DesignExports } from "./design-exports";
 import { CreativePackages } from "./creative-packages";
+import { EditableProjects } from "./editable-projects";
 import { CreativeMatrices } from "./creative-matrices";
 import { VideoProjects } from "./video-projects";
 import { GeneratedVideos } from "./generated-videos";
@@ -2011,6 +2012,7 @@ function Creative() {
       />
       <ErrorNotice error={error} />
       <CreativePackages refresh={refresh} onRestored={() => setRefresh(v => v + 1)} />
+      <EditableProjects refresh={refresh} onChanged={() => setRefresh(v => v + 1)} />
       <VideoProjects
         key={w.base + ":" + refresh}
         base={w.base}

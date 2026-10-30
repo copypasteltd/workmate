@@ -4,7 +4,7 @@ import { ErrorNotice, Field, useI18n } from "./ui";
 
 export type BrandRequirements = { source_name: string; texts: { layer: number; font_key: string; fact_key?: string; fact_kind?: string; resolved_text: string }[]; logos: { layer: number; key: string }[] };
 type BrandChoice = { id: string; brand_id: string; version: number; name: string; available: boolean; channels: string[]; locales: string[]; colors: string[];
-  fonts: { key: string; label: string; channels: string[]; valid_until: string | null }[];
+  fonts: { key: string; label: string; channels: string[]; valid_until: string | null; editable_supported?: boolean }[];
   facts: { key: string; kind: string; text: string; state: string }[]; logos: { key: string; usage: string }[] };
 export type BrandApproval = { brand_target: { binding: { id: string; version: number; channel: string; locale: string };
   fonts: { source_key: string; target_key: string }[]; facts: { source_key: string; target_key: string }[];
@@ -12,9 +12,9 @@ export type BrandApproval = { brand_target: { binding: { id: string; version: nu
   brand_review_hash: string; confirm_brand_review: true };
 
 /** Every change invalidates approval. Replies from an older choice cannot approve a new one. */
-export function CreativePackageBrand({ root, selection, requirements, colors, disabled, onChange }: {
+export function CreativePackageBrand({ root, selection, requirements, colors, disabled, editableFonts = false, onChange }: {
   root: string; selection: { asset_id: string; version: number; sha256: string }; requirements: BrandRequirements;
-  colors: string[]; disabled: boolean; onChange: (value: BrandApproval | null) => void;
+  colors: string[]; disabled: boolean; editableFonts?: boolean; onChange: (value: BrandApproval | null) => void;
 }) {
   const { t } = useI18n(), [pages, setPages] = useState<string[]>([""]), [options, setOptions] = useState<BrandChoice[]>([]),
     [next, setNext] = useState<string | null>(null), [chosen, setChosen] = useState<BrandChoice | null>(null),
@@ -43,7 +43,7 @@ export function CreativePackageBrand({ root, selection, requirements, colors, di
     setLogos(Object.fromEntries(logoKeys.map(k => [k, b?.logos.some(f => f.key === k) ? k : ""])));
   };
   const locked = disabled || busy, canReview = chosen?.available && channel && locale
-    && textKeys.every(k => chosen.fonts.some(f => f.key === fonts[k] && f.channels.includes(channel) && (!f.valid_until || Date.parse(f.valid_until) > Date.now())))
+    && textKeys.every(k => chosen.fonts.some(f => f.key === fonts[k] && (!editableFonts || f.editable_supported) && f.channels.includes(channel) && (!f.valid_until || Date.parse(f.valid_until) > Date.now())))
     && factKeys.every(k => chosen.facts.some(f => f.key === facts[k] && f.state === "available")) && logoKeys.every(k => logos[k]);
   const mapping = (keys: string[], values: Record<string, string>) => keys.map(source_key => ({ source_key, target_key: values[source_key] }));
   const mapField = (kind: "fonts" | "facts" | "logos", key: string, values: Record<string, string>, choices: { key: string; label: string; disabled?: boolean }[], update: (v: Record<string, string>) => void) =>
@@ -57,6 +57,7 @@ export function CreativePackageBrand({ root, selection, requirements, colors, di
     <h4>{t("將設計套用到目的品牌", "Adapt this design to your brand")}</h4>
     <p>{t("來源品牌：", "Source brand: ")}{requirements.source_name}</p>
     <p className="muted">{t("逐項核對字型、事實與 Logo。未綁定的文案和未指定替換的顏色會保留，請確認仍適用。", "Map fonts, facts and Logos. Unbound copy and colors without a replacement stay as they are; review their suitability.")}</p>
+    {editableFonts && <p className="muted">{t("此工程使用固定 Noto Sans TC 字型；請選擇目的品牌中已授權此字型的欄位。", "This project uses pinned Noto Sans TC. Choose the destination brand field licensed for this font.")}</p>}
     <ErrorNotice error={error} />
     <Field label={t("目的品牌固定版本", "Fixed destination brand version")}>
       <select value={chosen?.id ?? ""} disabled={locked || loading} onChange={e => choose(e.target.value)}>
@@ -74,7 +75,7 @@ export function CreativePackageBrand({ root, selection, requirements, colors, di
     {chosen && <>
       <Field label={t("使用渠道", "Usage channel")}><select value={channel} disabled={locked} onChange={e => { invalidate(); setChannel(e.target.value); }}>{chosen.channels.map(v => <option key={v}>{v}</option>)}</select></Field>
       <Field label={t("語言與地區", "Language and region")}><select value={locale} disabled={locked} onChange={e => { invalidate(); setLocale(e.target.value); }}>{chosen.locales.map(v => <option key={v}>{v}</option>)}</select></Field>
-      {textKeys.map(k => mapField("fonts", k, fonts, chosen.fonts.map(f => ({ key: f.key, label: `${f.label} · ${f.key}`, disabled: !f.channels.includes(channel) || !!f.valid_until && Date.parse(f.valid_until) <= Date.now() })), setFonts))}
+      {textKeys.map(k => mapField("fonts", k, fonts, chosen.fonts.map(f => ({ key: f.key, label: `${f.label} · ${f.key}`, disabled: editableFonts && !f.editable_supported || !f.channels.includes(channel) || !!f.valid_until && Date.parse(f.valid_until) <= Date.now() })), setFonts))}
       {factKeys.map(k => mapField("facts", k, facts, chosen.facts.filter(f => f.kind === requirements.texts.find(v => v.fact_key === k)?.fact_kind).map(f => ({ key: f.key, label: `${f.key} · ${f.text}`, disabled: f.state !== "available" })), setFacts))}
       {logoKeys.map(k => mapField("logos", k, logos, chosen.logos.map(f => ({ key: f.key, label: `${f.key} · ${f.usage}` })), setLogos))}
       <details><summary>{t("套用目的品牌配色（選填）", "Apply destination brand colors (optional)")}</summary>

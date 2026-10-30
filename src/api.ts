@@ -1,6 +1,7 @@
 import { clientFetch, clientJson, connectionFailure } from "./client-failure";
 import { clearWorkDrafts } from "./work-draft";
 import { clearDeliveryRevisionDrafts } from "./delivery-revision-state";
+import { clearEditableProjectRequests } from "./editable-project-state";
 export let csrfToken = "";
 let sessionRevision = 0;
 export function endClientSession(
@@ -9,7 +10,7 @@ export function endClientSession(
 ) {
   ++sessionRevision;
   csrfToken = "";
-  if (reason === "sign_out") { clearWorkDrafts(); clearDeliveryRevisionDrafts(); }
+  if (reason === "sign_out") { clearWorkDrafts(); clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); }
   window.dispatchEvent(new Event("copypaste:session-ended"));
   if (broadcast)
     localStorage.setItem(
