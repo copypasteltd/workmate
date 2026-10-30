@@ -1,3 +1,4 @@
+import { ClientFailure, clientFetch, clientJson } from "./client-failure.js";
 import { DesktopPairingController, type PairingJournal } from "./desktop-pairing.js";
 import { deployment } from "./deployment.js";
 import { existsSync } from "node:fs";
@@ -393,7 +394,7 @@ async function request(
       throw e;
     }
   }
-  const r = await fetch(apiURL(config.api, url), {
+  const r = await clientFetch(apiURL(config.api, url), {
     method,
     headers: {
       ...(t ? { Authorization: `Bearer ${t.access_token}` } : {}),
@@ -412,7 +413,6 @@ async function request(
       ? options.body && typeof options.body === "object" && "tool" in options.body && ["generated_video_create", "audio_produce"].includes(String(options.body.tool)) ? 855000 : 180000
       : 40000), ...(options.signal ? [options.signal] : [])]),
   });
-  const body = await r.json();
   if (
     r.status === 401 &&
     t &&
@@ -427,6 +427,8 @@ async function request(
         },
       },
     };
+  if (r.status === 401) return { status: 401, body: { error: { code: "AUTH_REQUIRED", message: "Your session ended. Sign in again." } } };
+  const body = await clientJson(r, method, options.signal);
   return { status: r.status, body };
 }
 async function signIn() {
@@ -671,11 +673,15 @@ async function createWindow() {
   };
   ipcMain.handle("publication-media:open", (event, path, tenant) => publicationMedia.issue(path, tenant, mediaCaller(event)));
   ipcMain.handle("publication-media:close", (event, id) => publicationMedia.close(id, mediaCaller(event)));
-  ipcMain.handle("api", (_e, p, o) => {
+  ipcMain.handle("api", async (_e, p, o) => {
     mediaCaller(_e);
     if (!rendererApiOperation(p, o?.method ?? "GET"))
       throw new Error("API operation is not exposed");
-    return request(p, o);
+    try { return await request(p, o); }
+    catch (error) {
+      if (error instanceof ClientFailure) return { status: 0, body: { error: { code: error.code, message: error.message } } };
+      throw error;
+    }
   });
   ipcMain.handle("desktop-updates", async (event, action) => {
     const expected = new URL("../renderer-dist/index.html", import.meta.url).href;
@@ -879,13 +885,12 @@ async function createWindow() {
       new Blob([Buffer.from(body.base64, "base64")], { type: body.mime }),
       path.basename(body.name),
     );
-    const r = await fetch(apiURL(config.api, p), {
+    const r = await clientFetch(apiURL(config.api, p), {
       method: "POST",
       headers: { Authorization: `Bearer ${t.access_token}` },
       body: form,
       redirect: "error",
     });
-    const data = await r.json();
     if (r.status === 401 && !(await nativeSession.invalidate(t.access_token)))
       return {
         status: 409,
@@ -896,6 +901,8 @@ async function createWindow() {
           },
         },
       };
+    if (r.status === 401) return { status: 401, body: { error: { code: "AUTH_REQUIRED", message: "Your session ended. Sign in again." } } };
+    const data = await clientJson(r, "POST");
     return { status: r.status, body: data };
   });
   await window.loadFile(
