@@ -1,6 +1,10 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
 <!-- native-teams-stage139 -->
+
+Exact-byte delivery: the original runtime checkpoint and failed attempts are retained. Git preserves the executed sources and verifiers without newline conversion; the release checkpoint separately binds this version-control metadata change.
+
+
 ## Native specialist teams · Stage139
 
 Back up the database and stop older API/Worker processes; run `npm run db:migrate` through SQL137, then build and start matching code. Native team APIs enforce exact authority. Only reviewed coordinators may register while paused; members use their own frozen roles. A restricted function returns only the owning team's audio status, without exposing raw audio tables. The cloud queue accepts cloud work only.
@@ -23,7 +27,7 @@ flowchart LR
  H --> I[Recover original receipts, never replay unknown work]
 ```
 
-[Requirements](https://github.com/copypasteltd/workmate/blob/main/docs/requirements/16-desktop-native-teams.md) · [API, permissions, recovery and delivery](https://github.com/copypasteltd/workmate/blob/main/docs/technical/139-desktop-native-teams.md) · [Source and evidence](https://github.com/copypasteltd/workmate/blob/main/docs/quality/native-teams-checkpoint-139.json) · [All original identities](https://github.com/copypasteltd/workmate/blob/main/docs/quality/remaining-work-stage139.md)
+[Requirements](https://github.com/copypasteltd/workmate/blob/main/docs/requirements/16-desktop-native-teams.md) · [API, permissions, recovery and delivery](https://github.com/copypasteltd/workmate/blob/main/docs/technical/139-desktop-native-teams.md) · [Source and evidence](https://github.com/copypasteltd/workmate/blob/main/docs/quality/native-teams-release-checkpoint-139.json) · [All original identities](https://github.com/copypasteltd/workmate/blob/main/docs/quality/remaining-work-stage139.md)
 
 Actual Desktop workflow, synthetic business content:
 

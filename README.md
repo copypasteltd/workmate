@@ -1,6 +1,10 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
 <!-- native-teams-stage139 -->
+
+源码交付：保留原始运行检查点与失败记录；Git按执行时的原始字节保存代码及核查脚本，避免换行转换。交付检查点单独记录本次版本管理元数据调整。
+
+
 ## 本机专家团队 · 阶段139
 
 升级前备份数据库并停止旧API／Worker，执行`npm run db:migrate`至SQL137，再用匹配代码构建启动。新增原生团队API及精确权限约束；数据库只为已审批协调员开放暂停登记，成员按自己的固定角色核验，受限函数仅返回发起人团队的音频终态，不开放原始音频表。云端队列只处理云端工作。
@@ -23,7 +27,7 @@ flowchart LR
  H --> I[Recover original receipts, never replay unknown work]
 ```
 
-[需求](https://github.com/copypasteltd/workmate/blob/main/docs/requirements/16-desktop-native-teams.md) · [接口／权限／恢复／交付方案](https://github.com/copypasteltd/workmate/blob/main/docs/technical/139-desktop-native-teams.md) · [源码与证据](https://github.com/copypasteltd/workmate/blob/main/docs/quality/native-teams-checkpoint-139.json) · [全部编号](https://github.com/copypasteltd/workmate/blob/main/docs/quality/remaining-work-stage139.md)
+[需求](https://github.com/copypasteltd/workmate/blob/main/docs/requirements/16-desktop-native-teams.md) · [接口／权限／恢复／交付方案](https://github.com/copypasteltd/workmate/blob/main/docs/technical/139-desktop-native-teams.md) · [源码与证据](https://github.com/copypasteltd/workmate/blob/main/docs/quality/native-teams-release-checkpoint-139.json) · [全部编号](https://github.com/copypasteltd/workmate/blob/main/docs/quality/remaining-work-stage139.md)
 
 真实Desktop操作，业务内容为假数据：
 
