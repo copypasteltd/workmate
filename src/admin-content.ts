@@ -15,6 +15,7 @@ import { matrixContentBody } from "./creative-matrices.js";
 import { videoContentBody } from "./video-projects.js";
 import { stopAgentGroupRun } from "./agent-groups.js";
 import { registerAdminContentHistory } from "./admin-content-history.js";
+import { isBusinessHistory } from "./admin-business-history.js";
 const tables = [
   "assets",
   "tasks",
@@ -332,6 +333,7 @@ export function registerAdminContent(
             name: r.name ?? r.title ?? table,
             mime_type: "application/json",
             text: JSON.stringify(body, null, 2),
+            ...(isBusinessHistory(table) ? { history_url: `/v1/admin/content/${table}/${r.id}/history`, history_scope: "retained_versions" } : {}),
           };
         },
         undefined,

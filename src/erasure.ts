@@ -468,6 +468,7 @@ export class ErasureService {
             "DELETE FROM editable_project_versions WHERE creative_id=$1",
             [id],
           );
+          await tx.query("DELETE FROM poster_project_versions WHERE creative_id=$1", [id]);
           await tx.query(
             "UPDATE video_project_versions SET definition='{}' WHERE video_id=$1 AND definition<>'{}'",
             [id],

@@ -255,6 +255,7 @@ export function registerBusiness(
         .parse(req.body);
       return db.tx(async (tx) => {
         await projectAccess(tx, req.principal, tenant, project, "write");
+        await tx.query("SELECT set_config('app.poster_actor_id',$1,true)", [req.principal.id]);
         const r = (
           await tx.query(
             "UPDATE creative_projects SET name=$3,body=$4,version=version+1 WHERE id=$1 AND project_id=$2 AND version=$5 AND kind='poster' AND content_state='active' AND retention_expires_at>clock_timestamp() RETURNING *",

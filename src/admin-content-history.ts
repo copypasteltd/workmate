@@ -4,9 +4,10 @@ import type { Database, Tx } from "./db.js";
 import { audit, requireAdmin, type Principal } from "./auth.js";
 import { lockAdminAccess, permit } from "./admin-access.js";
 import { canonical, equal, hmac, Problem, uuid } from "./lib.js";
+import { businessHistoryKinds, businessHistoryPage, isBusinessHistory } from "./admin-business-history.js";
 
 const pageSize = 50;
-const kinds = z.enum(["conversations", "agents", "memories"]);
+const kinds = z.enum(["conversations", "agents", "memories", ...businessHistoryKinds]);
 type Kind = z.infer<typeof kinds>;
 const revision = z.string().regex(/^[1-9][0-9]{0,18}$/);
 const positive = z.number().int().positive();
@@ -20,6 +21,7 @@ const cursorBody = z.object({
     z.object({kind: z.literal("conversations"), id: uuid, at: stamp}).strict(),
     z.object({kind: z.literal("agents"), version: positive}).strict(),
     z.object({kind: z.literal("memories"), version: positive}).strict(),
+    z.object({kind: z.enum(businessHistoryKinds), version: positive, series_id: uuid}).strict(),
   ]), expires_at: z.string().datetime(),
 }).strict();
 const cursorSchema = cursorBody.extend({ signature: z.string().regex(/^[a-f0-9]{64}$/) });
@@ -43,9 +45,11 @@ async function load(tx: Tx, actor: Principal, kind: Kind, id: string) {
   for (const permission of ["admin.content.read", "admin.content.body.read"])
     await permit(tx, actor, permission, { tenant: row.tenant_id, project: row.project_id });
   if (row.content_state === "deleted") throw new Problem(410, "CONTENT_DELETED", "Deleted content is unavailable");
+  if (kind === "creative_projects" && Date.parse(row.retention_expires_at) <= Date.now())
+    throw new Problem(410, "CONTENT_EXPIRED", "This project's retention period has ended");
   return row;
 }
-const historyRevision = (kind: Kind, row: any) => String(kind === "conversations" ? row.history_revision : row.version);
+const historyRevision = (kind: Kind, row: any) => String(kind === "conversations" || isBusinessHistory(kind) ? row.history_revision : row.version);
 function checkRevision(kind: Kind, row: any, expected: z.infer<typeof cursorSchema>) {
   if (historyRevision(kind, row) !== expected.history_revision || row.version !== expected.version
     || row.moderation_version !== expected.moderation_version) throw changed();
@@ -66,7 +70,8 @@ function encode(db: Database, actor: Principal, kind: Kind, row: any, item: any,
   const body = cursorBody.parse({ protocol: 1, source_id: row.id, actor_id: actor.id,
     session_id: actor.sessionId, auth_version: actor.authVersion, history_revision: historyRevision(kind, row),
     version: row.version, moderation_version: row.moderation_version, direction,
-    anchor: kind === "conversations" ? {kind, id: item.id, at: item.cursor_at} : {kind, version: item.version},
+    anchor: kind === "conversations" ? {kind, id: item.id, at: item.cursor_at}
+      : isBusinessHistory(kind) ? {kind, version: item.version, series_id: item.series_id} : {kind, version: item.version},
     expires_at: expires });
   return Buffer.from(JSON.stringify({ ...body,
     signature: hmac(db.config.MASTER_KEY!, "admin-content-history-v1:" + canonical(body)) })).toString("base64url");
@@ -81,7 +86,12 @@ export function registerAdminContentHistory(app: FastifyInstance, db: Database) 
       const backwards = c ? c.direction === "previous" : q.edge === "last";
       const args: any[] = [id];
       let anchor = "", sql: string;
-      if (kind === "conversations") {
+      let businessItems: any[] | undefined;
+      if (isBusinessHistory(kind)) {
+        businessItems = await businessHistoryPage(tx, kind, row, backwards,
+          c && "series_id" in c.anchor ? c.anchor : null, pageSize + 1);
+        sql = "";
+      } else if (kind === "conversations") {
         args.push(row.tenant_id, row.project_id);
         if (c?.anchor.kind === "conversations") {
           args.push(c.anchor.at, c.anchor.id);
@@ -106,7 +116,7 @@ export function registerAdminContentHistory(app: FastifyInstance, db: Database) 
           CASE WHEN created_by_admin IS NOT NULL THEN 'administrator' ELSE 'customer' END AS origin
           FROM ${table} WHERE ${parent}=$1 ${anchor} ORDER BY version ${backwards ? "ASC" : "DESC"} LIMIT ${pageSize + 1}`;
       }
-      const fetched = (await tx.query(sql, args)).rows;
+      const fetched = businessItems ?? (await tx.query(sql, args)).rows;
       const more = fetched.length > pageSize, items = fetched.slice(0, pageSize);
       if (backwards) items.reverse();
       const expires = c?.expires_at ?? new Date(Date.now() + 30 * 60_000).toISOString();
@@ -115,7 +125,9 @@ export function registerAdminContentHistory(app: FastifyInstance, db: Database) 
       const next = !!last && (backwards ? !!c : more);
       await audit(tx, req.principal, "admin.content.body.read", id, "succeeded",
         { kind, page_items: items.length, direction: backwards ? "previous" : "next" }, row.tenant_id);
-      return { id, kind, name: row.name, history_revision: historyRevision(kind, row), version: row.version,
+      return { id, kind, name: row.name, content_kind: row.kind ?? kind,
+        history_scope: isBusinessHistory(kind) ? "retained_versions" : undefined,
+        history_revision: historyRevision(kind, row), version: row.version,
         moderation_version: row.moderation_version, page_size: pageSize,
         items: items.map(({ cursor_at, ...item }) => item),
         previous_cursor: previous ? encode(db, req.principal, kind, row, first, "previous", expires) : null,

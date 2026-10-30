@@ -437,7 +437,7 @@ export function registerBrandProduction(
             return row;
           },
         );
-      }, tenant);
+      }, tenant, false, req.principal.id);
       return reply.code(201).send(result);
     },
   );
@@ -493,7 +493,7 @@ export function registerBrandProduction(
           return row;
         },
       );
-    }, tenant);
+    }, tenant, false, req.principal.id);
   });
   app.get(
     base + "/:id/versions",
