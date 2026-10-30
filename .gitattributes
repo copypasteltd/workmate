@@ -31,3 +31,7 @@ scripts/publish-workmate-v8.mjs -text whitespace=cr-at-eol
 
 # Bind the native-publication executor without checkout conversions.
 scripts/publish-workmate-v9.mjs -text whitespace=cr-at-eol
+
+# Original Stage132 snapshots and tool logs retain upstream whitespace exactly.
+evidence/content-history-132/objects/** -diff -text -whitespace
+evidence/content-history-132/*.tap -text -whitespace
