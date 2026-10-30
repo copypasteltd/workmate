@@ -81,3 +81,6 @@ The GET response is scoped to the authenticated actor and current project. The d
 浏览器第 03 次记录保留原始文件，但窄屏截图受到并发采集与窗口缩放的竞争影响。第 04 次在缩放前结束采集，并验证正文、操作按钮及折叠侧栏的实际边界，作为本次最终界面证据；不修改旧录屏。后端第 09 次通过后只修改了浏览器检查脚本，精确旧脚本保留于原始 verifier，最终第 04 次单独验证新脚本；产品运行代码保持一致。
 
 [实际待确认页面](../design/implementation/workmate-cloud-workflow-04-pending-request.png) · [实际繁中窄屏](../design/implementation/workmate-cloud-workflow-04-review-zh-375.png) · [准备与确认 GIF](../design/implementation/workmate-cloud-workflow-04-cloud-workflow-prepare.gif) · [执行与修改 GIF](../design/implementation/workmate-cloud-workflow-04-cloud-workflow-review.gif)
+
+
+阶段145新增完整成果交接与已结算失败的人工略过确认，保留此文原始范围。见[当前增量方案](145-workflow-handoffs-and-failure-review.md)。

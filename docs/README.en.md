@@ -1,4 +1,9 @@
 <!-- business-history-stage144 -->
+
+<!-- workflow-handoff-stage145 -->
+[Stage145：完整成果交接／失败确认](development/145-workflow-handoffs-and-failure-review.md) · [完整102编号／Original ledger](quality/remaining-work-stage145.md) · [需求补充／Requirements](requirements/10-workflow-handoffs.md)
+
+51项业务／本机控制检查、7项实际Web流程；假数据模型，完整产品验收保持开放。51 targeted backend/native-control cases and seven actual Web journeys; synthetic models, full acceptance remains open.
 ## Administrator business histories
 
 Stage144 adds administrator saved-version reading for brands, teams, briefs, schedules and every creative project kind. Ordinary canvas saves now retain immutable versions; new customer brand saves preserve their actor. Current checks: 52 related backend cases and 9 real Admin browser journeys. The capture below is the actual administrator interface shared by this release.
