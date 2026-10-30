@@ -182,10 +182,11 @@ export async function download(
     if (revision !== sessionRevision) throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
   };
   if (window.copyPasteBridge) {
-    try { await window.copyPasteBridge.download(path, filename, tenantId); }
+    let result: unknown;
+    try { result = await window.copyPasteBridge.download(path, filename, tenantId); }
     catch { current(); throw connectionFailure(); }
     current();
-    return;
+    return { saved: !(result && typeof result === "object" && "saved" in result && result.saved === false) };
   }
   let response: Response;
   try {
@@ -210,4 +211,5 @@ export async function download(
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+  return { saved: true };
 }

@@ -1,4 +1,5 @@
 import { ProjectConfigurationSummary } from "./project-configuration";
+import { ConversationDeliveryDownload } from "./delivery-quality";
 import { useRef, useState } from "react";
 import { AdoptionReview } from "./agent-adoption";
 import { TaskInputRequests } from "./task-dependencies";
@@ -842,6 +843,7 @@ export function ConversationDetail() {
                         <DateText value={m.created_at} />
                       </header>
                       <p className="preserve-text">{m.body}</p>
+                      {m.role === "assistant" && m.task_id && <ConversationDeliveryDownload base={w.base} taskId={m.task_id}/>}
                       {m.task_id && (
                         <Link
                           className="text-link"

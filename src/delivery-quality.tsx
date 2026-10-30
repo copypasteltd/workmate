@@ -1,14 +1,28 @@
 import { useEffect, useState } from "react";
-import { api } from "./api";
+import { api, download } from "./api";
 import { completeOperation, operationKey } from "./operation-key";
 import { DateText, ErrorNotice, Loading, useData, useI18n } from "./ui";
 import "./delivery-quality.css";
+
+/** Start from the original conversation without forcing customers into advanced task tools. */
+export function ConversationDeliveryDownload({ base, taskId }: { base: string; taskId: string }) {
+  const { t } = useI18n(), [pending, setPending] = useState(false), [error, setError] = useState<Error | null>(null), [done, setDone] = useState(false);
+  return <div className="conversation-delivery-download"><button className="text-link" type="button" disabled={pending} onClick={() => {
+    if (pending) return; setPending(true); setError(null); setDone(false);
+    const path = `${base}/tasks/${taskId}`;
+    void api(path + "/quality").then(data => download(path + "/delivery-package?" + new URLSearchParams({
+      expected_version: String(data.task_version), expected_delivery_hash: data.delivery_hash,
+    }), `workmate-${taskId}-v${data.task_version}.zip`)).then(result => setDone(result.saved)).catch(e => setError(e as Error)).finally(() => setPending(false));
+  }}>{pending ? t("正在整理交付包…", "Preparing delivery package…") : t("下載完整交付包", "Download delivery package")}</button>
+    {done && <small role="status">{t("已交給下載管理器。", "Passed to the download manager.")}</small>}<ErrorNotice error={error}/></div>;
+}
 
 export function DeliveryQuality({ base, taskId, changed }: { base: string; taskId: string; changed?: () => void }) {
   const { t } = useI18n(), [revision, setRevision] = useState(0), [pending, setPending] = useState(false), [error, setError] = useState<Error | null>(null);
   const path = `${base}/tasks/${taskId}`, { data, error: loadError, loading } = useData(path + "/quality", revision, 0, "", { retainOnRefresh: true });
   const [decision, setDecision] = useState("accepted"), [comment, setComment] = useState("");
   const [baseline, setBaseline] = useState(""), [human, setHuman] = useState(""), [revisions, setRevisions] = useState("");
+  const [exporting, setExporting] = useState(false), [exported, setExported] = useState(false);
   useEffect(() => { const m = data?.measurements; setBaseline(m?.baseline_minutes?.toString() ?? ""); setHuman(m?.human_minutes?.toString() ?? ""); setRevisions(m?.manual_revisions?.toString() ?? ""); }, [taskId, data?.measurements?.id]);
   const labels: Record<string, string> = { pending_review: t("待審閱", "Awaiting review"), accepted: t("已接受", "Accepted"), changes_requested: t("需修改", "Changes requested"), discarded: t("已棄用", "Discarded") };
   const send = async (action: string, body: unknown) => {
@@ -25,6 +39,16 @@ export function DeliveryQuality({ base, taskId, changed }: { base: string; taskI
     {(error || loadError) && <button className="button secondary" type="button" disabled={pending} onClick={() => setRevision(v => v + 1)}>{t("重新載入目前版本", "Reload current version")}</button>}
     {data && <>
       <p className="muted">{t("工作完成後，由你確認成果是否可用。你的評價會保留所審閱的版本。", "You decide whether the completed work is usable. Each review keeps the version you reviewed.")}</p>
+      {data.delivery && (data.delivery.output_sha256 || data.delivery.artifacts.length > 0) && <div className="delivery-package-actions">
+        <button className="button secondary" type="button" disabled={exporting || pending || loading} onClick={() => {
+          if (exporting) return; setExporting(true); setExported(false); setError(null);
+          const query = new URLSearchParams({ expected_version: String(data.task_version), expected_delivery_hash: data.delivery_hash });
+          void download(`${path}/delivery-package?${query}`, `workmate-${taskId}-v${data.task_version}.zip`)
+            .then(result => setExported(result.saved)).catch(e => setError(e as Error)).finally(() => setExporting(false));
+        }}>{exporting ? t("正在整理交付包…", "Preparing delivery package…") : t("下載完整交付包", "Download delivery package")}</button>
+        <p className="muted">{t("包含本次雲端成果、版本清單及編輯說明；未提交的本機檔案仍留在你的電腦。", "Includes this task’s cloud outputs, version manifest and editing instructions. Local files not submitted remain on your computer.")}</p>
+        {exported && <p role="status">{t("交付包已交給下載管理器。", "Delivery package passed to the download manager.")}</p>}
+      </div>}
       {data.can_review && <form onSubmit={e => { e.preventDefault(); void send("/reviews", { expected_version: data.task_version, expected_delivery_hash: data.delivery_hash, decision, comment }); }}>
         <fieldset disabled={pending || loading}><legend>{t("目前交付", "Current delivery")}</legend>
           <ul>{data.delivery.artifacts.map((a: any) => <li key={a.id}><span>{t("交付物", "Artifact")} · {a.id.slice(0, 8)}</span><small>v{a.version}</small></li>)}</ul>
