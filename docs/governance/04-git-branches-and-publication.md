@@ -1,5 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- delivery-package-stage137 -->
+阶段137使用`docs/tools/prepare_delivery_package_publication_137_v1.py`及`docs/tools/publish_delivery_package_137_v1.py --push`，对应`docs/quality/workmate-publication-137.json`。绑定固定版本交付包及三端实际下载的当前源码、原失败、双语README、截图和实时GIF／MP4。保留389761条历史证明身份和阶段136实际发布回执；检查新增对象、全部当前／新增提交路径和当前README链接，普通原子更新六组件及docs／main八引用并读取远端SHA。12份用户未跟踪文件和Desktop根属性保持原字节，不强推。旧完整历史扫描保持历史范围，不将下载子流程等同完整产品验收。
+
+Stage137 uses the delivery-package V1 preparer/publisher and manifest. It binds exact package/download sources, actual three-client captures and original failed attempts; retains all 389761 historical identities and the actual Stage136 receipt; and audits new objects/current paths/README destinations before an ordinary atomic eight-ref update with SHA readback. User-owned files and Desktop root attributes remain unchanged. Earlier complete-history scans retain their original scope, and full-product acceptance remains open.
+
 <!-- business-inputs-stage136-publication-v2 -->
 阶段136最终发布使用`docs/tools/prepare_business_inputs_publication_136_v2.py`及`docs/tools/publish_business_inputs_136_v2.py --push`，对应`docs/quality/workmate-publication-136-v2.json`。只读复核在执行审计／推送前发现V1审计输出目录仍为阶段135，V2改为本轮原生交付记录目录。V1脚本、绑定清单、证明分片和本地提交逐字节保留，标记为本地预备、未发布；下方V1说明为原记录。产品资格与历史387317条已发布证明身份不变，六组件仍以相同提交普通原子更新八引用并读取远端SHA。
 

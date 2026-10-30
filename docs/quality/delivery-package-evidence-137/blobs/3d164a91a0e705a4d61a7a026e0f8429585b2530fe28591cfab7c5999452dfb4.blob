@@ -1,0 +1,147 @@
+{
+  "at": "2026-10-30T07:10:13.386Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "delivery compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "delivery native boundary cases",
+      "arguments": [
+        "--test",
+        "tests/native-surface-integrity.test.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web build",
+      "arguments": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension build",
+      "arguments": [
+        "scripts/build.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop renderer compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop build",
+      "arguments": [
+        "D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "unsigned Windows package",
+      "arguments": [
+        "node_modules/electron-builder/out/cli/cli.js",
+        "--win",
+        "--dir",
+        "--config.directories.output=release/delivery-package-137-02"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "result_exit_code": 0,
+  "journey": {
+    "path": "evidence/delivery-package-137/ui-02-journey.json",
+    "sha256": "d3fb0a4be9aaf2f35db3bcf831ab2ac72505aa10ce4a80191b71c0d38e093e9e",
+    "status": "passed"
+  },
+  "source_manifest": {
+    "path": "evidence/delivery-package-137/ui-02-sources.json",
+    "sha256": "b752782acd67e4c762e0c953a758cc502962f562ebde2ccea800920522f77bab"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "ports_closed": {
+    "4310": true,
+    "4317": true,
+    "6615": true
+  },
+  "package_directory": "../copypaste-desktop/release/delivery-package-137-02/win-unpacked",
+  "package_files": {
+    "CopyPaste.exe": "29ab05f05d0c862a7244c37ad887f06512eb602b2d86637ae0795d0dba0fa789",
+    "resources/app.asar": "e18bce7bdbb092eec48758a0257e834ba2f0fd1bd9601a8abb633e7d7d239f60",
+    "resources/local-codex/codex.exe": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+    "resources/local-codex/runtime-manifest.json": "13490b9b1b9822967b8cea7134c2ba306671e58050a0897545184a7af6f34605"
+  },
+  "package_unchanged": true,
+  "fixture_cleanup": {
+    "exit_code": 0,
+    "sha256": "64d607994e06c2dfe2f32e24bef93f56328723a2d7d6c352e413b1c817bc343a",
+    "at": "2026-10-30T07:10:09.471Z",
+    "status": "passed",
+    "scope": "Only this launcher's newly created deferred fixture IDs; historical retained fixtures are untouched",
+    "workers_exited": true,
+    "actual_filesystem_checked": true,
+    "interrupted_owner_recovery": false,
+    "results": [
+      {
+        "id": "59a48ee42283469690652b88a3e48c73",
+        "reclaimed": true
+      }
+    ]
+  },
+  "raw_log": {
+    "path": "evidence/delivery-package-137/ui-02.tap",
+    "sha256": "69aae32f32f3147a35270be63f5c8f1ab75d75e988e6015e656a48c6d6e2d3e5"
+  },
+  "verifier": {
+    "path": "evidence/delivery-package-137/ui-02-verifier.mjs",
+    "sha256": "f03ca2cb2350a38b83f39c4edc10791132ea88d8b54aa48e56fa2c8f296aaad2"
+  },
+  "model_mode": "Synthetic business data and scripted tool calls in UI journeys; actual native Codex is checked separately by backend integration."
+}

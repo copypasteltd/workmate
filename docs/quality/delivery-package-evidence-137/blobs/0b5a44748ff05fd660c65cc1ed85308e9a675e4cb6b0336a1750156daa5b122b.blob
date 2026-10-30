@@ -1,0 +1,94 @@
+{
+  "at": "2026-10-30T07:03:46.466Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "backend compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "delivery package and review/source regressions",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/delivery-package-137-v1.test.ts",
+        "tests/business-quality.test.ts",
+        "tests/task-source-visibility.test.ts",
+        "tests/task-history-sources.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension existing state and upload regressions",
+      "arguments": [
+        "--import",
+        "tsx",
+        "--test",
+        "tests/delivery-download-137-v1.test.ts",
+        "tests/conversation.test.ts",
+        "tests/native-session.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-web renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-desktop renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/delivery-package-137/backend-02-sources.json",
+    "sha256": "f2211cf99eb3242555f77e701c39c85fccb368314afbb03983eb870b6fb2f70b"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "port_closed": true,
+  "raw_log": {
+    "path": "evidence/delivery-package-137/backend-02.tap",
+    "sha256": "22a805c9f50880ec23d4a4742f638a771e6769afeedd0695d9eecc4ae0067f46"
+  },
+  "verifier": {
+    "path": "evidence/delivery-package-137/backend-02-verifier.mjs",
+    "sha256": "554eea711917fd9d4250e7a08aee877d30c8fe30f11b39087707ffe0fbb8fbb4"
+  },
+  "model_mode": "Controlled Codex runtime adapter with explicit synthetic task results. Real HTTP, permissions, native PostgreSQL, stored files and ZIP extraction. No paid model calls."
+}
