@@ -1,5 +1,41 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
+<!-- creative-packages-stage140 -->
+## 工程打包与恢复 · 阶段140
+
+本轮交付包括普通分层画布及模板影片的恢复代码、真实Web／Windows包／Chrome侧栏操作与截图、GIF／MP4录制；所有失败与通过尝试保留独立记录。原生工具运行，不使用Docker／WSL。
+
+导出和恢复不请求AI。上传前先明确确认项目共用，恢复前再确认素材权利；原工程不覆写，中断后核对原请求。当前支持普通分层画布和campaign-cuts影片；画布系统字型差异、品牌重绑、全部格式及跨机器恢复仍待完整验收。
+
+```mermaid
+flowchart LR
+ A[Fixed canvas or video version] --> B[Source JSON and exact media ZIP]
+ B --> C[Explicit project sharing and verified upload]
+ C --> D[Review manifest and rights]
+ D --> E[Restore new project and media IDs]
+ E --> F[Edit layers or timeline]
+ F --> G[Render PNG or MP4 and export again]
+ D --> H[Lost response: check original receipt]
+ H --> E
+```
+
+在本仓库按现有原生依赖和本地测试环境配置，先执行 `node scripts/qualify-creative-packages-140-v6.mjs 90`，再执行 `node scripts/qualify-creative-packages-ui-140-v6.mjs 91 90`。使用未占用的两位尝试编号，报告不可覆盖。第一步自主管理并关闭原生 PostgreSQL，第二步构建实际客户端并复用已关闭的测试集群；必须依次执行，避免同时写后端构建文件。本流程使用合成业务数据，无需真实模型密钥。
+
+- [Format, APIs & usage / 格式、接口及使用](https://github.com/copypasteltd/workmate/blob/docs/docs/development/140-creative-project-packages.md)
+- [Actual qualification / 实际验证](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/creative-packages-checkpoint-140.json)
+- [Open acceptance scopes / 未完成验收](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage140.md)
+
+![Actual web project restoration · synthetic campaign content](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-creative-packages-140-07-restored-edited-rendered-en.png)
+
+- [Actual web interaction .MP4](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-creative-packages-140-07-project-restore.mp4)
+![Actual web project restoration interaction](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-creative-packages-140-07-project-restore.gif)
+
+- [Actual web interaction .GIF](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-creative-packages-140-07-project-restore.gif)
+- [Actual desktop interaction .MP4](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-creative-packages-140-07-project-restore.mp4)
+- [Actual desktop interaction .GIF](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-creative-packages-140-07-project-restore.gif)
+- [Actual extension interaction .MP4](https://github.com/copypasteltd/workmate/blob/extension/assets/screenshots/workmate-creative-packages-140-07-project-restore.mp4)
+- [Actual extension interaction .GIF](https://github.com/copypasteltd/workmate/blob/extension/assets/screenshots/workmate-creative-packages-140-07-project-restore.gif)
+
 <!-- native-teams-stage139 -->
 
 源码交付：保留原始运行检查点与失败记录；Git按执行时的原始字节保存代码及核查脚本，避免换行转换。交付检查点单独记录本次版本管理元数据调整。

@@ -1,0 +1,147 @@
+{
+  "at": "2026-10-30T13:17:31.475Z",
+  "status": "failed",
+  "error": null,
+  "commands": [
+    {
+      "name": "delivery compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "delivery native boundary cases",
+      "arguments": [
+        "--test",
+        "tests/native-surface-integrity.test.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web build",
+      "arguments": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension build",
+      "arguments": [
+        "scripts/build.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop renderer compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop build",
+      "arguments": [
+        "D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "unsigned Windows package",
+      "arguments": [
+        "node_modules/electron-builder/out/cli/cli.js",
+        "--win",
+        "--dir",
+        "--config.directories.output=release/creative-packages-140-04"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "result_exit_code": 1,
+  "journey": {
+    "path": "evidence/creative-packages-140/ui-04-journey.json",
+    "sha256": "38e1284be9a9754dd0da8958ba6058ac91d639e166c2236272c0ba5f1312e433",
+    "status": "failed"
+  },
+  "source_manifest": {
+    "path": "evidence/creative-packages-140/ui-04-sources.json",
+    "sha256": "62b2af1a5370c90ab3024f4ac6c1be0f673b948bcb0831eb559b4fe29b29d920"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "ports_closed": {
+    "2550": true,
+    "4310": true,
+    "4317": true
+  },
+  "package_directory": "../copypaste-desktop/release/creative-packages-140-04/win-unpacked",
+  "package_files": {
+    "CopyPaste.exe": "39b4a48e274ebb85877a4134fae28d6c4b6e6503e1a7d231924ea6b390517ccc",
+    "resources/app.asar": "4803aff951f367974c62222c885ba721e95b03dfd2f2093c24cad00ae4463e07",
+    "resources/local-codex/codex.exe": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+    "resources/local-codex/runtime-manifest.json": "13490b9b1b9822967b8cea7134c2ba306671e58050a0897545184a7af6f34605"
+  },
+  "package_unchanged": true,
+  "fixture_cleanup": {
+    "exit_code": 0,
+    "sha256": "36233a44e4a83d918e1d5db66296dd7a7665da9a53a6a6ee8d7ab8818a140858",
+    "at": "2026-10-30T13:17:26.160Z",
+    "status": "passed",
+    "scope": "Only this launcher's newly created deferred fixture IDs; historical retained fixtures are untouched",
+    "workers_exited": true,
+    "actual_filesystem_checked": true,
+    "interrupted_owner_recovery": false,
+    "results": [
+      {
+        "id": "ad6ce4aed5254fa6906a672df085f77a",
+        "reclaimed": true
+      }
+    ]
+  },
+  "raw_log": {
+    "path": "evidence/creative-packages-140/ui-04.tap",
+    "sha256": "268584303f89dd37112d6a8c9d7629895d6ed8be753bb7a2c4e0b7d3fad15edb"
+  },
+  "verifier": {
+    "path": "evidence/creative-packages-140/ui-04-verifier.mjs",
+    "sha256": "4ba6b97bbbdf17d9c7c90fd4adfd0dd57976a210119d2897da3d1053209fe73a"
+  },
+  "model_mode": "Synthetic campaign data; real Web, unsigned frameless packaged Desktop and actual Chrome native right SIDE_PANEL perform verified project restores and deterministic PNG/MP4 rendering. No model request is made."
+}

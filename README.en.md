@@ -1,5 +1,41 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
+<!-- creative-packages-stage140 -->
+## Project packages & restore · Stage140
+
+This increment delivers layered-canvas and campaign-video restoration, actual Web/Windows/Chrome-side-panel journeys, screenshots and GIF/MP4 recordings. Failed and passing attempts remain separate. All tooling runs natively without Docker/WSL.
+
+Export and restore make no AI request. Confirm project sharing before upload and media rights before restoring. Sources remain intact; an interrupted restore retains its original receipt. The supported slice covers ordinary layered canvases and campaign-cuts videos. Canvas system-font differences, brand rebinding, all-format and cross-machine restoration remain open.
+
+```mermaid
+flowchart LR
+ A[Fixed canvas or video version] --> B[Source JSON and exact media ZIP]
+ B --> C[Explicit project sharing and verified upload]
+ C --> D[Review manifest and rights]
+ D --> E[Restore new project and media IDs]
+ E --> F[Edit layers or timeline]
+ F --> G[Render PNG or MP4 and export again]
+ D --> H[Lost response: check original receipt]
+ H --> E
+```
+
+Reproduce with native dependencies and the configured local test environment: run `node scripts/qualify-creative-packages-140-v6.mjs 90`, then `node scripts/qualify-creative-packages-ui-140-v6.mjs 91 90` from this repository. Choose unused two-digit attempt IDs; reports are immutable. The first command owns and stops a native PostgreSQL cluster; the second builds real clients and reuses that stopped cluster. Run these sequentially to avoid concurrent writes to backend build outputs. Synthetic campaign data; no AI credentials are needed for this slice.
+
+- [Format, APIs & usage / 格式、接口及使用](https://github.com/copypasteltd/workmate/blob/docs/docs/development/140-creative-project-packages.md)
+- [Actual qualification / 实际验证](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/creative-packages-checkpoint-140.json)
+- [Open acceptance scopes / 未完成验收](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage140.md)
+
+![Actual web project restoration · synthetic campaign content](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-creative-packages-140-07-restored-edited-rendered-en.png)
+
+- [Actual web interaction .MP4](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-creative-packages-140-07-project-restore.mp4)
+![Actual web project restoration interaction](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-creative-packages-140-07-project-restore.gif)
+
+- [Actual web interaction .GIF](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-creative-packages-140-07-project-restore.gif)
+- [Actual desktop interaction .MP4](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-creative-packages-140-07-project-restore.mp4)
+- [Actual desktop interaction .GIF](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-creative-packages-140-07-project-restore.gif)
+- [Actual extension interaction .MP4](https://github.com/copypasteltd/workmate/blob/extension/assets/screenshots/workmate-creative-packages-140-07-project-restore.mp4)
+- [Actual extension interaction .GIF](https://github.com/copypasteltd/workmate/blob/extension/assets/screenshots/workmate-creative-packages-140-07-project-restore.gif)
+
 <!-- native-teams-stage139 -->
 
 Exact-byte delivery: the original runtime checkpoint and failed attempts are retained. Git preserves the executed sources and verifiers without newline conversion; the release checkpoint separately binds this version-control metadata change.
