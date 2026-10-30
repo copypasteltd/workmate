@@ -3,6 +3,8 @@ import { ShieldCheck, Copy, RefreshCw } from "lucide-react";
 import { api } from "./api";
 import { useWorkspace } from "./context";
 import { DateText, ErrorNotice, Field, Loading, useI18n } from "./ui";
+import { operationKey, completeOperation } from "./operation-key";
+import { pendingSupportGrant, prepareSupportGrant, finishSupportGrant, type SupportGrantAttempt } from "./support-grant-attempt";
 
 type Grant = {
   id: string;
@@ -23,33 +25,59 @@ function SupportGrantForm() {
   const [rows, setRows] = useState<Grant[]>([]),
     [next, setNext] = useState<string | null>(null),
     [error, setError] = useState<Error | null>(null),
+    [readError, setReadError] = useState<Error | null>(null),
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
     [selected, setSelected] = useState<string[]>([]),
+    [unconfirmed, setUnconfirmed] = useState<SupportGrantAttempt | null>(null),
     [notice, setNotice] = useState("");
   const revision = useRef(0),
     identity = `${w.me?.user?.id}:${w.tenant}`;
   const current = useRef(identity);
+  const errorBox = useRef<HTMLDivElement>(null);
   const pending = useRef<AbortController | null>(null), working = useRef(busy);
   current.current = identity;
   working.current = busy;
   const can = w.me?.memberships?.some(
     (m: any) => m.id === w.tenant && ["owner", "admin"].includes(m.role),
   );
-  const request = (path: string, body?: unknown, signal?: AbortSignal) =>
+  const request = (path: string, body?: unknown, signal?: AbortSignal, key?: string) =>
     api(path, {
       ...(body === undefined
         ? {}
         : { method: "POST", body: JSON.stringify(body) }),
-      headers: { "X-Tenant-ID": w.tenant },
+      headers: { "X-Tenant-ID": w.tenant, ...(key ? { "Idempotency-Key": key } : {}) },
       signal,
     });
+  async function recover(attempt: SupportGrantAttempt) {
+    const scope = identity;
+    working.current = true; setBusy(true); setError(null);
+    try {
+      const result = await request(`/v1/support-grants/attempts/${attempt.key}`);
+      if (current.current !== scope) return;
+      if (result.state === "not_found" && Date.parse(result.as_of) < Date.parse(attempt.expires_at)) {
+        setNotice(t("尚未確認結果。你可保留原來的原因、項目和期限重試；不會延長原授權期限。", "The result is not confirmed yet. Retry with the same reason, projects and duration; the original deadline stays fixed."));
+        return;
+      }
+      await finishSupportGrant(scope, attempt.key);
+      if (current.current !== scope) return;
+      setUnconfirmed(null);
+      const refreshed = await load();
+      if (current.current === scope && refreshed) setNotice(result.state === "committed"
+        ? t("已找回先前申請的結果。請查看下方授權的目前狀態。", "Recovered the earlier request. Check the grant's current state below.")
+        : t("先前申請已結束或沒有建立授權。你可以重新申請。", "The earlier request has ended or did not create a grant. You can make a new request."));
+    } catch (e) {
+      if (current.current === scope) setError(e as Error);
+    } finally {
+      if (current.current === scope) { working.current = false; setBusy(false); }
+    }
+  }
   async function load(cursor?: string) {
     const r = ++revision.current,
       scope = identity, controller = new AbortController();
     pending.current?.abort(); pending.current = controller;
     setLoading(true);
-    setError(null);
+    setReadError(null);
     try {
       const result = await request(
         "/v1/support-grants?limit=20" +
@@ -63,7 +91,7 @@ function SupportGrantForm() {
       if (revision.current === r && current.current === scope) {
         setRows([]);
         setNext(null);
-        setError(e as Error);
+        setReadError(e as Error);
       }
       return false;
     } finally {
@@ -80,12 +108,19 @@ function SupportGrantForm() {
     setSelected([]);
     setNotice("");
     setError(null);
+    setReadError(null);
     setBusy(false);
+    setUnconfirmed(null);
     if (!can || !w.tenant) {
       setLoading(false);
       return;
     }
     void load();
+    void pendingSupportGrant(identity).then(attempt => {
+      if (current.current !== identity || !attempt) return;
+      setUnconfirmed(attempt);
+      if (!working.current) void recover(attempt);
+    }).catch(e => { if (current.current === identity) setError(e as Error); });
     const refresh = () => {
       if (document.visibilityState === "visible" && !working.current) void load();
     };
@@ -99,6 +134,9 @@ function SupportGrantForm() {
       document.removeEventListener("visibilitychange", refresh);
     };
   }, [identity, can]);
+  useEffect(() => {
+    if (error) errorBox.current?.scrollIntoView({ block: "nearest" });
+  }, [error]);
   if (!can || !w.tenant) return null;
   return (
     <section className="card support-access" data-testid="support-access">
@@ -123,28 +161,40 @@ function SupportGrantForm() {
           "Choose the scope and deadline, and revoke at any time. Support uses its own administrator identity in a read-only view. Private conversations stay private.",
         )}
       </p>
-      <ErrorNotice error={error} />
+      <div ref={errorBox}><ErrorNotice error={error ?? readError} /></div>
       <p role="status" className="muted">
         {notice}
       </p>
+      {unconfirmed && <div className="support-pending" data-testid="support-unconfirmed">
+        <p>{t("先前授權申請的結果尚待確認。請先查收結果，或以相同資料重試，避免重複授權。", "An earlier grant request is unconfirmed. Check its result or retry the same details to avoid duplicate authorization.")}</p>
+        <p>{t("原定到期時間", "Original deadline")}: <DateText value={unconfirmed.expires_at} /></p>
+        <button type="button" className="button secondary" disabled={busy} onClick={() => { if (!working.current) void recover(unconfirmed); }}>
+          {t("查收先前申請", "Check previous request")}
+        </button>
+      </div>}
       <form
         onSubmit={async (event) => {
           event.preventDefault();
+          if (working.current) return;
           const form = event.currentTarget,
             data = new FormData(form),
             scope = identity;
-          setBusy(true);
+          working.current = true; setBusy(true);
           setError(null);
           setNotice("");
           try {
-            await request("/v1/support-grants", {
+            const prepared = await prepareSupportGrant(scope, {
               reason: String(data.get("reason")).trim(),
               project_ids: selected,
-              expires_at: new Date(
-                Date.now() + Number(data.get("minutes")) * 60000,
-              ).toISOString(),
+              minutes: Number(data.get("minutes")),
             });
             if (current.current !== scope) return;
+            setUnconfirmed(prepared.attempt);
+            await request("/v1/support-grants", prepared.body, undefined, prepared.attempt.key);
+            if (current.current !== scope) return;
+            await finishSupportGrant(scope, prepared.attempt.key);
+            if (current.current !== scope) return;
+            setUnconfirmed(null);
             form.reset();
             setSelected([]);
             const refreshed = await load();
@@ -155,9 +205,11 @@ function SupportGrantForm() {
               ),
             );
           } catch (e) {
-            if (current.current === scope) setError(e as Error);
+            if (current.current === scope) setError(e instanceof Error && e.message === "SUPPORT_ATTEMPT_DIFFERENT"
+              ? new Error(t("先前申請尚未確認。請先查收結果，或填寫相同的原因、項目和期限重試。", "The earlier request is unconfirmed. Check its result or retry the same reason, projects and duration."))
+              : e as Error);
           } finally {
-            if (current.current === scope) setBusy(false);
+            if (current.current === scope) { working.current = false; setBusy(false); }
           }
         }}
       >
@@ -270,16 +322,17 @@ function SupportGrantForm() {
                   className="button secondary"
                   disabled={busy}
                   onClick={async () => {
+                    if (working.current) return;
                     const scope = identity;
-                    setBusy(true);
+                    working.current = true; setBusy(true);
                     setError(null);
                     try {
-                      await request(`/v1/support-grants/${row.id}/revoke`, {
-                        reason: t(
-                          "用戶在設定頁結束客服協助",
-                          "Customer ended support in account settings",
-                        ),
-                      });
+                      const path = `/v1/support-grants/${row.id}/revoke`,
+                        body = { reason: "Customer ended support in account settings" },
+                        key = await operationKey(scope, path, body);
+                      if (current.current !== scope) return;
+                      await request(path, body, undefined, key);
+                      await completeOperation(scope, path, body);
                       if (current.current === scope) {
                         const refreshed = await load();
                         if (current.current === scope && refreshed) setNotice(
@@ -292,7 +345,7 @@ function SupportGrantForm() {
                     } catch (e) {
                       if (current.current === scope) setError(e as Error);
                     } finally {
-                      if (current.current === scope) setBusy(false);
+                      if (current.current === scope) { working.current = false; setBusy(false); }
                     }
                   }}
                 >
