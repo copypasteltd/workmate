@@ -1,0 +1,176 @@
+import {before, after, test} from "node:test";
+import assert from "node:assert/strict";
+import {randomUUID} from "node:crypto";
+import {buildApp} from "../src/server.js";
+import {loadConfig} from "../src/config.js";
+import {canonical, hmac} from "../src/lib.js";
+import {isolatedTestEnvironment} from "./native-test-environment.js";
+import {historyFixture, historyAdmin, historyLogin, historyCall, historyOk, historyUrl, historyPermissions} from "./admin-history-fixture.js";
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>, s: Awaited<ReturnType<typeof buildApp>>,
+  f: Awaited<ReturnType<typeof historyFixture>>;
+before(async () => {
+  isolated = await isolatedTestEnvironment();
+  s = await buildApp(loadConfig({...isolated.env, NODE_ENV: "test", DEMO_MODE: "true", WORKER_ENABLED: "false"}), {worker: false});
+  f = await historyFixture(s, {versions: 205, notes: 65});
+});
+after(async () => { try { await s?.app.close(); } finally { await isolated?.cleanup(); } });
+const read = (kind: string, id: string, q = "", client = f.operator.client) => historyOk(s, client, "GET", historyUrl(kind, id, q));
+const cursorQuery = (cursor: string) => "cursor=" + encodeURIComponent(cursor);
+
+test("customer-created 205 specialist and memory versions remain fully readable beyond the legacy 200 boundary", async () => {
+  for (const [kind, id] of [["agents", f.agent.id], ["memories", f.memory.id]]) {
+    let page = await read(kind, id), versions: number[] = [];
+    const first = page;
+    for (;;) {
+      assert.ok(page.items.length <= 50);
+      for (const item of page.items) { versions.push(item.version); assert.equal(item.origin, "customer"); }
+      if (!page.next_cursor) break;
+      page = await read(kind, id, cursorQuery(page.next_cursor));
+    }
+    assert.deepEqual(versions, Array.from({length: 205}, (_, n) => 205 - n));
+    const second = await read(kind, id, cursorQuery(first.next_cursor));
+    assert.deepEqual((await read(kind, id, cursorQuery(second.previous_cursor))).items, first.items);
+    const oldest = await read(kind, id, "edge=last");
+    assert.deepEqual(oldest.items.map((v: any) => v.version), Array.from({length: 50}, (_, n) => 50 - n));
+    assert.equal(oldest.next_cursor, null);
+    assert.ok(oldest.previous_cursor);
+    const legacy = await historyOk(s, f.operator.client, "GET", `/v1/admin/content/${id}/body`);
+    assert.equal(JSON.parse(legacy.text).length, 200);
+    assert.equal(legacy.truncated, true);
+    assert.equal(legacy.history_url, historyUrl(kind, id));
+  }
+});
+test("original messages page forward and backward, retain exact authors and bodies, and expose no hidden limit", async () => {
+  const original = (await s.db.control.query("SELECT id,body FROM conversation_messages WHERE conversation_id=$1 ORDER BY created_at,id", [f.conversation.id])).rows;
+  const first = await read("conversations", f.conversation.id), next = await read("conversations", f.conversation.id, cursorQuery(first.next_cursor));
+  assert.equal(first.items.length, 50); assert.equal(next.items.length, 15);
+  assert.deepEqual([...first.items, ...next.items].map(v => ({id: v.id, body: v.body})), original);
+  assert.ok([...first.items, ...next.items].every(v => v.role === "user" && v.intent === "note"));
+  assert.deepEqual((await read("conversations", f.conversation.id, cursorQuery(next.previous_cursor))).items, first.items);
+  const latest = await read("conversations", f.conversation.id, "edge=last");
+  assert.deepEqual(latest.items.map((v: any) => v.id), original.slice(-50).map(v => v.id));
+  assert.equal(latest.next_cursor, null);
+});
+test("microsecond anchors and identical timestamp UUID ties never skip or repeat messages", async () => {
+  for (const equalTimes of [false, true]) {
+    await s.db.control.query(`WITH ordered AS (SELECT id,row_number() OVER(ORDER BY id) AS n FROM conversation_messages WHERE conversation_id=$1)
+      UPDATE conversation_messages m SET created_at='2026-01-01T00:00:00.000001Z'::timestamptz + ${equalTimes ? "interval '0 microseconds'" : "o.n * interval '1 microsecond'"}
+      FROM ordered o WHERE o.id=m.id`, [f.conversation.id]);
+    const expected = (await s.db.control.query("SELECT id FROM conversation_messages WHERE conversation_id=$1 ORDER BY created_at,id", [f.conversation.id])).rows.map(v => v.id);
+    const first = await read("conversations", f.conversation.id), second = await read("conversations", f.conversation.id, cursorQuery(first.next_cursor));
+    assert.deepEqual([...first.items, ...second.items].map(v => v.id), expected);
+    assert.equal(new Set([...first.items, ...second.items].map(v => v.id)).size, 65);
+  }
+});
+test("empty and one-version history have no false pagination", async () => {
+  const c = await historyOk(s, f.owner, "POST", f.base + "/conversations", {name: "Empty history", agent_id: f.agent.id});
+  const page = await read("conversations", c.id);
+  assert.deepEqual(page.items, []); assert.equal(page.next_cursor, null); assert.equal(page.previous_cursor, null);
+  const m = await historyOk(s, f.owner, "POST", f.base + "/memories", {name: "One version", content: "Only version", scope: "project", expires_at: null});
+  const single = await read("memories", m.id, "edge=last");
+  assert.equal(single.items.length, 1); assert.equal(single.next_cursor, null); assert.equal(single.previous_cursor, null);
+});
+test("both permissions are required and unauthenticated customers cannot use the administrator reader", async () => {
+  const url = historyUrl("memories", f.memory.id);
+  assert.equal((await historyCall(s, null, "GET", url)).status, 401);
+  assert.equal((await historyCall(s, f.owner, "GET", url)).status, 401);
+  for (const permission of historyPermissions) {
+    const op = await historyAdmin(s, f.project, [permission]);
+    assert.equal((await historyCall(s, op.client, "GET", url)).status, 403);
+  }
+});
+test("a project grant cannot read another project and explicit denial wins", async () => {
+  const foreign = await historyFixture(s);
+  assert.equal((await historyCall(s, foreign.operator.client, "GET", historyUrl("agents", f.agent.id))).status, 403);
+  const deny = await historyAdmin(s, f.project);
+  await s.db.control.query("INSERT INTO admin_bindings(principal_id,role_key,scope_kind,scope_id,effect) VALUES($1,$2,'project',$3,'deny')", [deny.id, deny.role, f.project]);
+  assert.equal((await historyCall(s, deny.client, "GET", historyUrl("agents", f.agent.id))).status, 403);
+});
+test("signed cursors reject tampering, a different object, a different kind and another administrator", async () => {
+  const first = await read("agents", f.agent.id), token = first.next_cursor;
+  const tampered = JSON.parse(Buffer.from(token, "base64url").toString("utf8")); tampered.anchor.version--;
+  for (const [kind, id, cursor, client] of [
+    ["agents", f.agent.id, Buffer.from(JSON.stringify(tampered)).toString("base64url"), f.operator.client],
+    ["agents", randomUUID(), token, f.operator.client],
+    ["memories", f.memory.id, token, f.operator.client],
+    ["agents", f.agent.id, token, (await historyAdmin(s, f.project)).client],
+  ] as any[]) {
+    const r = await historyCall(s, client, "GET", historyUrl(kind, id, cursorQuery(cursor)));
+    assert.ok([400,404].includes(r.status));
+    assert.equal(r.data.items, undefined);
+  }
+});
+test("expired cursors and a different login session require a fresh history read", async () => {
+  const first = await read("agents", f.agent.id), body = JSON.parse(Buffer.from(first.next_cursor, "base64url").toString("utf8"));
+  delete body.signature; body.expires_at = "2020-01-01T00:00:00.000Z";
+  const token = Buffer.from(JSON.stringify({...body, signature: hmac(s.db.config.MASTER_KEY!, "admin-content-history-v1:" + canonical(body))})).toString("base64url");
+  assert.equal((await historyCall(s, f.operator.client, "GET", historyUrl("agents", f.agent.id, cursorQuery(token)))).status, 409);
+  const second = await historyLogin(s, f.operator.email, f.operator.secret);
+  assert.equal((await historyCall(s, second, "GET", historyUrl("agents", f.agent.id, cursorQuery(first.next_cursor)))).status, 400);
+});
+test("a customer version change invalidates a prior page rather than mixing versions", async () => {
+  const first = await read("memories", f.memory.id);
+  await historyOk(s, f.owner, "PATCH", f.base + "/memories/" + f.memory.id, {
+    expected_version: 205, name: f.memory.name, content: "Customer amendment 206", scope: "project", expires_at: null });
+  const old = await historyCall(s, f.operator.client, "GET", historyUrl("memories", f.memory.id, cursorQuery(first.next_cursor)));
+  assert.equal(old.status, 409); assert.equal(old.data.error.code, "CONTENT_HISTORY_CHANGED");
+  assert.equal((await read("memories", f.memory.id)).items[0].version, 206);
+});
+test("message changes advance the fence even through direct SQL and cannot rewind it", async () => {
+  const first = await read("conversations", f.conversation.id), target = first.items[0].id;
+  await s.db.control.query("UPDATE conversation_messages SET body='Explicit corrected fixture text' WHERE id=$1", [target]);
+  assert.equal((await historyCall(s, f.operator.client, "GET", historyUrl("conversations", f.conversation.id, cursorQuery(first.next_cursor)))).status, 409);
+  const refreshed = await read("conversations", f.conversation.id);
+  await s.db.control.query("DELETE FROM conversation_messages WHERE id=$1", [target]);
+  assert.equal((await historyCall(s, f.operator.client, "GET", historyUrl("conversations", f.conversation.id, cursorQuery(refreshed.next_cursor)))).status, 409);
+  await assert.rejects(s.db.control.query("UPDATE conversations SET history_revision=1 WHERE id=$1", [f.conversation.id]), (e: any) => e.code === "23514");
+});
+test("permanent deletion denies current and old history cursors and erases retained memory bodies", async () => {
+  const first = await read("memories", f.memory.id);
+  await historyOk(s, f.owner, "DELETE", f.base + "/memories/" + f.memory.id, {expected_version: 206});
+  for (const q of ["", cursorQuery(first.next_cursor)])
+    assert.equal((await historyCall(s, f.operator.client, "GET", historyUrl("memories", f.memory.id, q))).status, 410);
+  const remaining = (await s.db.control.query("SELECT count(*)::int AS n FROM memory_versions WHERE memory_id=$1 AND (content IS NOT NULL OR definition IS NOT NULL)", [f.memory.id])).rows[0].n;
+  assert.equal(remaining, 0);
+});
+test("reads audit metadata without copying bodies or creating tasks, usage, reservations or charges", async () => {
+  const counts = async () => (await s.db.control.query("SELECT (SELECT count(*) FROM tasks) AS tasks,(SELECT count(*) FROM reservations) AS reservations,(SELECT count(*) FROM ledger) AS ledger,(SELECT count(*) FROM current_ai_provider_requests) AS requests")).rows[0];
+  const before = await counts(), r = await historyCall(s, f.operator.client, "GET", historyUrl("agents", f.agent.id));
+  assert.equal(r.status, 200); assert.equal(r.raw.headers["cache-control"], "no-store");
+  assert.deepEqual(await counts(), before);
+  const audits = (await s.db.control.query("SELECT detail FROM audit_log WHERE principal_id=$1 AND action='admin.content.body.read' AND target=$2 ORDER BY created_at DESC LIMIT 1", [f.operator.id, f.agent.id])).rows;
+  assert.equal(audits.length, 1);
+  assert.deepEqual(Object.keys(audits[0].detail).sort(), ["direction", "kind", "page_items"]);
+  assert.equal(audits[0].detail.page_items, 50);
+});
+test("unknown kinds, malformed cursors and conflicting query controls fail closed", async () => {
+  for (const url of [historyUrl("tasks", f.agent.id), historyUrl("agents", "invalid"),
+    historyUrl("agents", f.agent.id, "cursor=invalid"),
+    historyUrl("agents", f.agent.id, "edge=first&cursor=invalid"),
+    historyUrl("agents", f.agent.id, "edge=first&limit=100000")]) {
+    const r = await historyCall(s, f.operator.client, "GET", url);
+    assert.equal(r.status, 400); assert.equal(r.data.items, undefined);
+  }
+});
+test("withdrawn source tasks mask assistant bodies in both paginated and compatible reads", async () => {
+  await historyOk(s, f.owner, "POST", `/v1/tenants/${f.tenant}/demo-credit`, {});
+  const c = await historyOk(s, f.owner, "POST", f.base+"/conversations", {name:"Source visibility fixture",agent_id:f.agent.id});
+  const accepted = await historyOk(s, f.owner, "POST", f.base+`/conversations/${c.id}/messages`, {
+    client_message_id:randomUUID(),expected_version:1,intent:"delegate",body:"Explicit synthetic source visibility task",budget_micros:1000000 });
+  await s.db.control.query(`INSERT INTO conversation_messages(tenant_id,project_id,conversation_id,client_message_id,role,intent,body,task_id)
+    VALUES($1,$2,$3,$4,'assistant','result','Explicit synthetic retained assistant body',$5)`, [f.tenant,f.project,c.id,randomUUID(),accepted.task.id]);
+  const visible = await read("conversations",c.id);
+  assert.equal(visible.items.at(-1).body,"Explicit synthetic retained assistant body");
+  await s.db.control.query("UPDATE tasks SET content_state='quarantined',moderation_version=moderation_version+1 WHERE id=$1",[accepted.task.id]);
+  const hidden = await read("conversations",c.id);
+  assert.equal(hidden.items.at(-1).body,null);assert.equal(hidden.items.at(-1).source_unavailable,true);
+  const legacy = await historyOk(s,f.operator.client,"GET",`/v1/admin/content/${c.id}/body`);
+  assert.equal(JSON.parse(legacy.text).at(-1).body,null);
+  assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM current_ai_provider_requests")).rows[0].n,0);
+});
+test("revoked administrator sessions cannot continue an already opened history", async () => {
+  const op=await historyAdmin(s,f.project), first=await read("agents",f.agent.id,"",op.client);
+  await s.db.control.query("UPDATE sessions SET revoked_at=now() WHERE admin_id=$1",[op.id]);
+  const r=await historyCall(s,op.client,"GET",historyUrl("agents",f.agent.id,cursorQuery(first.next_cursor)));
+  assert.equal(r.status,401);assert.equal(r.data.items,undefined);
+});
