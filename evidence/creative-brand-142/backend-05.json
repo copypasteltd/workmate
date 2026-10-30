@@ -1,0 +1,132 @@
+{
+  "at": "2026-10-30T14:56:05.074Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "current test discovery",
+      "arguments": [
+        "scripts/run-current-tests-owned-v10.mjs",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "portable design/video restore integration",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/creative-brand-142-v3.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "portable canvas and video regressions",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/creative-packages-140-v6.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "existing brand production regressions",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/brand-production.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "existing editable SVG and PPTX regressions",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/editable-design-render.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "actual vector and presentation image pixels",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/design-images-142-v1.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "existing video and layered design regressions",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/video-projects.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension archive download boundary",
+      "arguments": [
+        "--import",
+        "tsx",
+        "--test",
+        "tests/creative-package-download-140-v1.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-web renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-desktop renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/creative-brand-142/backend-05-sources.json",
+    "sha256": "761214d44c3db6f5b39e523abee6c97b4ef9fffde27be870c5e3c3784d8314ba"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "port_closed": true,
+  "owned_native_cluster": {
+    "path": ".data/native-qa/b2b4e7a2-6c9c-4e68-96d1-08b56c1af7da"
+  },
+  "raw_log": {
+    "path": "evidence/creative-brand-142/backend-05.tap",
+    "sha256": "2efd2a31335564530a047665d2ffa49003cbe1de2d3439030e9c8327cbf86bd7"
+  },
+  "verifier": {
+    "path": "evidence/creative-brand-142/backend-05-verifier.mjs",
+    "sha256": "d1d6eb3f2e7c1e0ec864d88e27c52fd859613d089ada10032507bbbdc2415237"
+  },
+  "model_mode": "Synthetic campaign data; real OTP, native PostgreSQL, streaming ZIP verification, new target project imports, actual PNG/MP4 re-rendering and zero AI-call accounting. Actual clients qualified separately."
+}

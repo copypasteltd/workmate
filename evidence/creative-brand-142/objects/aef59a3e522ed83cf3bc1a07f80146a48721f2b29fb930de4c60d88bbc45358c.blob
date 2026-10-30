@@ -1,0 +1,41 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.woff2 binary
+*.ttf binary
+
+# SQL checksums and trusted method hashes are exact-byte integrity boundaries.
+migrations/** -text whitespace=cr-at-eol
+skills/** -text
+
+# Canonical schema fixtures are included in source-bound verification receipts.
+contracts/*-schemas.json -text
+
+# Preserve the upstream OFL byte-for-byte, including original trailing spaces.
+assets/fonts/copypaste-sans-tc/OFL.txt -text -whitespace
+
+# Retain the original Windows compiler log from the failed stage93 setup.
+evidence/agent-groups-core-04.tap -text whitespace=cr-at-eol
+
+# Native GEO schema bytes are frozen; treat their CRLF as line endings.
+contracts/desktop-geo-schemas.json -text whitespace=cr-at-eol
+
+# Native host receipts bind the compiler's exact source bytes.
+src/cloud-browser-host.cs -text whitespace=cr-at-eol
+
+# Retain exact role release and executed publication verifier bytes.
+catalog/publication-release-v1.json -text whitespace=cr-at-eol
+scripts/qualify-publications-v2.mjs -text whitespace=cr-at-eol
+
+# Exact immutable native publication qualification sources.
+scripts/qualify-publication-native-tools-v*.mjs -text whitespace=cr-at-eol
+tests/publication-native-tools*.test.ts -text whitespace=cr-at-eol
+
+# Stage139 receipts bind the exact executed Windows source bytes.
+package.json -text whitespace=cr-at-eol
+tsconfig.json -text whitespace=cr-at-eol
+src/desktop-executions.ts -text whitespace=cr-at-eol
+src/native-agent-groups.ts -text whitespace=cr-at-eol
+src/task-service.ts -text whitespace=cr-at-eol
+scripts/run-current-tests-owned-v*.mjs -text whitespace=cr-at-eol
+tests/*-139-v*.test.ts -text whitespace=cr-at-eol
