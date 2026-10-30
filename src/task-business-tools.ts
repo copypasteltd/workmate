@@ -462,7 +462,7 @@ export class TaskBusinessTools {
       {
         name: "request_input",
         description:
-          "Request essential missing authorized files or a supported marketing connection. The user chooses the resources. Finish this turn immediately after this tool; the same paid task and native thread continue after all inputs are provided. Never request credentials or invent access.",
+          "Request essential missing business details (kind question, optional suggested choices), authorized files or supported marketing connections. Ask only details that actually block the work, such as design dimensions, audience or reporting definitions. Free-text answers are always supported; never select for the customer or request credentials, secrets, payment or permission approval. Finish this turn immediately after this tool; the same paid task, budget and native thread continue after all inputs are provided. Answers do not authorize new access or spending.",
         inputSchema: z.toJSONSchema(paidInputRequest),
         run: (args: unknown, callId: string) =>
           this.db.tx(
@@ -1666,9 +1666,7 @@ export class TaskBusinessTools {
             computer_command: computerTools && role.tool_ids.includes("computer.control") && t.mode === "execute",
             computer_command_result: computerTools && role.tool_ids.includes("computer.read"),
             request_input:
-              t.mode === "execute" &&
-              (role.tool_ids.includes("asset.read") ||
-                role.tool_ids.includes("connector.read")),
+              t.mode === "execute",
             project_assets: role.tool_ids.includes("asset.read"),
             solution_list: role.tool_ids.includes("asset.read"),
             solution_read: role.tool_ids.includes("asset.read"),

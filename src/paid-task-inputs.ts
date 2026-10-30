@@ -4,6 +4,7 @@ import { canonical, Problem } from "./lib.js";
 import { event } from "./tasks.js";
 import { settle } from "./billing.js";
 import { taskProviderBudgetReceipt } from "./provider-budgets.js";
+import { questionRequest } from "./task-input-contracts.js";
 
 async function measuredTaskUsage(tx: Tx, taskId: string) {
   // Financial readers do not inherit the model's active task scope. Bind this
@@ -36,6 +37,7 @@ export const paidInputRequest = z
               description: z.string().trim().min(1).max(2000),
             })
             .strict(),
+          questionRequest,
         ]),
       )
       .min(1)
@@ -72,6 +74,7 @@ export async function requestPaidInputs(
   if (
     args.requests.some(
       (d) =>
+        d.kind !== "question" &&
         !role.tool_ids.includes(
           d.kind === "file" ? "asset.read" : "connector.read",
         ),
@@ -272,8 +275,8 @@ export async function completePaidInputCheckpoint(
   );
   for (const [i, d] of checkpoint.requests.entries())
     await tx.query(
-      `INSERT INTO task_dependencies(tenant_id,project_id,task_id,step_key,kind,description,required_scope,provider,checkpoint_id)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      `INSERT INTO task_dependencies(tenant_id,project_id,task_id,step_key,kind,description,required_scope,provider,checkpoint_id,question_options)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
       [
         task.tenant_id,
         task.project_id,
@@ -281,11 +284,12 @@ export async function completePaidInputCheckpoint(
         `input-paid-${task.attempt}-${i + 1}`,
         d.kind,
         d.description,
-        d.kind === "file"
+        d.kind === "question" ? "task.answer" : d.kind === "file"
           ? "project.asset_version.read"
           : "project.connection.read:" + d.provider,
         d.provider ?? null,
         checkpoint.id,
+        d.options ?? [],
       ],
     );
   await tx.query(

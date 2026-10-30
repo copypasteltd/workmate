@@ -4,12 +4,14 @@ import { createRequire } from "node:module";
 import { Ajv2020 } from "ajv/dist/2020.js";
 import { z } from "zod";
 import contract from "../contracts/task-schemas.json" with { type: "json" };
+import businessInputs from "../contracts/business-inputs-v1.schema.json" with { type: "json" };
 import type { Database, Tx } from "./db.js";
 import type { Catalog } from "./catalog.js";
 import { audit, requireUser, type Principal } from "./auth.js";
 import { key, projectAccess, replay, tenantAccess } from "./access.js";
 import { canonical, equal, hmac, Problem, uuid } from "./lib.js";
 import { enqueueTask } from "./task-service.js";
+import { inputAnswer } from "./task-input-contracts.js";
 import {
   activeTaskStates,
   freezeWorkContext,
@@ -35,13 +37,14 @@ const addFormats = createRequire(import.meta.url)("ajv-formats") as (
 ) => void;
 addFormats(ajv);
 const definitions = JSON.parse(
-  JSON.stringify(contract.schemas).replaceAll(
+  JSON.stringify({ ...contract.schemas, ...businessInputs.schemas }).replaceAll(
     "#/components/schemas/",
     "#/$defs/",
   ),
 );
 const validators = new Map<string, ReturnType<typeof ajv.compile>>();
 function validate(schema: string, value: unknown) {
+  schema = schema === "TaskCreate" ? "TaskCreateWithBusinessInputs" : schema === "TaskInput" ? "TaskInputWithBusinessAnswers" : schema;
   let check = validators.get(schema);
   if (!check) {
     check = ajv.compile({ $defs: definitions, $ref: "#/$defs/" + schema });
@@ -619,15 +622,7 @@ export function registerCanonicalTasks(
       const answers = z
         .record(
           z.string().min(1),
-          z
-            .object({
-              resource_ids: z
-                .array(uuid)
-                .min(1)
-                .max(20)
-                .refine((ids) => new Set(ids).size === ids.length),
-            })
-            .strict(),
+          inputAnswer,
         )
         .parse(b.answers);
       if (Object.keys(answers).length > 32)
@@ -679,14 +674,14 @@ export function registerCanonicalTasks(
                 return {
                   id: d.id,
                   expected_version: d.version,
-                  resource_ids: answer.resource_ids,
+                  ...answer,
                 };
               },
             );
             if (b.asset_version_ids !== undefined) {
               const attachments = deps
                 .filter((d) => d.kind === "file" && answers[d.step_key])
-                .flatMap((d) => answers[d.step_key]!.resource_ids);
+                .flatMap((d) => { const answer = answers[d.step_key]!; return "resource_ids" in answer ? answer.resource_ids : []; });
               if (
                 canonical([...new Set(attachments)].sort()) !==
                 canonical([...b.asset_version_ids].sort())

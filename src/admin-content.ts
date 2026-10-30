@@ -260,7 +260,7 @@ export function registerAdminContent(
                                     status: r.status,
                                     dependencies: (
                                       await tx.query(
-                                        "SELECT id,step_key,kind,description,required_scope,provider,state,resource_ids,version FROM task_dependencies WHERE task_id=$1 ORDER BY step_key",
+                                        "SELECT id,step_key,kind,description,required_scope,provider,state,resource_ids,version,question_options,answer FROM task_dependencies WHERE task_id=$1 ORDER BY step_key",
                                         [r.id],
                                       )
                                     ).rows,
