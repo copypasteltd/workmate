@@ -1,0 +1,47 @@
+{
+  "at": "2026-10-30T08:22:50.612Z",
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: delivery revision, fixed source and package regressions\n\n1 !== 0\n",
+  "commands": [
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "delivery revision, fixed source and package regressions",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/delivery-revision-138-v2.test.ts",
+        "tests/business-quality.test.ts",
+        "tests/delivery-package-137-v1.test.ts"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/delivery-revision-138/backend-02-sources.json",
+    "sha256": "be05fc27b766bf73d33de71e0bb4697c12961bcc1849be6cc4955a476f967faf"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "port_closed": true,
+  "raw_log": {
+    "path": "evidence/delivery-revision-138/backend-02.tap",
+    "sha256": "6f579a0b6b329282a9241cc64819f9fe3f93093546d7f10388d10a70abae57fa"
+  },
+  "verifier": {
+    "path": "evidence/delivery-revision-138/backend-02-verifier.mjs",
+    "sha256": "03f5c21b9755ce18112f6932b21d45d844e00c807981ad7d62ce4fae621cee8d"
+  },
+  "model_mode": "Controlled Codex runtime adapter with explicit synthetic task results. Real HTTP, permissions, native PostgreSQL, original fixed source reading, new deliverables and native admission. Video anchor test bytes are explicitly metadata-only synthetic fixtures. No paid model calls."
+}
