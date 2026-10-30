@@ -1,0 +1,162 @@
+{
+  "at": "2026-10-30T20:34:01.308Z",
+  "status": "failed",
+  "error": null,
+  "commands": [
+    {
+      "name": "delivery compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "native surface boundary checks",
+      "arguments": [
+        "--test",
+        "tests/native-surface-integrity.test.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web build",
+      "arguments": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension build",
+      "arguments": [
+        "scripts/build.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop renderer compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop build",
+      "arguments": [
+        "D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "unsigned Windows package",
+      "arguments": [
+        "node_modules/electron-builder/out/cli/cli.js",
+        "--win",
+        "--dir",
+        "--config.directories.output=release/document-preview-146-01"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "result_exit_code": 1,
+  "source_unchanged": true,
+  "source_manifest": {
+    "path": "evidence/document-preview-146/ui-01-sources.json",
+    "sha256": "cc69f272b62d2f8f86f6082a545604e51fed28129f89df1bebabe08ed7371cc7"
+  },
+  "raw_report": {
+    "path": "evidence/document-preview-146/ui-01.tap",
+    "sha256": "7027e0fa2d056b5c646cfa67698fc825fd134d4e00b3c27679873143adc0e51e"
+  },
+  "verifier": {
+    "path": "evidence/document-preview-146/ui-01-verifier.mjs",
+    "sha256": "da2b1c562e4ccb7f41599303f9e5d54d59bbb74db6eb2ab082f39c3ab9e5f42c"
+  },
+  "backend": {
+    "path": "evidence/document-preview-146/backend-03.json",
+    "sha256": "932f49c7a7b2c5e59c6e874ed7a086058369961f59749e516f51e82fefc57a99"
+  },
+  "owned_native_directory": ".data/native-qa/eb352bb8-d64e-468a-8500-c705304c2c9e",
+  "owned_native_port": 7578,
+  "owned_database_shutdown": true,
+  "ports_closed": {
+    "4310": true,
+    "4317": true,
+    "7578": true
+  },
+  "fixture_cleanup": {
+    "exit_code": 0,
+    "at": "2026-10-30T20:33:56.748Z",
+    "status": "passed",
+    "scope": "Only this launcher's newly created deferred fixture IDs; historical retained fixtures are untouched",
+    "workers_exited": true,
+    "actual_filesystem_checked": true,
+    "interrupted_owner_recovery": false,
+    "results": [
+      {
+        "id": "731bc02b582141d199954fa571eee52a",
+        "reclaimed": true
+      }
+    ]
+  },
+  "package_files": {
+    "CopyPaste.exe": "69498ee17c7eb6b3cffb1ec6a2c9e0207e34a399e5032bbf405a73259f4415ae",
+    "resources/app.asar": "173a0efd9241e02ac80d8c7ca766c339677c6bde18b63ae87695f5e81b79d128",
+    "resources/local-codex/codex.exe": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+    "resources/local-codex/runtime-manifest.json": "13490b9b1b9822967b8cea7134c2ba306671e58050a0897545184a7af6f34605"
+  },
+  "package_unchanged": true,
+  "document_runtime": {
+    "manifest_sha256": "35eecafa6f346a5e445f4a1e24edd48477414952905a12cbe129a7df3cd58675",
+    "version": "26.8.2",
+    "source": "https://download.documentfoundation.org/libreoffice/stable/26.8.2/win/x86_64/LibreOffice_26.8.2_Win_x86-64.msi",
+    "msi_sha256": "ff4b911403b67ee9e6249f820f9782c44bb32c94fdaa45b0da53a8e419e5307a",
+    "office_path": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\.data\\document-preview\\libreoffice-26.8.2\\program\\soffice.com",
+    "office_sha256": "4f133aba4d8db66122ec34bc17eeaa8b274cfa5ded03feb384953f6ae357d4cf",
+    "host_path": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\.data\\document-preview\\WorkmateDocumentPreview.exe",
+    "host_sha256": "052ba8d137bdf0a071bd604bb5fa2f15677786f4d9cdff8ed86a2770d7573386",
+    "host_source_sha256": "cbdf785273b2f3523a6cb371459643932e3096f15e1aedc5fbb40f3cd904c0bf"
+  },
+  "journey": {
+    "path": "evidence/document-preview-146/ui-01-journey.json",
+    "sha256": "2ae33a2d84acf7e9a2c0905cd21c9b53ec7b95923f91faeab3c739168639fa05",
+    "checks": []
+  },
+  "scope": "Actual Web, unsigned frameless Windows package and Chrome native right Side Panel; current PDF and Office pages, fixed versions and source withdrawal. No AI calls. This is not production or complete local Codex/OS acceptance."
+}

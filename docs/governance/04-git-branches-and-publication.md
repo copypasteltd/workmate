@@ -321,3 +321,9 @@ Stage 94 binds actual committed components with `finalize_agent_group_history_ma
 先完成本次精确源码相关模块回归、实际特效交付及原生 Codex 检查、媒体完整解码、双语文档和七仓库暂存核查，再提交各组件。使用 `finalize_media_effects_manifest.py` 绑定实际提交、检查点与证据，提交主文档后在 Delivery 执行 `node scripts/publish-workmate.mjs --push`，核对八个远端 SHA。SQL110/111 增加审阅特效约束与回执；既有用户授权持续有效，禁止强推。
 
 Stage 95 binds actual committed components with `finalize_media_effects_manifest.py` after current media-effect regression, real browser/native Codex, full media decoding, bilingual documentation and staged review. Commit documentation and run the Delivery publisher to verify all eight remote refs. SQL110/111 add reviewed effects and receipts. Existing ordinary publication authorization persists; no force push. Earlier receipts retain historical scope.
+
+
+<!-- document-preview-stage146 -->
+阶段146使用 `record_document_preview_146_v1.py`、`prepare_document_preview_publication_146_v1.py`、`audit_document_preview_publication_146_v1.py` 和 `publish_document_preview_publication_146_v1.py --push`。保留404427条历史证明身份及原始尝试，绑定当前三端文件分页与来源选择、实际媒体和六组件源码；审计增量并普通原子更新八个远端引用，读取SHA核对。所有原始完整验收与用户文件保持。
+
+Stage146 retains404427 historical proof identities and original attempts. Its source-bound document previews and actual client media are published through an ordinary atomic eight-ref push with remote SHA readback. Original whole-product acceptance scopes remain open.

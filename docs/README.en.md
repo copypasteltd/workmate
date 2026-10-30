@@ -587,3 +587,6 @@ All development uses `D:\dev\copypasted\自有agent\dev\`; central documents use
 Run each component using its own bilingual guide. Use the backend demo configuration for local fake-data development, then connect Web/Admin and pair the native clients through their documented OTP/PKCE flow. Native node installation is operator-managed and requires an actual qualified physical Linux host; the supplied source and protocol tests do not establish that host’s readiness.
 
 请按各端 README 的安装／启动说明运行：后端使用 demo 配置与假数据，Web／Admin 连接该服务；原生客户端通过各自文档中的 OTP／PKCE 接入。物理节点安装由运营人员管理，需要另行验证真实 Linux 主机，源码和协议测试本身不代表该主机已可交付。
+
+
+Stage146: [actual document pages and source selection](development/146-document-pages-and-source-selection.md) · [all original numbered scopes](quality/remaining-work-stage146.md).
