@@ -16,6 +16,7 @@ import {
 } from "./access.js";
 import { hash, Problem, uuid } from "./lib.js";
 import { copyAssetVersion, type Storage } from "./storage.js";
+import { DocumentPreviews } from "./document-preview.js";
 
 const nodeName = z
   .string()
@@ -35,7 +36,7 @@ const pagination = {
   limit: z.coerce.number().int().min(1).max(200).default(100),
 };
 const fields =
-  "n.*,v.asset_id,v.version AS source_version,v.mime_type,v.bytes,v.sha256,a.state AS asset_state,v.erased_at";
+  "n.*,v.asset_id,v.version AS source_version,v.mime_type,v.bytes,v.sha256,a.state AS asset_state,a.name AS source_name,v.erased_at";
 const joins =
   "workspace_nodes n LEFT JOIN asset_versions v ON v.id=n.asset_version_id LEFT JOIN assets a ON a.id=v.asset_id";
 export const cloudNode = (n: any) => ({
@@ -184,6 +185,46 @@ export function registerCloudFiles(
   db: Database,
   storage: Storage,
 ) {
+  const documentPreviews=new DocumentPreviews();
+  app.addHook("onClose",async()=>{await documentPreviews.close();});
+  const documentPreview: RouteHandlerMethod=async(req,reply)=>{
+    const tenant=tenantOf(req),route=req.params as any,id=uuid.parse(route.node_id??route.asset),q=z.object({
+      asset_version_id:uuid,page:z.coerce.number().int().min(1).max(400).default(1),describe:z.enum(["true"]).optional(),
+    }).strict().parse(req.query);
+    const authorize=async()=>{await requireUser(db)(req);return db.tx(async tx=>{
+      if(route.asset){
+        await projectAccess(tx,req.principal,tenant,uuid.parse(route.project));
+        const source=(await tx.query(`SELECT a.id AS asset_id,a.name AS source_name,v.id AS asset_version_id,v.version AS source_version,
+          v.version,v.storage_key,v.mime_type,v.bytes,v.sha256 FROM assets a JOIN asset_versions v ON v.asset_id=a.id
+          WHERE a.id=$1 AND a.project_id=$2 AND a.tenant_id=$3 AND a.state='active' AND v.id=$4 AND v.erased_at IS NULL`,[id,route.project,tenant,q.asset_version_id])).rows[0];
+        if(!source)throw new Problem(404,"NOT_FOUND","Authorized file version not found");return source;
+      }
+      await tenantAccess(tx,req.principal,tenant);const n=await node(tx,id);
+      if(!n)throw new Problem(404,"NOT_FOUND","File entry not found");
+      await access(tx,req.principal,tenant,n.workspace_id,false,(req.params as any).project);
+      if(n.kind!=="file")throw new Problem(400,"FILE_REQUIRED","Choose a file to preview");
+      if(n.asset_state!=="active"||n.erased_at)throw new Problem(410,"REFERENCE_UNAVAILABLE","The source file is unavailable");
+      if(n.asset_version_id!==q.asset_version_id)throw new Problem(409,"VERSION_CONFLICT","This reference changed. Reopen the file before previewing it.");
+      const v=(await tx.query("SELECT storage_key FROM asset_versions WHERE id=$1 AND erased_at IS NULL",[q.asset_version_id])).rows[0];
+      if(!v)throw new Problem(410,"REFERENCE_UNAVAILABLE","The source file is unavailable");return {...n,storage_key:v.storage_key};
+    },tenant);};
+    const n=await authorize(),capability=await documentPreviews.capability(n.mime_type,n.source_name,Number(n.bytes));
+    const descriptor={asset_id:n.asset_id,asset_version_id:q.asset_version_id,source_version:n.source_version,sha256:n.sha256,
+      content_type:n.mime_type,size_bytes:Number(n.bytes),document_preview:capability??{available:false,state:"unsupported"}};
+    reply.header("Cache-Control","private, no-store");
+    if(!capability?.available||q.describe){await authorize();return descriptor;}
+    const stop=new AbortController(),closed=()=>{if(!reply.raw.writableEnded)stop.abort();};reply.raw.once("close",closed);
+    try{
+      const bytes=await storage.get(n.storage_key);
+      if(bytes.length!==Number(n.bytes)||hash(bytes)!==n.sha256)throw new Problem(422,"REFERENCE_INTEGRITY_FAILED","The file checksum does not match its pinned version");
+      const page=await documentPreviews.render(req.principal.id,q.asset_version_id+":"+n.sha256,bytes,q.page,stop.signal);
+      const current=await authorize();if(current.version!==n.version||current.sha256!==n.sha256)throw new Problem(409,"VERSION_CONFLICT","This file entry changed. Reopen it before previewing.");
+      return {...descriptor,...page};
+    }finally{reply.raw.removeListener("close",closed);}
+  };
+  app.get("/v1/tenants/:tenant/projects/:project/cloud-nodes/:node_id/document-preview",{preHandler:requireUser(db)},documentPreview);
+  app.get("/v1/workspace-nodes/:node_id/document-preview",{preHandler:requireUser(db)},documentPreview);
+  app.get("/v1/tenants/:tenant/projects/:project/assets/:asset/document-preview",{preHandler:requireUser(db)},documentPreview);
   const list: RouteHandlerMethod = async (req) => {
     const tenant = tenantOf(req),
       q = z

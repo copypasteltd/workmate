@@ -17,15 +17,21 @@ export function registerAssets(
   const base = "/v1/tenants/:tenant/projects/:project";
   app.get(base + "/assets", { preHandler: requireUser(db) }, async (req) => {
     const { tenant, project } = params.parse(req.params);
+    const q=z.object({q:z.string().trim().max(150).optional(),cursor:uuid.optional(),
+      limit:z.coerce.number().int().min(1).max(200).default(200),scope:z.enum(["all","shared","private"]).default("all")}).strict().parse(req.query);
     return db.tx(async (tx) => {
       await projectAccess(tx, req.principal, tenant, project);
+      let cursor:any;
+      if(q.cursor){cursor=(await tx.query("SELECT id,created_at FROM assets WHERE id=$1 AND tenant_id=$2 AND project_id=$3 AND state='active'",[q.cursor,tenant,project])).rows[0];
+        if(!cursor)throw new Problem(409,"ASSET_CURSOR_UNAVAILABLE","The file list changed. Refresh the search before loading more.");}
+      const rows=(await tx.query(
+        `SELECT a.*,v.mime_type,v.bytes,v.sha256 FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version
+        WHERE a.tenant_id=$1 AND a.project_id=$2 AND a.state='active' AND v.erased_at IS NULL AND ($3::text IS NULL OR a.name ILIKE $3 ESCAPE '\\')
+        AND ($4='all' OR ($4='shared' AND a.private_owner IS NULL) OR ($4='private' AND a.private_owner=$5))
+        AND ($6::uuid IS NULL OR (a.created_at,a.id)<((SELECT created_at FROM assets WHERE id=$6),$6::uuid)) ORDER BY a.created_at DESC,a.id DESC LIMIT $7`,
+        [tenant,project,q.q?'%'+q.q.replace(/[\\%_]/g,"\\$&")+'%':null,q.scope,req.principal.id,cursor?.id??null,q.limit+1])).rows;
       return {
-        items: (
-          await tx.query(
-            "SELECT a.*,v.mime_type,v.bytes,v.sha256 FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version WHERE a.tenant_id=$1 AND a.project_id=$2 AND a.state='active' ORDER BY a.created_at DESC LIMIT 200",
-            [tenant, project],
-          )
-        ).rows,
+        items:rows.slice(0,q.limit),...(Object.keys(req.query as object).length?{next_cursor:rows.length>q.limit?rows[q.limit-1].id:null}:{}),
       };
     }, tenant);
   });
@@ -182,6 +188,8 @@ export function registerAssets(
     { preHandler: requireUser(db) },
     async (req) => {
       const { tenant, project, asset } = assetParams.parse(req.params);
+      const q=z.object({limit:z.coerce.number().int().min(1).max(200).optional(),before_version:z.coerce.number().int().positive().optional()}).strict().parse(req.query);
+      const paged=q.limit!==undefined||q.before_version!==undefined,limit=q.limit??50;
       return db.tx(async (tx) => {
         await projectAccess(tx, req.principal, tenant, project);
         const a = (
@@ -191,14 +199,13 @@ export function registerAssets(
           )
         ).rows[0];
         if (!a) throw new Problem(404, "NOT_FOUND", "Asset not found");
-        return {
-          items: (
+        const rows=(
             await tx.query(
-              "SELECT id,version,mime_type,bytes,sha256,metadata,created_at FROM asset_versions WHERE asset_id=$1 ORDER BY version DESC",
-              [asset],
+              "SELECT id,version,mime_type,bytes,sha256,metadata,created_at FROM asset_versions WHERE asset_id=$1 AND ($2::integer IS NULL OR version<$2) AND (NOT $4::boolean OR erased_at IS NULL) ORDER BY version DESC LIMIT $3",
+              [asset,q.before_version??null,paged?limit+1:null,paged],
             )
-          ).rows,
-        };
+          ).rows;
+        return {items:paged?rows.slice(0,limit):rows,...(paged?{next_cursor:rows.length>limit?rows[limit-1].version:null}:{})};
       }, tenant);
     },
   );
