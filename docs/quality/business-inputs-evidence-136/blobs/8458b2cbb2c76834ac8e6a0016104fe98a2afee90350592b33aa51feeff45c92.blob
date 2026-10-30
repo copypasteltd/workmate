@@ -1,0 +1,60 @@
+{
+  "at": "2026-10-30T05:42:20.106Z",
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: business questions and resource/native/canonical regressions\n\n1 !== 0\n",
+  "commands": [
+    {
+      "name": "backend compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "business questions and resource/native/canonical regressions",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/business-inputs-136-v2.test.ts",
+        "tests/task-dependencies.test.ts",
+        "tests/paid-task-inputs.test.ts",
+        "tests/canonical-tasks.test.ts",
+        "tests/task-source-visibility.test.ts",
+        "tests/task-history-sources.test.ts",
+        "tests/publications.test.ts",
+        "tests/schema-compatibility.test.ts"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/business-inputs-136/backend-02-sources.json",
+    "sha256": "5e0ad056af8bde59e6b5078e66231d32715f619dfc70a874fc0ed623aad6e73f"
+  },
+  "sources_unchanged": false,
+  "database_shutdown": 0,
+  "port_closed": true,
+  "raw_log": {
+    "path": "evidence/business-inputs-136/backend-02.tap",
+    "sha256": "0cbd1558025f891f84412210f1a039d0156f19091a73125fe1a443b7096ef883"
+  },
+  "verifier": {
+    "path": "evidence/business-inputs-136/backend-02-verifier.mjs",
+    "sha256": "5097360e30967a750251e0ecb900405a5369b1c56d6e55084807cfef3604d170"
+  },
+  "model_mode": "Synthetic provider responses; one new and one existing integration run the pinned actual native Codex process. No paid model calls."
+}

@@ -1,5 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- business-inputs-stage136 -->
+阶段136使用`docs/tools/prepare_business_inputs_publication_136_v1.py`及`docs/tools/publish_business_inputs_136_v1.py --push`发布。保留387317条历史证明身份和阶段135实际原子发布回执；只检查新增对象、当前／新增提交路径和当前七组双语README链接。问题问答、实际原生Codex的合成提供方检查及三端实际页面各自登记范围。原失败与原执行脚本保持原字节，六个独立组件普通原子更新八引用并读取远端SHA。12份用户未跟踪文件及Desktop根属性保持不变，不强推，不将增量检查当作全产品完成。
+
+Stage136 retains all 387317 historical proof identities and the actual Stage135 publication receipt. Ordinary atomic publication updates eight refs after new-object/current-path/README audits and verifies remote SHAs. Native synthetic-provider integration and actual UI fixtures retain distinct scopes. Original failed attempts, user files and Desktop root attributes remain unchanged; complete product acceptance stays open.
+
 <!-- client-errors-stage135 -->
 阶段135发布使用`docs/tools/prepare_client_errors_publication_135_v1.py`及`docs/tools/publish_client_errors_135_v1.py --push`。保留383134条既有证明身份及阶段134实际原子推送回执；只核查本轮新增对象、当前／新增提交路径和全部当前README链接。发布当前四端连接与身份恢复源码、30项实际旅程、20截图及7组实时GIF／MP4；原失败、旧验证码脚本及旧验收文字不改写。六个组件保持独立仓库，普通原子更新八引用并读取远端SHA。12份用户未跟踪文件及Desktop根属性保持原字节，不强推，不将定向检查当作全产品完成。
 

@@ -1,0 +1,171 @@
+{
+  "at": "2026-10-30T06:02:59.550Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "corrected delivery journey compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "result_exit_code": 0,
+  "journey": {
+    "path": "evidence/business-inputs-136/ui-05-journey.json",
+    "sha256": "e30d164709025feef910368ba27e8af14ad6f679985e308e7e8731e19821d717",
+    "status": "passed"
+  },
+  "reused_builds": {
+    "path": "evidence/business-inputs-136/ui-01.json",
+    "sha256": "4d7231748abb8ff0cda47dbe8f0db1a66811d0dba17f4d1abaa5cead56b1930a",
+    "commands": [
+      {
+        "name": "delivery compile",
+        "arguments": [
+          "node_modules/typescript/bin/tsc",
+          "--noEmit"
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "delivery native boundary cases",
+        "arguments": [
+          "--test",
+          "tests/native-surface-integrity.test.mjs"
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "backend build",
+        "arguments": [
+          "node_modules/typescript/bin/tsc"
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "backend bootstrap",
+        "arguments": [
+          "scripts/copy-cloud-check-bootstrap.mjs"
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "Web compile",
+        "arguments": [
+          "node_modules/typescript/bin/tsc",
+          "--noEmit"
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "Web build",
+        "arguments": [
+          "node_modules/vite/bin/vite.js",
+          "build"
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "extension compile",
+        "arguments": [
+          "node_modules/typescript/bin/tsc",
+          "--noEmit"
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "extension build",
+        "arguments": [
+          "scripts/build.mjs"
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "Desktop renderer compile",
+        "arguments": [
+          "node_modules/typescript/bin/tsc",
+          "--noEmit",
+          "-p",
+          "renderer/tsconfig.json"
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "Desktop build",
+        "arguments": [
+          "D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+          "run",
+          "build"
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "unsigned Windows package",
+        "arguments": [
+          "node_modules/electron-builder/out/cli/cli.js",
+          "--win",
+          "--dir",
+          "--config.directories.output=release/business-inputs-136-01"
+        ],
+        "exit_code": 0
+      }
+    ],
+    "source_manifest": {
+      "path": "evidence/business-inputs-136/ui-01-sources.json",
+      "sha256": "e652675c3b73436835a6b00be2f2c21b451ca646dc4ab83d723b2b4ef5e15e82"
+    },
+    "package_files": {
+      "CopyPaste.exe": "baa140d68092ed2c6af018e898153edabbbc83971043e8f7ced5eda6bdffaf63",
+      "resources/app.asar": "84afc49b4bd02ee0a9affd7c12aca6e9cf2c7f42e90fc9a63149ecf7a74415ba",
+      "resources/local-codex/codex.exe": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+      "resources/local-codex/runtime-manifest.json": "13490b9b1b9822967b8cea7134c2ba306671e58050a0897545184a7af6f34605"
+    }
+  },
+  "source_manifest": {
+    "path": "evidence/business-inputs-136/ui-05-sources.json",
+    "sha256": "e652675c3b73436835a6b00be2f2c21b451ca646dc4ab83d723b2b4ef5e15e82"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "ports_closed": {
+    "4310": true,
+    "4317": true,
+    "8514": true
+  },
+  "package_directory": "../copypaste-desktop/release/business-inputs-136-01/win-unpacked",
+  "package_files": {
+    "CopyPaste.exe": "baa140d68092ed2c6af018e898153edabbbc83971043e8f7ced5eda6bdffaf63",
+    "resources/app.asar": "84afc49b4bd02ee0a9affd7c12aca6e9cf2c7f42e90fc9a63149ecf7a74415ba",
+    "resources/local-codex/codex.exe": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+    "resources/local-codex/runtime-manifest.json": "13490b9b1b9822967b8cea7134c2ba306671e58050a0897545184a7af6f34605"
+  },
+  "package_unchanged": true,
+  "fixture_cleanup": {
+    "exit_code": 0,
+    "sha256": "1af24c7f7895382f138777a1638cf93bfbdcf18166e89b7fb9c226e4dac1ccb3",
+    "at": "2026-10-30T06:02:50.160Z",
+    "status": "passed",
+    "scope": "Only this launcher's newly created deferred fixture IDs; historical retained fixtures are untouched",
+    "workers_exited": true,
+    "actual_filesystem_checked": true,
+    "interrupted_owner_recovery": false,
+    "results": [
+      {
+        "id": "5074b0ae08354050a3fab9ed5c76569a",
+        "reclaimed": true
+      }
+    ]
+  },
+  "raw_log": {
+    "path": "evidence/business-inputs-136/ui-05.tap",
+    "sha256": "23150d7c3221b768ef9bbd87d6d67057bbcc1655df9a726636f4e0a99d47c9d1"
+  },
+  "verifier": {
+    "path": "evidence/business-inputs-136/ui-05-verifier.mjs",
+    "sha256": "3524ecb2ae8d1bff0f782550627c116a7e446bab78a545c4de053305dbf03f43"
+  },
+  "model_mode": "Synthetic business data and scripted tool calls in UI journeys; actual native Codex is checked separately by backend integration."
+}
