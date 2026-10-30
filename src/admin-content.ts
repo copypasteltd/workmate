@@ -14,6 +14,7 @@ import { eraseWorkspaceNode } from "./cloud-files.js";
 import { matrixContentBody } from "./creative-matrices.js";
 import { videoContentBody } from "./video-projects.js";
 import { stopAgentGroupRun } from "./agent-groups.js";
+import { registerAdminContentHistory } from "./admin-content-history.js";
 const tables = [
   "assets",
   "tasks",
@@ -88,6 +89,7 @@ export function registerAdminContent(
   db: Database,
   storage: Storage,
 ) {
+  registerAdminContentHistory(app, db);
   app.get(
     "/v1/admin/content/:id/body",
     { preHandler: requireAdmin(db) },
@@ -145,28 +147,30 @@ export function registerAdminContent(
               table === "agents"
                 ? (
                     await tx.query(
-                      "SELECT version,body FROM agent_versions WHERE agent_id=$1 ORDER BY version DESC LIMIT 200",
+                      "SELECT version,body FROM agent_versions WHERE agent_id=$1 ORDER BY version DESC LIMIT 201",
                       [r.id],
                     )
                   ).rows
                 : table === "memories"
                   ? (
                       await tx.query(
-                        "SELECT version,content FROM memory_versions WHERE memory_id=$1 ORDER BY version DESC LIMIT 200",
+                        "SELECT version,content FROM memory_versions WHERE memory_id=$1 ORDER BY version DESC LIMIT 201",
                         [r.id],
                       )
                     ).rows
                   : (
                       await tx.query(
-                        "SELECT role,intent,body,task_id,created_at FROM conversation_messages WHERE conversation_id=$1 ORDER BY created_at,id LIMIT 200",
-                        [r.id],
+                        "SELECT id,role,intent,CASE WHEN role='assistant' AND task_id IS NOT NULL AND content_source_manifest($2::uuid,$3::uuid,ARRAY[task_id],'{}'::uuid[]) IS NULL THEN NULL ELSE body END AS body,task_id,created_at FROM conversation_messages WHERE conversation_id=$1 AND tenant_id=$2 AND project_id=$3 ORDER BY created_at,id LIMIT 201",
+                        [r.id, r.tenant_id, r.project_id],
                       )
                     ).rows;
             return {
               id: r.id,
               name: r.name,
               mime_type: "application/json",
-              text: JSON.stringify(body, null, 2),
+              text: JSON.stringify(body.slice(0, 200), null, 2),
+              truncated: body.length > 200,
+              history_url: `/v1/admin/content/${table}/${r.id}/history`,
             };
           }
           const body =
