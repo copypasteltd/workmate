@@ -1,0 +1,138 @@
+{
+  "at": "2026-10-30T11:09:28.037Z",
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: Current backend qualification\n\n'failed' !== 'passed'\n",
+  "commands": [
+    {
+      "name": "delivery compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "delivery native boundary cases",
+      "arguments": [
+        "--test",
+        "tests/native-surface-integrity.test.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web build",
+      "arguments": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension build",
+      "arguments": [
+        "scripts/build.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop renderer compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop build",
+      "arguments": [
+        "D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "unsigned Windows package",
+      "arguments": [
+        "node_modules/electron-builder/out/cli/cli.js",
+        "--win",
+        "--dir",
+        "--config.directories.output=release/native-teams-139-02"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "result_exit_code": null,
+  "journey": null,
+  "source_manifest": {
+    "path": "evidence/native-teams-139/ui-02-sources.json",
+    "sha256": "b20af9106c597a4820621beb56a811f98f393babf401a1b625b326f724239321"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": null,
+  "ports_closed": {
+    "4310": true,
+    "4317": true,
+    "4467": true
+  },
+  "package_directory": "../copypaste-desktop/release/native-teams-139-02/win-unpacked",
+  "package_files": {
+    "CopyPaste.exe": "d8643f758b2a66892bdc8de0b1e9b643d2111290086151a27972a518e3f95a9c",
+    "resources/app.asar": "ab25604c13856924ceaca5547465e17d76b17a4cd466becafa0eac834ef32eeb",
+    "resources/local-codex/codex.exe": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+    "resources/local-codex/runtime-manifest.json": "13490b9b1b9822967b8cea7134c2ba306671e58050a0897545184a7af6f34605"
+  },
+  "package_unchanged": true,
+  "fixture_cleanup": {
+    "exit_code": 0,
+    "sha256": "a6fba92babc17bbb8a22b04c10a0010269de8ef6aa38f873c584cadcfd2172a5",
+    "at": "2026-10-30T11:09:24.344Z",
+    "status": "passed",
+    "scope": "Only this launcher's newly created deferred fixture IDs; historical retained fixtures are untouched",
+    "workers_exited": true,
+    "actual_filesystem_checked": true,
+    "interrupted_owner_recovery": false,
+    "results": []
+  },
+  "raw_log": {
+    "path": "evidence/native-teams-139/ui-02.tap",
+    "sha256": "3f7a7bec01590630d97abcbb7c09040e0a3f5d81abb01a64b3965d0d7803b707"
+  },
+  "verifier": {
+    "path": "evidence/native-teams-139/ui-02-verifier.mjs",
+    "sha256": "528b5a3ca02ef8fcc34255217770fbc462017ef9f0b283566606485eddc6c699"
+  },
+  "model_mode": "Synthetic business data and scripted tool calls in UI journeys; the packaged Desktop executes actual local Codex against a controlled OpenAI-compatible company gateway fixture."
+}

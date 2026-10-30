@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-30T10:41:46.095Z",
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: native teams, cloud teams and existing native execution regressions\n\n1 !== 0\n",
+  "commands": [
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "current test discovery",
+      "arguments": [
+        "scripts/run-current-tests-owned-v2.mjs",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "native teams, cloud teams and existing native execution regressions",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/native-agent-groups-139-v2.test.ts",
+        "tests/agent-groups.test.ts",
+        "tests/desktop-executions.test.ts",
+        "tests/delivery-package-137-v1.test.ts"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/native-teams-139/backend-02-sources.json",
+    "sha256": "35c5b3da06632dc39790e706eb02fe6afb77a7c6a5f00113af87956c9972c5be"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "port_closed": true,
+  "raw_log": {
+    "path": "evidence/native-teams-139/backend-02.tap",
+    "sha256": "3b3bbc0fd7fd42b6ddb02de1e0d40607cde2f46d1badb2d49290a73ac8c28b2c"
+  },
+  "verifier": {
+    "path": "evidence/native-teams-139/backend-02-verifier.mjs",
+    "sha256": "2df174bc06f85cb148288e5018c86255df9a318d53cb61b6fa60ff28466e0bb5"
+  },
+  "model_mode": "Explicitly synthetic model responses and controller runtime fixture. Real HTTP, OTP/PKCE, native PostgreSQL migration 137, native group DAG admission, company-metered receipts and ZIP extraction. Actual packaged Codex execution is qualified separately. No paid model calls."
+}

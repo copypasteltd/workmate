@@ -1,0 +1,147 @@
+{
+  "at": "2026-10-30T11:44:51.580Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "delivery compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "delivery native boundary cases",
+      "arguments": [
+        "--test",
+        "tests/native-surface-integrity.test.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web build",
+      "arguments": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension build",
+      "arguments": [
+        "scripts/build.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop renderer compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop build",
+      "arguments": [
+        "D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "unsigned Windows package",
+      "arguments": [
+        "node_modules/electron-builder/out/cli/cli.js",
+        "--win",
+        "--dir",
+        "--config.directories.output=release/native-teams-139-05"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "result_exit_code": 0,
+  "journey": {
+    "path": "evidence/native-teams-139/ui-05-journey.json",
+    "sha256": "ce3ad724acd2f9cd45bbee2476029e7acdc1640df07afec5a6d8d33f41d4d45c",
+    "status": "passed"
+  },
+  "source_manifest": {
+    "path": "evidence/native-teams-139/ui-05-sources.json",
+    "sha256": "db38ddd283d22c6eada945eca4aa6274bd0233e94f4096a36a0dc8d83b94164b"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "ports_closed": {
+    "4310": true,
+    "4317": true,
+    "10075": true
+  },
+  "package_directory": "../copypaste-desktop/release/native-teams-139-05/win-unpacked",
+  "package_files": {
+    "CopyPaste.exe": "606a9c09d030a5d3c626b82df45ca70380862f171f4fa1f4a707144e0d38aaeb",
+    "resources/app.asar": "5a44b25a37d6268960a2f9d12f0d741f0bd7f8ee8cc031d69886cbbc8e71fd2f",
+    "resources/local-codex/codex.exe": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+    "resources/local-codex/runtime-manifest.json": "13490b9b1b9822967b8cea7134c2ba306671e58050a0897545184a7af6f34605"
+  },
+  "package_unchanged": true,
+  "fixture_cleanup": {
+    "exit_code": 0,
+    "sha256": "9cde74501398c859b0e03dce14a93f96f09ae1f710670f12c2aea8618c8768cb",
+    "at": "2026-10-30T11:44:21.456Z",
+    "status": "passed",
+    "scope": "Only this launcher's newly created deferred fixture IDs; historical retained fixtures are untouched",
+    "workers_exited": true,
+    "actual_filesystem_checked": true,
+    "interrupted_owner_recovery": false,
+    "results": [
+      {
+        "id": "7f40618de7054b75a7750491698f60ff",
+        "reclaimed": true
+      }
+    ]
+  },
+  "raw_log": {
+    "path": "evidence/native-teams-139/ui-05.tap",
+    "sha256": "244225bd2c473f6a96ea9977849c67961005066a5e0b96aa2cf93080868c32e4"
+  },
+  "verifier": {
+    "path": "evidence/native-teams-139/ui-05-verifier.mjs",
+    "sha256": "a2183bf159fb5ff9c827136242f6418731883756aa7be3799b0113827239c520"
+  },
+  "model_mode": "Synthetic business data and scripted tool calls in UI journeys; the packaged Desktop executes actual local Codex against a controlled OpenAI-compatible company gateway fixture."
+}
