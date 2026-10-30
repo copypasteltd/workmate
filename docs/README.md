@@ -1,5 +1,8 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- current-test-entry-141 -->
+默认检查已自动选用各组的最新数字版本，并保留原失败尝试。六项端到端检查、实际 npm 入口检查及编译通过；产品运行时代码与阶段140三端实操证据保持不变。见[当前源码补充检查点](quality/test-discovery-checkpoint-141.json)、[入口说明](development/141-current-test-discovery.md)及[完整待验收范围](quality/remaining-work-stage140.md)。
+
 <!-- creative-packages-stage140 -->
 ## 工程打包与恢复 · 阶段140
 

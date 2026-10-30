@@ -1,5 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- current-test-entry-stage141 -->
+阶段141仅修正默认测试选择及其检查入口，产品运行时与阶段140真实三端结果保持不变。使用 `prepare_test_discovery_publication_141_v1.py` 和 `publish_test_discovery_publication_141_v1.py --push`，以实际阶段140发布为基线，保留397376条历史证明身份，核对增量对象及当前README链接后普通原子更新八引用。完整需求编号继续使用阶段140清单，不把六项入口检查计作整个平台回归。
+
+Stage141 changes only test selection and its checks. Published Stage140 product/runtime sources and client evidence stay intact. Its V1 preparer/publisher uses the actual Stage140 baseline, retains397376 historical proof identities, audits the increment and current README links, and ordinarily updates eight refs atomically. Six test-entry checks do not replace complete platform regression or product acceptance.
+
 <!-- creative-packages-stage140-publication-v2 -->
 阶段140最终发布使用 `docs/tools/prepare_creative_packages_publication_140_v2.py` 和 `docs/tools/publish_creative_packages_publication_140_v2.py --push`，对应 `workmate-publication-140-v2.json`。推送前只读检查发现 V1 审计输出目录仍指向上一阶段；V2 将其改为本轮实际目录。V1 脚本、清单、证明分片及本地准备提交均保持原字节并明确为未发布准备记录。产品源码、三端验收、六组件提交和395418条历史证明身份保持不变；仍按实际阶段139远端基线普通原子更新八个引用。
 

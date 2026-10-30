@@ -1,5 +1,8 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- current-test-entry-141 -->
+Default checks now select the latest numeric attempt per suite and retain original historical failures. Six end-to-end checks, actual npm inspection and the compiler pass. Product runtime files and real Stage140 client evidence remain unchanged. See the [current source supplement](quality/test-discovery-checkpoint-141.json), [entry behavior](development/141-current-test-discovery.md) and [open acceptance scopes](quality/remaining-work-stage140.md).
+
 <!-- creative-packages-stage140 -->
 ## Project packages & restore · Stage140
 

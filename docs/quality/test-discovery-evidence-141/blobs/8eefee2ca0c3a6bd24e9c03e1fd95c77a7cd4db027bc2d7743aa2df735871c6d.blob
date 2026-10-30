@@ -1,0 +1,45 @@
+TAP version 13
+# Subtest: default execution selects numeric v12 and never executes retained v1 or v9
+ok 1 - default execution selects numeric v12 and never executes retained v1 or v9
+  ---
+  duration_ms: 343.853
+  ...
+# Subtest: distinct suites and ordinary tests remain active while the replaced desktop base stays historical
+ok 2 - distinct suites and ordinary tests remain active while the replaced desktop base stays historical
+  ---
+  duration_ms: 316.6409
+  ...
+# Subtest: inspection lists historical attempts without executing any test
+ok 3 - inspection lists historical attempts without executing any test
+  ---
+  duration_ms: 162.0537
+  ...
+# Subtest: a current test runner failure remains a failing default command
+ok 4 - a current test runner failure remains a failing default command
+  ---
+  duration_ms: 275.2741
+  ...
+# Subtest: unexpected selection arguments fail before executing a child
+ok 5 - unexpected selection arguments fail before executing a child
+  ---
+  duration_ms: 293.9688
+  ...
+# Subtest: the real npm test entry includes current creative/native suites and excludes their retained failed attempts
+ok 6 - the real npm test entry includes current creative/native suites and excludes their retained failed attempts
+  ---
+  duration_ms: 165.8439
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2849.7164
+
+> @copypaste/platform@0.5.1 test
+> node --env-file=.env scripts/run-current-tests-owned-v10.mjs --list
+
+{"current_test_files":["tests/admin-accounts.test.ts","tests/admin-approvals.test.ts","tests/admin-billing.test.ts","tests/admin-content-history.test.ts","tests/admin-content-revisions.test.ts","tests/admin-data-jobs.test.ts","tests/admin-directory.test.ts","tests/admin-fees.test.ts","tests/admin-identities.test.ts","tests/admin-memberships.test.ts","tests/admin-profile-revisions.test.ts","tests/admin-support.test.ts","tests/agent-adoption.test.ts","tests/agent-groups.test.ts","tests/agent-templates.test.ts","tests/analysis-calculation.test.ts","tests/analysis-reports.test.ts","tests/analysis-role-delivery.test.ts","tests/analysis-role-tools.test.ts","tests/analytics-file-import.test.ts","tests/analytics-import.test.ts","tests/analytics-metrics.test.ts","tests/analytics-workbook.test.ts","tests/audio-accounting.test.ts","tests/audio-authorization-upgrade.test.ts","tests/audio-production.test.ts","tests/auth-contract.test.ts","tests/auth-sessions.test.ts","tests/billing-sources.test.ts","tests/brand-production.test.ts","tests/business-inputs-136-v3.test.ts","tests/business-quality.test.ts","tests/canonical-tasks.test.ts","tests/capability-audio-verification.test.ts","tests/capability-bindings.test.ts","tests/capability-inventory.test.ts","tests/capability-releases.test.ts","tests/capability-video-verification.test.ts","tests/client-content.test.ts","tests/cloud-browser-preview.test.ts","tests/cloud-development-checks.test.ts","tests/cloud-events.test.ts","tests/cloud-files.test.ts","tests/cloud-program-executor.test.ts","tests/cloud-program-tools.test.ts","tests/cloud-schedules.test.ts","tests/cloud-workflows.test.ts","tests/connectors.test.ts","tests/creative-feedback-admin.test.ts","tests/creative-feedback-calculation.test.ts","tests/creative-feedback.test.ts","tests/creative-matrices.test.ts","tests/creative-packages-140-v6.test.ts","tests/current-test-discovery-141-v1.test.ts","tests/dedicated-cloud.test.ts","tests/default-assistant.test.ts","tests/delivery-package-137-v1.test.ts","tests/delivery-revision-138-v3.test.ts","tests/demo.test.ts","tests/desktop-browser-policy.test.ts","tests/desktop-disconnect.test.ts","tests/desktop-executions-139-v2.test.ts","tests/desktop-geo.test.ts","tests/desktop-local-runtime.test.ts","tests/desktop-pairing.test.ts","tests/desktop-program-policy.test.ts","tests/desktop-startup-recovery.test.ts","tests/desktop-updates.test.ts","tests/desktop-video.test.ts","tests/desktop-workflows.test.ts","tests/editable-design-render.test.ts","tests/editable-design-tools.test.ts","tests/execution-capacity.test.ts","tests/external-budget.test.ts","tests/federation.test.ts","tests/financial-notifications.test.ts","tests/generated-video-jobs.test.ts","tests/geo-model.test.ts","tests/geo-observations.test.ts","tests/internal-ai-gateway.test.ts","tests/media-effects-render.test.ts","tests/media-effects-tools.test.ts","tests/membership.test.ts","tests/migrations.test.ts","tests/native-agent-groups-139-v8.test.ts","tests/native-fault-ownership.test.ts","tests/native-recovery.test.ts","tests/notifications.test.ts","tests/paid-task-inputs.test.ts","tests/persistent-work.test.ts","tests/plan-versions.test.ts","tests/platform.test.ts","tests/project-configuration.test.ts","tests/provider-admin.test.ts","tests/provider-request-control.test.ts","tests/publication-admin-upgrade.test.ts","tests/publication-native-tools-v2.test.ts","tests/publication-native-tools-v3.test.ts","tests/publication-native-tools.test.ts","tests/publication-protocol.test.ts","tests/publications.test.ts","tests/refund-migration.test.ts","tests/render.test.ts","tests/resource-quotas.test.ts","tests/runtime-pre-turn.test.ts","tests/runtime-startup-billing.test.ts","tests/runtime-startup.test.ts","tests/runtime.test.ts","tests/schedule-time.test.ts","tests/schedules.test.ts","tests/schema-compatibility.test.ts","tests/scoped-seo-audits.test.ts","tests/scoped-seo-core.test.ts","tests/seo-change-tasks.test.ts","tests/skill-lifecycle.test.ts","tests/software-toolchain-release.test.ts","tests/solutions.test.ts","tests/storage-orphans.test.ts","tests/support-recovery.test.ts","tests/support-source-access.test.ts","tests/task-control.test.ts","tests/task-dependencies.test.ts","tests/task-history-sources.test.ts","tests/task-source-visibility.test.ts","tests/test-fixture-ownership.test.ts","tests/test-reclamation.test.ts","tests/video-job-protocol.test.ts","tests/video-projects.test.ts","tests/video-render.test.ts","tests/vip-credit-combinations.test.ts","tests/vip-lifecycle.test.ts","tests/web-analytics-api.test.ts","tests/web-analytics.test.ts","tests/workspace.test.ts"],"retained_historical":["creative-packages-140-v1.test.ts","creative-packages-140-v2.test.ts","creative-packages-140-v3.test.ts","creative-packages-140-v4.test.ts","creative-packages-140-v5.test.ts","delivery-revision-138-v1.test.ts","delivery-revision-138-v2.test.ts","desktop-executions-139-v1.test.ts","desktop-executions.test.ts","native-agent-groups-139-v1.test.ts","native-agent-groups-139-v2.test.ts","native-agent-groups-139-v3.test.ts","native-agent-groups-139-v4.test.ts","native-agent-groups-139-v5.test.ts","native-agent-groups-139-v6.test.ts","native-agent-groups-139-v7.test.ts"]}
