@@ -1,0 +1,181 @@
+import { createHash } from "node:crypto";
+import { createReadStream, createWriteStream } from "node:fs";
+import { mkdir, mkdtemp, realpath, rm, statfs } from "node:fs/promises";
+import path from "node:path";
+import { Readable, Transform } from "node:stream";
+import { pipeline } from "node:stream/promises";
+import { ZipFile } from "yazl";
+import { z } from "zod";
+import type { FastifyInstance } from "fastify";
+import type { Database, Tx } from "./db.js";
+import { audit, requireUser, type Principal } from "./auth.js";
+import { deliverySnapshot, deliveryTaskAccess } from "./business-quality.js";
+import { canonical, hash, Problem, uuid } from "./lib.js";
+import type { Storage } from "./storage.js";
+
+const parameters = z.object({ tenant: uuid, project: uuid, task: uuid });
+const selection = z.object({
+  expected_version: z.coerce.number().int().positive(),
+  expected_delivery_hash: z.string().regex(/^[a-f0-9]{64}$/),
+}).strict();
+const limit = 16 * 1024 ** 3, maxFiles = 10000;
+const timestamp = new Date("1980-01-01T00:00:00.000Z");
+type Scope = z.infer<typeof parameters>;
+type Selection = z.infer<typeof selection>;
+type File = { path: string; name: string; bytes: number; sha256: string; mime_type: string;
+  asset_id?: string; version_id?: string; version?: number; kind?: string; storage_key?: string; content?: Buffer };
+
+/** Keep every untrusted name a single portable filename, even on Windows. */
+export function deliveryFilename(value: string) {
+  const cleaned = value.normalize("NFC").replace(/[<>:"/\\|?*\x00-\x1f\x7f\u202a-\u202e\u2066-\u2069]/g, "_")
+    .replace(/^[. ]+|[. ]+$/g, "");
+  const shortened = [...cleaned].slice(0, 100).join("") || "artifact";
+  return /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(shortened) ? "_" + shortened : shortened;
+}
+const publicFile = ({ storage_key: _key, content: _content, ...file }: File) => file;
+
+async function current(tx: Tx, principal: Principal, scope: Scope, expected: Selection) {
+  const task = await deliveryTaskAccess(tx, principal, scope.tenant, scope.task, scope.project);
+  if (!["succeeded", "failed", "cancelled"].includes(task.status) || task.mode === "plan" || task.version !== expected.expected_version)
+    throw new Problem(409, "VERSION_CONFLICT", "Refresh the completed task before exporting its current delivery");
+  const delivery = await deliverySnapshot(tx, task);
+  if (!delivery || hash(canonical(delivery)) !== expected.expected_delivery_hash)
+    throw new Problem(409, "DELIVERY_VERSION_CONFLICT", "The delivery changed; refresh before downloading");
+  const rows = (await tx.query(`SELECT a.id AS asset_id,a.name,a.kind,v.id AS version_id,v.version,
+    v.bytes::text,v.sha256,v.mime_type,v.storage_key FROM assets a JOIN asset_versions v
+    ON v.asset_id=a.id AND v.version=a.current_version WHERE a.tenant_id=$1 AND a.project_id=$2
+    AND a.id=ANY($3::uuid[]) AND a.state='active' AND a.retention_expires_at>clock_timestamp()
+    AND v.erased_at IS NULL ORDER BY a.id FOR SHARE OF a`,
+    [scope.tenant, scope.project, delivery.artifacts.map((a: any) => a.id)])).rows;
+  if (rows.length !== delivery.artifacts.length || rows.some((r: any, i: number) =>
+    r.version_id !== delivery.artifacts[i].version_id || r.sha256 !== delivery.artifacts[i].sha256))
+    throw new Problem(409, "DELIVERY_VERSION_CONFLICT", "A delivery file is no longer available");
+  const files: File[] = rows.map((r: any) => ({ ...r, bytes: Number(r.bytes),
+    path: `artifacts/${r.asset_id}/v${r.version}/${deliveryFilename(r.name)}` }));
+  if (delivery.output_sha256) {
+    const content = Buffer.from(task.output, "utf8");
+    files.unshift({ path: "result.md", name: "result.md", bytes: content.length,
+      sha256: hash(content), mime_type: "text/markdown", content });
+  }
+  if (!files.length) throw new Problem(409, "DELIVERY_MISSING", "This task has no available delivery files or text");
+  if (files.length > maxFiles || files.some(f => !Number.isSafeInteger(f.bytes) || f.bytes < 0)
+      || files.reduce((n, f) => n + f.bytes, 0) > limit)
+    throw new Problem(413, "DELIVERY_PACKAGE_CAPACITY", "The complete delivery exceeds the 16 GiB or 10,000 file export capacity; use individual downloads");
+  const manifest = {
+    format: "workmate-delivery-1", tenant_id: scope.tenant, project_id: scope.project,
+    task_id: task.id, task_version: task.version, role_key: task.role_key,
+    technical_status: task.status, complete_task: task.status === "succeeded", data_mode: task.data_mode,
+    delivery_hash: expected.expected_delivery_hash, delivery_snapshot: delivery,
+    files: files.map(publicFile),
+    recovery: {
+      instructions: "README.md", source_packages: files.filter(f => f.kind === "source_package").map(f => f.path),
+      execution: "No code, media project or embedded script is executed by exporting or opening this archive.",
+      scope: "Exact available task outputs only. Local-only workspace files and unsubmitted source files are not uploaded or included.",
+    },
+  };
+  return { task, files, manifest };
+}
+
+function instructions(manifest: Awaited<ReturnType<typeof current>>["manifest"]) {
+  return `# CopyPaste · 完整交付包 / Complete delivery package\n\n` +
+    `任務 / Task: ${manifest.task_id} · v${manifest.task_version}\n\n` +
+    (manifest.complete_task ? "工作已完成。 / Task completed.\n\n" : "這是已停止或失敗工作的現有部分成果，並非完整成功交付。 / These are available partial outputs of a stopped or failed task.\n\n") +
+    `先閱讀 result.md（如有），再開啟 artifacts/ 內的成果。manifest.json 列出每個檔案的固定版本、大小及 SHA-256；SHA256SUMS 同時覆蓋說明和清單。\n` +
+    `Start with result.md when present, then artifacts/. manifest.json records exact file versions, sizes and SHA-256 digests. SHA256SUMS also covers these instructions and the manifest.\n\n` +
+    `## 繼續編輯 / Continue editing\n\n` +
+    `- 原始碼 ZIP：另行解壓至新資料夾，閱讀其 README 和 copypaste-manifest.json，按隨附依賴及執行回執處理；匯出不等於程式已通過測試。\n` +
+    `- Source ZIPs: extract separately into a new folder; follow their README and copypaste-manifest.json, dependencies and actual execution receipts. Exporting does not certify code tests.\n` +
+    `- SVG／PPTX：用相容編輯器開啟；字型和品牌素材的授權仍須遵守。PDF／PNG／MP4 是成果，不能據此宣稱包含可編輯工程。\n` +
+    `- SVG/PPTX: open with a compatible editor and respect font and brand licenses. PDF/PNG/MP4 are outputs and do not imply an editable source project.\n` +
+    `- 視頻／設計工程 JSON：使用隨附工程與素材說明。缺少的來源或尚未匯出的本機檔案不會被虛構補入。\n` +
+    `- Video/design project JSON: follow the included project and media instructions. Missing sources and local files not submitted for delivery are not fabricated or uploaded.\n\n` +
+    `需要修改時，回到原對話提供具體意見並選用這些固定版本；新的執行按原有費用確認和權限處理。下載包本身不呼叫 AI，也不建立新的 AI 費用。\n` +
+    `For revisions, return to the original conversation with feedback and select these fixed versions. New execution uses existing cost confirmations and permissions. Exporting makes no AI call or new AI charge.\n\n` +
+    `已下載的副本不會隨雲端撤回而自動刪除。 / Previously downloaded copies are not remotely erased by later source revocation.\n`;
+}
+
+/** Disk-backed ZIP64, one source stream at a time, with verification before any response bytes. */
+export async function writeDeliveryArchive(directory: string, files: File[], manifest: object, storage: Pick<Storage, "stream">, signal: AbortSignal) {
+  const zip = new ZipFile(), zipOutput = zip.outputStream as Readable, active = new Set<Readable>();
+  const output = path.join(directory, "delivery.zip"), digest = createHash("sha256"); let bytes = 0;
+  const abort = () => { const error = new Error("Delivery export interrupted"); for (const stream of active) stream.destroy(error); zipOutput.destroy(error); };
+  signal.throwIfAborted(); signal.addEventListener("abort", abort, { once: true });
+  zip.on("error", error => zipOutput.destroy(error));
+  const writing = pipeline(zipOutput, new Transform({ transform(chunk: Buffer, _encoding, done) {
+    bytes += chunk.length; digest.update(chunk); done(null, chunk);
+  } }), createWriteStream(output, { flags: "wx", mode: 0o600 }), { signal });
+  // Attach immediately so source failures cannot produce an unhandled rejection.
+  void writing.catch(() => {});
+  const options = { compress: false, mtime: timestamp, mode: 0o100600 };
+  try {
+    const sums: string[] = [];
+    for (const file of files) {
+      sums.push(`${file.sha256}  ${file.path}`);
+      if (file.content) { zip.addBuffer(file.content, file.path, options); continue; }
+      zip.addReadStreamLazy(file.path, { ...options, size: file.bytes }, callback => {
+        void storage.stream(file.storage_key!).then(input => {
+          if (signal.aborted) { input.destroy(); callback(new Error("Delivery export interrupted"), Readable.from([])); return; }
+          const sha = createHash("sha256"); let size = 0;
+          const checked = new Transform({ transform(chunk: Buffer, _encoding, done) {
+            size += chunk.length;
+            if (size > file.bytes) { done(new Error("Delivery file integrity failed")); return; }
+            sha.update(chunk); done(null, chunk);
+          }, flush(done) { done(size === file.bytes && sha.digest("hex") === file.sha256 ? null : new Error("Delivery file integrity failed")); } });
+          active.add(input); active.add(checked);
+          void pipeline(input, checked, { signal }).catch(error => zipOutput.destroy(error))
+            .finally(() => { active.delete(input); active.delete(checked); });
+          callback(null, checked);
+        }).catch(error => callback(error, Readable.from([])));
+      });
+    }
+    for (const [name, content] of [["manifest.json", JSON.stringify(manifest, null, 2) + "\n"], ["README.md", instructions(manifest as any)]] as const) {
+      const buffer = Buffer.from(content); sums.push(`${hash(buffer)}  ${name}`); zip.addBuffer(buffer, name, options);
+    }
+    zip.addBuffer(Buffer.from(sums.join("\n") + "\n"), "SHA256SUMS", options);
+    zip.end(); await writing;
+    return { output, bytes, sha256: digest.digest("hex") };
+  } catch (error) { abort(); await writing.catch(() => {}); throw error; }
+  finally { signal.removeEventListener("abort", abort); }
+}
+
+export function registerDeliveryPackages(app: FastifyInstance, db: Database, storage: Storage) {
+  const inFlight = new Set<string>();
+  app.get("/v1/tenants/:tenant/projects/:project/tasks/:task/delivery-package",
+    { preHandler: requireUser(db), config: { rateLimit: { max: 6, timeWindow: "1 minute" } } }, async (req, reply) => {
+      const scope = parameters.parse(req.params), expected = selection.parse(req.query), principal = req.principal;
+      if (inFlight.size >= 2 || inFlight.has(principal.id)) throw new Problem(429, "DELIVERY_EXPORT_BUSY", "Another delivery export is in progress; try again shortly");
+      inFlight.add(principal.id);
+      const controller = new AbortController(), signal = AbortSignal.any([controller.signal, AbortSignal.timeout(300000)]);
+      const interrupt = () => controller.abort(); req.raw.once("aborted", interrupt); reply.raw.once("close", interrupt);
+      let directory: string | undefined, handedOff = false;
+      const cleanup = async () => {
+        req.raw.off("aborted", interrupt); reply.raw.off("close", interrupt); inFlight.delete(principal.id);
+        if (directory) await rm(directory, { recursive: true, force: true });
+      };
+      try {
+        const selected = await db.tx(tx => current(tx, principal, scope, expected), scope.tenant);
+        await mkdir(db.config.DATA_DIR, { recursive: true });
+        const parent = await realpath(db.config.DATA_DIR), capacity = await statfs(parent);
+        const required = selected.files.reduce((n, f) => n + f.bytes, 0) + 64 * 1024 ** 2;
+        if (Number(capacity.bavail) * Number(capacity.bsize) < required)
+          throw new Problem(503, "DELIVERY_EXPORT_BUSY", "Export storage is currently full; try again later");
+        directory = await mkdtemp(path.join(parent, "delivery-package-"));
+        const archive = await writeDeliveryArchive(directory, selected.files, selected.manifest, storage, signal);
+        await db.tx(async tx => {
+          const checked = await current(tx, principal, scope, expected);
+          if (canonical(checked.manifest) !== canonical(selected.manifest))
+            throw new Problem(409, "DELIVERY_VERSION_CONFLICT", "The delivery changed while exporting; refresh and download again");
+          await audit(tx, principal, "task.delivery_package.download", scope.task, "succeeded",
+            { task_version: expected.expected_version, delivery_hash: expected.expected_delivery_hash,
+              files: selected.files.length, bytes: archive.bytes, sha256: archive.sha256 }, scope.tenant);
+        }, scope.tenant);
+        signal.throwIfAborted();
+        const stream = createReadStream(archive.output);
+        stream.once("close", () => { void cleanup().catch(error => app.log.error(error, "Delivery export cleanup failed")); });
+        handedOff = true;
+        return reply.type("application/zip").header("Cache-Control", "no-store")
+          .header("Content-Disposition", `attachment; filename="workmate-${scope.task}-v${expected.expected_version}.zip"`)
+          .header("Content-Length", archive.bytes).header("X-Content-SHA256", archive.sha256).send(stream);
+      } finally { if (!handedOff) await cleanup(); }
+    });
+}

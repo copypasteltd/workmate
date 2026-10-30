@@ -1,0 +1,135 @@
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { api } from "./api";
+import { useWorkspace } from "./context";
+import { ErrorNotice, Field, Loading, Modal, useData, useI18n } from "./ui";
+import { readRevisionPending, revisionDraftPrefix, revisionMicros, revisionReference, textRevisionTarget,
+  type RevisionTarget, type RevisionPending, type RevisionSelection } from "./delivery-revision-state";
+import "./delivery-revision.css";
+
+export type NativeRevision = (selection: RevisionSelection, instructions: string, budget: number, requestId: string) => Promise<any>;
+export function DeliveryRevisionAction({ base, taskId, nativeRevision, changed }: {
+  base: string; taskId: string; nativeRevision?: NativeRevision; changed?: () => void;
+}) {
+  const { t } = useI18n(), [open, setOpen] = useState(false);
+  return <><button type="button" className="text-link" onClick={() => setOpen(true)}>{t("以這份成果繼續修改", "Request changes to this delivery")}</button>
+    {open && <Modal title={t("修改這份成果", "Revise this delivery")} onClose={() => setOpen(false)}>
+      <RevisionForm base={base} taskId={taskId} nativeRevision={nativeRevision} changed={changed}/>
+    </Modal>}</>;
+}
+function RevisionForm({ base, taskId, nativeRevision, changed }: { base: string; taskId: string; nativeRevision?: NativeRevision; changed?: () => void }) {
+  const w = useWorkspace(), { t } = useI18n(), local = !!nativeRevision;
+  const path = `${base}/tasks/${taskId}`, storeKey = `${revisionDraftPrefix}${w.me.user.id}:${base}:${taskId}:${local}`;
+  const [reload, setReload] = useState(0), source = useData(path + "/revision-context", reload), data = source.data;
+  const [pending, setPending] = useState<RevisionPending | null>(() => { try { return readRevisionPending(localStorage.getItem(storeKey), taskId, local); } catch { return null; } });
+  const [resource, setResource] = useState("all"), [kind, setKind] = useState("entire"), [target, setTarget] = useState<RevisionTarget>({ kind: "whole" });
+  const [instructions, setInstructions] = useState(pending?.body.instructions ?? ""), [budget, setBudget] = useState(pending ? String(pending.body.budget_micros / 1e6) : "20");
+  const [consent, setConsent] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState<Error | null>(null), [result, setResult] = useState<any>(null);
+  const [preview, setPreview] = useState<any>(null), [previewError, setPreviewError] = useState<Error | null>(null), [previewBusy, setPreviewBusy] = useState(false);
+  const [text, setText] = useState(""), [rectangle, setRectangle] = useState({ x: 0, y: 0, width: 1, height: 1 }), [interval, setInterval] = useState({ start: "0", end: "" });
+  const live = useRef(true), lock = useRef(false), start = useRef<{ x: number; y: number } | null>(null);
+  useEffect(() => { live.current = true; return () => { live.current = false; }; }, []);
+  const artifact = data?.artifacts.find((a: any) => a.asset_version_id === resource);
+  const canRun = data?.can_start && (local ? data.execution_location === "desktop" : data.execution_location === "cloud" && !window.copyPasteBridge);
+  useEffect(() => {
+    let active = true; setPreview(null); setPreviewError(null); setPreviewBusy(false);
+    if (!data || resource === "all") { setText(""); return; }
+    if (resource === "output") { setText(data.output); return; }
+    setText("");
+    if (kind === "entire") return;
+    setPreviewBusy(true);
+    const query = new URLSearchParams({ expected_version: String(data.expected_version), expected_delivery_hash: data.expected_delivery_hash });
+    void api(`${path}/revision-preview/${resource}?${query}`).then(value => {
+      if (!active) return;
+      if (value.sha256 !== artifact?.sha256) throw new Error(t("預覽版本已變更，請重新載入。", "The preview version changed. Reload the delivery."));
+      setPreview(value);
+      if (kind === "text") { const bytes = Uint8Array.from(atob(value.base64), c => c.charCodeAt(0)); setText(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); }
+    }).catch(e => { if (active) setPreviewError(e as Error); }).finally(() => { if (active) setPreviewBusy(false); });
+    return () => { active = false; };
+  }, [resource, kind, data?.expected_delivery_hash, data?.expected_version]);
+  const choose = (id: string, mode = "entire") => {
+    setResource(id); setKind(mode); setError(null); setRectangle({ x: 0, y: 0, width: 1, height: 1 });
+    const a = data?.artifacts.find((item: any) => item.asset_version_id === id);
+    setInterval({ start: "0", end: a?.duration_ms ? String(a.duration_ms / 1000) : "" });
+    setTarget(id === "all" ? { kind: "whole" } : id === "output" ? { kind: "output" } : { kind: "artifact", asset_version_id: id });
+  };
+  const box = (value: typeof rectangle) => { setRectangle(value); setTarget({ kind: "image", asset_version_id: resource, ...value }); };
+  const time = (value: typeof interval) => { setInterval(value); setTarget({ kind: "video", asset_version_id: resource,
+    start_ms: Math.round(Number(value.start) * 1000), end_ms: Math.round(Number(value.end) * 1000) }); };
+  const submit = async () => {
+    if (lock.current || !data || !canRun || (!pending && !consent)) return;
+    lock.current = true; setBusy(true); setError(null);
+    try {
+      const request = pending ?? { key: crypto.randomUUID(), local, body: {
+        source_task_id: taskId, expected_version: data.expected_version, expected_delivery_hash: data.expected_delivery_hash, target,
+        instructions: instructions.trim(), budget_micros: revisionMicros(budget),
+        ...(data.conversation_version ? { expected_conversation_version: data.conversation_version } : {}),
+      } };
+      if (!pending) { localStorage.setItem(storeKey, JSON.stringify(request)); setPending(request); }
+      const value = nativeRevision ? await nativeRevision(revisionReference(request.body), request.body.instructions, request.body.budget_micros, request.key)
+        : await api(path + "/revisions", { method: "POST", headers: { "Idempotency-Key": request.key }, body: JSON.stringify(request.body) });
+      localStorage.removeItem(storeKey);
+      if (live.current) { setPending(null); setResult(value); changed?.(); }
+    } catch (e) { if (live.current) setError(e as Error); }
+    finally { lock.current = false; if (live.current) setBusy(false); }
+  };
+  return <section className="delivery-revision-form" aria-label={t("成果修改要求", "Delivery change request")}>
+    <ErrorNotice error={source.error || error}/>{source.loading && <Loading/>}
+    {source.error && <button className="button secondary" onClick={() => setReload(v => v + 1)}>{t("重新載入", "Reload")}</button>}
+    {result ? <div role="status" className="notice"><strong>{t("修改工作已記錄", "Revision recorded")}</strong>
+      <p>{local ? t("工作保留在原本機會話，請在會話中查看執行與交付。", "The work remains in your original local session. Follow its progress and delivery there.")
+        : t("修改沿用原角色與成果來源，原文件會保留。", "The revision keeps the original role and source delivery. Original files are retained.")}</p>
+      {!local && <Link className="button primary" to={result.conversation_id ? `/app/conversations/${result.conversation_id}` : `/app/tasks/${result.task_id}`}>{t("查看修改工作", "View revision")}</Link>}
+    </div> : data && <form onSubmit={e => { e.preventDefault(); void submit(); }}>
+      <p><strong>{data.title}</strong> · v{data.expected_version}</p><p className="muted">{t("選擇要改的成果及位置，寫下要求，再確認本次預算。原文件會保留。", "Choose the output and location, describe your changes, then confirm this revision’s budget. Original files are retained.")}</p>
+      {!canRun && <p className="notice" role="status">{data.required_workflow ? t("這份交付有獨立的方案、團隊或操作確認，請從原工作流程提出修改。", "This delivery has separate method, team or operation approvals. Request changes from its original workflow.")
+        : data.execution_location === "desktop" ? t("請回到原本機會話，核對目錄與權限後修改。", "Return to the original local session and review its folder and permissions before revising.")
+        : t("目前無法在此開始修改；請核對工作權限、會話封存狀態，或在 Web 繼續雲端工作。", "Changes cannot start here. Check task access and conversation archive status, or open Web for cloud work.")}</p>}
+      {pending && <p role="status" className="notice">{t("保留了原修改要求與預算。重試只核對原請求，不建立另一筆工作。", "Your original request and budget are retained. Retry checks that request without creating a second job.")}</p>}
+      <fieldset disabled={busy || !!pending || !canRun}><legend className="sr-only">{t("修改內容", "Requested changes")}</legend>
+        <Field label={t("要修改哪份成果？", "Which output should change?")}><select aria-label={t("要修改哪份成果？", "Which output should change?")} value={resource} onChange={e => choose(e.target.value)}>
+          <option value="all">{t("整份交付", "Complete delivery")}</option>{data.output && <option value="output">{t("文字答覆", "Text answer")}</option>}
+          {data.artifacts.map((a: any) => <option value={a.asset_version_id} key={a.asset_version_id}>{a.name} · v{a.version}</option>)}
+        </select></Field>
+        {resource !== "all" && <Field label={t("修改範圍", "Change scope")}><select aria-label={t("修改範圍", "Change scope")} value={kind} onChange={e => {
+          const mode = e.target.value; choose(resource, mode);
+          if (mode === "image") box({ x: 0, y: 0, width: 1, height: 1 });
+          if (mode === "video") time({ start: "0", end: String((artifact?.duration_ms ?? 0) / 1000) });
+        }}><option value="entire">{t("完整內容", "Entire output")}</option>
+          {(resource === "output" || artifact?.mime_type.startsWith("text/") || artifact?.mime_type === "application/json") && <option value="text">{t("指定文字選段", "Selected text")}</option>}
+          {artifact?.mime_type.startsWith("image/") && <option value="image">{t("指定圖片區域", "Image region")}</option>}
+          {artifact?.mime_type.startsWith("video/") && artifact.duration_ms && <option value="video">{t("指定影片時段", "Video interval")}</option>}
+        </select></Field>}
+        {previewBusy && <Loading/>}<ErrorNotice error={previewError}/>
+        {kind === "text" && <label>{t("在原文中選取要修改的文字（最多4,000個字元）", "Select the original text to change (up to 4,000 characters)")}
+          <textarea className="revision-source-text" aria-label={t("原文選段", "Original text selection")} readOnly rows={7} value={text} onSelect={e => {
+            const field = e.currentTarget; if (field.selectionStart === field.selectionEnd) return;
+            try { setTarget(textRevisionTarget(text, field.selectionStart, field.selectionEnd, resource === "output" ? undefined : resource)); setError(null); } catch (failure) { setError(failure as Error); }
+          }}/>{target.kind === "text" && <q className="revision-quote">{target.quote}</q>}</label>}
+        {kind === "image" && <>
+          {preview && <div className="revision-image" aria-label={t("拖曳選擇圖片區域", "Drag to select an image region")}
+            onPointerDown={e => { const r = e.currentTarget.getBoundingClientRect(); start.current = { x: Math.max(0, Math.min(1, (e.clientX-r.left)/r.width)), y: Math.max(0, Math.min(1, (e.clientY-r.top)/r.height)) }; e.currentTarget.setPointerCapture(e.pointerId); }}
+            onPointerMove={e => { if (!start.current) return; const r = e.currentTarget.getBoundingClientRect(), x = Math.max(0, Math.min(1, (e.clientX-r.left)/r.width)), y = Math.max(0, Math.min(1, (e.clientY-r.top)/r.height));
+              box({ x: Math.min(x,start.current.x), y: Math.min(y,start.current.y), width: Math.abs(x-start.current.x), height: Math.abs(y-start.current.y) }); }} onPointerUp={() => { start.current = null; }} onPointerCancel={() => { start.current = null; }}>
+            <img draggable={false} alt={artifact.name} src={`data:${preview.mime_type};base64,${preview.base64}`}/><span style={{ left: rectangle.x*100+"%", top: rectangle.y*100+"%", width: rectangle.width*100+"%", height: rectangle.height*100+"%" }}/>
+          </div>}
+          <p className="muted">{t("拖曳選取，或填寫相對整張圖片的比例。這是修改位置提示。", "Drag a region, or enter proportions of the complete image. This identifies the requested change location.")}</p>
+          <div className="revision-coordinate-fields">{(["x","y","width","height"] as const).map((field,index) => <Field label={t(["左側比例","頂部比例","寬度比例","高度比例"][index], ["Left ratio","Top ratio","Width ratio","Height ratio"][index])} key={field}>
+            <input type="number" min="0" max="1" step="0.001" value={rectangle[field]} onChange={e => box({ ...rectangle, [field]: Number(e.target.value) })}/></Field>)}</div>
+        </>}
+        {kind === "video" && <><p className="muted">{t("原影片長度（秒）：", "Original video duration (seconds): ")}{artifact.duration_ms / 1000}</p>
+          {preview && <video controls preload="metadata" src={`data:${preview.mime_type};base64,${preview.base64}`}/>}
+          <div className="revision-coordinate-fields"><Field label={t("開始（秒）", "Start (seconds)")}><input type="number" min="0" max={artifact.duration_ms/1000} step="0.001" value={interval.start} required onChange={e => time({ ...interval, start:e.target.value })}/></Field>
+            <Field label={t("結束（秒）", "End (seconds)")}><input type="number" min="0.001" max={artifact.duration_ms/1000} step="0.001" value={interval.end} required onChange={e => time({ ...interval, end:e.target.value })}/></Field></div></>}
+        <Field label={t("希望怎樣修改？", "What should change?")}><textarea aria-label={t("希望怎樣修改？", "What should change?")} minLength={5} maxLength={6000} rows={4} required value={instructions} onChange={e => setInstructions(e.target.value)}/></Field>
+        <Field label={t("本次修改預算上限（HKD）", "Revision budget limit (HKD)")}><input aria-label={t("本次修改預算上限（HKD）", "Revision budget limit (HKD)")} type="number" min="0.01" max="10000" step="0.01" value={budget} required onChange={e => setBudget(e.target.value)}/></Field>
+        <label className="check-line"><input type="checkbox" required checked={consent} onChange={e => setConsent(e.target.checked)}/>{t("確認以上修改內容及本次預算", "Confirm these changes and this revision’s budget")}</label>
+      </fieldset>
+      <button className="button primary" type="submit" disabled={busy || !canRun || (!pending && (!consent || (kind === "text" && target.kind !== "text")))}>{busy ? t("正在核對修改…", "Checking revision…") : pending ? t("重試原修改要求", "Retry original revision") : local ? t("交給本機 Codex 修改", "Revise with local Codex") : t("開始修改", "Start revision")}</button>
+      {pending && !busy && <button className="button secondary" type="button" onClick={() => {
+        if (!window.confirm(t("請先核對原會話及任務列表，確認原修改要求是否已建立。清除這份表單不會取消已開始的工作。", "Check the original conversation and task list for this request first. Clearing this form does not cancel work that already started."))) return;
+        localStorage.removeItem(storeKey); setPending(null); setConsent(false); setReload(v=>v+1);
+      }}>{t("已核對，重新選擇成果", "Checked existing work; reselect delivery")}</button>}
+    </form>}
+  </section>;
+}

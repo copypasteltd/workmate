@@ -1,0 +1,97 @@
+{
+  "at": "2026-10-30T09:21:11.738Z",
+  "status": "failed",
+  "error": null,
+  "commands": [
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "delivery revision, fixed source and package regressions",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/delivery-revision-138-v3.test.ts",
+        "tests/business-quality.test.ts",
+        "tests/delivery-package-137-v1.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension existing state and upload regressions",
+      "arguments": [
+        "--import",
+        "tsx",
+        "--test",
+        "tests/delivery-revision-138-v1.test.ts",
+        "tests/conversation.test.ts",
+        "tests/native-session.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop durable revision, local permissions and download regressions",
+      "arguments": [
+        "--import",
+        "tsx",
+        "--test",
+        "tests/delivery-revision-138-v1.test.ts",
+        "tests/local-agent.test.ts",
+        "tests/download.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-web renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-desktop renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/delivery-revision-138/backend-04-sources.json",
+    "sha256": "c40fa220f8cd2b1004667229148b215832dba0ae986a96132139a8c576e53087"
+  },
+  "sources_unchanged": false,
+  "database_shutdown": 0,
+  "port_closed": true,
+  "raw_log": {
+    "path": "evidence/delivery-revision-138/backend-04.tap",
+    "sha256": "8d2ccb32627c1842a22c5f656d4334cde7c91b7fb4ac550b7e72e71474815037"
+  },
+  "verifier": {
+    "path": "evidence/delivery-revision-138/backend-04-verifier.mjs",
+    "sha256": "c4700e35bc25843295166642c014ec40e4c3a24efbc2a7270573c4010ba0a2ce"
+  },
+  "model_mode": "Controlled Codex runtime adapter with explicit synthetic task results. Real HTTP, permissions, native PostgreSQL, original fixed source reading, new deliverables and native admission. Video anchor test bytes are explicitly metadata-only synthetic fixtures. No paid model calls."
+}

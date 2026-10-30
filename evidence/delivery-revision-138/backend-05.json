@@ -1,0 +1,136 @@
+{
+  "at": "2026-10-30T09:23:12.015Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "current test runner syntax",
+      "arguments": [
+        "--check",
+        "scripts/run-current-tests-owned-v1.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "current test discovery",
+      "arguments": [
+        "scripts/run-current-tests-owned-v1.mjs",
+        "--list"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/delivery-revision-138/backend-05-sources.json",
+    "sha256": "7c070e9062406973421d5510d4964b7b18bbbd43104462a549fbaacb5aa07acd"
+  },
+  "sources_unchanged": true,
+  "test_execution_report": {
+    "path": "evidence/delivery-revision-138/backend-04.json",
+    "sha256": "f6df07b9526b3fa3394d78890bc18d497922cb44d1805c1af7f1ad820b9cfe2e",
+    "original_status": "failed",
+    "scope": "All eight original commands and 143 tests passed. The original source guard failed because only test discovery/package configuration changed during execution. Every original runtime source, test, migration, dependency and client file is exact; the two configuration files alone are separately validated here. Original failure remains unchanged; tests are not claimed as rerun."
+  },
+  "test_execution_log": {
+    "path": "evidence/delivery-revision-138/backend-04.tap",
+    "sha256": "8d2ccb32627c1842a22c5f656d4334cde7c91b7fb4ac550b7e72e71474815037"
+  },
+  "reused_commands": [
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "delivery revision, fixed source and package regressions",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/delivery-revision-138-v3.test.ts",
+        "tests/business-quality.test.ts",
+        "tests/delivery-package-137-v1.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension existing state and upload regressions",
+      "arguments": [
+        "--import",
+        "tsx",
+        "--test",
+        "tests/delivery-revision-138-v1.test.ts",
+        "tests/conversation.test.ts",
+        "tests/native-session.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop durable revision, local permissions and download regressions",
+      "arguments": [
+        "--import",
+        "tsx",
+        "--test",
+        "tests/delivery-revision-138-v1.test.ts",
+        "tests/local-agent.test.ts",
+        "tests/download.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-web renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-desktop renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "current_configuration_changes": [
+    "copypaste-platform/package.json",
+    "copypaste-platform/scripts/run-current-tests-owned-v1.mjs"
+  ],
+  "database_shutdown": 0,
+  "database_shutdown_scope": "Verified stopped original owned cluster; this configuration check starts no database",
+  "port_closed": true,
+  "reused_owned_native_cluster": {
+    "path": ".data/native-qa/9bfc0238-4ace-4d52-83df-83e2207676c3",
+    "origin": "evidence/delivery-revision-138/backend-04.json",
+    "origin_sha256": "f6df07b9526b3fa3394d78890bc18d497922cb44d1805c1af7f1ad820b9cfe2e",
+    "scope": "Verified stopped task-owned cluster; subsequent journeys create fresh isolated databases."
+  },
+  "raw_log": {
+    "path": "evidence/delivery-revision-138/backend-05.tap",
+    "sha256": "9d04c792e1e63487659d52af7f6816b77cee1dc0acfb12615361671e4fccc2a3"
+  },
+  "verifier": {
+    "path": "evidence/delivery-revision-138/backend-05-verifier.mjs",
+    "sha256": "2abda0d1e0d764d69c2489584462764b781dd0f3ffa3a3a852d8698a321e3464"
+  },
+  "model_mode": "Controlled Codex runtime adapter with explicit synthetic task results. Real HTTP, permissions, native PostgreSQL, original fixed source reading, new deliverables and native admission. Video anchor test bytes are explicitly metadata-only synthetic fixtures. No paid model calls."
+}

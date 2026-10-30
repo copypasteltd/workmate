@@ -1,0 +1,147 @@
+{
+  "at": "2026-10-30T08:39:45.850Z",
+  "status": "failed",
+  "error": null,
+  "commands": [
+    {
+      "name": "delivery compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "delivery native boundary cases",
+      "arguments": [
+        "--test",
+        "tests/native-surface-integrity.test.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web build",
+      "arguments": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension build",
+      "arguments": [
+        "scripts/build.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop renderer compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop build",
+      "arguments": [
+        "D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "unsigned Windows package",
+      "arguments": [
+        "node_modules/electron-builder/out/cli/cli.js",
+        "--win",
+        "--dir",
+        "--config.directories.output=release/delivery-revision-138-02"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "result_exit_code": 1,
+  "journey": {
+    "path": "evidence/delivery-revision-138/ui-02-journey.json",
+    "sha256": "1ccc636af97c82e1ff44db5c8a608954a0f1ccc93643063e43da736b1f50fe5c",
+    "status": "failed"
+  },
+  "source_manifest": {
+    "path": "evidence/delivery-revision-138/ui-02-sources.json",
+    "sha256": "9aca9b043ea1cc01d90f8df5362633f448b0d589bdfcba097972d76e2e171684"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "ports_closed": {
+    "4310": true,
+    "4317": true,
+    "10163": true
+  },
+  "package_directory": "../copypaste-desktop/release/delivery-revision-138-02/win-unpacked",
+  "package_files": {
+    "CopyPaste.exe": "8a2000a6fe391282d1326369ae9b657372a88caac57d6f30ec99abec989d7b05",
+    "resources/app.asar": "e53239848f12138206f19c01dceaba7e59cca046b21a30ee83ff6739204b9d39",
+    "resources/local-codex/codex.exe": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+    "resources/local-codex/runtime-manifest.json": "13490b9b1b9822967b8cea7134c2ba306671e58050a0897545184a7af6f34605"
+  },
+  "package_unchanged": true,
+  "fixture_cleanup": {
+    "exit_code": 0,
+    "sha256": "3b8f526fd47b8d912f17bfb84d11b21dd1edc0c4c1f2c4201bbf1a5460c3b1dc",
+    "at": "2026-10-30T08:39:21.675Z",
+    "status": "passed",
+    "scope": "Only this launcher's newly created deferred fixture IDs; historical retained fixtures are untouched",
+    "workers_exited": true,
+    "actual_filesystem_checked": true,
+    "interrupted_owner_recovery": false,
+    "results": [
+      {
+        "id": "0464fd8d8a494b47a4d2bf403b74b670",
+        "reclaimed": true
+      }
+    ]
+  },
+  "raw_log": {
+    "path": "evidence/delivery-revision-138/ui-02.tap",
+    "sha256": "78c01e8666e5217ac0dd1541836b55eb8b02c29f0ffb80daeab196fa4b1b65c0"
+  },
+  "verifier": {
+    "path": "evidence/delivery-revision-138/ui-02-verifier.mjs",
+    "sha256": "b9bbb4ceef662d8926976bea207d323614e0581a42e7f5388a80a5c86239f706"
+  },
+  "model_mode": "Synthetic business data and scripted tool calls in UI journeys; the packaged Desktop executes actual local Codex against a controlled OpenAI-compatible company gateway fixture."
+}
