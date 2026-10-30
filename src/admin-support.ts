@@ -465,16 +465,17 @@ function taskDTO(row: any) {
   return {
     id: row.id,
     project_id: row.project_id,
-    title: row.private_owner ? null : row.title,
+    title: row.private_owner || row.source_unavailable ? null : row.title,
     state: row.status,
     private: !!row.private_owner,
     error_code:
-      typeof row.error_code === "string" &&
+      !row.source_unavailable && typeof row.error_code === "string" &&
       /^[A-Z][A-Z0-9_]{0,79}$/.test(row.error_code)
         ? row.error_code
         : null,
     created_at: iso(row.created_at),
     updated_at: iso(row.updated_at),
+    source_unavailable: !!row.source_unavailable,
   };
 }
 
@@ -941,15 +942,23 @@ export function registerSupport(app: FastifyInstance, db: Database) {
           allowed(bs, "admin.content.read", row.tenant_id, pid),
         );
         const taskId = detail ? uuid.parse((req.params as any).task) : null;
-        const tasks = (
-          await tx.query(
-            `SELECT id,project_id,title,status,private_owner,error_code,created_at,updated_at${detail ? ",prompt,output" : ""} FROM tasks WHERE tenant_id=$1 AND project_id=ANY($2::uuid[]) AND content_state='active' AND (private_owner IS NULL OR private_owner=$3) AND ($4::uuid IS NULL OR id=$4) ORDER BY created_at DESC,id DESC LIMIT 21`,
-            [row.tenant_id, contentProjects, row.target_user_id, taskId],
-          )
-        ).rows;
-        let body: any = undefined;
-        if (detail) {
-          const task = tasks[0];
+        // Admin transactions have no customer actor context. Resolve original
+        // sources with the already-authorized explicit tenant/project instead.
+        const readTasks = async () => (await tx.query(`WITH scoped AS MATERIALIZED (
+          SELECT * FROM tasks WHERE tenant_id=$1 AND project_id=ANY($2::uuid[])
+            AND content_state='active' AND (private_owner IS NULL OR private_owner=$3)
+            AND ($4::uuid IS NULL OR id=$4) ORDER BY created_at DESC,id DESC LIMIT 21
+        ), sourced AS MATERIALIZED (
+          SELECT scoped.*,content_source_manifest($1::uuid,project_id,ARRAY[id],'{}'::uuid[]) AS sources FROM scoped
+        ) SELECT id,project_id,title,status,private_owner,error_code,created_at,updated_at,
+          sources IS NULL AS source_unavailable,
+          CASE WHEN private_owner IS NULL AND sources IS NOT NULL THEN
+            encode(sha256(convert_to(jsonb_build_array(id,version,moderation_version,prompt,output,sources)::text,'UTF8')),'hex')
+          END AS body_revision${detail ? ",prompt,output" : ""}
+          FROM sourced ORDER BY created_at DESC,id DESC`,
+          [row.tenant_id, contentProjects, row.target_user_id, taskId])).rows;
+        let tasks = await readTasks();
+        const assertBody = (task: any) => {
           if (
             !task ||
             task.private_owner ||
@@ -966,12 +975,16 @@ export function registerSupport(app: FastifyInstance, db: Database) {
               "SUPPORT_BODY_FORBIDDEN",
               "Shared content requires a current user grant and independent body permission",
             );
-          body = {
-            task: taskDTO(task),
-            prompt: task.prompt,
-            output: task.output,
-          };
-        }
+          if (task.source_unavailable)
+            throw new Problem(403, "SUPPORT_SOURCE_UNAVAILABLE", "An original task source is no longer available");
+          const expected = req.headers["if-match"];
+          if (expected !== undefined && (typeof expected !== "string" || !/^"[a-f0-9]{64}"$/.test(expected)))
+            throw new Problem(400, "SUPPORT_REVISION_INVALID", "Choose a single current support content revision");
+          if (expected !== undefined && expected !== `"${task.body_revision}"`)
+            throw new Problem(409, "SUPPORT_CONTENT_CHANGED", "The task content changed; reopen its current diagnostic view");
+        };
+        if (detail) assertBody(tasks[0]);
+        const initialRevision = detail ? tasks[0].body_revision : null;
         const ps = (
           await tx.query(
             "SELECT id,name FROM projects WHERE tenant_id=$1 AND id=ANY($2::uuid[]) AND NOT archived ORDER BY name,id",
@@ -992,9 +1005,14 @@ export function registerSupport(app: FastifyInstance, db: Database) {
           },
           row.tenant_id,
         );
-        // The data and audit are one transaction. Recheck deadlines after the
-        // audit too, so a slow audit cannot return a view past its deadline.
-        const current = await currentSession(tx, row);
+        // Re-read sources and content after the audit. A concurrent withdrawal
+        // or revision must not return the body captured before that audit.
+        tasks = await readTasks();
+        if (detail) {
+          assertBody(tasks[0]);
+          if (initialRevision !== tasks[0].body_revision)
+            throw new Problem(409, "SUPPORT_CONTENT_CHANGED", "The task content changed while checking access");
+        }
         const finalBindings = await liveAdmin(tx, req.principal);
         baseAuthority(finalBindings, "admin.support.read", row);
         for (const task of tasks)
@@ -1005,6 +1023,7 @@ export function registerSupport(app: FastifyInstance, db: Database) {
           authority(finalBindings, "admin.content.body.read", row.tenant_id, [
             tasks[0].project_id,
           ]);
+        const current = await currentSession(tx, row);
         if (current.dto.state !== "active")
           throw new Problem(410, "SUPPORT_ENDED", "Support access has ended");
         return {
@@ -1016,19 +1035,24 @@ export function registerSupport(app: FastifyInstance, db: Database) {
           read_only: true,
           as_of: current.at,
           ...(detail
-            ? body
+            ? { task: taskDTO(tasks[0]), body_revision: tasks[0].body_revision,
+                prompt: tasks[0].prompt, output: tasks[0].output }
             : {
                 tasks: tasks.slice(0, 20).map((task) => ({
                   ...taskDTO(task),
                   body_available:
                     !task.private_owner &&
+                    !task.source_unavailable &&
                     !!row.support_grant_id &&
                     allowed(
-                      bs,
+                      finalBindings,
                       "admin.content.body.read",
                       row.tenant_id,
                       task.project_id,
                     ),
+                  body_revision: !task.private_owner && !task.source_unavailable && !!row.support_grant_id &&
+                    allowed(finalBindings, "admin.content.body.read", row.tenant_id, task.project_id)
+                    ? task.body_revision : null,
                 })),
                 tasks_truncated: tasks.length > 20,
               }),
@@ -1041,11 +1065,11 @@ export function registerSupport(app: FastifyInstance, db: Database) {
   app.get(
     "/v1/admin/support/sessions/:id/view",
     { preHandler: requireAdmin(db) },
-    (req) => view(req),
+    (req, reply) => { reply.header("Cache-Control", "no-store"); return view(req); },
   );
   app.get(
     "/v1/admin/support/sessions/:id/view/tasks/:task",
     { preHandler: requireAdmin(db) },
-    (req) => view(req, true),
+    (req, reply) => { reply.header("Cache-Control", "no-store"); return view(req, true); },
   );
 }

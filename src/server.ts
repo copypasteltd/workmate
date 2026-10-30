@@ -199,6 +199,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       "X-Billing-Account-ID",
       "X-Admin-Preview-ID",
       "X-CopyPaste-Support-Session",
+      "If-Match",
       "Last-Event-ID",
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
