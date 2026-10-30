@@ -1,5 +1,41 @@
 # Workmate · CopyPaste Enterprise Agent · admin
 
+<!-- native-teams-stage139 -->
+## 本机专家团队 · 阶段139
+
+本机团队每步进入原有任务、用户消耗、钱包及审计管理，保留本机执行位置和角色版本；套餐、Skill／角色停用及账号权限变更继续生效。管理员不能替客户授予本机完整权限，私有内容仍走原受控协助流程。以下为真实客户Desktop流程，后台面板截图及用户／费用／VIP说明保留在后文。
+
+最多16步、7位成员加1位通用协调员、3步并行，共用一个明确授权目录；并行编辑应分配到不同文件。审阅免费，批准预算固定，预留与实际费用分开；已接受但未知的操作不重跑。撤权先停止本机工具，未同步回执继续可见。团队ZIP仅包含主动提交的成果，本机未提交文件留在本机。
+
+60项后端、36项扩展、81项本机控制／下载回归及6项实际Windows旅程通过；4张截图、1组GIF／MP4、3档布局及1个独立解压的完整团队包绑定1756份确切源码。
+
+业务／模型答复及本机目录／授权／保存窗口的选择决定为受控假数据；实际OTP／PKCE、本机Codex、Windows文件操作、公司计量、撤权和ZIP解压确实执行。Windows包未签名；全部专业角色质量、签名安装、真实公司模型／广告账户及跨机器工程恢复继续独立验收。
+
+```mermaid
+flowchart LR
+ A[Versioned team and fixed Skills] --> B[Free review: local folder, permission and budgets]
+ B --> C[Customer approval and durable admission]
+ C --> D[Parallel local Codex members]
+ D --> E[Dependent local review]
+ E --> F[Local coordinator]
+ F --> G[Exact results and complete team ZIP]
+ D --> H[Stop or revoke the whole team]
+ H --> I[Recover original receipts, never replay unknown work]
+```
+
+[需求](https://github.com/copypasteltd/workmate/blob/main/docs/requirements/16-desktop-native-teams.md) · [接口／权限／恢复／交付方案](https://github.com/copypasteltd/workmate/blob/main/docs/technical/139-desktop-native-teams.md) · [源码与证据](https://github.com/copypasteltd/workmate/blob/main/docs/quality/native-teams-checkpoint-139.json) · [全部编号](https://github.com/copypasteltd/workmate/blob/main/docs/quality/remaining-work-stage139.md)
+
+真实Desktop操作，业务内容为假数据：
+
+![Actual local team delivery](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-native-teams-139-05-completed-local-team-zh.png)
+
+![Actual local team delivery](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-native-teams-139-05-local-team.gif)
+
+- [workmate-native-teams-139-05-review-before-local-run-en.png](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-native-teams-139-05-review-before-local-run-en.png)
+- [workmate-native-teams-139-05-completed-local-team-en.png](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-native-teams-139-05-completed-local-team-en.png)
+- [workmate-native-teams-139-05-whole-team-access-revoked-zh.png](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-native-teams-139-05-whole-team-access-revoked-zh.png)
+- [workmate-native-teams-139-05-local-team.mp4](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-native-teams-139-05-local-team.mp4)
+
 <!-- delivery-revision-stage138 -->
 ## 原成果修改与新版本交付 · 阶段138
 
