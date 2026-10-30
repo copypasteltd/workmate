@@ -480,6 +480,30 @@ function taskDTO(row: any) {
 }
 
 export function registerSupport(app: FastifyInstance, db: Database) {
+  // Customer-owned receipt recovery, never an administrator impersonation path.
+  // A missing receipt is only an observation: the client retains the same key
+  // and deadline for a retry rather than assuming the first request was cancelled.
+  app.get("/v1/support-grants/attempts/:key", { preHandler: requireUser(db) }, async (req, reply) => {
+    const tenant = uuid.parse(req.headers["x-tenant-id"]), attempt = uuid.parse((req.params as any).key);
+    const result = await db.tx(async tx => {
+      await lockUserAuthorities(tx, [req.principal.id]);
+      await lockMemberships(tx, tenant);
+      const user = await currentUserAuthority(tx, req.principal);
+      await tenantAccess(tx, req.principal, tenant, "manage");
+      await target(tx, db, tenant, user.id, []);
+      const action = "support.grants.create:" + tenant;
+      await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [`${user.id}:${action}:${attempt}`]);
+      const saved = (await tx.query("SELECT response,revoked_at FROM request_replays WHERE actor_id=$1 AND action=$2 AND key=$3", [user.id, action, attempt])).rows[0];
+      const as_of = iso((await tx.query("SELECT clock_timestamp() AS at")).rows[0].at);
+      if (!saved) return { state: "not_found", as_of };
+      if (saved.revoked_at) return { state: "removed", as_of };
+      const row = await grantRow(tx, saved.response.id);
+      if (!row || row.tenant_id !== tenant || row.granted_by !== user.id || row.data_mode !== modeOf(db))
+        return { state: "removed", as_of };
+      return { state: "committed", grant: grantDTO(row), as_of };
+    }, undefined, true);
+    return reply.header("Cache-Control", "no-store").send(result);
+  });
   app.get(
     "/v1/support-grants",
     { preHandler: requireUser(db) },

@@ -72,5 +72,5 @@ export async function supportRead(s: System, client: HistoryClient | null, sessi
 export const supportCounts = async (s: System) => (await s.db.control.query(`SELECT
   (SELECT count(*) FROM tasks) AS tasks,(SELECT count(*) FROM reservations) AS reservations,
   (SELECT count(*) FROM ledger) AS ledger,(SELECT count(*) FROM current_ai_provider_requests) AS requests,
-  (SELECT count(*) FROM sessions WHERE audience='user') AS customer_sessions`)).rows[0];
+  (SELECT count(*) FROM sessions WHERE audience IN ('user','native')) AS customer_sessions`)).rows[0];
 export {historyCall,historyOk,historyLogin};
