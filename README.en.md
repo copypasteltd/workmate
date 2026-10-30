@@ -1,6 +1,10 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
 <!-- native-teams-stage139 -->
+
+Exact-byte delivery: the original runtime checkpoint and failed attempts are retained. Git preserves the executed sources and verifiers without newline conversion; the release checkpoint separately binds this version-control metadata change.
+
+
 ## Native specialist teams · Stage139
 
 Run `npm run qa:native-teams-backend -- <new two-digit attempt>` for actual native PostgreSQL, metering and permission regressions. Run `npm run qa:native-teams -- <new two-digit attempt>` to build and operate the actual Windows package. Native Node/PostgreSQL runtimes, Chrome, FFmpeg and pinned Codex are required; Docker/WSL are not used. Original successful and failed attempts remain separate.
@@ -23,7 +27,7 @@ flowchart LR
  H --> I[Recover original receipts, never replay unknown work]
 ```
 
-[Requirements](https://github.com/copypasteltd/workmate/blob/main/docs/requirements/16-desktop-native-teams.md) · [API, permissions, recovery and delivery](https://github.com/copypasteltd/workmate/blob/main/docs/technical/139-desktop-native-teams.md) · [Source and evidence](https://github.com/copypasteltd/workmate/blob/main/docs/quality/native-teams-checkpoint-139.json) · [All original identities](https://github.com/copypasteltd/workmate/blob/main/docs/quality/remaining-work-stage139.md)
+[Requirements](https://github.com/copypasteltd/workmate/blob/main/docs/requirements/16-desktop-native-teams.md) · [API, permissions, recovery and delivery](https://github.com/copypasteltd/workmate/blob/main/docs/technical/139-desktop-native-teams.md) · [Source and evidence](https://github.com/copypasteltd/workmate/blob/main/docs/quality/native-teams-release-checkpoint-139.json) · [All original identities](https://github.com/copypasteltd/workmate/blob/main/docs/quality/remaining-work-stage139.md)
 
 Actual Desktop workflow, synthetic business content:
 

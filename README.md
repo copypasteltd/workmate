@@ -1,6 +1,10 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
 <!-- native-teams-stage139 -->
+
+源码交付：保留原始运行检查点与失败记录；Git按执行时的原始字节保存代码及核查脚本，避免换行转换。交付检查点单独记录本次版本管理元数据调整。
+
+
 ## 本机专家团队 · 阶段139
 
 执行`npm run qa:native-teams-backend -- <新两位编号>`检查真实原生PostgreSQL与费用／权限回归，执行`npm run qa:native-teams -- <新两位编号>`构建并操作真实Windows包。依赖原生Node、PostgreSQL运行库、Chrome、FFmpeg和锁定Codex；不用Docker／WSL。保留每次原始通过及失败。
@@ -23,7 +27,7 @@ flowchart LR
  H --> I[Recover original receipts, never replay unknown work]
 ```
 
-[需求](https://github.com/copypasteltd/workmate/blob/main/docs/requirements/16-desktop-native-teams.md) · [接口／权限／恢复／交付方案](https://github.com/copypasteltd/workmate/blob/main/docs/technical/139-desktop-native-teams.md) · [源码与证据](https://github.com/copypasteltd/workmate/blob/main/docs/quality/native-teams-checkpoint-139.json) · [全部编号](https://github.com/copypasteltd/workmate/blob/main/docs/quality/remaining-work-stage139.md)
+[需求](https://github.com/copypasteltd/workmate/blob/main/docs/requirements/16-desktop-native-teams.md) · [接口／权限／恢复／交付方案](https://github.com/copypasteltd/workmate/blob/main/docs/technical/139-desktop-native-teams.md) · [源码与证据](https://github.com/copypasteltd/workmate/blob/main/docs/quality/native-teams-release-checkpoint-139.json) · [全部编号](https://github.com/copypasteltd/workmate/blob/main/docs/quality/remaining-work-stage139.md)
 
 真实Desktop操作，业务内容为假数据：
 
