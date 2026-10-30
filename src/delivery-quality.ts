@@ -2,6 +2,7 @@ type IO = {
   path: string; live: () => boolean; tr: (zh: string,en: string) => string;
   request: (path: string,method?: string,body?: unknown,key?: string) => Promise<any>;
   download: (version: number, hash: string) => Promise<unknown>;
+  revise?: () => void;
 };
 /** The side panel reviews cloud results. It never starts a local Agent. */
 export function mountDeliveryQuality(container: HTMLElement, io: IO) {
@@ -16,6 +17,7 @@ export function mountDeliveryQuality(container: HTMLElement, io: IO) {
       const labels:Record<string,string>={pending_review:io.tr("待審閱","Awaiting review"),accepted:io.tr("已接受","Accepted"),changes_requested:io.tr("需修改","Changes requested"),discarded:io.tr("已棄用","Discarded")};
       area.append(make("strong",labels[data.review_state]??data.review_state),make("p",io.tr("你的評價會保留所審閱的版本。","Your review keeps the version you reviewed.")));
       if(data.delivery&&(data.delivery.output_sha256||data.delivery.artifacts.length)){
+        if(io.revise){const revise=document.createElement("button");revise.type="button";revise.textContent=io.tr("以這份成果繼續修改","Request changes to this delivery");revise.onclick=()=>{if(io.live())io.revise!();};area.append(revise);}
         const button=document.createElement("button"),status=make("p");button.type="button";
         button.textContent=io.tr("下載完整交付包","Download delivery package");status.setAttribute("role","status");
         button.onclick=()=>{if(pending||!io.live())return;button.disabled=true;

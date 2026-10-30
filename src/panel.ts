@@ -3,6 +3,8 @@ import { ChatPanel } from "./chat-panel.js";
 import { businessQuestion } from "./business-question.js";
 import { ClientContent } from "./client-content.js";
 import { mountDeliveryQuality } from "./delivery-quality.js";
+import { openDeliveryRevision } from "./delivery-revision.js";
+import type { ChatScope } from "./conversation.js";
 import { mountGeneratedVideos } from "./generated-videos.js";
 import { mountAudioProductions } from "./audio-production.js";
 import { mountCloudSchedules } from "./cloud-schedules.js";
@@ -72,7 +74,22 @@ const chat = new ChatPanel(
     return send("DELIVERY_DOWNLOAD", { selection: { tenant: scope.tenant, project: scope.project,
       task: taskId, version: data.task_version, deliveryHash: data.delivery_hash } });
   },
+  (scope, taskId) => reviseDelivery(scope, taskId),
 );
+let closeRevision: (() => void) | undefined;
+function reviseDelivery(scope: ChatScope, taskId: string) {
+  if (actor !== scope.actor || tenant !== scope.tenant || project !== scope.project) return;
+  closeRevision?.(); const revision = workspaceRevision;
+  const live = () => revision === workspaceRevision && actor === scope.actor && tenant === scope.tenant && project === scope.project;
+  closeRevision = openDeliveryRevision({
+    path: `/v1/tenants/${scope.tenant}/projects/${scope.project}/tasks/${taskId}`, taskId,
+    scopeKey: `${scope.actor}:${scope.tenant}:${scope.project}`, live, tr,
+    request: async (path, method, body, key) => { if (!live()) throw new WorkspaceChanged("Workspace changed"); return request(path, method, body, key); },
+    read: async key => (await chrome.storage.session.get(key))[key],
+    write: async (key, value) => { if (!live()) throw new WorkspaceChanged("Workspace changed"); await chrome.storage.session.set({ [key]: value }); },
+    completed: async result => { if (!live()) return; if (result.conversation_id) await chat.state.select(result.conversation_id); else await openTask(result.task_id); },
+  });
+}
 let financialRevision = 0;
 let dependencyRevision = 0,
   dependencyFingerprint = "";
@@ -942,6 +959,7 @@ async function drawTask(t: any) {
   )
     mountDeliveryQuality($("delivery-quality"), {
       path: endpoint + "/tasks/" + t.id,
+      revise: () => reviseDelivery({ actor, tenant, project }, t.id),
       download: (version, deliveryHash) => send("DELIVERY_DOWNLOAD", { selection: { tenant, project, task: t.id, version, deliveryHash } }),
       request,
       tr,

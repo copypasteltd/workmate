@@ -21,7 +21,8 @@ export class ChatPanel {
   private tr(zh: string, en: string) { return this.language() === "en" ? en : zh; }
   constructor(io: Omit<ChatIO, "changed">, language: () => string, private report: (e: unknown) => void,
     private capture: () => Promise<{ title: string; url: string; text: string }>, private details: (id: string) => Promise<void>,
-    private download?: (scope: ChatScope, taskId: string) => Promise<unknown>) {
+    private download?: (scope: ChatScope, taskId: string) => Promise<unknown>,
+    private revise?: (scope: ChatScope, taskId: string) => void) {
     this.language = language;
     this.state = new ConversationState({ ...io, changed: () => this.draw() });
     this.folder = new FolderTransfer(this.state, () => this.draw());
@@ -197,6 +198,11 @@ export class ChatPanel {
             });
           };
           article.append(button,status);
+        }
+        if (m.role === "assistant" && m.task_id && this.revise && s.scope) {
+          const scope = s.scope, button = document.createElement("button"); button.type = "button"; button.className = "chat-detail";
+          button.textContent = t("以這份成果繼續修改", "Request changes to this delivery");
+          button.onclick = () => { if (s.scope === scope) this.revise!(scope, m.task_id); }; article.append(button);
         }
         feed.append(article);
       }
