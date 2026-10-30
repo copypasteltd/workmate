@@ -50,6 +50,8 @@ export async function enqueueTask(
     dedicated_computer?: { session_id: string; generation: number; specification_hash: string };
     /** Internal binding, set only by the authorized cloud workflow runner. */
     cloud_workflow?: { run_id: string; cursor: number };
+    /** Exact predecessor versions selected by the frozen, customer-approved workflow. */
+    workflow_inputs?: import("zod").infer<typeof import("./workflow-handoffs.js").workflowInputs>;
     /** Internal, exact reviewed team step. Never accepted from task API input. */
     agent_group?: { run_id: string; node_key: string; deferred?: boolean };
     /** Validated server-owned media parameters; never accepted by the generic task API. */
@@ -282,6 +284,7 @@ export async function enqueueTask(
           : (parent?.private_owner ?? null),
         {
           ...(options.context ?? {}),
+          ...(options.workflow_inputs ? { workflow_inputs: options.workflow_inputs } : {}),
           ...((options.delivery_revision ?? parent?.input_context?.delivery_revision)
             ? { delivery_revision: options.delivery_revision ?? parent.input_context.delivery_revision } : {}),
           ...(options.dedicated_computer ? { dedicated_computer: options.dedicated_computer } : {}),

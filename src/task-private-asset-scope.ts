@@ -15,6 +15,15 @@ export function taskPrivateAssetScopeSQL(
   return `(
     v.metadata->>'conversation_id'=$${conversationParameter}::text
     OR EXISTS (
+      SELECT 1 FROM tasks workflow_task
+      WHERE workflow_task.id=$${taskParameter}::uuid
+       AND workflow_task.private_owner=workflow_task.created_by
+       AND (workflow_task.cloud_workflow_run_id IS NOT NULL OR workflow_task.desktop_workflow_run_id IS NOT NULL)
+       AND EXISTS (SELECT 1 FROM jsonb_array_elements(coalesce(workflow_task.input_context->'workflow_inputs','[]'::jsonb)) predecessor,
+        jsonb_to_recordset(predecessor->'files') AS approved_input(asset_version_id uuid,sha256 text)
+        WHERE approved_input.asset_version_id=v.id AND approved_input.sha256=v.sha256)
+    )
+    OR EXISTS (
       SELECT 1 FROM tasks selected_task
       JOIN task_dependencies selected_input
         ON selected_input.task_id=selected_task.id

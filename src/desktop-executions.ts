@@ -118,6 +118,7 @@ export const desktopLocalRoleKeys = [
   "workflow-consultant",
 ];
 const companyToolNames = new Set([
+  "workflow_inputs",
   "group_results",
   "project_assets",
   "asset_text_read",
@@ -163,6 +164,7 @@ const editableCompanyToolNames = new Set([
 // Existing native roles keep exactly their published tool bindings. The new
 // specialist has no old native thread and receives the video contract only.
 const videoCompanyToolNames = new Set([
+  "workflow_inputs",
   "video_projects",
   "video_project_read",
   "video_project_queue",

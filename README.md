@@ -1,4 +1,34 @@
 <!-- business-history-stage144 -->
+
+<!-- workflow-handoff-stage145 -->
+## 阶段145：完整成果交接与失败确认
+
+SQL140、完整交接读取、受限失败检查、云端及本机运行控制。
+
+客户由流程顾问准备版本，核对输入、预算和失败策略，明确确认后执行；完成后下载原文件。已结算失败可按预设等待客户确认略过，整体失败与原费用保留，不自动重试。
+
+39项后端＋12项可信本机控制、7项实际Web流程通过。模型响应为明确假数据；生产接入及完整本机Codex／OS验收仍开放。默认Desktop测试保留历史文件并选择当前修订。
+
+```mermaid
+flowchart LR
+  A[Prepare frozen version] --> B[Customer review]
+  B --> C[Local or cloud specialist]
+  C --> D[Exact saved outputs]
+  D --> E[Next specialist]
+  C --> F[Known failure review]
+  F --> G[Skip independent work; retain failure]
+```
+
+[完整方案与使用边界](https://github.com/copypasteltd/workmate/blob/docs/docs/development/145-workflow-handoffs-and-failure-review.md) · [102项原编号清单](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage145.md)
+
+以下为真实Web客户流程的共享发布截图／录制，不冒充本端专有界面。
+
+![Actual Web workflow](assets/screenshots/workmate-workflow-handoff-145-03-complete-deliverables-en.png)
+
+![Actual workflow interaction](assets/screenshots/workmate-workflow-handoff-145-03-exact-workflow-handoff.gif)
+
+[MP4](assets/screenshots/workmate-workflow-handoff-145-03-exact-workflow-handoff.mp4)
+
 ## 后台业务版本闭环
 
 阶段144补齐品牌、团队、简报、计划及全部设计工程的后台已保存历史，普通画布记录不可变版本，新品牌版本记录真实客户操作者。当前52项相关后端及9项实际Admin浏览器旅程通过。下图和录屏为本轮实际后台界面。
