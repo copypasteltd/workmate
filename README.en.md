@@ -1,4 +1,34 @@
 <!-- business-history-stage144 -->
+
+<!-- workflow-handoff-stage145 -->
+## Stage145: complete handoffs and failure review
+
+Existing user/content/billing controls retain the workflow records; this release adds no new Admin surface.
+
+A consultant prepares a frozen version. The customer reviews its inputs, budget and failure policy before execution, then downloads original files. A known settled failure can await explicit skip approval, preserving charges and the overall failure without an automatic retry.
+
+39 backend cases, 12 trusted native-runner cases and seven actual Web journeys passed with explicitly synthetic model responses. Production integration and complete native Codex/OS acceptance remain open. Default Desktop tests retain historical files and select the current revision.
+
+```mermaid
+flowchart LR
+  A[Prepare frozen version] --> B[Customer review]
+  B --> C[Local or cloud specialist]
+  C --> D[Exact saved outputs]
+  D --> E[Next specialist]
+  C --> F[Known failure review]
+  F --> G[Skip independent work; retain failure]
+```
+
+[Full design and usage](https://github.com/copypasteltd/workmate/blob/docs/docs/development/145-workflow-handoffs-and-failure-review.md) · [Original 102-item ledger](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage145.md)
+
+The following is an actual Web customer workflow shared as a release illustration, not a client-specific screen.
+
+![Actual Web workflow](assets/screenshots/workmate-workflow-handoff-145-03-complete-deliverables-en.png)
+
+![Actual workflow interaction](assets/screenshots/workmate-workflow-handoff-145-03-exact-workflow-handoff.gif)
+
+[MP4](assets/screenshots/workmate-workflow-handoff-145-03-exact-workflow-handoff.mp4)
+
 ## Administrator business histories
 
 Stage144 adds administrator saved-version reading for brands, teams, briefs, schedules and every creative project kind. Ordinary canvas saves now retain immutable versions; new customer brand saves preserve their actor. Current checks: 52 related backend cases and 9 real Admin browser journeys. The capture below is the actual administrator interface shared by this release.
