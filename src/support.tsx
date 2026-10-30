@@ -16,6 +16,13 @@ export function AdminSupport({
 }: {
   access: { me: any; has: (permission: string) => boolean };
 }) {
+  return <SupportWorkspace key={access.me?.user?.id ?? "signed-out"} access={access} />;
+}
+function SupportWorkspace({
+  access,
+}: {
+  access: { me: any; has: (permission: string) => boolean };
+}) {
   const { t } = useI18n(),
     [sessions, setSessions] = useState<Session[]>([]),
     [next, setNext] = useState<string | null>(null),
@@ -31,23 +38,41 @@ export function AdminSupport({
     [active, setActive] = useState(""),
     [view, setView] = useState<any>(null),
     [body, setBody] = useState<any>(null),
+    [reading, setReading] = useState(""),
     [receipt, setReceipt] = useState<any>(null),
     [remaining, setRemaining] = useState(0);
   const revision = useRef(0),
     selection = useRef(0),
     viewRevision = useRef(0),
     deadline = useRef(0),
-    pending = useRef(false),
+    pending = useRef<AbortController | null>(null),
+    bodyRequest = useRef<AbortController | null>(null),
+    bodyRevision = useRef(0),
+    bodyChoice = useRef<{ id: string; revision: string } | null>(null),
+    currentTasks = useRef<any[]>([]),
+    activeSession = useRef(active),
     listRevision = useRef(0);
+  activeSession.current = active;
   const actor = access.me?.user?.id;
   const member = detail?.memberships?.find(
     (m: any) => m.tenant_id === tenant && m.state === "active",
   );
+  const clearBody = () => {
+    ++bodyRevision.current;
+    bodyRequest.current?.abort();
+    bodyRequest.current = null;
+    bodyChoice.current = null;
+    setBody(null);
+    setReading("");
+  };
   const clearView = () => {
     ++viewRevision.current;
+    pending.current?.abort();
+    pending.current = null;
+    currentTasks.current = [];
     deadline.current = 0;
     setView(null);
-    setBody(null);
+    clearBody();
     setRemaining(0);
   };
   async function load(cursor?: string) {
@@ -122,6 +147,9 @@ export function AdminSupport({
       ++selection.current;
       ++viewRevision.current;
       ++listRevision.current;
+      pending.current?.abort();
+      bodyRequest.current?.abort();
+      ++bodyRevision.current;
     };
   }, [actor]);
   useEffect(() => {
@@ -131,13 +159,15 @@ export function AdminSupport({
     const fetchView = async () => {
       if (pending.current || document.visibilityState !== "visible") return;
       const r = viewRevision.current,
-        started = performance.now();
-      pending.current = true;
+        started = performance.now(),
+        controller = new AbortController();
+      pending.current = controller;
       try {
         const data = await api(`/v1/admin/support/sessions/${active}/view`, {
           headers: { "X-CopyPaste-Support-Session": active },
+          signal: controller.signal,
         });
-        if (!live || r !== viewRevision.current) return;
+        if (!live || r !== viewRevision.current || controller.signal.aborted) return;
         const safeRemaining =
           Date.parse(data.session.expires_at) -
           Date.parse(data.as_of) -
@@ -152,25 +182,29 @@ export function AdminSupport({
         }
         deadline.current = performance.now() + safeRemaining;
         setRemaining(Math.ceil(safeRemaining / 1000));
+        currentTasks.current = data.tasks;
+        const choice = bodyChoice.current;
+        if (choice && !data.tasks.some((task: any) =>
+          task.id === choice.id && task.body_available && task.body_revision === choice.revision)) clearBody();
         setView(data);
         setBody((old: any) =>
           old &&
           data.tasks.some(
-            (task: any) => task.id === old.task.id && task.body_available,
+            (task: any) => task.id === old.task.id && task.body_available && task.body_revision === old.body_revision,
           )
             ? old
             : null,
         );
         setError(null);
       } catch (e) {
-        if (live && r === viewRevision.current) {
+        if (live && r === viewRevision.current && !controller.signal.aborted) {
           clearView();
           setActive("");
           setError(e as Error);
           void load();
         }
       } finally {
-        pending.current = false;
+        if (pending.current === controller) pending.current = null;
       }
     };
     void fetchView();
@@ -203,11 +237,42 @@ export function AdminSupport({
     return () => {
       live = false;
       ++viewRevision.current;
+      pending.current?.abort();
+      pending.current = null;
+      bodyRequest.current?.abort();
+      ++bodyRevision.current;
       clearInterval(poll);
       clearInterval(clock);
       document.removeEventListener("visibilitychange", visibility);
     };
   }, [active, actor]);
+  async function readTask(task: any) {
+    clearBody();
+    const r = viewRevision.current, request = bodyRevision.current,
+      id = active, started = performance.now(), controller = new AbortController();
+    bodyRequest.current = controller;
+    bodyChoice.current = { id: task.id, revision: task.body_revision };
+    setReading(task.id);
+    try {
+      const data = await api(`/v1/admin/support/sessions/${id}/view/tasks/${task.id}`, {
+        headers: { "X-CopyPaste-Support-Session": id, "If-Match": `"${task.body_revision}"` },
+        signal: controller.signal,
+      });
+      if (r !== viewRevision.current || request !== bodyRevision.current || controller.signal.aborted) return;
+      const safeRemaining = Date.parse(data.session.expires_at) - Date.parse(data.as_of) - (performance.now() - started);
+      if (safeRemaining <= 0 || deadline.current <= performance.now()) throw new Error(t("支援會話已到期。", "Support access has expired."));
+      deadline.current = Math.min(deadline.current, performance.now() + safeRemaining);
+      if (data.body_revision !== task.body_revision || !currentTasks.current.some(item =>
+        item.id === task.id && item.body_available && item.body_revision === task.body_revision)) return;
+      setBody(data);
+    } catch (e) {
+      if (r === viewRevision.current && request === bodyRevision.current && !controller.signal.aborted) {
+        clearView(); setActive(""); setError(e as Error);
+      }
+    } finally {
+      if (bodyRequest.current === controller) { bodyRequest.current = null; setReading(""); }
+    }
+  }
   const state = (value: string) =>
     value === "active"
       ? t("有效", "Active")
@@ -283,14 +348,16 @@ export function AdminSupport({
             )}
             <div className="support-session-grid">
               {view.tasks.map((task: any) => (
-                <article key={task.id} className="support-record">
+                <article key={task.id} className="support-record" data-task-id={task.id}>
                   <strong>
                     {task.private
                       ? t(
                           "私人任務（標題已隱藏）",
                           "Private task (title hidden)",
                         )
-                      : task.title}
+                      : task.source_unavailable
+                        ? t("來源已撤回的任務", "Task source unavailable")
+                        : task.title}
                   </strong>
                   <code>{task.id}</code>
                   <span>
@@ -301,28 +368,7 @@ export function AdminSupport({
                     <button
                       type="button"
                       className="button secondary"
-                      onClick={async () => {
-                        const r = viewRevision.current,
-                          id = active;
-                        setBody(null);
-                        try {
-                          const d = await api(
-                            `/v1/admin/support/sessions/${id}/view/tasks/${task.id}`,
-                            { headers: { "X-CopyPaste-Support-Session": id } },
-                          );
-                          if (
-                            r === viewRevision.current &&
-                            deadline.current > performance.now()
-                          )
-                            setBody(d);
-                        } catch (e) {
-                          if (r === viewRevision.current) {
-                            clearView();
-                            setActive("");
-                            setError(e as Error);
-                          }
-                        }
-                      }}
+                      onClick={() => void readTask(task)}
                     >
                       {t("讀取已授權正文", "Read authorized content")}
                     </button>
@@ -330,6 +376,7 @@ export function AdminSupport({
                 </article>
               ))}
             </div>
+            {reading && <p role="status">{t("正在核對並讀取授權內容…", "Checking access and reading authorized content…")}</p>}
             {view.tasks_truncated && (
               <p className="muted">
                 {t(
@@ -339,7 +386,7 @@ export function AdminSupport({
               </p>
             )}
             {body && (
-              <div className="support-body">
+              <div className="support-body" data-task-id={body.task.id} aria-live="polite">
                 <h3>{t("已授權共享正文", "Authorized shared content")}</h3>
                 <pre>{body.prompt}</pre>
                 <pre>{body.output}</pre>
@@ -614,6 +661,7 @@ export function AdminSupport({
                       type="button"
                       onClick={() => {
                         setError(null);
+                        clearView();
                         setActive(session.id);
                       }}
                     >
@@ -626,6 +674,7 @@ export function AdminSupport({
                       <RevokeSession
                         id={session.id}
                         onRevoke={async (reason) => {
+                          const r = selection.current;
                           setBusy(true);
                           setError(null);
                           try {
@@ -633,16 +682,17 @@ export function AdminSupport({
                               `/v1/admin/support/sessions/${session.id}/revocations`,
                               { reason },
                             );
+                            if (r !== selection.current) return;
                             setReceipt(op);
-                            if (active === session.id) {
+                            if (activeSession.current === session.id) {
                               setActive("");
                               clearView();
                             }
                             await load();
                           } catch (e) {
-                            setError(e as Error);
+                            if (r === selection.current) setError(e as Error);
                           } finally {
-                            setBusy(false);
+                            if (r === selection.current) setBusy(false);
                           }
                         }}
                         disabled={busy}
