@@ -1,0 +1,118 @@
+{
+  "formula_version": "1.0",
+  "precision": 8,
+  "cases": [
+    {
+      "id": "weighted-ratios",
+      "rows": [
+        {
+          "currency": "HKD",
+          "impressions": 1000,
+          "clicks": 100,
+          "spend": "100",
+          "conversions": "4",
+          "conversion_value": "400"
+        },
+        {
+          "currency": "HKD",
+          "impressions": 9000,
+          "clicks": 90,
+          "spend": "180",
+          "conversions": "6",
+          "conversion_value": "300"
+        }
+      ],
+      "expected": {
+        "HKD": {
+          "impressions": 10000,
+          "clicks": 190,
+          "spend": "280",
+          "conversions": "10",
+          "conversion_value": "700",
+          "ctr": "0.01900000",
+          "cpc": "1.47368421",
+          "cpm": "28.00000000",
+          "cvr": "0.05263158",
+          "cpa": "28.00000000",
+          "roas": "2.50000000"
+        }
+      }
+    },
+    {
+      "id": "zero-denominators",
+      "rows": [
+        {
+          "currency": "HKD",
+          "impressions": 0,
+          "clicks": 0,
+          "spend": "0",
+          "conversions": "0",
+          "conversion_value": "0"
+        }
+      ],
+      "expected": {
+        "HKD": {
+          "ctr": null,
+          "cpc": null,
+          "cpm": null,
+          "cvr": null,
+          "cpa": null,
+          "roas": null
+        }
+      }
+    },
+    {
+      "id": "unknown-conversions",
+      "rows": [
+        {
+          "currency": "HKD",
+          "impressions": 100,
+          "clicks": 10,
+          "spend": "20",
+          "conversions": null,
+          "conversion_value": null
+        }
+      ],
+      "expected": {
+        "HKD": {
+          "ctr": "0.10000000",
+          "cpc": "2.00000000",
+          "cpa": null,
+          "cvr": null,
+          "roas": null
+        }
+      }
+    },
+    {
+      "id": "currency-separation",
+      "rows": [
+        {
+          "currency": "HKD",
+          "impressions": 100,
+          "clicks": 10,
+          "spend": "20",
+          "conversions": "2",
+          "conversion_value": "40"
+        },
+        {
+          "currency": "USD",
+          "impressions": 100,
+          "clicks": 20,
+          "spend": "10",
+          "conversions": "1",
+          "conversion_value": "30"
+        }
+      ],
+      "expected": {
+        "HKD": {
+          "spend": "20",
+          "roas": "2.00000000"
+        },
+        "USD": {
+          "spend": "10",
+          "roas": "3.00000000"
+        }
+      }
+    }
+  ]
+}

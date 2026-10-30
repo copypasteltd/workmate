@@ -1,0 +1,375 @@
+{
+  "schema_version": 1,
+  "base_contract_sha256": "85b0f9e0f8de0843744b4bf030f42111d16e72a4153fe1126a0ef93487ce8bb2",
+  "base_openapi_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
+  "description": "Additive business input schemas. The twenty original canonical task schemas and original OpenAPI bytes remain unchanged.",
+  "schemas": {
+    "BusinessQuestionInput": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          },
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "answer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "kind": {
+          "const": "question"
+        }
+      },
+      "required": [
+        "kind",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "BusinessPreExecutionInput": {
+      "oneOf": [
+        {
+          "$ref": "#/components/schemas/PreExecutionInput"
+        },
+        {
+          "$ref": "#/components/schemas/BusinessQuestionInput"
+        }
+      ]
+    },
+    "TaskCreateWithBusinessInputs": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "agent_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "type": {
+          "$ref": "#/components/schemas/TaskType"
+        },
+        "input": {
+          "type": "object"
+        },
+        "budget": {
+          "$ref": "#/components/schemas/Money"
+        },
+        "device_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "conversation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "source_artifact_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "source_cell_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "agent_group_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "execute",
+            "plan",
+            "ask"
+          ]
+        },
+        "confirmed_plan_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "project_config_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/BusinessPreExecutionInput"
+          },
+          "maxItems": 8,
+          "description": "Explicit authorized resources or business questions; paid continuation requires a measured native checkpoint."
+        }
+      },
+      "required": [
+        "project_id",
+        "type",
+        "input",
+        "budget"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "delegation"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/DelegationInput"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "creative_image"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/CreativeInput"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "creative_video"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/VideoInput"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "analysis"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/AnalysisSpec"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "seo"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/SeoInput"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "geo"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/GeoInput"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "workflow"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/WorkflowInput"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "local_file"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/LocalInput"
+              }
+            }
+          }
+        }
+      ],
+      "oneOf": [
+        {
+          "required": [
+            "agent_id"
+          ],
+          "not": {
+            "required": [
+              "agent_group_id"
+            ]
+          }
+        },
+        {
+          "required": [
+            "agent_group_id"
+          ],
+          "not": {
+            "required": [
+              "agent_id"
+            ]
+          }
+        }
+      ]
+    },
+    "BusinessInputAnswer": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "resource_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "minItems": 1,
+              "maxItems": 20,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "resource_ids"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "answer": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "answer"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "TaskInputWithBusinessAnswers": {
+      "type": "object",
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "answers": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 32,
+          "additionalProperties": {
+            "$ref": "#/components/schemas/BusinessInputAnswer"
+          }
+        },
+        "asset_version_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "expected_version",
+        "answers"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

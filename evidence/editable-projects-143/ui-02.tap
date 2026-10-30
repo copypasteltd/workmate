@@ -1,0 +1,293 @@
+TAP version 13
+# warning: LF will be replaced by CRLF in .gitignore.
+# The file will have its original line endings in your working directory
+# warning: LF will be replaced by CRLF in .gitignore.
+# The file will have its original line endings in your working directory
+# Subtest: native preview admission binds a green report to the actual runtime, installers and extension bytes
+    # Subtest: reject a legacy green report without a byte binding
+    ok 1 - reject a legacy green report without a byte binding
+      ---
+      duration_ms: 3.6588
+      ...
+    # Subtest: bind new source bytes before staging and keep the same manifest after staging
+    ok 2 - bind new source bytes before staging and keep the same manifest after staging
+      ---
+      duration_ms: 721.1199
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/resources/app.asar
+    ok 3 - reject changed bytes: release/frameless/win-unpacked/resources/app.asar
+      ---
+      duration_ms: 135.4965
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/resources/native-host.cjs
+    ok 4 - reject changed bytes: release/frameless/win-unpacked/resources/native-host.cjs
+      ---
+      duration_ms: 138.3896
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/CopyPaste.exe
+    ok 5 - reject changed bytes: release/frameless/win-unpacked/CopyPaste.exe
+      ---
+      duration_ms: 148.5152
+      ...
+    # Subtest: reject changed bytes: release/frameless/CopyPaste-0.5.0-x64-Setup.exe
+    ok 6 - reject changed bytes: release/frameless/CopyPaste-0.5.0-x64-Setup.exe
+      ---
+      duration_ms: 155.5808
+      ...
+    # Subtest: reject changed bytes: dist/background.js
+    ok 7 - reject changed bytes: dist/background.js
+      ---
+      duration_ms: 127.7072
+      ...
+    # Subtest: reject changed bytes: src/main.ts
+    ok 8 - reject changed bytes: src/main.ts
+      ---
+      duration_ms: 128.815
+      ...
+    # Subtest: reject added or missing extension files
+    ok 9 - reject added or missing extension files
+      ---
+      duration_ms: 304.4806
+      ...
+    # Subtest: reject incomplete cleanup and failures
+    ok 10 - reject incomplete cleanup and failures
+      ---
+      duration_ms: 0.6161
+      ...
+    # Subtest: allow documentation changes when all runtime bytes remain identical
+    ok 11 - allow documentation changes when all runtime bytes remain identical
+      ---
+      duration_ms: 142.4052
+      ...
+    1..11
+ok 1 - native preview admission binds a green report to the actual runtime, installers and extension bytes
+  ---
+  duration_ms: 3014.1528
+  ...
+1..1
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3177.2993
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 2035 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     0.56 kB │ gzip:   0.34 kB
+dist/assets/index-CC6zfqZe.css    157.76 kB │ gzip:  27.93 kB
+dist/assets/index-OFkgkH7b.js   1,675.43 kB │ gzip: 441.51 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.90s
+Built Chrome MV3 extension. Registered ID: fffkcnmfdhahlnifgdilabheppkgnlok
+
+> @copypaste/desktop@0.7.1 build
+> node scripts/configure-deployment.mjs && node scripts/configure-update-trust.mjs && node scripts/build-update-host.mjs && node scripts/build-program-host.mjs && tsc && node scripts/build-native-host.mjs && vite build --config vite.config.ts
+
+Deployment origins compiled; no AI credentials are embedded.
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 2035 modules transformed.
+rendering chunks...
+computing gzip size...
+renderer-dist/index.html                     0.95 kB │ gzip:   0.47 kB
+renderer-dist/assets/index-rQNe32MG.css    162.61 kB │ gzip:  28.49 kB
+renderer-dist/assets/index-BMXKY66A.js   1,601.75 kB │ gzip: 429.46 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.00s
+  • electron-builder  version=26.15.3 os=10.0.26200
+  • loaded configuration  file=package.json ("build" field)
+  • executing @electron/rebuild  electronVersion=44.5.1 arch=x64 buildFromSource=false workspaceRoot=D:\dev\copypasted\自有agent\dev\copypaste-desktop projectDir=./ appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=win32 arch=x64 electron=44.5.1 appOutDir=release\editable-projects-143-02\win-unpacked
+  • using custom unpacked Electron distribution  electronDist=node_modules\electron\dist
+  • copying unpacked Electron  source=D:\dev\copypasted\自有agent\dev\copypaste-desktop\node_modules\electron\dist destination=D:\dev\copypasted\自有agent\dev\copypaste-desktop\release\editable-projects-143-02\win-unpacked
+  • searching for node modules  pm=npm searchDir=D:\dev\copypasted\自有agent\dev\copypaste-desktop
+  • duplicate dependency references  dependencies=["react-dom@19.3.1","react-dom@19.3.1"]
+  • updating asar integrity executable resource  executablePath=release\editable-projects-143-02\win-unpacked\CopyPaste.exe
+  • file signing skipped via signExecutable configuration  file=release\editable-projects-143-02\win-unpacked\CopyPaste.exe
+2026-10-31 00:41:35.044 CST [25172] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-31 00:41:35.049 CST [25172] LOG:  listening on IPv6 address "::1", port 2096
+
+2026-10-31 00:41:35.050 CST [25172] LOG:  listening on IPv4 address "127.0.0.1", port 2096
+
+2026-10-31 00:41:35.215 CST [19848] LOG:  database system was shut down at 2026-10-31 00:41:33 CST
+
+2026-10-31 00:41:35.329 CST [25172] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:2096. Application roles are not owners and do not bypass RLS.
+  ➜  Local:   http://127.0.0.1:4317/
+isolated integration suite: applied migration 1
+isolated integration suite: applied migration 2
+isolated integration suite: applied migration 3
+isolated integration suite: applied migration 4
+isolated integration suite: applied migration 5
+isolated integration suite: applied migration 6
+isolated integration suite: applied migration 7
+isolated integration suite: applied migration 8
+isolated integration suite: applied migration 9
+isolated integration suite: applied migration 10
+isolated integration suite: applied migration 11
+isolated integration suite: applied migration 12
+isolated integration suite: applied migration 13
+isolated integration suite: applied migration 14
+isolated integration suite: applied migration 15
+isolated integration suite: applied migration 16
+isolated integration suite: applied migration 17
+isolated integration suite: applied migration 18
+isolated integration suite: applied migration 19
+isolated integration suite: applied migration 20
+isolated integration suite: applied migration 21
+isolated integration suite: applied migration 22
+isolated integration suite: applied migration 23
+isolated integration suite: applied migration 24
+isolated integration suite: applied migration 25
+isolated integration suite: applied migration 26
+isolated integration suite: applied migration 27
+isolated integration suite: applied migration 28
+isolated integration suite: applied migration 29
+isolated integration suite: applied migration 30
+isolated integration suite: applied migration 31
+isolated integration suite: applied migration 32
+isolated integration suite: applied migration 33
+isolated integration suite: applied migration 34
+isolated integration suite: applied migration 35
+isolated integration suite: applied migration 36
+isolated integration suite: applied migration 37
+isolated integration suite: applied migration 38
+isolated integration suite: applied migration 39
+isolated integration suite: applied migration 40
+isolated integration suite: applied migration 41
+isolated integration suite: applied migration 42
+isolated integration suite: applied migration 43
+isolated integration suite: applied migration 44
+isolated integration suite: applied migration 45
+isolated integration suite: applied migration 46
+isolated integration suite: applied migration 47
+isolated integration suite: applied migration 48
+isolated integration suite: applied migration 49
+isolated integration suite: applied migration 50
+isolated integration suite: applied migration 51
+isolated integration suite: applied migration 52
+isolated integration suite: applied migration 53
+isolated integration suite: applied migration 54
+isolated integration suite: applied migration 55
+isolated integration suite: applied migration 56
+isolated integration suite: applied migration 57
+isolated integration suite: applied migration 58
+isolated integration suite: applied migration 59
+isolated integration suite: applied migration 60
+isolated integration suite: applied migration 61
+isolated integration suite: applied migration 62
+isolated integration suite: applied migration 63
+isolated integration suite: applied migration 64
+isolated integration suite: applied migration 65
+isolated integration suite: applied migration 66
+isolated integration suite: applied migration 67
+isolated integration suite: applied migration 68
+isolated integration suite: applied migration 69
+isolated integration suite: applied migration 70
+isolated integration suite: applied migration 71
+isolated integration suite: applied migration 72
+isolated integration suite: applied migration 73
+isolated integration suite: applied migration 74
+isolated integration suite: applied migration 75
+isolated integration suite: applied migration 76
+isolated integration suite: applied migration 77
+isolated integration suite: applied migration 78
+isolated integration suite: applied migration 79
+isolated integration suite: applied migration 80
+isolated integration suite: applied migration 81
+isolated integration suite: applied migration 82
+isolated integration suite: applied migration 83
+isolated integration suite: applied migration 84
+isolated integration suite: applied migration 85
+isolated integration suite: applied migration 86
+isolated integration suite: applied migration 87
+isolated integration suite: applied migration 88
+isolated integration suite: applied migration 89
+isolated integration suite: applied migration 90
+isolated integration suite: applied migration 91
+isolated integration suite: applied migration 92
+isolated integration suite: applied migration 93
+isolated integration suite: applied migration 94
+isolated integration suite: applied migration 95
+isolated integration suite: applied migration 96
+isolated integration suite: applied migration 97
+isolated integration suite: applied migration 98
+isolated integration suite: applied migration 99
+isolated integration suite: applied migration 100
+isolated integration suite: applied migration 101
+isolated integration suite: applied migration 102
+isolated integration suite: applied migration 103
+isolated integration suite: applied migration 104
+isolated integration suite: applied migration 105
+isolated integration suite: applied migration 106
+isolated integration suite: applied migration 107
+isolated integration suite: applied migration 108
+isolated integration suite: applied migration 109
+isolated integration suite: applied migration 110
+isolated integration suite: applied migration 111
+isolated integration suite: applied migration 112
+isolated integration suite: applied migration 113
+isolated integration suite: applied migration 114
+isolated integration suite: applied migration 115
+isolated integration suite: applied migration 116
+isolated integration suite: applied migration 117
+isolated integration suite: applied migration 118
+isolated integration suite: applied migration 119
+isolated integration suite: applied migration 120
+isolated integration suite: applied migration 121
+isolated integration suite: applied migration 122
+isolated integration suite: applied migration 123
+isolated integration suite: applied migration 124
+isolated integration suite: applied migration 125
+isolated integration suite: applied migration 126
+isolated integration suite: applied migration 127
+isolated integration suite: applied migration 128
+isolated integration suite: applied migration 129
+isolated integration suite: applied migration 130
+isolated integration suite: applied migration 131
+isolated integration suite: applied migration 132
+isolated integration suite: applied migration 133
+isolated integration suite: applied migration 134
+isolated integration suite: applied migration 135
+isolated integration suite: applied migration 136
+isolated integration suite: applied migration 137
+isolated integration suite: applied migration 138
+2026-10-31 00:43:12.347 CST [1672] LOG:  checkpoint starting: immediate force wait
+
+2026-10-31 00:43:13.789 CST [1672] LOG:  checkpoint complete: wrote 42 buffers (0.3%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=1.023 s, total=1.442 s; sync files=11, longest=0.192 s, average=0.093 s; distance=24098 kB, estimate=24098 kB; lsn=0/40C699A0, redo lsn=0/40C69910
+
+{"status":"failed","checks":0,"stage":"Web restore and source editing","failure":"TimeoutError: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('region', { name: 'Vector & presentation projects', exact: true }).locator('[data-editable-editor]').getByRole('heading', { name: 'Web restored campaign · v2', exact: true }) to be visible\u001b[22m\n"}
+2026-10-31 00:43:14.716 CST [25172] LOG:  received fast shutdown request
+
+2026-10-31 00:43:14.763 CST [25172] LOG:  aborting any active transactions
+
+2026-10-31 00:43:14.769 CST [25172] LOG:  background worker "logical replication launcher" (PID 43824) exited with exit code 1
+
+2026-10-31 00:43:14.791 CST [1672] LOG:  shutting down
+
+2026-10-31 00:43:14.838 CST [1672] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-31 00:43:15.080 CST [1672] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.038 s, total=0.289 s; sync files=1, longest=0.038 s, average=0.038 s; distance=0 kB, estimate=21688 kB; lsn=0/40C69AB8, redo lsn=0/40C69AB8
+
+2026-10-31 00:43:15.189 CST [25172] LOG:  database system is shut down
+

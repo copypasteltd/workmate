@@ -1,0 +1,139 @@
+{
+  "at": "2026-10-30T16:30:05.582Z",
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: Current backend qualification\n\n'failed' !== 'passed'\n",
+  "commands": [
+    {
+      "name": "delivery compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "delivery native boundary cases",
+      "arguments": [
+        "--test",
+        "tests/native-surface-integrity.test.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web build",
+      "arguments": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension build",
+      "arguments": [
+        "scripts/build.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop renderer compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop build",
+      "arguments": [
+        "D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "unsigned Windows package",
+      "arguments": [
+        "node_modules/electron-builder/out/cli/cli.js",
+        "--win",
+        "--dir",
+        "--config.directories.output=release/editable-projects-143-01"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "reused_build": null,
+  "result_exit_code": null,
+  "journey": null,
+  "source_manifest": {
+    "path": "evidence/editable-projects-143/ui-01-sources.json",
+    "sha256": "b67757ad956c09ec8ff31885e12d7ebc26063c8f63b1102637686a450cdfdcc3"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": null,
+  "ports_closed": {
+    "4310": true,
+    "4317": true,
+    "6973": true
+  },
+  "package_directory": "../copypaste-desktop/release/editable-projects-143-01/win-unpacked",
+  "package_files": {
+    "CopyPaste.exe": "e59bd5c69d4658bb4f574610432063bf26435561c06e59cb35bbd66af35357e5",
+    "resources/app.asar": "1f7cd30402e98d92ae487c6d8f7e7c27782c3c345ffbabec5f3495e62d7b697c",
+    "resources/local-codex/codex.exe": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+    "resources/local-codex/runtime-manifest.json": "13490b9b1b9822967b8cea7134c2ba306671e58050a0897545184a7af6f34605"
+  },
+  "package_unchanged": true,
+  "fixture_cleanup": {
+    "exit_code": 0,
+    "sha256": "5c4a987ce5206105ac222dab1fcdd8e08f5d0474b9efa26bfa59c06e6075b21a",
+    "at": "2026-10-30T16:30:03.061Z",
+    "status": "passed",
+    "scope": "Only this launcher's newly created deferred fixture IDs; historical retained fixtures are untouched",
+    "workers_exited": true,
+    "actual_filesystem_checked": true,
+    "interrupted_owner_recovery": false,
+    "results": []
+  },
+  "raw_log": {
+    "path": "evidence/editable-projects-143/ui-01.tap",
+    "sha256": "6ec7caa8826e529919f986e9ab12afa7fd61bd26ebcff7a0aa3a70c9097cb701"
+  },
+  "verifier": {
+    "path": "evidence/editable-projects-143/ui-01-verifier.mjs",
+    "sha256": "a24a5bc9135934837bb7ea4a3de3b6644db9463a522d14f53bf17df9f6e518a3"
+  },
+  "model_mode": "Synthetic campaign data; real Web, unsigned frameless packaged Desktop and actual Chrome native right SIDE_PANEL perform verified project restores and deterministic PNG/MP4 rendering. No model request is made."
+}

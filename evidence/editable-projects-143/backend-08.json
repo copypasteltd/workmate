@@ -1,0 +1,114 @@
+{
+  "at": "2026-10-30T16:58:53.624Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "current test discovery",
+      "arguments": [
+        "scripts/run-current-tests-owned-v10.mjs",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "editable vector/presentation project integration",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/editable-projects-143-v5.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "schema startup compatibility",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/schema-compatibility.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension archive download boundary",
+      "arguments": [
+        "--import",
+        "tsx",
+        "--test",
+        "tests/creative-package-download-140-v1.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-web renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-desktop renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/editable-projects-143/backend-08-sources.json",
+    "sha256": "1b98a3ce29b7055f414128f6f569c3906cf9a7b0349473cb6f360be78b8891cf"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "port_closed": true,
+  "owned_native_cluster": {
+    "path": ".data/native-qa/b2b4e7a2-6c9c-4e68-96d1-08b56c1af7da"
+  },
+  "raw_log": {
+    "path": "evidence/editable-projects-143/backend-08.tap",
+    "sha256": "820ffa1826e3cda6133d2bcb589bcd9a7ba10d0c3646915fed4f4c270499391f"
+  },
+  "verifier": {
+    "path": "evidence/editable-projects-143/backend-08-verifier.mjs",
+    "sha256": "15596953221573bca4cc183bfe34e3dc6a66200f4059651ec02848e35b854efd"
+  },
+  "prior_related_regressions": {
+    "report": "evidence/editable-projects-143/backend-06.json",
+    "sha256": "3c907de9b9d69181ec9ff5078a5090b0f00c1a86353407a7b9e7d61ca1594f8d",
+    "source_manifest": {
+      "path": "evidence/editable-projects-143/backend-06-sources.json",
+      "sha256": "521fb181ea25bce466d69d542b9118216c1cb1ad448687804526278adcb7657d"
+    },
+    "changed_source_paths": [
+      "copypaste-platform/src/editable-projects.ts",
+      "copypaste-platform/tests/editable-projects-143-v4.test.ts",
+      "copypaste-platform/tests/editable-projects-143-v5.test.ts"
+    ],
+    "scope": "Original 90-case related regression receipt retained with its own source snapshot; not relabelled as current. Current checks rerun all 12 editable workspace cases (including overlapping preview/save), schema startup and extension download boundaries. Client build and real journeys are qualified separately."
+  },
+  "model_mode": "Synthetic business/model fixtures; real OTP, native PostgreSQL, immutable vector/presentation versions, exact images/chart snapshots/fonts, project archives and actual native PNG/SVG/PDF/PPTX rendering. One explicit simulated specialist task exercises company tools and records its own simulated usage. Actual clients qualified separately."
+}
