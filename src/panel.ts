@@ -66,6 +66,12 @@ const chat = new ChatPanel(
     await openTask(id);
     $("task-view").scrollIntoView({ behavior: "smooth", block: "start" });
   },
+  async (scope, taskId) => {
+    const data = await request(`/v1/tenants/${scope.tenant}/projects/${scope.project}/tasks/${taskId}/quality`);
+    if (chat.state.scope !== scope) throw new WorkspaceChanged("Workspace changed");
+    return send("DELIVERY_DOWNLOAD", { selection: { tenant: scope.tenant, project: scope.project,
+      task: taskId, version: data.task_version, deliveryHash: data.delivery_hash } });
+  },
 );
 let financialRevision = 0;
 let dependencyRevision = 0,
@@ -936,6 +942,7 @@ async function drawTask(t: any) {
   )
     mountDeliveryQuality($("delivery-quality"), {
       path: endpoint + "/tasks/" + t.id,
+      download: (version, deliveryHash) => send("DELIVERY_DOWNLOAD", { selection: { tenant, project, task: t.id, version, deliveryHash } }),
       request,
       tr,
       live: () =>

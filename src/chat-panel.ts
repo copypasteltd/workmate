@@ -15,9 +15,13 @@ export class ChatPanel {
   private language: () => string;
   private questionDrafts = new Map<string, string>();
   private questionScope = "";
+  private deliveryScope = "";
+  private deliveryGeneration = 0;
+  private deliveryDownloads = new Map<string, { state: "pending" | "submitted" | "failed"; error?: string }>();
   private tr(zh: string, en: string) { return this.language() === "en" ? en : zh; }
   constructor(io: Omit<ChatIO, "changed">, language: () => string, private report: (e: unknown) => void,
-    private capture: () => Promise<{ title: string; url: string; text: string }>, private details: (id: string) => Promise<void>) {
+    private capture: () => Promise<{ title: string; url: string; text: string }>, private details: (id: string) => Promise<void>,
+    private download?: (scope: ChatScope, taskId: string) => Promise<unknown>) {
     this.language = language;
     this.state = new ConversationState({ ...io, changed: () => this.draw() });
     this.folder = new FolderTransfer(this.state, () => this.draw());
@@ -160,7 +164,8 @@ export class ChatPanel {
     const feed = el("chat-messages"), atEnd = this.followLatest || feed.scrollHeight - feed.scrollTop - feed.clientHeight < 80;
     const questionScope = JSON.stringify([s.scope, c?.id]);
     if (questionScope !== this.questionScope || s.unavailable) { this.questionScope = questionScope; this.questionDrafts.clear(); }
-    const signature = JSON.stringify([c?.messages, s.progress, s.inputRequests, s.loading, s.unavailable, this.language()]);
+    if (questionScope !== this.deliveryScope || s.unavailable) { this.deliveryScope = questionScope; this.deliveryGeneration++; this.deliveryDownloads.clear(); }
+    const signature = JSON.stringify([c?.messages, s.progress, s.inputRequests, s.loading, s.unavailable, this.language(), [...this.deliveryDownloads]]);
     if (feed.dataset.signature !== signature) {
       feed.dataset.signature = signature; feed.replaceChildren();
       if (!c?.messages?.length && !s.loading && !s.unavailable) {
@@ -174,6 +179,25 @@ export class ChatPanel {
         const body = document.createElement("div"); body.className = "chat-message-body"; body.textContent = m.body;
         article.append(who, body);
         if (m.task_id) { const btn = document.createElement("button"); btn.type = "button"; btn.className = "chat-detail"; btn.textContent = t("工作詳情與附件", "Work details & attachments"); btn.addEventListener("click", () => void this.run(() => this.details(m.task_id))); article.append(btn); }
+        if (m.role === "assistant" && m.task_id && this.download && s.scope) {
+          const scope = s.scope, generation = this.deliveryGeneration, button = document.createElement("button"), status = document.createElement("small");
+          const result = this.deliveryDownloads.get(m.task_id);
+          button.type = "button"; button.className = "chat-detail"; button.textContent = t("下載完整交付包", "Download delivery package"); status.setAttribute("role", "status");
+          button.disabled = result?.state === "pending";
+          if (result?.state === "pending") status.textContent = t("正在整理交付包…", "Preparing delivery package…");
+          if (result?.state === "submitted") status.textContent = t("已交給瀏覽器下載管理器。", "Passed to the browser download manager.");
+          if (result?.state === "failed") { status.setAttribute("role", "alert"); status.textContent = result.error ?? ""; }
+          button.onclick = () => {
+            if (this.deliveryDownloads.get(m.task_id)?.state === "pending") return;
+            this.deliveryDownloads.set(m.task_id, { state: "pending" }); this.draw();
+            void this.download!(scope,m.task_id).then(() => {
+              if (generation === this.deliveryGeneration) { this.deliveryDownloads.set(m.task_id, { state: "submitted" }); this.draw(); }
+            }).catch(e => {
+              if (generation === this.deliveryGeneration) { this.deliveryDownloads.set(m.task_id, { state: "failed", error: (e as Error).message }); this.draw(); }
+            });
+          };
+          article.append(button,status);
+        }
         feed.append(article);
       }
       const progress = s.progress, task = progress.task;

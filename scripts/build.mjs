@@ -59,7 +59,7 @@ const manifest = {
     "Bring projects, specialist work and explicitly selected local materials into CopyPaste.",
   key,
   minimum_chrome_version: "120",
-  permissions: ["storage", "identity", "sidePanel", "activeTab", "scripting"],
+  permissions: ["storage", "identity", "sidePanel", "activeTab", "scripting", "downloads"],
   optional_permissions: ["nativeMessaging"],
   host_permissions: [api.origin + "/*"],
   background: { service_worker: "background.js" },

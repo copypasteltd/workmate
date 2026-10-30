@@ -1,6 +1,7 @@
 type IO = {
   path: string; live: () => boolean; tr: (zh: string,en: string) => string;
   request: (path: string,method?: string,body?: unknown,key?: string) => Promise<any>;
+  download: (version: number, hash: string) => Promise<unknown>;
 };
 /** The side panel reviews cloud results. It never starts a local Agent. */
 export function mountDeliveryQuality(container: HTMLElement, io: IO) {
@@ -14,6 +15,14 @@ export function mountDeliveryQuality(container: HTMLElement, io: IO) {
     try{const data=await io.request(io.path+"/quality");if(!io.live())return;loaded=true;area.replaceChildren();
       const labels:Record<string,string>={pending_review:io.tr("待審閱","Awaiting review"),accepted:io.tr("已接受","Accepted"),changes_requested:io.tr("需修改","Changes requested"),discarded:io.tr("已棄用","Discarded")};
       area.append(make("strong",labels[data.review_state]??data.review_state),make("p",io.tr("你的評價會保留所審閱的版本。","Your review keeps the version you reviewed.")));
+      if(data.delivery&&(data.delivery.output_sha256||data.delivery.artifacts.length)){
+        const button=document.createElement("button"),status=make("p");button.type="button";
+        button.textContent=io.tr("下載完整交付包","Download delivery package");status.setAttribute("role","status");
+        button.onclick=()=>{if(pending||!io.live())return;button.disabled=true;
+          void io.download(data.task_version,data.delivery_hash).then(()=>{if(io.live())status.textContent=io.tr("已交給瀏覽器下載管理器。","Passed to the browser download manager.");})
+            .catch(e=>{if(io.live()){status.setAttribute("role","alert");status.textContent=(e as Error).message;}}).finally(()=>{button.disabled=false;});};
+        area.append(button,make("p",io.tr("包含本次雲端成果、版本清單及編輯說明。","Includes this task’s cloud outputs, version manifest and editing instructions.")),status);
+      }
       const send=async(action:string,body:unknown,form:HTMLFormElement)=>{
         if(pending||!io.live())return;pending=true;const fingerprint=JSON.stringify([action,body]);
         if(attempt?.fingerprint!==fingerprint)attempt={fingerprint,key:crypto.randomUUID()};
