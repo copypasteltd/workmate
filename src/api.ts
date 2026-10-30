@@ -1,3 +1,4 @@
+import { clientFetch, clientJson, connectionFailure } from "./client-failure";
 import { clearWorkDrafts } from "./work-draft";
 export let csrfToken = "";
 let sessionRevision = 0;
@@ -99,73 +100,55 @@ export async function api<T = any>(
   const pathTenant = /^\/v1\/tenants\/([a-f0-9-]{36})(?:\/|$)/i.exec(path)?.[1];
   if (pathTenant && !headers.has("X-Tenant-ID"))
     headers.set("X-Tenant-ID", pathTenant);
+  const current = () => {
+    if (protectedRequest && revision !== sessionRevision)
+      throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
+    if (options.signal?.aborted) throw options.signal.reason;
+  };
   let status: number, data: any;
-  if (window.copyPasteBridge) {
-    let result;
-    if (options.body instanceof FormData) {
-      const file = options.body.get("file");
-      if (!(file instanceof File)) throw new Error("Choose a file");
-      const a = new Uint8Array(await file.arrayBuffer());
-      let binary = "";
-      for (let i = 0; i < a.length; i++) binary += String.fromCharCode(a[i]);
-      result = await window.copyPasteBridge.upload(path, {
-        name: file.name,
-        mime: file.type,
-        base64: btoa(binary),
-        expected_version: options.body.get("expected_version"),
-      });
-    } else
-      result = await window.copyPasteBridge.request(path, {
-        method: options.method,
-        idempotencyKey: headers.get("Idempotency-Key") ?? undefined,
-        tenantId: headers.get("X-Tenant-ID") ?? undefined,
-        body:
-          typeof options.body === "string"
-            ? JSON.parse(options.body)
-            : undefined,
-      });
-    status = result.status;
-    data = result.body;
-  } else {
-    if (options.body && !(options.body instanceof FormData))
-      headers.set("Content-Type", "application/json");
-    if (!["GET", "HEAD", "OPTIONS"].includes(options.method ?? "GET")) {
-      if (csrfToken) headers.set("X-CSRF-Token", csrfToken);
-      headers.set(
-        "Idempotency-Key",
-        headers.get("Idempotency-Key") ?? crypto.randomUUID(),
-      );
+  try {
+    if (window.copyPasteBridge) {
+      let invoke: () => Promise<{ status: number; body: any }>;
+      if (options.body instanceof FormData) {
+        const file = options.body.get("file");
+        if (!(file instanceof File)) throw new Error("Choose a file");
+        const a = new Uint8Array(await file.arrayBuffer());
+        let binary = "";
+        for (let i = 0; i < a.length; i++) binary += String.fromCharCode(a[i]);
+        const body = { name: file.name, mime: file.type, base64: btoa(binary), expected_version: options.body.get("expected_version") };
+        invoke = () => window.copyPasteBridge!.upload(path, body);
+      } else {
+        const body = typeof options.body === "string" ? JSON.parse(options.body) : undefined;
+        invoke = () => window.copyPasteBridge!.request(path, {
+          method: options.method,
+          idempotencyKey: headers.get("Idempotency-Key") ?? undefined,
+          tenantId: headers.get("X-Tenant-ID") ?? undefined,
+          body,
+        });
+      }
+      let result;
+      try { result = await invoke(); }
+      catch { throw connectionFailure(options.method); }
+      status = result.status;
+      data = result.body;
+    } else {
+      if (options.body && !(options.body instanceof FormData)) headers.set("Content-Type", "application/json");
+      if (!["GET", "HEAD", "OPTIONS"].includes(options.method ?? "GET")) {
+        if (csrfToken) headers.set("X-CSRF-Token", csrfToken);
+        headers.set("Idempotency-Key", headers.get("Idempotency-Key") ?? crypto.randomUUID());
+      }
+      const r = await clientFetch(base + path, { ...options, headers, credentials: "include" });
+      status = r.status;
+      // Authentication is determined by the HTTP status, including a proxy's HTML/empty response.
+      data = status === 401 && protectedRequest
+        ? { error: { code: "AUTH_REQUIRED", message: "Your session ended. Sign in again." } }
+        : await clientJson(r, options.method, options.signal ?? undefined);
     }
-    const r = await fetch(base + path, {
-      ...options,
-      headers,
-      credentials: "include",
-    });
-    status = r.status;
-    try {
-      data = await r.json();
-    } catch {
-      throw new ApiError(
-        "RESPONSE_INVALID",
-        "服務回應異常，請重新整理 / Unexpected server response",
-        status,
-      );
-    }
-  }
-  if (protectedRequest && revision !== sessionRevision)
-    throw new ApiError(
-      "SESSION_CHANGED",
-      "登入狀態已變更，請重新載入 / Sign-in state changed. Reload this view.",
-      409,
-    );
+  } catch (error) { current(); throw error; }
+  current();
   if (status === 401 && protectedRequest) endClientSession(false, "expired");
   if (status < 200 || status >= 300)
-    throw new ApiError(
-      data?.error?.code ?? "REQUEST_FAILED",
-      data?.error?.message ?? "Request failed",
-      status,
-      data?.error?.details,
-    );
+    throw new ApiError(data?.error?.code ?? "REQUEST_FAILED", data?.error?.message ?? "Request failed", status, data?.error?.details);
   if (path === "/v1/auth/verify" || path === "/v1/auth/sessions") {
     changeClientSession();
     localStorage.setItem(
@@ -195,20 +178,32 @@ export async function download(
   tenantId?: string,
 ) {
   const revision = sessionRevision;
+  const current = () => {
+    if (revision !== sessionRevision) throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
+  };
   if (window.copyPasteBridge) {
-    await window.copyPasteBridge.download(path, filename, tenantId);
-    if (revision !== sessionRevision) throw new Error("Sign-in state changed");
+    try { await window.copyPasteBridge.download(path, filename, tenantId); }
+    catch { current(); throw connectionFailure(); }
+    current();
     return;
   }
-  const response = await fetch(base + path, {
-    credentials: "include",
-    ...(tenantId ? { headers: { "X-Tenant-ID": tenantId } } : {}),
-  });
-  if (revision !== sessionRevision) throw new Error("Sign-in state changed");
-  if (response.status === 401) endClientSession(false, "expired");
-  if (!response.ok) throw new Error("Download unavailable");
-  const blob = await response.blob();
-  if (revision !== sessionRevision) throw new Error("Sign-in state changed");
+  let response: Response;
+  try {
+    response = await clientFetch(base + path, {
+      credentials: "include",
+      ...(tenantId ? { headers: { "X-Tenant-ID": tenantId } } : {}),
+    });
+  } catch (error) { current(); throw error; }
+  current();
+  if (response.status === 401) {
+    endClientSession(false, "expired");
+    throw new ApiError("AUTH_REQUIRED", "Your session ended. Sign in again.", 401);
+  }
+  if (!response.ok) throw new ApiError("DOWNLOAD_UNAVAILABLE", "Download unavailable", response.status);
+  let blob: Blob;
+  try { blob = await response.blob(); }
+  catch { current(); throw connectionFailure(); }
+  current();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
