@@ -1,3 +1,4 @@
+import { clientFailureMessage } from "./client-failure";
 import {
   createContext,
   useContext,
@@ -129,13 +130,14 @@ export function useData<T = any>(
     : { key, data: null, error: null, loading: !!url };
 }
 export function ErrorNotice({ error }: { error: unknown }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   if (!error) return null;
+  const friendly = clientFailureMessage(error, locale);
   return (
     <div className="notice error" role="alert">
       <AlertCircle size={19} />
       <div>
-        {error instanceof Error ? error.message : String(error)}
+        {friendly ?? (error instanceof Error ? error.message : String(error))}
         {(error as any)?.details?.length > 0 && (
           <ul>
             {(error as any).details.map((d: any, i: number) => (
@@ -145,12 +147,12 @@ export function ErrorNotice({ error }: { error: unknown }) {
             ))}
           </ul>
         )}
-        <small>
+        {!friendly && <small>
           {t(
             "請檢查資料或稍後再試。",
             "Check your input or try again shortly.",
           )}
-        </small>
+        </small>}
       </div>
     </div>
   );

@@ -152,6 +152,7 @@ function App() {
       setMe(await api("/v1/admin/me"));
       setError(null);
     } catch (e) {
+      if ((e as any).code === "SESSION_CHANGED") return;
       if ((e as any).status === 401) {
         setMe(null);
         setError(null);
@@ -161,7 +162,10 @@ function App() {
     }
   }
   useEffect(() => {
+    const ended = () => { setMe(null); setError(null); setLoading(false); };
+    window.addEventListener("copypaste:admin-session-ended", ended);
     void refresh();
+    return () => window.removeEventListener("copypaste:admin-session-ended", ended);
   }, []);
   return (
     <Preferences>

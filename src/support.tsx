@@ -27,6 +27,7 @@ function SupportWorkspace({
     [sessions, setSessions] = useState<Session[]>([]),
     [next, setNext] = useState<string | null>(null),
     [error, setError] = useState<Error | null>(null),
+    [listError, setListError] = useState<Error | null>(null),
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(false),
     [users, setUsers] = useState<any[]>([]),
@@ -78,6 +79,7 @@ function SupportWorkspace({
   async function load(cursor?: string) {
     const r = ++listRevision.current;
     setLoading(true);
+    setListError(null);
     try {
       const data = await api(
         "/v1/admin/support/sessions?limit=20" +
@@ -90,7 +92,7 @@ function SupportWorkspace({
       if (r === listRevision.current) {
         setSessions([]);
         setNext(null);
-        setError(e as Error);
+        setListError(e as Error);
         setActive("");
         clearView();
       }
@@ -294,6 +296,7 @@ function SupportWorkspace({
         </div>
       </header>
       <ErrorNotice error={error} />
+      <ErrorNotice error={listError} />
       {view && (
         <section className="support-read-only" data-testid="support-view">
           <div className="support-context-banner" role="status">
