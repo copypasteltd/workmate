@@ -29,6 +29,8 @@ import {
   useI18n,
 } from "./ui";
 import { ResumableUpload } from "./resumable-upload";
+import { CloudAssetPicker } from "./cloud-asset-picker";
+import { CloudFilePreview } from "./cloud-document-preview";
 type Node = {
   id: string;
   workspace_id: string;
@@ -603,13 +605,8 @@ function NodeEditor({
     [destination, setDestination] = useState<string | null>(
       initial?.parent_id ?? parent ?? null,
     ),
-    [assetId, setAssetId] = useState(""),
-    [version, setVersion] = useState("");
-  const assets = useData(w.base + "/assets"),
-    versions = useData(
-      assetId ? w.base + "/assets/" + assetId + "/versions" : null,
-    );
-  const versionId = version || versions.data?.items[0]?.id;
+    [versionId, setVersionId] = useState<string | undefined>(undefined),
+    [sourceReady, setSourceReady] = useState(!!initial);
   return (
     <Modal
       title={
@@ -623,6 +620,7 @@ function NodeEditor({
         submitLabel={t("儲存項目", "Save entry")}
         onSubmit={async (f) => {
           const name = String(f.get("name"));
+          if (kind === "file" && !sourceReady) throw new Error(t("請選擇來源素材與固定版本。", "Choose a source asset and its pinned version."));
           if (initial)
             await patch(w.base + "/cloud-nodes/" + initial.id, {
               expected_version: initial.version,
@@ -669,48 +667,8 @@ function NodeEditor({
                 "References keep an exact version. Moving or renaming an entry preserves its source.",
               )}
             </p>
-            <Field label={t("來源素材", "Source asset")}>
-              <select
-                value={assetId}
-                required={!initial}
-                onChange={(e) => {
-                  setAssetId(e.target.value);
-                  setVersion("");
-                }}
-              >
-                <option value="">
-                  {initial
-                    ? t("保留目前版本", "Keep the current version")
-                    : t("選擇素材", "Choose an asset")}
-                </option>
-                {assets.data?.items
-                  .filter(
-                    (a: any) =>
-                      space.kind === "conversation" || !a.private_owner,
-                  )
-                  .map((a: any) => (
-                    <option key={a.id} value={a.id}>
-                      {a.name} · v{a.current_version}
-                    </option>
-                  ))}
-              </select>
-            </Field>
-            {assetId && (
-              <Field label={t("固定版本", "Pinned version")}>
-                <select
-                  value={versionId ?? ""}
-                  required
-                  onChange={(e) => setVersion(e.target.value)}
-                >
-                  {versions.data?.items.map((v: any) => (
-                    <option key={v.id} value={v.id}>
-                      v{v.version} · {new Date(v.created_at).toLocaleString()}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            )}
-            <ErrorNotice error={assets.error ?? versions.error} />
+            <CloudAssetPicker shared={space.kind !== "conversation"} required={!initial} onChange={setVersionId} onReady={setSourceReady}/>
+
           </>
         )}
         <FolderPicker
@@ -723,85 +681,7 @@ function NodeEditor({
   );
 }
 function Preview({ node, onClose }: { node: Node; onClose: () => void }) {
-  const w = useWorkspace(),
-    { t } = useI18n(),
-    data = useData(w.base + "/cloud-nodes/" + node.id + "/reference"),
-    [error, setError] = useState<Error | null>(null),
-    [copied, setCopied] = useState(false);
-  return (
-    <Modal title={node.name} onClose={onClose}>
-      <ErrorNotice error={data.error ?? error} />
-      {data.loading && <Loading />}
-      {data.data && (
-        <>
-          <p className="muted">
-            {t("固定版本：", "Pinned version: ")}v{data.data.source_version} ·{" "}
-            {(data.data.size_bytes / 1024).toFixed(1)} KB
-          </p>
-          {data.data.preview_image ? (
-            <img
-              className="cloud-image-preview"
-              alt={node.name}
-              src={
-                "data:" +
-                data.data.preview_image.content_type +
-                ";base64," +
-                data.data.preview_image.base64
-              }
-            />
-          ) : data.data.text !== undefined ? (
-            <pre className="cloud-text-preview">{data.data.text}</pre>
-          ) : (
-            <p className="muted">
-              {t(
-                "此類型可下載到電腦預覽。",
-                "Download this file to preview it on your computer.",
-              )}
-            </p>
-          )}
-          <div className="row-actions">
-            <button
-              className="button primary"
-              onClick={() =>
-                void download(
-                  `${w.base}/assets/${data.data.asset_id}/download?version=${data.data.source_version}`,
-                  node.name,
-                ).catch(setError)
-              }
-            >
-              <Download size={16} />
-              {t("下載這一版", "Download this version")}
-            </button>
-            <button
-              className="button secondary"
-              onClick={() =>
-                void navigator.clipboard
-                  .writeText(
-                    JSON.stringify({
-                      workspace_node_id: node.id,
-                      asset_version_id: data.data.asset_version_id,
-                    }),
-                  )
-                  .then(() => setCopied(true))
-                  .catch(setError)
-              }
-            >
-              <Link2 size={16} />
-              {copied
-                ? t("已複製引用", "Reference copied")
-                : t("複製工作引用", "Copy work reference")}
-            </button>
-          </div>
-          <p className="muted small-text">
-            {t(
-              "檔案引用會核對目前權限及固定版本。移除目錄項目不會刪除素材本體。",
-              "File references check current access and the pinned version. Removing an entry preserves the source asset.",
-            )}
-          </p>
-        </>
-      )}
-    </Modal>
-  );
+  return <CloudFilePreview node={node} onClose={onClose}/>;
 }
 function RemoveEntry({
   node,
