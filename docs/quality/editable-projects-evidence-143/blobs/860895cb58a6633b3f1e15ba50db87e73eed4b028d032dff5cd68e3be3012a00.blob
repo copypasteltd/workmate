@@ -1,0 +1,124 @@
+{
+  "at": "2026-10-30T17:09:34.632Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "current test discovery",
+      "arguments": [
+        "scripts/run-current-tests-owned-v10.mjs",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "editable vector/presentation project integration",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/editable-projects-143-v6.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "schema startup compatibility",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/schema-compatibility.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "existing video and erasure regressions",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/video-projects.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension archive download boundary",
+      "arguments": [
+        "--import",
+        "tsx",
+        "--test",
+        "tests/creative-package-download-140-v1.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-web renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-desktop renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/editable-projects-143/backend-09-sources.json",
+    "sha256": "39634d8f6e27497d23782cb4e15d7882cd2ec792fc37e779ce71a8b888f702bf"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "port_closed": true,
+  "owned_native_cluster": {
+    "path": ".data/native-qa/b2b4e7a2-6c9c-4e68-96d1-08b56c1af7da"
+  },
+  "raw_log": {
+    "path": "evidence/editable-projects-143/backend-09.tap",
+    "sha256": "4e5b1603802ecb2a00d4366263115da47ffb945ee3b22cc578351f3d275720c8"
+  },
+  "verifier": {
+    "path": "evidence/editable-projects-143/backend-09-verifier.mjs",
+    "sha256": "29b74e11f5aac50685fe7e29278d66dc21819bc2c4cd7830524a091618f56be5"
+  },
+  "prior_related_regressions": {
+    "report": "evidence/editable-projects-143/backend-06.json",
+    "sha256": "3c907de9b9d69181ec9ff5078a5090b0f00c1a86353407a7b9e7d61ca1594f8d",
+    "source_manifest": {
+      "path": "evidence/editable-projects-143/backend-06-sources.json",
+      "sha256": "521fb181ea25bce466d69d542b9118216c1cb1ad448687804526278adcb7657d"
+    },
+    "changed_source_paths": [
+      "copypaste-platform/src/editable-projects.ts",
+      "copypaste-platform/src/erasure.ts",
+      "copypaste-platform/tests/editable-projects-143-v4.test.ts",
+      "copypaste-platform/tests/editable-projects-143-v5.test.ts",
+      "copypaste-platform/tests/editable-projects-143-v6.test.ts"
+    ],
+    "scope": "Original 90-case related regression receipt retained with its own source snapshot; not relabelled as current. Current checks rerun all 14 editable workspace cases (including overlapping preview/save and physical deletion), schema startup, existing video/erasure regressions and extension download boundaries. Client build and real journeys are qualified separately."
+  },
+  "model_mode": "Synthetic business/model fixtures; real OTP, native PostgreSQL, immutable vector/presentation versions, exact images/chart snapshots/fonts, project archives and actual native PNG/SVG/PDF/PPTX rendering. One explicit simulated specialist task exercises company tools and records its own simulated usage. Actual clients qualified separately."
+}

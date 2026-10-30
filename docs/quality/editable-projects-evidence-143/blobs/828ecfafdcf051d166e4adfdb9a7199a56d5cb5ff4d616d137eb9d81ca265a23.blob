@@ -1,0 +1,69 @@
+{
+  "at": "2026-10-30T16:53:51.641Z",
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: editable vector/presentation project integration\n\n1 !== 0\n",
+  "commands": [
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "current test discovery",
+      "arguments": [
+        "scripts/run-current-tests-owned-v10.mjs",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "editable vector/presentation project integration",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/editable-projects-143-v4.test.ts"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/editable-projects-143/backend-07-sources.json",
+    "sha256": "4d930ecbab0aa7bc96626497bc242e6d0bb09da67a565a768b77f68cd9b7b300"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "port_closed": true,
+  "owned_native_cluster": {
+    "path": ".data/native-qa/b2b4e7a2-6c9c-4e68-96d1-08b56c1af7da"
+  },
+  "raw_log": {
+    "path": "evidence/editable-projects-143/backend-07.tap",
+    "sha256": "8391e4a1655386a8e4ba91a3963363fa95d5050aed1ada0363c975ceec7f4fd6"
+  },
+  "verifier": {
+    "path": "evidence/editable-projects-143/backend-07-verifier.mjs",
+    "sha256": "8577effad1de55dc68c11f19fd58b73bec71690d00cf53fae1628ea08c5a6b8c"
+  },
+  "prior_related_regressions": {
+    "report": "evidence/editable-projects-143/backend-06.json",
+    "sha256": "3c907de9b9d69181ec9ff5078a5090b0f00c1a86353407a7b9e7d61ca1594f8d",
+    "source_manifest": {
+      "path": "evidence/editable-projects-143/backend-06-sources.json",
+      "sha256": "521fb181ea25bce466d69d542b9118216c1cb1ad448687804526278adcb7657d"
+    },
+    "changed_source_paths": [
+      "copypaste-platform/src/editable-projects.ts",
+      "copypaste-platform/tests/editable-projects-143-v4.test.ts"
+    ],
+    "scope": "Original 90-case related regression receipt retained with its own source snapshot; not relabelled as current. Current checks rerun all 12 editable workspace cases (including overlapping preview/save), schema startup and extension download boundaries. Client build and real journeys are qualified separately."
+  },
+  "model_mode": "Synthetic business/model fixtures; real OTP, native PostgreSQL, immutable vector/presentation versions, exact images/chart snapshots/fonts, project archives and actual native PNG/SVG/PDF/PPTX rendering. One explicit simulated specialist task exercises company tools and records its own simulated usage. Actual clients qualified separately."
+}

@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-30T16:12:58.529Z",
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: editable vector/presentation project integration\n\n1 !== 0\n",
+  "commands": [
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "current test discovery",
+      "arguments": [
+        "scripts/run-current-tests-owned-v10.mjs",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "editable vector/presentation project integration",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/editable-projects-143-v1.test.ts"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/editable-projects-143/backend-02-sources.json",
+    "sha256": "f40d151623548be8d89079505feb3f2d6917a3eb2b67113e1f491c8deb0bfce6"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "port_closed": true,
+  "owned_native_cluster": {
+    "path": ".data/native-qa/b2b4e7a2-6c9c-4e68-96d1-08b56c1af7da"
+  },
+  "raw_log": {
+    "path": "evidence/editable-projects-143/backend-02.tap",
+    "sha256": "e326915ffa07cf8bb8a985b891c1e2f5e29c6b918d078871098bc6b90445c2d1"
+  },
+  "verifier": {
+    "path": "evidence/editable-projects-143/backend-02-verifier.mjs",
+    "sha256": "1aa7f6e2235bf068334bb21ad98da545f0676b5d36c50e993531fc754403db79"
+  },
+  "model_mode": "Synthetic business/model fixtures; real OTP, native PostgreSQL, immutable vector/presentation versions, exact images/chart snapshots/fonts, project archives and actual native PNG/SVG/PDF/PPTX rendering. One explicit simulated specialist task exercises company tools and records its own simulated usage. Actual clients qualified separately."
+}

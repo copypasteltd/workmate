@@ -1,3 +1,9 @@
+<!-- editable-projects-stage143 -->
+
+阶段143以实际阶段142发布回执为基线，保留399222条历史证明身份和全部原始失败／成功记录。新工程源码、相关检查、实际三端页面及录制绑定当前独立仓库提交。使用新增的 `prepare_editable_projects_publication_143_v1.py` 与 `publish_editable_projects_publication_143_v1.py --push` 审核本轮增量并普通原子推送八个引用，随后读取远端SHA核对。用户12份未跟踪文件与Desktop根属性保持原字节。
+
+Stage143 retains 399222 historical proof identities and the actual Stage142 receipt. Current source, related checks and real client media bind to the independent component commits. Its new incremental preparer/publisher audits the reviewed paths and pushes eight refs atomically without force, then verifies remote SHAs. User files and protected Desktop attributes remain intact.
+
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
 <!-- creative-brand-stage142 -->
