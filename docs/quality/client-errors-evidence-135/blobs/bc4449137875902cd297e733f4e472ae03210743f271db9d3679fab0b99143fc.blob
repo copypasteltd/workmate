@@ -1,0 +1,472 @@
+TAP version 13
+# warning: LF will be replaced by CRLF in .gitignore.
+# The file will have its original line endings in your working directory
+# warning: LF will be replaced by CRLF in .gitignore.
+# The file will have its original line endings in your working directory
+# Subtest: native preview admission binds a green report to the actual runtime, installers and extension bytes
+    # Subtest: reject a legacy green report without a byte binding
+    ok 1 - reject a legacy green report without a byte binding
+      ---
+      duration_ms: 2.7416
+      ...
+    # Subtest: bind new source bytes before staging and keep the same manifest after staging
+    ok 2 - bind new source bytes before staging and keep the same manifest after staging
+      ---
+      duration_ms: 618.3769
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/resources/app.asar
+    ok 3 - reject changed bytes: release/frameless/win-unpacked/resources/app.asar
+      ---
+      duration_ms: 122.7453
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/resources/native-host.cjs
+    ok 4 - reject changed bytes: release/frameless/win-unpacked/resources/native-host.cjs
+      ---
+      duration_ms: 121.9778
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/CopyPaste.exe
+    ok 5 - reject changed bytes: release/frameless/win-unpacked/CopyPaste.exe
+      ---
+      duration_ms: 120.7604
+      ...
+    # Subtest: reject changed bytes: release/frameless/CopyPaste-0.5.0-x64-Setup.exe
+    ok 6 - reject changed bytes: release/frameless/CopyPaste-0.5.0-x64-Setup.exe
+      ---
+      duration_ms: 120.9022
+      ...
+    # Subtest: reject changed bytes: dist/background.js
+    ok 7 - reject changed bytes: dist/background.js
+      ---
+      duration_ms: 133.0691
+      ...
+    # Subtest: reject changed bytes: src/main.ts
+    ok 8 - reject changed bytes: src/main.ts
+      ---
+      duration_ms: 134.6586
+      ...
+    # Subtest: reject added or missing extension files
+    ok 9 - reject added or missing extension files
+      ---
+      duration_ms: 273.1916
+      ...
+    # Subtest: reject incomplete cleanup and failures
+    ok 10 - reject incomplete cleanup and failures
+      ---
+      duration_ms: 1.201
+      ...
+    # Subtest: allow documentation changes when all runtime bytes remain identical
+    ok 11 - allow documentation changes when all runtime bytes remain identical
+      ---
+      duration_ms: 149.0862
+      ...
+    1..11
+ok 1 - native preview admission binds a green report to the actual runtime, installers and extension bytes
+  ---
+  duration_ms: 3025.3483
+  ...
+1..1
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3281.5026
+TAP version 13
+# Subtest: web: an actual HTML 401 clears the current session before parsing and emits its own audience event
+ok 1 - web: an actual HTML 401 clears the current session before parsing and emits its own audience event
+  ---
+  duration_ms: 208.5724
+  ...
+# Subtest: web: a delayed old HTML 401 cannot clear a newer sign-in or its CSRF token
+ok 2 - web: a delayed old HTML 401 cannot clear a newer sign-in or its CSRF token
+  ---
+  duration_ms: 29.0194
+  ...
+# Subtest: web: an unreadable successful write remains uncertain and retains the caller's exact request key
+ok 3 - web: an unreadable successful write remains uncertain and retains the caller's exact request key
+  ---
+  duration_ms: 22.5419
+  ...
+# Subtest: desktop: an actual HTML 401 clears the current session before parsing and emits its own audience event
+ok 4 - desktop: an actual HTML 401 clears the current session before parsing and emits its own audience event
+  ---
+  duration_ms: 16.7364
+  ...
+# Subtest: desktop: a delayed old HTML 401 cannot clear a newer sign-in or its CSRF token
+ok 5 - desktop: a delayed old HTML 401 cannot clear a newer sign-in or its CSRF token
+  ---
+  duration_ms: 20.7083
+  ...
+# Subtest: desktop: an unreadable successful write remains uncertain and retains the caller's exact request key
+ok 6 - desktop: an unreadable successful write remains uncertain and retains the caller's exact request key
+  ---
+  duration_ms: 33.1332
+  ...
+# Subtest: admin: an actual HTML 401 clears the current session before parsing and emits its own audience event
+ok 7 - admin: an actual HTML 401 clears the current session before parsing and emits its own audience event
+  ---
+  duration_ms: 51.5092
+  ...
+# Subtest: admin: a delayed old HTML 401 cannot clear a newer sign-in or its CSRF token
+ok 8 - admin: a delayed old HTML 401 cannot clear a newer sign-in or its CSRF token
+  ---
+  duration_ms: 14.3815
+  ...
+# Subtest: admin: an unreadable successful write remains uncertain and retains the caller's exact request key
+ok 9 - admin: an unreadable successful write remains uncertain and retains the caller's exact request key
+  ---
+  duration_ms: 14.5145
+  ...
+# Subtest: a real committed HTTP write with a lost reply is uncertain and is never retried by the transport
+ok 10 - a real committed HTTP write with a lost reply is uncertain and is never retried by the transport
+  ---
+  duration_ms: 105.959
+  ...
+# Subtest: a real dropped read has a connection message without native/provider exception details
+ok 11 - a real dropped read has a connection message without native/provider exception details
+  ---
+  duration_ms: 7.7661
+  ...
+# Subtest: actual HTML replies are unreadable reads and uncertain writes without exposing their contents
+ok 12 - actual HTML replies are unreadable reads and uncertain writes without exposing their contents
+  ---
+  duration_ms: 19.1292
+  ...
+# Subtest: a user-aborted real in-flight request preserves cancellation instead of becoming a retry error
+ok 13 - a user-aborted real in-flight request preserves cancellation instead of becoming a retry error
+  ---
+  duration_ms: 8.2319
+  ...
+# Subtest: locale changes resolve the same uncertain operation to one language without a misleading generic retry hint
+ok 14 - locale changes resolve the same uncertain operation to one language without a misleading generic retry hint
+  ---
+  duration_ms: 0.3211
+  ...
+# Subtest: all independently delivered clients and native main process carry identical transport rules
+ok 15 - all independently delivered clients and native main process carry identical transport rules
+  ---
+  duration_ms: 5.962
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 929.6118
+Built Chrome MV3 extension. Registered ID: fffkcnmfdhahlnifgdilabheppkgnlok
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 1991 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     0.55 kB │ gzip:   0.34 kB
+dist/assets/index-DpZtOvrB.css    106.67 kB │ gzip:  19.70 kB
+dist/assets/index-CI3BVgsu.js   1,295.55 kB │ gzip: 329.23 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 883ms
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 2025 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     0.56 kB │ gzip:   0.34 kB
+dist/assets/index-0Akc7ebf.css    152.05 kB │ gzip:  26.95 kB
+dist/assets/index-DP4EHf_O.js   1,598.87 kB │ gzip: 423.02 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.26s
+TAP version 13
+# Subtest: native support receipt recovery allows customer GET only and never administrator impersonation
+ok 1 - native support receipt recovery allows customer GET only and never administrator impersonation
+  ---
+  duration_ms: 6.6631
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 384.139
+
+> @copypaste/desktop@0.7.1 build
+> node scripts/configure-deployment.mjs && node scripts/configure-update-trust.mjs && node scripts/build-update-host.mjs && node scripts/build-program-host.mjs && tsc && node scripts/build-native-host.mjs && vite build --config vite.config.ts
+
+Deployment origins compiled; no AI credentials are embedded.
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 2023 modules transformed.
+rendering chunks...
+computing gzip size...
+renderer-dist/index.html                     0.95 kB │ gzip:   0.47 kB
+renderer-dist/assets/index-Dx23IvIb.css    148.86 kB │ gzip:  26.20 kB
+renderer-dist/assets/index-BsmBkLF_.js   1,483.60 kB │ gzip: 400.81 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 896ms
+  • electron-builder  version=26.15.3 os=10.0.26200
+  • loaded configuration  file=package.json ("build" field)
+  • executing @electron/rebuild  electronVersion=44.5.1 arch=x64 buildFromSource=false workspaceRoot=D:\dev\copypasted\自有agent\dev\copypaste-desktop projectDir=./ appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=win32 arch=x64 electron=44.5.1 appOutDir=release\client-errors-135-02\win-unpacked
+  • using custom unpacked Electron distribution  electronDist=node_modules\electron\dist
+  • copying unpacked Electron  source=D:\dev\copypasted\自有agent\dev\copypaste-desktop\node_modules\electron\dist destination=D:\dev\copypasted\自有agent\dev\copypaste-desktop\release\client-errors-135-02\win-unpacked
+  • searching for node modules  pm=npm searchDir=D:\dev\copypasted\自有agent\dev\copypaste-desktop
+  • duplicate dependency references  dependencies=["react-dom@19.3.1","react-dom@19.3.1"]
+  • updating asar integrity executable resource  executablePath=release\client-errors-135-02\win-unpacked\CopyPaste.exe
+  • file signing skipped via signExecutable configuration  file=release\client-errors-135-02\win-unpacked\CopyPaste.exe
+The files belonging to this database system will be owned by user "carzy".
+This user must also own the server process.
+
+
+The database cluster will be initialized with locale "C".
+
+The default text search configuration will be set to "english".
+
+Data page checksums are enabled.
+
+
+
+creating directory C:/Users/carzy/AppData/Local/CopyPaste/native-runtime-aliases/postgres-jZEj1E/runtime/.data/native-qa/d0f36482-bb14-4801-93e9-8a7cbf7f64c2 ... 
+ok
+
+creating subdirectories ... 
+ok
+
+selecting dynamic shared memory implementation ... windows
+
+selecting default "max_connections" ... 
+100
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+Asia/Taipei
+
+creating configuration files ... 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-jZEj1E^\runtime^\node^_modules^\^@embedded^-postgres^\windows^-x64^\native^\bin^\pg^_ctl^" -D ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-jZEj1E^\runtime^\^.data^\native^-qa^\d0f36482^-bb14^-4801^-93e9^-8a7cbf7f64c2^" -l logfile start
+
+
+2026-10-30 11:46:36.589 CST [10712] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-30 11:46:36.596 CST [10712] LOG:  listening on IPv6 address "::1", port 2059
+
+2026-10-30 11:46:36.596 CST [10712] LOG:  listening on IPv4 address "127.0.0.1", port 2059
+
+2026-10-30 11:46:36.844 CST [34608] LOG:  database system was shut down at 2026-10-30 11:46:27 CST
+
+2026-10-30 11:46:36.894 CST [10712] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:2059. Application roles are not owners and do not bypass RLS.
+  ➜  Local:   http://127.0.0.1:4317/
+  ➜  Local:   http://127.0.0.1:4318/
+isolated integration suite: applied migration 1
+isolated integration suite: applied migration 2
+isolated integration suite: applied migration 3
+isolated integration suite: applied migration 4
+isolated integration suite: applied migration 5
+isolated integration suite: applied migration 6
+isolated integration suite: applied migration 7
+isolated integration suite: applied migration 8
+isolated integration suite: applied migration 9
+isolated integration suite: applied migration 10
+isolated integration suite: applied migration 11
+isolated integration suite: applied migration 12
+isolated integration suite: applied migration 13
+isolated integration suite: applied migration 14
+isolated integration suite: applied migration 15
+isolated integration suite: applied migration 16
+isolated integration suite: applied migration 17
+isolated integration suite: applied migration 18
+isolated integration suite: applied migration 19
+isolated integration suite: applied migration 20
+isolated integration suite: applied migration 21
+isolated integration suite: applied migration 22
+isolated integration suite: applied migration 23
+isolated integration suite: applied migration 24
+isolated integration suite: applied migration 25
+isolated integration suite: applied migration 26
+isolated integration suite: applied migration 27
+isolated integration suite: applied migration 28
+isolated integration suite: applied migration 29
+isolated integration suite: applied migration 30
+isolated integration suite: applied migration 31
+isolated integration suite: applied migration 32
+isolated integration suite: applied migration 33
+isolated integration suite: applied migration 34
+isolated integration suite: applied migration 35
+isolated integration suite: applied migration 36
+isolated integration suite: applied migration 37
+isolated integration suite: applied migration 38
+isolated integration suite: applied migration 39
+isolated integration suite: applied migration 40
+isolated integration suite: applied migration 41
+isolated integration suite: applied migration 42
+isolated integration suite: applied migration 43
+isolated integration suite: applied migration 44
+isolated integration suite: applied migration 45
+isolated integration suite: applied migration 46
+isolated integration suite: applied migration 47
+isolated integration suite: applied migration 48
+isolated integration suite: applied migration 49
+isolated integration suite: applied migration 50
+isolated integration suite: applied migration 51
+isolated integration suite: applied migration 52
+isolated integration suite: applied migration 53
+isolated integration suite: applied migration 54
+isolated integration suite: applied migration 55
+isolated integration suite: applied migration 56
+isolated integration suite: applied migration 57
+isolated integration suite: applied migration 58
+isolated integration suite: applied migration 59
+isolated integration suite: applied migration 60
+isolated integration suite: applied migration 61
+isolated integration suite: applied migration 62
+isolated integration suite: applied migration 63
+isolated integration suite: applied migration 64
+isolated integration suite: applied migration 65
+isolated integration suite: applied migration 66
+isolated integration suite: applied migration 67
+isolated integration suite: applied migration 68
+isolated integration suite: applied migration 69
+isolated integration suite: applied migration 70
+isolated integration suite: applied migration 71
+isolated integration suite: applied migration 72
+isolated integration suite: applied migration 73
+isolated integration suite: applied migration 74
+isolated integration suite: applied migration 75
+isolated integration suite: applied migration 76
+isolated integration suite: applied migration 77
+isolated integration suite: applied migration 78
+isolated integration suite: applied migration 79
+isolated integration suite: applied migration 80
+isolated integration suite: applied migration 81
+isolated integration suite: applied migration 82
+isolated integration suite: applied migration 83
+isolated integration suite: applied migration 84
+isolated integration suite: applied migration 85
+isolated integration suite: applied migration 86
+isolated integration suite: applied migration 87
+isolated integration suite: applied migration 88
+isolated integration suite: applied migration 89
+isolated integration suite: applied migration 90
+isolated integration suite: applied migration 91
+isolated integration suite: applied migration 92
+isolated integration suite: applied migration 93
+isolated integration suite: applied migration 94
+isolated integration suite: applied migration 95
+isolated integration suite: applied migration 96
+isolated integration suite: applied migration 97
+isolated integration suite: applied migration 98
+isolated integration suite: applied migration 99
+isolated integration suite: applied migration 100
+isolated integration suite: applied migration 101
+isolated integration suite: applied migration 102
+isolated integration suite: applied migration 103
+isolated integration suite: applied migration 104
+isolated integration suite: applied migration 105
+isolated integration suite: applied migration 106
+isolated integration suite: applied migration 107
+isolated integration suite: applied migration 108
+isolated integration suite: applied migration 109
+isolated integration suite: applied migration 110
+isolated integration suite: applied migration 111
+isolated integration suite: applied migration 112
+isolated integration suite: applied migration 113
+isolated integration suite: applied migration 114
+isolated integration suite: applied migration 115
+isolated integration suite: applied migration 116
+isolated integration suite: applied migration 117
+isolated integration suite: applied migration 118
+isolated integration suite: applied migration 119
+isolated integration suite: applied migration 120
+isolated integration suite: applied migration 121
+isolated integration suite: applied migration 122
+isolated integration suite: applied migration 123
+isolated integration suite: applied migration 124
+isolated integration suite: applied migration 125
+isolated integration suite: applied migration 126
+isolated integration suite: applied migration 127
+isolated integration suite: applied migration 128
+isolated integration suite: applied migration 129
+isolated integration suite: applied migration 130
+isolated integration suite: applied migration 131
+isolated integration suite: applied migration 132
+isolated integration suite: applied migration 133
+isolated integration suite: applied migration 134
+PASS: Administrator completes actual email challenge and TOTP using an independent scoped identity
+PASS: Unsigned packaged native Desktop completes real browser OTP and PKCE and opens its own customer support form
+PASS: Native uncertain-write notice follows the current language without runtime details, generic retry advice or an extra submission
+PASS: Native HTTP response loss and renderer reload recover the original customer grant without another authorization or deadline extension
+PASS: Desktop creates a real customer-owned, explicitly scoped 15-minute grant without granting administrator permissions
+PASS: Web uncertain-write notice switches language on the same operation and preserves the original recovery identity
+PASS: A delayed customer receipt cannot repopulate grants or success notices after an actual in-app workspace switch
+PASS: Web response loss and reload retrieve the original committed authorization and exact deadline without persisting the consent reason
+PASS: A keyboard-submitted uncommitted request retries the identical key, reason, scope and deadline; a changed intent cannot create another grant
+Web enlarged layout {"component":"web","zoom":"2","width":1280,"document":1280,"content":308,"client":308}
+PASS: A failed Web read keeps the signed-in workspace and recovers on explicit refresh
+PASS: Web creates and revokes an actual metadata-only grant; an empty project selection never means all projects
+PASS: Actual Admin form creates a scoped read-only session with a permanent identity banner and private-task body exclusion
+PASS: A delayed real response for task A cannot overwrite task B after the administrator changes selection
+PASS: Switching sessions opens the newly selected real view while the previous view response is still held
+PASS: Metadata revision polling clears an obsolete body before rereading, and actual HTML-like output remains inert text
+PASS: An actual original-file quarantine removes both the opened result and its diagnostic body action
+PASS: Actual 375/768/1024/1440 Admin layouts, Chinese dark view, native widths and keyboard form controls pass without Desktop rails or menus
+Admin enlarged layout {"component":"admin","zoom":"2","width":1440,"document":1440,"content":392,"client":392}
+PASS: Support pages retain working keyboard controls and no horizontal overflow at 200 percent text enlargement; native Desktop uses actual webContents zoom without visible rails
+PASS: Actual server-clock expiry clears an opened authorized body without a worker or simulated clock
+PASS: Native customer revocation is durable and clears the separately authenticated administrator view
+PASS: Support reads and customer authorization create no extra tasks, holds, charges, provider calls or customer credentials; bodies stay out of browser storage
+administrator connection failure and explicit recovery: AssertionError [ERR_ASSERTION]: Admin connection recovers on explicit refresh
+2026-10-30 11:48:11.752 CST [31556] LOG:  checkpoint starting: immediate force wait
+
+2026-10-30 11:48:17.237 CST [31556] LOG:  checkpoint complete: wrote 1058 buffers (6.5%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.101 s, sync=5.164 s, total=5.486 s; sync files=326, longest=0.129 s, average=0.016 s; distance=28528 kB, estimate=28528 kB; lsn=0/33CD700, redo lsn=0/33CD6A8
+
+{"status":"failed","checks":21,"errors":["administrator connection failure and explicit recovery: AssertionError [ERR_ASSERTION]: Admin connection recovers on explicit refresh"]}
+2026-10-30 11:48:17.915 CST [10712] LOG:  received fast shutdown request
+
+2026-10-30 11:48:17.970 CST [10712] LOG:  aborting any active transactions
+
+2026-10-30 11:48:17.975 CST [10712] LOG:  background worker "logical replication launcher" (PID 4452) exited with exit code 1
+
+2026-10-30 11:48:17.976 CST [31556] LOG:  shutting down
+
+2026-10-30 11:48:18.009 CST [31556] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-30 11:48:18.198 CST [31556] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.036 s, total=0.223 s; sync files=1, longest=0.036 s, average=0.036 s; distance=0 kB, estimate=25675 kB; lsn=0/33CD818, redo lsn=0/33CD818
+
+2026-10-30 11:48:18.263 CST [10712] LOG:  database system is shut down
+

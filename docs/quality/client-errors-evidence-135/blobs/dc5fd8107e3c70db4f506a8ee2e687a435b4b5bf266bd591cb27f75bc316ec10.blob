@@ -1,0 +1,239 @@
+import { randomUUID } from "node:crypto";
+import type { Database, Tx } from "./db.js";
+import { audit, type Principal } from "./auth.js";
+import { Problem } from "./lib.js";
+import { Storage } from "./storage.js";
+import {
+  publicationDraft, publicationDigest, publicationPolicyBody, publicationPolicyInput,
+  publicationSpecification, publicationProtocol, publicationPrepareInput, publicationDecisionInput,
+  publicationTerminal, type PublicationSpecification,
+} from "./publication-model.js";
+import { publicationMode, publicationContext, publicationProjectAuthority,
+  currentPublicationPolicy, publicationSourceRows, assertPublicationSources, assertPublicationTask, type PublicationAuthorizer } from "./publication-authority.js";
+import { preparePublicationMedia, checkPublicationBytes } from "./publication-media.js";
+import type { z } from "zod";
+import { assertStorageCapacity } from "./resource-quotas.js";
+
+export const publicationDuplicate = (s: Pick<PublicationSpecification, "target" | "draft" | "sources">) => publicationDigest({
+  target: { kind: s.target.kind, external_id: s.target.external_id },
+  format: s.draft.format, caption: s.draft.caption, title: s.draft.title, link: s.draft.link,
+  share_to_feed: s.draft.share_to_feed, sources: s.sources.map(source => ({ sha256: source.sha256, mime: source.mime, alt_text: source.alt_text })),
+});
+export async function lockPublicationTarget(tx: Tx, tenant: string, target: { kind: string; external_id: string }) {
+  await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [`publication-target:${tenant}:${target.kind}:${target.external_id}`]);
+}
+export async function updatePublication(tx: Pick<Tx, "query">, row: any, changes: Record<string, unknown>) {
+  const allowed = new Set(["state", "confirmed_by", "confirmed_auth_version", "confirmed_at", "lease_token", "lease_until",
+    "next_check_at", "progress", "observation", "resolution", "result", "error_code", "finished_at"]);
+  const entries = Object.entries(changes);
+  if (!entries.length || entries.some(([name]) => !allowed.has(name))) throw new Error("PUBLICATION_UPDATE_DENIED");
+  const args: unknown[] = [row.id, row.version], assignments = entries.map(([name, value], index) => {
+    args.push(value); return `"${name}"=$${index + 3}`;
+  });
+  const updated = (await tx.query(`UPDATE publication_operations SET ${assignments.join(",")},version=version+1
+    WHERE id=$1 AND version=$2 RETURNING *`, args)).rows[0];
+  if (!updated) throw new Problem(409, "VERSION_CONFLICT", "Reload the current publication state");
+  return updated;
+}
+export async function publicationOperation(tx: Tx, tenant: string, project: string, id: string, lock = false) {
+  const row = (await tx.query(`SELECT * FROM publication_operations WHERE id=$1 AND tenant_id=$2 AND project_id=$3${lock ? " FOR UPDATE" : ""}`,
+    [id, tenant, project])).rows[0];
+  if (!row) throw new Problem(404, "NOT_FOUND", "Publication not found");
+  return row;
+}
+export function publicationMetadata(row: any) {
+  return { id: row.id, tenant_id: row.tenant_id, project_id: row.project_id, target_id: row.target_id,
+    actor_id: row.actor_id, format: row.format, state: row.state, version: row.version,
+    payload_sha256: row.payload_sha256, data_mode: row.data_mode, error_code: row.error_code,
+    created_at: row.created_at.toISOString(), expires_at: row.expires_at.toISOString(),
+    confirmed_at: row.confirmed_at?.toISOString() ?? null, finished_at: row.finished_at?.toISOString() ?? null,
+  };
+}
+export function publicationContent(s: PublicationSpecification) {
+  return { target: s.target, draft: s.draft, policy_id: s.policy_id, policy_version: s.policy_version,
+    previous_unknown_ids: s.previous_unknown_ids,
+    sources: s.sources.map(({ storage_key: _key, ...source }, ordinal) => ({ ...source, ordinal })),
+  };
+}
+async function previousUnknowns(tx: Tx, tenant: string, duplicate: string) {
+  return (await tx.query(`SELECT id FROM publication_operations WHERE tenant_id=$1 AND duplicate_sha256=$2
+    AND state='closed_unknown' AND created_at>clock_timestamp()-interval '24 hours' ORDER BY id LIMIT 100`, [tenant, duplicate])).rows.map(r => r.id as string);
+}
+export class Publications {
+  constructor(public db: Database, public storage: Storage) {}
+  async preview(p: Principal, tenant: string, project: string, input: unknown, signal?: AbortSignal,
+    authority?: { authorize: PublicationAuthorizer; taskId: string }) {
+    const draft = publicationDraft.parse(input);
+    const initial = await this.db.tx(async tx => {
+      if (authority) {
+        await authority.authorize(tx);
+        await assertPublicationTask(tx, { tenant_id: tenant, project_id: project, actor_id: p.id, task_id: authority.taskId });
+      }
+      const context = await publicationContext(this.db, tx, p, tenant, project, draft.target_id);
+      await tx.query("SELECT assert_publication_preview_capacity($1,$2)", [tenant, p.id]);
+      const policy = context.policy, body = policy ? publicationPolicyBody.parse(policy.body) : null;
+      if (!body || !body.enabled || Date.parse(body.expires_at) <= Date.now() + 30_000 ||
+          !body.formats.includes(draft.format) || !context.row.capabilities?.formats?.includes(draft.format) ||
+          publicationDigest(body) !== policy.payload_sha256)
+        throw new Problem(409, "PUBLICATION_POLICY_REQUIRED", "Enable an explicit publishing policy for this account and format");
+      return { context, rows: await publicationSourceRows(tx, p, tenant, project, draft), policy: body };
+    }, tenant, true, p.id);
+    const prepared: Awaited<ReturnType<typeof preparePublicationMedia>>[] = [];
+    const newKeys: string[] = [];
+    let saved = false;
+    try {
+      for (let i = 0; i < initial.rows.length; i++)
+        prepared.push(await preparePublicationMedia(this.db.config, this.storage, initial.rows[i], draft.sources[i], draft.format, signal));
+      if (draft.format === "instagram_carousel" && prepared.some(({ media }) =>
+        Math.abs(media.width / media.height - prepared[0].media.width / prepared[0].media.height) > 0.01))
+        throw new Problem(422, "PUBLICATION_CAROUSEL_ASPECT", "Choose carousel items with the same aspect ratio to avoid an unapproved crop");
+      const row = initial.context.row, policy = initial.context.policy;
+      const specification = publicationSpecification.parse({ protocol: publicationProtocol,
+        tenant_id: tenant, project_id: project, actor_id: p.id, actor_auth_version: p.authVersion,
+        connection_id: row.connection_id, connection_auth_version: row.connection_auth_version,
+        configuration_sha256: row.configuration_sha256,
+        target: { id: row.id, kind: row.kind, external_id: row.external_id, page_id: row.page_id, name: row.name, auth_version: row.auth_version },
+        policy_id: policy.id, policy_version: policy.version, policy_sha256: policy.payload_sha256,
+        draft, sources: prepared.map(p => p.media), previous_unknown_ids: [], data_mode: publicationMode(this.db),
+        expires_at: new Date(Math.min(Date.now() + 30 * 60_000, Date.parse(initial.policy.expires_at))).toISOString(),
+      });
+      const result = await this.db.tx(async tx => {
+        if (authority) {
+          await authority.authorize(tx);
+          await assertPublicationTask(tx, { tenant_id: tenant, project_id: project, actor_id: p.id, task_id: authority.taskId });
+        }
+        await publicationContext(this.db, tx, p, tenant, project, draft.target_id, "write", specification);
+        await assertPublicationSources(tx, p, tenant, project, specification);
+        await lockPublicationTarget(tx, tenant, specification.target);
+        await tx.query("SELECT assert_publication_preview_capacity($1,$2)", [tenant, p.id]);
+        await assertStorageCapacity(tx, tenant, prepared.reduce((bytes, item) => bytes + (item.pending_bytes?.length ?? 0), 0));
+        for (let i = 0; i < prepared.length; i++) if (prepared[i].pending_bytes) {
+          const key = await this.storage.put(prepared[i].pending_bytes!, "image/jpeg");
+          newKeys.push(key); specification.sources[i].storage_key = key;
+        }
+        specification.previous_unknown_ids = await previousUnknowns(tx, tenant, publicationDuplicate(specification));
+        const digest = publicationDigest(specification), inserted = (await tx.query(`INSERT INTO publication_previews(tenant_id,project_id,
+          actor_id,actor_auth_version,session_id,specification,payload_sha256,data_mode,expires_at,task_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+          [tenant, project, p.id, p.authVersion, p.sessionId || null, specification, digest, publicationMode(this.db), new Date(Math.min(Date.now() + 10 * 60_000, Date.parse(specification.expires_at))), authority?.taskId ?? null])).rows[0];
+        await audit(tx, p, "publication.preview", inserted.id, "succeeded", { format: draft.format, payload_sha256: digest }, tenant);
+        return { preview_id: inserted.id, payload_sha256: digest, expires_at: inserted.expires_at.toISOString(), operation_expires_at: specification.expires_at,
+          data_mode: publicationMode(this.db), ...publicationContent(specification) };
+      }, tenant, true, p.id);
+      saved = true; return result;
+    } finally {
+      if (!saved) for (const key of newKeys) await this.storage.remove(key).catch(() => {});
+    }
+  }
+  async savePolicy(tx: Tx, p: Principal, tenant: string, project: string, target: string,
+    input: z.infer<typeof publicationPolicyInput>, authorize?: PublicationAuthorizer) {
+    const b = publicationPolicyInput.parse(input);
+    if (p.audience === "admin") {
+      if (!authorize) throw new Problem(403, "PUBLICATION_ADMIN_AUTHORITY_REQUIRED", "Current scoped administrative authority is required");
+      await authorize(tx);
+    } else await publicationProjectAuthority(tx, p, tenant, project, "manage");
+    const targetRow = b.policy.enabled
+      ? (await publicationContext(this.db, tx, p, tenant, project, target, "manage", undefined, authorize)).row
+      : (await tx.query(`SELECT t.* FROM publication_targets t JOIN publication_connection_projects g ON g.connection_id=t.connection_id
+          WHERE t.id=$1 AND t.tenant_id=$2 AND g.project_id=$3 AND g.tenant_id=$2 FOR SHARE OF t,g`, [target, tenant, project])).rows[0];
+    if (!targetRow) throw new Problem(404, "NOT_FOUND", "Publishing account not found");
+    await lockPublicationTarget(tx, tenant, targetRow);
+    const current = await currentPublicationPolicy(tx, project, target);
+    if ((current?.version ?? 0) !== b.expected_version) throw new Problem(409, "VERSION_CONFLICT", "Reload the publishing policy");
+    if (b.policy.enabled && (Date.parse(b.policy.expires_at) <= Date.now() || Date.parse(b.policy.expires_at) > Date.now() + 90 * 86400_000 ||
+        b.policy.formats.some(format => !targetRow.capabilities?.formats?.includes(format))))
+      throw new Problem(422, "PUBLICATION_POLICY_INVALID", "Choose supported formats and an expiry within 90 days");
+    const saved = (await tx.query(`INSERT INTO publication_policies(tenant_id,project_id,connection_id,target_id,version,body,
+      payload_sha256,data_mode,created_by,created_by_audience) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      [tenant, project, targetRow.connection_id, target, b.expected_version + 1, b.policy, publicationDigest(b.policy), publicationMode(this.db), p.id, p.audience])).rows[0];
+    await audit(tx, p, "publication.policy.update", saved.id, "succeeded", { target_id: target, version: saved.version }, tenant);
+    return { id: saved.id, version: saved.version, policy: saved.body, payload_sha256: saved.payload_sha256 };
+  }
+  async prepare(tx: Tx, p: Principal, tenant: string, project: string, input: z.infer<typeof publicationPrepareInput>, taskId?: string) {
+    const b = publicationPrepareInput.parse(input), preview = (await tx.query(`SELECT * FROM publication_previews WHERE id=$1
+      AND tenant_id=$2 AND project_id=$3 AND actor_id=$4 FOR SHARE`, [b.preview_id, tenant, project, p.id])).rows[0];
+    if (!preview || preview.erased_at || preview.expires_at.valueOf() <= Date.now() || preview.actor_auth_version !== p.authVersion ||
+        preview.payload_sha256 !== b.payload_sha256 || preview.data_mode !== publicationMode(this.db))
+      throw new Problem(409, "PUBLICATION_PREVIEW_STALE", "Review a fresh exact publication preview");
+    const s = publicationSpecification.parse(preview.specification);
+    if (taskId && preview.task_id && taskId !== preview.task_id)
+      throw new Problem(409, "PUBLICATION_TASK_BINDING_CHANGED", "Keep the original preview task binding");
+    const boundTask = preview.task_id ?? taskId;
+    if (publicationDigest(s) !== b.payload_sha256) throw new Problem(409, "PUBLICATION_PREVIEW_INTEGRITY", "The preview identity changed");
+    await publicationContext(this.db, tx, p, tenant, project, s.target.id, "write", s);
+    await assertPublicationSources(tx, p, tenant, project, s); await lockPublicationTarget(tx, tenant, s.target);
+    const duplicate = publicationDuplicate(s);
+    if (publicationDigest(await previousUnknowns(tx, tenant, duplicate)) !== publicationDigest(s.previous_unknown_ids))
+      throw new Problem(409, "PUBLICATION_PREVIEW_STALE", "A previous unknown publication changed; review its risk again");
+    const existing = (await tx.query(`SELECT id,actor_id FROM publication_operations WHERE tenant_id=$1 AND duplicate_sha256=$2
+      AND state IN('awaiting_confirmation','queued','preparing','waiting_media','publishing','processing','unknown')`, [tenant, duplicate])).rows[0];
+    if (existing) throw new Problem(409, "PUBLICATION_DUPLICATE", "An unresolved publication already has this exact destination and content",
+      existing.actor_id === p.id ? { operation_id: existing.id } : undefined);
+    await assertPublicationTask(tx, { tenant_id: tenant, project_id: project, actor_id: p.id, task_id: boundTask });
+    const operation = (await tx.query(`INSERT INTO publication_operations(tenant_id,project_id,connection_id,target_id,policy_id,
+      policy_version,actor_id,actor_auth_version,task_id,format,specification,payload_sha256,duplicate_sha256,data_mode,state,expires_at)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'awaiting_confirmation',$15) RETURNING *`,
+      [tenant, project, s.connection_id, s.target.id, s.policy_id, s.policy_version, p.id, p.authVersion, boundTask ?? null,
+        s.draft.format, s, b.payload_sha256, duplicate, publicationMode(this.db), s.expires_at])).rows[0];
+    for (let i = 0; i < s.sources.length; i++) { const source = s.sources[i];
+      await tx.query(`INSERT INTO publication_sources(tenant_id,project_id,operation_id,ordinal,asset_version_id,source_sha256,
+        rendition_key,rendition_sha256,rendition_mime,rendition_bytes) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        [tenant, project, operation.id, i, source.asset_version_id, source.source_sha256, source.storage_key, source.sha256, source.mime, source.bytes]);
+    }
+    await audit(tx, p, "publication.prepare", operation.id, "succeeded", { payload_sha256: b.payload_sha256, task_id: taskId ?? null }, tenant);
+    return publicationMetadata(operation);
+  }
+  async decide(tx: Tx, p: Principal, tenant: string, project: string, id: string, input: z.infer<typeof publicationDecisionInput>) {
+    const b = publicationDecisionInput.parse(input), initial = await publicationOperation(tx, tenant, project, id);
+    if (initial.actor_id !== p.id) throw new Problem(403, "PUBLICATION_OWNER_CONFIRMATION_REQUIRED", "Only the author can confirm this publication");
+    if (b.decision === "reject") {
+      if (initial.payload_sha256 !== b.payload_sha256) throw new Problem(409, "PUBLICATION_CONFIRMATION_STALE", "Review the current publication");
+      return this.cancel(tx, p, tenant, project, id, b.expected_version);
+    }
+    const s = publicationSpecification.parse(initial.specification);
+    await publicationContext(this.db, tx, p, tenant, project, s.target.id, "write", s);
+    await lockPublicationTarget(tx, tenant, s.target);
+    const row = await publicationOperation(tx, tenant, project, id, true);
+    if (row.version !== b.expected_version || row.state !== "awaiting_confirmation" || row.expires_at.valueOf() <= Date.now() ||
+        row.erased_at || row.payload_sha256 !== b.payload_sha256 || publicationDigest(s) !== b.payload_sha256)
+      throw new Problem(409, "PUBLICATION_CONFIRMATION_STALE", "Reload and review the current exact publication");
+    if (s.previous_unknown_ids.length && !b.acknowledge_previous_unknown)
+      throw new Problem(409, "PUBLICATION_PREVIOUS_UNKNOWN", "Explicitly acknowledge the previous unknown publication risk");
+    await assertPublicationSources(tx, p, tenant, project, s);
+    await assertPublicationTask(tx, row);
+    const policy = publicationPolicyBody.parse((await currentPublicationPolicy(tx, project, s.target.id)).body);
+    await assertPublicationAllowance(tx, row, policy.maximum_daily_publications, false);
+    const updated = await updatePublication(tx, row, { state: "queued", confirmed_by: p.id, confirmed_auth_version: p.authVersion,
+      confirmed_at: new Date(), next_check_at: new Date() });
+    await audit(tx, p, "publication.confirm", id, "succeeded", { payload_sha256: row.payload_sha256 }, tenant);
+    return publicationMetadata(updated);
+  }
+  async cancel(tx: Tx, p: Principal, tenant: string, project: string, id: string, version: number, manager = false, authorize?: PublicationAuthorizer) {
+    if (p.audience === "admin") {
+      if (!authorize || !manager) throw new Problem(403, "PUBLICATION_ADMIN_AUTHORITY_REQUIRED", "Current scoped administrative authority is required");
+      await authorize(tx);
+    } else await publicationProjectAuthority(tx, p, tenant, project, manager ? "manage" : "write");
+    const row = await publicationOperation(tx, tenant, project, id, true);
+    if (!manager && row.actor_id !== p.id) throw new Problem(404, "NOT_FOUND", "Publication not found");
+    if (row.version !== version) throw new Problem(409, "VERSION_CONFLICT", "Reload the current publication");
+    if (publicationTerminal.has(row.state)) return publicationMetadata(row);
+    const dispatched = (await tx.query("SELECT 1 FROM publication_effects WHERE operation_id=$1 AND step_key='publish' AND state IN('dispatched','applied','unknown')", [id])).rowCount;
+    if (dispatched || ["publishing", "processing", "unknown"].includes(row.state))
+      throw new Problem(409, "PUBLICATION_ALREADY_DISPATCHED", "Observe the original publication; cancellation cannot undo a dispatched post");
+    const updated = await updatePublication(tx, row, { state: "cancelled", lease_token: null, lease_until: null, finished_at: new Date() });
+    await tx.query("UPDATE publication_media_grants SET revoked_at=clock_timestamp(),encrypted_token=NULL WHERE operation_id=$1 AND revoked_at IS NULL", [id]);
+    await audit(tx, p, "publication.cancel", id, "succeeded", {}, tenant); return publicationMetadata(updated);
+  }
+  async verifyOutgoing(s: PublicationSpecification, signal?: AbortSignal) {
+    for (const source of s.sources) await checkPublicationBytes(this.storage, source.storage_key, source.bytes, source.sha256, signal);
+  }
+}
+/** Serial target admission includes unknown outcomes and accepted video uploads. */
+export async function assertPublicationAllowance(tx: Tx, operation: any, maximum: number, alreadyConfirmed = true) {
+  const s = publicationSpecification.parse(operation.specification);
+  const count = Number((await tx.query(`SELECT count(*)::integer AS n FROM publication_operations o JOIN publication_targets t ON t.id=o.target_id
+    WHERE o.tenant_id=$1 AND t.kind=$2 AND t.external_id=$3 AND o.confirmed_at>clock_timestamp()-interval '24 hours'
+    AND o.state NOT IN('cancelled','expired') AND (o.state<>'failed' OR EXISTS(SELECT 1 FROM publication_effects e WHERE e.operation_id=o.id AND e.step_key='publish' AND e.state='applied'))`,
+    [operation.tenant_id, s.target.kind, s.target.external_id])).rows[0].n);
+  if (count + Number(!alreadyConfirmed) > maximum)
+    throw new Problem(409, "PUBLICATION_DAILY_LIMIT", "The publishing allowance includes queued and unknown operations");
+}

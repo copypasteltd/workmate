@@ -1,0 +1,81 @@
+{
+  "at": "2026-10-30T04:13:00.852Z",
+  "status": "failed",
+  "stage": "actual native Chrome right side panel",
+  "checks": [
+    "Actual Chrome toolbar action opens a right-docked SIDE_PANEL and the customer completes real email OTP and PKCE",
+    "Actual side panel read failure switches language and recovers without clearing the customer identity"
+  ],
+  "errors": [
+    "actual native Chrome right side panel: AssertionError [ERR_ASSERTION]: Actual extension uncertain write"
+  ],
+  "screenshots": [
+    {
+      "path": "copypaste-extension/assets/screenshots/workmate-client-errors-135-06-read-connection-en.png",
+      "sha256": "4d52dec2ac7778b2439993c334b94daeb6c199994edaa139e8ca23eb6458cdec",
+      "source": "Actual right side panel connection error stays in the current language without exposing runtime text",
+      "edited": false
+    },
+    {
+      "path": "copypaste-extension/assets/screenshots/workmate-client-errors-135-06-read-connection-zh.png",
+      "sha256": "bd6bc4ebce10220d22a8be3063e73d8ba5a3c4a88120bb7420406189172efa9b",
+      "source": "The existing actual extension error updates to Traditional Chinese",
+      "edited": false
+    },
+    {
+      "path": "copypaste-extension/assets/screenshots/workmate-client-errors-135-06-failed-sidepanel-state.png",
+      "sha256": "feef065307008ddfe4b437eb2a3c666b6ed60f4d2e8ebb62a688ce6bf4158884",
+      "source": "Unedited actual native side-panel failure state",
+      "edited": false
+    }
+  ],
+  "recordings": [
+    {
+      "component": "extension",
+      "name": "connection-and-retry",
+      "source": "Actual native side panel read failure, locale switch and uncertain write retry",
+      "started_at": "2026-10-30T04:11:51.984Z",
+      "finished_at": "2026-10-30T04:12:25.049Z",
+      "capture_timing": "Actual wall-clock capture intervals; no accelerated or invented response frames",
+      "observed_frames": 175,
+      "distinct_frames": 8,
+      "skipped_capture_errors": 5,
+      "seconds": 34,
+      "width": 360,
+      "height": 838,
+      "files": [
+        {
+          "path": "copypaste-extension/assets/screenshots/workmate-client-errors-135-06-connection-and-retry.mp4",
+          "bytes": 130064,
+          "sha256": "2980b52505e3121cfd9625a0811c67fdba3206fcee9094c8f496e6105fa1ebb6"
+        },
+        {
+          "path": "copypaste-extension/assets/screenshots/workmate-client-errors-135-06-connection-and-retry.gif",
+          "bytes": 526119,
+          "sha256": "69618584ff393725cd98a84b9a94d259e111d5a15b2760e56bad1fed14c333c2"
+        }
+      ],
+      "frame_manifest_sha256": "54653d1a5cfe7fd0c611af09a539f90db581fdd12eac84fbfb740e29b7c8ff95",
+      "raw_capture_directory": "copypaste-delivery/.data/workmate-media/aaa1f3ec-7920-414a-8841-3b8ef0e20d32"
+    }
+  ],
+  "layouts": [
+    {
+      "component": "extension",
+      "width": 360,
+      "document": 360,
+      "context": "SIDE_PANEL",
+      "side": "right"
+    }
+  ],
+  "model_calls": -1,
+  "browser_closed": false,
+  "desktop_closed": false,
+  "extension_closed": true,
+  "api_closed": true,
+  "fixture_closed": true,
+  "limits": [
+    "Actual native PostgreSQL, customer OTP/PKCE, administrator email/TOTP and unsigned Windows package. Business data, retained result bodies and recorded file reads are explicit synthetic fixtures; models do not execute.",
+    "Actual HTTP responses are lost or delayed to exercise recovery and scope changes. Web/Admin enlarged text uses CSS zoom; Desktop uses native webContents zoom. This is not full platform accessibility, a screen-reader or production/signing acceptance. Original TC-095 is assessed separately against these and current backend evidence."
+  ]
+}

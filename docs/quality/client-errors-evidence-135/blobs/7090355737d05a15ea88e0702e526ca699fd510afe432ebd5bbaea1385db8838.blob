@@ -1,0 +1,210 @@
+import { setTimeout as delay } from "node:timers/promises";
+import { z } from "zod";
+import type { Database, Tx } from "./db.js";
+import type { Principal } from "./auth.js";
+import { audit } from "./auth.js";
+import { projectAccess, replay } from "./access.js";
+import { canonical, hash, Problem } from "./lib.js";
+import { audioListQuery, wellFormedAudioText } from "./audio-production-model.js";
+
+export const audioAuthorizationDecision = z.object({
+  expected_revision: z.number().int().positive(),
+  specification_hash: z.string().regex(/^[a-f0-9]{64}$/),
+  quoted_micros: z.string().regex(/^[1-9][0-9]{0,15}$/),
+}).strict();
+const humanText = (max: number) => z.string().trim().min(3).max(max)
+  .refine(value => [...value].length >= 3 && wellFormedAudioText(value) && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value));
+export const audioAuthorizationConfirm = audioAuthorizationDecision.extend({
+  confirm_authorized_use: z.literal(true),
+  rights_reference: humanText(300),
+  purpose: humanText(1000),
+}).strict();
+export type AudioAuthorizationCheck = (tx: Tx, row: any, active: boolean) => Promise<unknown>;
+const unavailable = (code = "AUDIO_AUTHORIZATION_UNAVAILABLE") =>
+  new Problem(409, code, "This audio authorization is unavailable; no new audio request will be submitted");
+
+/** Only a current browser/native customer session may confirm. This service is
+ * absent from Codex tools. Human waiting holds no database connection, new
+ * provider slot or additional AI turn. */
+export class AudioAuthorizations {
+  constructor(private db: Database, private check: AudioAuthorizationCheck) {}
+
+  async proposal(tx: Tx, task: any, spec: any, callId: string, cap: any, fingerprint: string,
+    source: any, probe: any, units: number) {
+    const digest = hash(canonical(spec));
+    const existing = (await tx.query(`SELECT * FROM audio_authorizations
+      WHERE task_id=$1 AND (call_id=$2 OR specification_hash=$3) ORDER BY created_at,id LIMIT 1`,
+    [task.id, callId, digest])).rows[0];
+    if (existing) {
+      if (existing.specification_hash !== digest || existing.capability_version_id !== cap.id
+        || existing.model_alias !== cap.body.model_alias || existing.gateway_fingerprint !== fingerprint
+        || existing.source_sha256 !== (source?.sha256 ?? null) || Number(existing.quoted_units) !== units
+        || Number(existing.rate_micros) !== cap.body.rates[0]) throw unavailable("AUDIO_REPLAY_CHANGED");
+      return existing;
+    }
+    const count = (await tx.query("SELECT count(*)::int AS total FROM audio_authorizations WHERE task_id=$1", [task.id])).rows[0];
+    if (count.total >= 8) throw unavailable("AUDIO_AUTHORIZATION_REQUEST_LIMIT");
+    return (await tx.query(`INSERT INTO audio_authorizations(tenant_id,project_id,task_id,actor_id,actor_auth_version,
+      private_owner,origin_fencing,origin_attempt,data_mode,call_id,capability_version_id,model_alias,gateway_fingerprint,
+      specification,specification_hash,source_asset_id,source_version,source_sha256,source_probe,quoted_units,rate_micros,quoted_micros)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$20::bigint*$21::bigint) RETURNING *`,
+    [task.tenant_id, task.project_id, task.id, task.created_by, task.actor_auth_version, task.private_owner,
+      task.fencing_token, task.attempt, task.data_mode, callId, cap.id, cap.body.model_alias, fingerprint,
+      spec, digest, source?.asset_id ?? null, spec.kind === "transcription" ? spec.source.version : null,
+      source?.sha256 ?? null, probe, units, cap.body.rates[0]])).rows[0];
+  }
+
+  private async owner(tx: Tx, actor: Principal, tenant: string, project: string, id: string, write: boolean) {
+    await projectAccess(tx, actor, tenant, project, write ? "write" : "read");
+    // Match the worker's lock order: task, authorization, audio job.
+    const t = (await tx.query(`SELECT t.* FROM tasks t JOIN audio_authorizations a ON a.task_id=t.id
+      WHERE a.id=$1 AND a.tenant_id=$2 AND a.project_id=$3 AND a.actor_id=$4 AND a.data_mode=$5
+      AND t.content_state='active' AND (t.private_owner IS NULL OR t.private_owner=$4) ${write ? "FOR UPDATE OF t" : ""}`,
+    [id, tenant, project, actor.id, this.db.config.DEMO_MODE ? "simulated" : "configured_services"])).rows[0];
+    if (!t) throw new Problem(404, "NOT_FOUND", "Audio authorization not found");
+    await tx.query("SELECT set_config('app.task_id',$1,true)", [t.id]);
+    const row = (await tx.query(`SELECT * FROM audio_authorizations WHERE id=$1 ${write ? "FOR UPDATE" : ""}`, [id])).rows[0];
+    if (!row || row.erased_at) throw new Problem(410, "CONTENT_DELETED", "Audio authorization was removed");
+    return row;
+  }
+
+  metadata(row: any, body = true) {
+    return { id: row.id, task_id: row.task_id, state: row.state, revision: row.revision,
+      specification_hash: row.specification_hash, capability_version_id: row.capability_version_id,
+      model_alias: row.model_alias, data_mode: row.data_mode, quoted_units: String(row.quoted_units),
+      rate_micros: String(row.rate_micros), quoted_micros: String(row.quoted_micros),
+      pricing_unit: row.specification.kind === "speech" ? "unicode_scalar" : "input_millisecond",
+      created_at: row.created_at, expires_at: row.expires_at, confirmed_at: row.confirmed_at,
+      decision_reason: row.decision_reason, confirmation_hash: row.confirmation_hash,
+      ...(body ? { proposal: row.specification, confirmation: row.confirmation,
+        source: row.source_asset_id ? { asset_id: row.source_asset_id, version: row.source_version,
+          sha256: row.source_sha256, duration_ms: row.source_probe?.duration_ms } : null } : {}) };
+  }
+
+  async list(actor: Principal, tenant: string, project: string, input: unknown) {
+    const q = audioListQuery.parse(input);
+    return this.db.tx(async tx => {
+      await projectAccess(tx, actor, tenant, project);
+      const rows = (await tx.query(`SELECT a.* FROM audio_authorizations a JOIN tasks t ON t.id=a.task_id
+        WHERE a.tenant_id=$1 AND a.project_id=$2 AND a.actor_id=$3 AND a.data_mode=$4
+        AND t.content_state='active' AND (t.private_owner IS NULL OR t.private_owner=$3) AND a.erased_at IS NULL
+        AND ($5::uuid IS NULL OR a.task_id=$5) AND ($6::uuid IS NULL OR a.id<$6) ORDER BY a.id DESC LIMIT $7`,
+      [tenant, project, actor.id, this.db.config.DEMO_MODE ? "simulated" : "configured_services", q.task_id ?? null, q.cursor ?? null, q.limit + 1])).rows;
+      return { items: rows.slice(0, q.limit).map(row => this.metadata(row)),
+        next_cursor: rows.length > q.limit ? rows[q.limit - 1].id : null };
+    }, tenant, true, actor.id);
+  }
+
+  async read(actor: Principal, tenant: string, project: string, id: string) {
+    return this.db.tx(async tx => this.metadata(await this.owner(tx, actor, tenant, project, id, false)), tenant, true, actor.id);
+  }
+
+  async decide(actor: Principal, tenant: string, project: string, id: string,
+    action: "confirm" | "decline" | "withdraw", input: unknown, requestKey: string) {
+    const b = action === "confirm" ? audioAuthorizationConfirm.parse(input) : audioAuthorizationDecision.parse(input);
+    if (!actor.sessionId || !actor.sessionHash || !["user", "native"].includes(actor.audience))
+      throw new Problem(403, "CUSTOMER_SESSION_REQUIRED", "A current customer session must independently confirm this operation");
+    return this.db.tx(async tx => {
+      const row = await this.owner(tx, actor, tenant, project, id, true);
+      const session = (await tx.query(`SELECT s.id FROM sessions s JOIN users u ON u.id=s.user_id
+        WHERE s.id=$1 AND s.token_hash=$2 AND s.user_id=$3 AND s.audience=$4 AND s.revoked_at IS NULL
+        AND s.expires_at>clock_timestamp() AND s.auth_version=$5 AND u.auth_version=$5 AND u.status='active' FOR SHARE OF s,u`,
+      [actor.sessionId, actor.sessionHash, actor.id, actor.audience, actor.authVersion])).rows[0];
+      if (!session) throw new Problem(403, "CUSTOMER_SESSION_REQUIRED", "This customer session is no longer current");
+      // Replays return current state, never a stale confirmed response after
+      // withdrawal. The replay itself retains no proposal or confirmation body.
+      await replay(tx, actor.id, "audio.authorization." + action + ":" + id, requestKey, b, async () => {
+        if (row.revision !== b.expected_revision || row.specification_hash !== b.specification_hash || String(row.quoted_micros) !== b.quoted_micros)
+          throw unavailable("AUDIO_AUTHORIZATION_REVISION_CONFLICT");
+        if (action === "confirm") {
+          if (row.state !== "pending" || new Date(row.expires_at).getTime() <= Date.now()) throw unavailable();
+          await this.check(tx, row, true);
+          await tx.query("SELECT set_config('app.audio_confirmation_session_id',$1,true),set_config('app.audio_confirmation_session_hash',$2,true)",
+            [actor.sessionId, actor.sessionHash]);
+          const c = audioAuthorizationConfirm.parse(b), confirmation = {
+            confirm_authorized_use: true, rights_reference: c.rights_reference, purpose: c.purpose,
+          };
+          await tx.query(`UPDATE audio_authorizations SET state='confirmed',confirmed_by=$2,confirmed_session_id=$3,
+            confirmed_at=clock_timestamp(),confirmation=$4,confirmation_hash=$5,decided_by=$2,decided_at=clock_timestamp(),
+            decision_reason='CUSTOMER_CONFIRMED',revision=revision+1 WHERE id=$1`,
+          [id, actor.id, actor.sessionId, confirmation, hash(canonical(confirmation))]);
+        } else {
+          if (action === "decline" ? row.state !== "pending" : !["pending", "confirmed"].includes(row.state)) throw unavailable();
+          await tx.query(`UPDATE audio_authorizations SET state=$2,decision_reason=$3,decided_by=$4,
+            decided_at=clock_timestamp(),revision=revision+1 WHERE id=$1`,
+          [id, action === "decline" ? "declined" : "withdrawn", action === "decline" ? "CUSTOMER_DECLINED" : "CUSTOMER_WITHDREW", actor.id]);
+        }
+        await audit(tx, actor, "audio.authorization." + action, id, "succeeded",
+          { specification_hash: row.specification_hash, quoted_micros: String(row.quoted_micros) }, tenant);
+        return { id, action };
+      });
+      return this.metadata((await tx.query("SELECT * FROM audio_authorizations WHERE id=$1", [id])).rows[0]);
+    }, tenant, true, actor.id);
+  }
+
+  async wait(task: any, id: string, authorize: (tx: Tx) => Promise<unknown>, signal?: AbortSignal) {
+    try {
+      for (;;) {
+        signal?.throwIfAborted();
+        const row = await this.db.tx(async tx => {
+          await authorize(tx);
+          // Customer decisions and origin checks lock the task before its
+          // authorization. Enforce that order even when the caller's access
+          // check does not take a task row lock.
+          await tx.query("SELECT id FROM tasks WHERE id=$1 FOR UPDATE", [task.id]);
+          const a = (await tx.query("SELECT * FROM audio_authorizations WHERE id=$1 AND task_id=$2 FOR UPDATE", [id, task.id])).rows[0];
+          if (!a) throw unavailable();
+          if (["pending", "confirmed"].includes(a.state)) {
+            await this.check(tx, a, true);
+            if (new Date(a.expires_at).getTime() <= Date.now()) {
+              return (await tx.query(`UPDATE audio_authorizations SET state=$2,decision_reason='CUSTOMER_CONFIRMATION_TIMEOUT',
+                decided_by=NULL,decided_at=clock_timestamp(),revision=revision+1 WHERE id=$1 RETURNING *`,
+              [id, a.state === "pending" ? "expired" : "cancelled"])).rows[0];
+            }
+          }
+          return a;
+        }, task.tenant_id, true, task.created_by);
+        if (row.state === "confirmed") return;
+        if (row.state !== "pending") throw unavailable("AUDIO_AUTHORIZATION_" + row.state.toUpperCase());
+        await delay(500, undefined, { signal });
+      }
+    } catch (error) {
+      await this.cancel(id, "AUDIO_ORIGIN_OR_WAIT_ENDED");
+      throw error;
+    }
+  }
+
+  async cancel(id: string, reason: string) {
+    await this.db.tx(async tx => {
+      const a = (await tx.query("SELECT task_id FROM audio_authorizations WHERE id=$1", [id])).rows[0];
+      if (!a) return;
+      await tx.query("SELECT id FROM tasks WHERE id=$1 FOR UPDATE", [a.task_id]);
+      await tx.query(`UPDATE audio_authorizations SET state='cancelled',decision_reason=$2,decided_by=NULL,
+        decided_at=clock_timestamp(),revision=revision+1 WHERE id=$1 AND state IN('pending','confirmed')`, [id, reason]);
+    }, undefined, true);
+  }
+
+  async recover() {
+    return this.db.tx(async tx => {
+      const rows = (await tx.query(`SELECT a.id,a.task_id FROM audio_authorizations a JOIN tasks t ON t.id=a.task_id
+        WHERE a.state IN('pending','confirmed') AND a.data_mode=$1
+        AND (a.expires_at<=clock_timestamp() OR t.status<>'running' OR t.fencing_token IS DISTINCT FROM a.origin_fencing
+          OR t.attempt<>a.origin_attempt OR t.lease_until<=clock_timestamp() OR t.cancel_requested OR t.content_state<>'active')
+        AND NOT EXISTS(SELECT 1 FROM ai_audio_jobs j WHERE j.authorization_id=a.id AND j.state IN('dispatched','completed','unknown'))
+        ORDER BY a.task_id,a.id`, [this.db.config.DEMO_MODE ? "simulated" : "configured_services"])).rows;
+      let changed = 0;
+      for (const row of rows) {
+        await tx.query("SELECT id FROM tasks WHERE id=$1 FOR UPDATE", [row.task_id]);
+        changed += (await tx.query(`UPDATE audio_authorizations SET state=CASE WHEN state='pending' AND expires_at<=clock_timestamp()
+          THEN 'expired' ELSE 'cancelled' END,decision_reason='AUDIO_ORIGIN_OR_DEADLINE_ENDED',decided_by=NULL,
+          decided_at=clock_timestamp(),revision=revision+1 WHERE id=$1 AND state IN('pending','confirmed')
+          AND (expires_at<=clock_timestamp() OR EXISTS(SELECT 1 FROM tasks t WHERE t.id=audio_authorizations.task_id
+            AND (t.status<>'running' OR t.fencing_token IS DISTINCT FROM audio_authorizations.origin_fencing
+              OR t.attempt<>audio_authorizations.origin_attempt OR t.lease_until<=clock_timestamp()
+              OR t.cancel_requested OR t.content_state<>'active')))
+          AND NOT EXISTS(SELECT 1 FROM ai_audio_jobs j WHERE j.authorization_id=$1 AND j.state IN('dispatched','completed','unknown'))`, [row.id])).rowCount ?? 0;
+      }
+      return changed;
+    }, undefined, true);
+  }
+}

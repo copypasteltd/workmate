@@ -1,5 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- client-errors-stage135 -->
+阶段135发布使用`docs/tools/prepare_client_errors_publication_135_v1.py`及`docs/tools/publish_client_errors_135_v1.py --push`。保留383134条既有证明身份及阶段134实际原子推送回执；只核查本轮新增对象、当前／新增提交路径和全部当前README链接。发布当前四端连接与身份恢复源码、30项实际旅程、20截图及7组实时GIF／MP4；原失败、旧验证码脚本及旧验收文字不改写。六个组件保持独立仓库，普通原子更新八引用并读取远端SHA。12份用户未跟踪文件及Desktop根属性保持原字节，不强推，不将定向检查当作全产品完成。
+
+Stage135 preserves all 383134 historical proof identities and the actual Stage134 atomic publication receipt. It audits new objects/current paths/README destinations and ordinarily pushes eight refs with SHA readback. Current four-client recovery, source-bound captures, original failed attempts and historical verifiers retain their actual scope. User-owned files and Desktop root attributes stay byte-identical; full acceptance remains open.
+
 <!-- support-recovery-stage134 -->
 阶段134补齐客户授权响应丢失／刷新／企业切换恢复及支持页面放大布局；按原始十二条条件完成REQ-095／TC-095独立综合验收，其他需求保留自身边界。65项后台相关检查、1项原生桥边界、18项实际多端旅程、10条构建、9截图和5组实时GIF／MP4绑定确切源码，三次失败及原安装包／录制保留。`docs/tools/prepare_support_recovery_publication_134_v2.py`保留379563条历史证明身份并生成本轮切片；`docs/tools/publish_support_recovery_134_v2.py --push`执行已授权的普通原子八引用更新及远端SHA读取。阶段131完整历史扫描仍为历史基线；本轮只独立核查新增对象、全部当前／新增提交路径及README链接。12份用户未跟踪文件和Desktop根属性保持原字节，不强推。
 
