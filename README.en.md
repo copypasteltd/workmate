@@ -1,5 +1,8 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- current-test-entry-141 -->
+The default `npm test` now selects the latest numeric attempt for each stage-versioned suite. Inspect it with `npm test -- --list`. Original failed attempts remain intact and can be explicitly run with `node scripts/run-tests-owned.mjs tests/<file>`. Six end-to-end selection checks and the actual npm entry verify that historical failures stay out of daily checks; the current canvas/video runtime qualification remains Stage140.
+
 <!-- creative-packages-stage140 -->
 ## Project packages & restore · Stage140
 

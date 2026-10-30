@@ -1,5 +1,8 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- current-test-entry-141 -->
+默认 `npm test` 自动选用各阶段测试组的最新数字版本，可用 `npm test -- --list` 查看。原失败尝试保持原字节，可通过 `node scripts/run-tests-owned.mjs tests/<文件>` 显式复现。六项端到端入口检查及实际 npm 入口确认旧失败不会混入日常检查；画布和影片运行时验证仍采用阶段140的真实三端记录。
+
 <!-- creative-packages-stage140 -->
 ## 工程打包与恢复 · 阶段140
 
