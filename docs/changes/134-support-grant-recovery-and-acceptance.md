@@ -37,3 +37,5 @@ Web 和原生 Desktop 的客服授权现在可以处理提交结果不明的情�
 ![实际同资料键盘重试](../../dev/copypaste-web/assets/screenshots/workmate-support-recovery-134-04-fixed-intent-retry.gif)
 
 ![实际后台200%放大](../../dev/copypaste-admin/assets/screenshots/workmate-support-recovery-134-04-support-en-200.png)
+
+发布核查V1在执行任何推送前发现报告目录白名单仍指向阶段133，原失败回执、完整日志及准备清单已归档于[发布失败原件](../quality/support-recovery-publication-failure-134/index.json)。V2只修正发布工具与累计证明准备：实际远端基线仍为阶段133，所有本机已提交改动及原V1清单／分片保留；`stage13402`仅是阶段134第二次发布尝试的证明存储命名，不代表另一次产品开发。产品源码与已通过的验收字节没有变化。
