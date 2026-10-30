@@ -15,6 +15,7 @@ import { AdminPublications } from "./publications";
 import { AdminNativeRecovery } from "./native-recovery";
 import { AdminDesktopUpdates } from "./desktop-updates";
 import { AdminSolutions } from "./solutions";
+import { AdminConversationHistory } from "./conversation-history";
 import {
   AdminContentRevision,
   AdminRevisionRecovery,
@@ -2420,8 +2421,10 @@ function AdminDialog({
   const { t } = useI18n(),
     a = useAdmin();
   const body = useData(
-    kind === "body" ? "/v1/admin/content/" + row?.id + "/body" : null,
+    kind === "body" && !["conversations", "agents", "memories"].includes(row?.kind) ? "/v1/admin/content/" + row?.id + "/body" : null,
   );
+  if (kind === "body" && ["conversations", "agents", "memories"].includes(row?.kind))
+    return <AdminConversationHistory id={row.id} kind={row.kind} access={a} onClose={onClose}/>;
   if (kind === "revision")
     return (
       <AdminContentRevision
