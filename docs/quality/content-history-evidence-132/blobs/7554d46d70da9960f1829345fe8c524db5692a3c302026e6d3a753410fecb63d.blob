@@ -1,0 +1,327 @@
+import { before, after, test } from "node:test";
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { readFile, access, realpath } from "node:fs/promises";
+import path from "node:path";
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+import { loadConfig } from "../src/config.js";
+import { buildApp } from "../src/server.js";
+import { advanceSeoAudits } from "../src/seo-audits.js";
+import { Worker } from "../src/worker.js";
+import {
+  CodexRuntimeAdapter,
+  type RuntimeContext,
+  type RuntimeResult,
+} from "../src/runtime.js";
+import { ErasureService } from "../src/erasure.js";
+import { giveSeoStorageLimit } from "./seo-quota-fixture.js";
+import { hash } from "../src/lib.js";
+import { cancelUnavailableSeoChanges } from "../src/seo-changes.js";
+import { withOwnedNativeProcesses, interceptNativeRPC } from "./native-runtime-faults.js";
+
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>,
+  s: Awaited<ReturnType<typeof buildApp>>,
+  clock = Date.now();
+type Client = { id: string; cookie: string; csrf: string };
+before(async () => {
+  isolated = await isolatedTestEnvironment();
+  s = await buildApp(
+    loadConfig({
+      ...isolated.env,
+      NODE_ENV: "test",
+      DEMO_MODE: "true",
+      WORKER_ENABLED: "false",
+      DEV_MAILBOX: "true",
+    }),
+    { worker: false },
+  );
+  for (const method of ["initialize", "thread/start"] as const) {
+    const prepareAt = performance.now();
+    const f = await website(), c = await save(f);
+    const reservation = (await s.db.control.query("SELECT * FROM reservations WHERE task_id=$1", [c.task_id])).rows;
+    recoveryFixtures.set(method, { f, c, reservation });
+    console.log("# recovery_fixture_timing " + JSON.stringify({ method, elapsed_ms: Math.round(performance.now() - prepareAt) }));
+  }
+}, { timeout: 900000 });
+after(async () => {
+  try {
+    await s?.app.close();
+  } finally {
+    await isolated?.cleanup();
+  }
+});
+async function call(
+  client: Client | undefined,
+  method: string,
+  url: string,
+  body?: unknown,
+  tenant?: string,
+  requestKey = randomUUID(),
+) {
+  const raw = await s.app.inject({
+    method: method as any,
+    url,
+    headers: {
+      origin: s.db.config.WEB_ORIGIN,
+      "idempotency-key": requestKey,
+      ...(client ? { cookie: client.cookie, "x-csrf-token": client.csrf } : {}),
+      ...(tenant ? { "x-tenant-id": tenant } : {}),
+      ...(body === undefined ? {} : { "content-type": "application/json" }),
+    },
+    ...(body === undefined ? {} : { payload: JSON.stringify(body) }),
+  });
+  return {
+    status: raw.statusCode,
+    data: raw.headers["content-type"]?.includes("application/json")
+      ? raw.json()
+      : raw.body,
+    raw,
+  };
+}
+const ok = (r: Awaited<ReturnType<typeof call>>, status = 200) => {
+  assert.equal(r.status, status, JSON.stringify(r.data));
+  return r.data;
+};
+async function user(): Promise<Client> {
+  const challenge = ok(
+    await call(undefined, "POST", "/v1/auth/challenge", {
+      email: `seo-${randomUUID()}@example.invalid`,
+    }),
+  );
+  const mail = JSON.parse(
+    await readFile(
+      `${s.db.config.DATA_DIR}/mailbox/${challenge.challenge_id}.json`,
+      "utf8",
+    ),
+  );
+  const response = await call(undefined, "POST", "/v1/auth/verify", {
+    challenge_id: challenge.challenge_id,
+    code: mail.text.match(/\b\d{6}\b/)[0],
+  });
+  const body = ok(response);
+  return {
+    id: body.user.id,
+    cookie: response.raw.cookies[0].name + "=" + response.raw.cookies[0].value,
+    csrf: body.csrf_token,
+  };
+}
+async function fixture(credit = true) {
+  const owner = await user(),
+    workspace = ok(
+      await call(owner, "POST", "/v1/tenants", {
+        name: "Scoped SEO QA",
+        project_name: "Campaign website",
+      }),
+    );
+  const tenant = workspace.tenant.id as string,
+    project = workspace.project.id as string,
+    base = `/v1/tenants/${tenant}/projects/${project}`;
+  if (credit)
+    ok(await call(owner, "POST", `/v1/tenants/${tenant}/demo-credit`, {}));
+  const agent = ok(await call(owner, "POST", base + "/analysis/assistant", {}));
+  const body = {
+    project_id: project,
+    agent_id: agent.id,
+    input: {
+      prompt: "Diagnose the campaign website and retain exact source evidence",
+      start_urls: ["https://marketing.example.invalid/"],
+      allowed_hosts: ["marketing.example.invalid"],
+      max_pages: 10,
+    },
+    budget: { currency: "HKD", amount_micros: "1000000" },
+  };
+  return { owner, tenant, project, base, agent, body };
+}
+type Fixture = Awaited<ReturnType<typeof fixture>>;
+const create = async (f: Fixture, body = f.body) =>
+  ok(await call(f.owner, "POST", "/v1/seo/audits", body, f.tenant), 202);
+async function drain(f: Fixture, id: string) {
+  for (let n = 0; n < 180; n++) {
+    const state = ok(
+      await call(f.owner, "GET", "/v1/seo/audits/" + id, undefined, f.tenant),
+    );
+    if (!["queued", "running"].includes(state.state)) return state;
+    clock = Math.max(clock + 1100, Date.parse(state.progress.next_attempt_at));
+    await advanceSeoAudits(s.db, s.catalog, s.storage, { now: () => clock });
+  }
+  throw new Error("The persisted SEO queue exceeded its fixture bound");
+}
+async function findings(f: Fixture, id: string) {
+  return ok(
+    await call(
+      f.owner,
+      "GET",
+      `/v1/seo/audits/${id}/findings`,
+      undefined,
+      f.tenant,
+    ),
+  );
+}
+class FixtureRuntime extends CodexRuntimeAdapter {
+  calls = 0;
+  constructor(
+    private invalid = false,
+    private unread = false,
+  ) {
+    super(s.db.config);
+  }
+  override async start(context: RuntimeContext): Promise<RuntimeResult> {
+    this.calls++;
+    assert.ok(context.prompt.includes("frozen, scoped SEO"));
+    assert.deepEqual(
+      context.tools.map((t) => t.name),
+      ["seo_audit_facts"],
+    );
+    const facts = (await context.tools[0].run(
+      {},
+      "seo-facts-" + randomUUID(),
+    )) as any;
+    const id = this.unread ? randomUUID() : facts.coverage.id;
+    return {
+      status: "completed",
+      text: JSON.stringify({
+        observations: [
+          {
+            text:
+              (this.invalid ? "Invented 999 " : "Scope and coverage: ") +
+              `{{${id}}}`,
+            evidence_ids: [id],
+          },
+        ],
+        hypotheses: [],
+        next_steps: [
+          "Review the retained URL evidence before authorizing website changes.",
+        ],
+      }),
+      inputTokens: 100,
+      outputTokens: 100,
+      usageKnown: true,
+      accepted: true,
+      thread: "synthetic-seo-thread",
+      turn: "synthetic-seo-turn",
+    };
+  }
+}
+
+async function website(interpret = true) {
+  const f = await fixture();
+  if (!interpret)
+    await giveSeoStorageLimit(s, f.tenant, f.agent.role_key, 8 * 1024 * 1024);
+  const audit = await create(f);
+  await drain(f, audit.id);
+  if (interpret) {
+    await new Worker(s.db, s.catalog, s.storage, new FixtureRuntime()).run(
+      f.tenant,
+      audit.task_id,
+    );
+    const completed = (
+      await s.db.control.query(
+        "SELECT status,lease_until FROM tasks WHERE id=$1",
+        [audit.task_id],
+      )
+    ).rows[0];
+    assert.equal(completed.status, "succeeded");
+    assert.equal(
+      completed.lease_until,
+      null,
+      "Completed work cannot retain a late heartbeat lease",
+    );
+  }
+  const current = ok(
+    await call(
+      f.owner,
+      "GET",
+      `/v1/seo/audits/${audit.id}`,
+      undefined,
+      f.tenant,
+    ),
+  );
+  const issues = (await findings(f, audit.id)).items as any[];
+  assert.ok(
+    issues.length >= 3,
+    "Use actual retained findings from the native HTTP fixture",
+  );
+  return {
+    ...f,
+    audit: current,
+    issues,
+    route: `/v1/seo/audits/${audit.id}/change-tasks`,
+  };
+}
+type Website = Awaited<ReturnType<typeof website>>;
+const request = (f: Website) => ({
+  agent_id: f.agent.id,
+  source_result_version_id: f.audit.result_asset_version_id,
+  title: "Review campaign website repairs",
+  objective:
+    "Draft source corrections and manual verification for the selected website findings.",
+  finding_ids: f.issues.slice(0, 3).map((issue) => issue.id),
+  budget: f.body.budget,
+});
+async function save(f: Website, b = request(f), key = randomUUID()) {
+  return ok(await call(f.owner, "POST", f.route, b, f.tenant, key), 202);
+}
+async function detail(f: Website, id: string) {
+  return ok(
+    await call(f.owner, "GET", f.route + "/" + id, undefined, f.tenant),
+  );
+}
+// Prepare real private source evidence and its persisted reservation in the
+// fixture hook. The recovery and ledger assertions retain their 120s bound;
+// the preparation duration is recorded separately, never counted as a pass.
+const recoveryFixtures = new Map<string, { f: Website; c: any; reservation: any[] }>();
+
+for (const method of ["initialize", "thread/start"] as const)
+test(`native ${method} recovery retains one worker attempt, reservation, inference authority and final charge`, { timeout: 120000 }, async t => {
+  const { f, c, reservation } = recoveryFixtures.get(method)!;
+  const executionAt = performance.now();
+  assert.equal(reservation.length, 1); assert.equal(reservation[0].status, "reserved");
+  const executable = await realpath(s.db.config.CODEX_BIN);
+  const workspace = path.resolve(s.db.config.DATA_DIR, "runs", f.tenant, c.task_id);
+  class ObservedRuntime extends CodexRuntimeAdapter {
+    override start(context: RuntimeContext) {
+      return super.start({ ...context, signal: AbortSignal.any([context.signal, t.signal]), onEvent: async (kind, body: any) => {
+        if (["runtime.phase", "runtime.rpc.failed", "runtime.startup.retry", "runtime.thread", "runtime.turn", "gateway.request_rejected"].includes(kind))
+          console.log("# recovery_native_diagnostic " + JSON.stringify({ elapsed_ms: Math.round(performance.now() - executionAt), kind,
+            phase: body.phase, code: body.code, method: body.method, attempt: body.attempt }));
+        await context.onEvent(kind, body);
+      } });
+    }
+  }
+  await withOwnedNativeProcesses(executable, workspace, (row, index) => {
+    let signalSent: boolean | undefined;
+    if (index === 1) {
+      if (method === "initialize") signalSent = row.child.kill("SIGKILL");
+      else interceptNativeRPC(row, method, (_request, complete) => { complete(); row.child.kill("SIGKILL"); });
+    }
+    console.log("# recovery_owned_native " + JSON.stringify({ method, index, signal_sent: signalSent }));
+    if (index !== 1) assert.equal(index, 2);
+  }, async owned => {
+    await new Worker(s.db, s.catalog, s.storage, new ObservedRuntime(s.db.config)).run(f.tenant, c.task_id);
+    const task = (await s.db.control.query("SELECT * FROM tasks WHERE id=$1", [c.task_id])).rows[0];
+    const change = await detail(f, c.id);
+    console.log("# recovery_task_diagnostic " + JSON.stringify({ state: change.state, status: task.status, error_code: task.error_code, owned_processes: owned.length }));
+    assert.equal(change.state, "draft_ready");
+    assert.equal(owned.length, 2); assert.ok(owned.every(row => row.closed));
+    assert.equal(task.status, "succeeded"); assert.equal(task.attempt, 1);
+    const requests = (await s.db.control.query("SELECT * FROM ai_gateway_requests WHERE task_id=$1", [c.task_id])).rows;
+    assert.ok(requests.length > 0);
+    assert.ok(requests.every(r => r.attempt === task.attempt && r.fencing_token === task.fencing_token
+      && r.state === "completed" && r.usage_known === true));
+    assert.equal(BigInt(task.input_tokens), requests.reduce((n, r) => n + BigInt(r.input_tokens), 0n));
+    assert.equal(BigInt(task.output_tokens), requests.reduce((n, r) => n + BigInt(r.output_tokens), 0n));
+    const events = (await s.db.control.query("SELECT kind,body FROM task_events WHERE task_id=$1 ORDER BY seq", [c.task_id])).rows;
+    for (const kind of ["runtime.startup.retry", "runtime.thread", "runtime.turn", "task.started", "task.finished"])
+      assert.equal(events.filter(e => e.kind === kind).length, 1, kind);
+    const diagnostic = events.find(e => e.kind === "runtime.rpc.failed")?.body;
+    assert.equal(diagnostic?.method, method); assert.equal(diagnostic?.provider_requests, 0);
+    await s.worker.run(f.tenant, c.task_id);
+    assert.equal(owned.length, 2, "A finished task must not restart after recovery");
+    const settled = (await s.db.control.query("SELECT * FROM reservations WHERE task_id=$1", [c.task_id])).rows;
+    assert.equal(settled.length, 1); assert.equal(settled[0].status, "settled");
+    assert.equal(settled[0].journal_entry_id, reservation[0].journal_entry_id);
+    assert.equal(settled[0].amount_micros, reservation[0].amount_micros);
+    assert.equal((await s.db.control.query("SELECT count(*)::int n FROM ledger WHERE task_id=$1 AND kind='charge'", [c.task_id])).rows[0].n, 1);
+  });
+  console.log("# recovery_execution_timing " + JSON.stringify({ elapsed_ms: Math.round(performance.now() - executionAt), limit_ms: 120000 }));
+});

@@ -1,5 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- content-history-stage132 -->
+阶段132以`docs/tools/prepare_content_history_publication_132_v1.py`绑定当前后台历史源码、54项相关后端检查、9项实际界面旅程、双语指南及真实截图/实时GIF。使用`docs/tools/publish_content_history_132_v1.py --push`按既有授权普通原子更新八个映射引用，并读取远端SHA。阶段131的已发布完整历史检查作为明确的历史基线；本轮独立检查新增历史对象、全部当前文件路径和双语README链接，不宣称重新扫描旧历史。阶段128、130、131所有证明分片、失败和原始字节保留。用户未跟踪文件排除于提交并核对原字节；不强推。所有完整验收记录继续开放。
+
+Stage132 binds the exact administrator history sources, 54 related backend checks, 9 actual UI journey checks, bilingual guides and real captures. Its publisher ordinarily updates eight refs atomically and verifies remote SHAs. The published Stage131 complete-history scan remains an explicitly historical baseline; this increment scans new history objects, every current path and current README links. All original proof layers, failed runs and user-owned untracked bytes are preserved. Earlier publication sections below describe their own historical scope.
+
 <!-- startup-recovery-stage128 -->
 阶段128使用 `dev/copypaste-delivery/scripts/publish-workmate-v11.mjs` 和 `docs/tools/audit_workmate_publication_v11.py`，校验本机启动恢复、匹配的原生 Codex/SQL/窗口证据及全部保留的历史证明后，普通原子推送六端和 `docs`／`main` 八个远端引用。中央文档工作区中与本轮无关的未跟踪用户文件保持原样，不纳入提交；发布记录列出这些保留路径。已跟踪修改必须先提交。执行位置及数据流仍遵守 CLIENT01。
 

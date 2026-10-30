@@ -1,0 +1,3018 @@
+{
+  "normative_source_sha256": "6c4c28875779a72c7c62b93db573e70e736e789812dd94419ebb07f0bbee2299",
+  "schemas": {
+    "AdminOperation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "pending_approval",
+            "queued",
+            "running",
+            "succeeded",
+            "partially_succeeded",
+            "failed",
+            "cancelled",
+            "reconciling"
+          ]
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "result_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "error_code": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "action",
+        "target_ids",
+        "actor_id",
+        "state",
+        "payload_hash",
+        "policy_version_id",
+        "version",
+        "created_at",
+        "result_ids"
+      ],
+      "additionalProperties": false
+    },
+    "Capability": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "llm",
+            "image",
+            "video",
+            "audio",
+            "embedding",
+            "other_ai"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "unverified",
+            "verified",
+            "degraded",
+            "disabled"
+          ]
+        },
+        "model_alias": {
+          "type": "string",
+          "minLength": 1
+        },
+        "wire_protocol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reasoning_effort": {
+          "type": "string",
+          "minLength": 1
+        },
+        "supported_operations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "parameter_schema": {
+          "type": "object"
+        },
+        "limits": {
+          "type": "object"
+        },
+        "verified_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "kind",
+        "state",
+        "supported_operations"
+      ],
+      "additionalProperties": false
+    },
+    "CapabilityList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Capability"
+          },
+          "minItems": 0
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "additionalProperties": false
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "$ref": "#/components/schemas/ErrorDetail"
+        }
+      },
+      "required": [
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "TextCapabilityDocument": {
+      "type": "object",
+      "properties": {
+        "kernel": {
+          "const": "codex"
+        },
+        "gateway_policy": {
+          "const": "company_internal_only"
+        },
+        "model_alias": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "profile_key": {
+          "const": "internal-text-v1"
+        },
+        "reasoning_effort": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        "rates": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000000
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "kernel",
+        "gateway_policy",
+        "model_alias",
+        "profile_key",
+        "reasoning_effort",
+        "rates"
+      ],
+      "additionalProperties": false
+    },
+    "ImageCapabilityDocument": {
+      "type": "object",
+      "properties": {
+        "kernel": {
+          "const": "codex"
+        },
+        "gateway_policy": {
+          "const": "company_internal_only"
+        },
+        "model_alias": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "profile_key": {
+          "const": "internal-image2-v1"
+        },
+        "reasoning_effort": {
+          "type": "null"
+        },
+        "rates": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000000000
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "kernel",
+        "gateway_policy",
+        "model_alias",
+        "profile_key",
+        "reasoning_effort",
+        "rates"
+      ],
+      "additionalProperties": false
+    },
+    "VideoCapabilityDocument": {
+      "type": "object",
+      "properties": {
+        "kernel": {
+          "const": "codex"
+        },
+        "gateway_policy": {
+          "const": "company_internal_only"
+        },
+        "model_alias": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "profile_key": {
+          "const": "internal-video-v1"
+        },
+        "reasoning_effort": {
+          "type": "null"
+        },
+        "rates": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000000000
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "kernel",
+        "gateway_policy",
+        "model_alias",
+        "profile_key",
+        "reasoning_effort",
+        "rates"
+      ],
+      "additionalProperties": false
+    },
+    "CapabilityDocument": {
+      "oneOf": [
+        {
+          "$ref": "#/components/schemas/TextCapabilityDocument"
+        },
+        {
+          "$ref": "#/components/schemas/ImageCapabilityDocument"
+        },
+        {
+          "$ref": "#/components/schemas/VideoCapabilityDocument"
+        },
+        {
+          "$ref": "#/components/schemas/SpeechCapabilityDocument"
+        },
+        {
+          "$ref": "#/components/schemas/TranscriptionCapabilityDocument"
+        }
+      ]
+    },
+    "CapabilityDraftCommand": {
+      "type": "object",
+      "properties": {
+        "document": {
+          "$ref": "#/components/schemas/CapabilityDocument"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "document",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "CapabilityVersionCommand": {
+      "type": "object",
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "expected_version",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "CapabilityRelease": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "kind": {
+          "const": "model_capability"
+        },
+        "profile_key": {
+          "type": "string",
+          "enum": [
+            "internal-text-v1",
+            "internal-image2-v1",
+            "internal-video-v1",
+            "internal-speech-v1",
+            "internal-transcription-v1"
+          ]
+        },
+        "data_mode": {
+          "type": "string",
+          "enum": [
+            "simulated",
+            "configured_services"
+          ]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "document": {
+          "$ref": "#/components/schemas/CapabilityDocument"
+        },
+        "definition_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "runtime_profile_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "enum": [
+            "draft",
+            "validated",
+            "rejected",
+            "published",
+            "superseded"
+          ]
+        },
+        "validation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "validation_state": {
+          "anyOf": [
+            {
+              "enum": [
+                "running",
+                "passed",
+                "failed",
+                "reconciling",
+                "cancelled"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "validation_expires_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "validation_error_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "head_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "current_publication_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "audio_verification_plan": {
+          "$ref": "#/components/schemas/AudioVerificationPlan"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "profile_key",
+        "data_mode",
+        "version",
+        "document",
+        "definition_hash",
+        "runtime_profile_id",
+        "created_at",
+        "state",
+        "validation_id",
+        "validation_state",
+        "validation_expires_at",
+        "validation_error_codes",
+        "head_revision",
+        "current_publication_id"
+      ],
+      "additionalProperties": false
+    },
+    "CapabilityReleaseList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/CapabilityRelease"
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "additionalProperties": false
+    },
+    "CapabilityVerificationEvidence": {
+      "type": "object",
+      "properties": {
+        "definition_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "gateway_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data_mode": {
+          "type": "string",
+          "enum": [
+            "simulated",
+            "configured_services"
+          ]
+        },
+        "codex_version": {
+          "type": "string"
+        },
+        "codex_binary_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "model_alias": {
+          "type": "string"
+        },
+        "reasoning_effort": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supported_operations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "input_tokens": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "output_tokens": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "known_cost_micros": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "accepted": {
+          "type": "boolean"
+        },
+        "usage_known": {
+          "type": "boolean"
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error_code": {
+          "type": "string"
+        },
+        "workspace_cleanup_completed": {
+          "type": "boolean"
+        },
+        "workspace_cleanup_error_code": {
+          "type": "string"
+        },
+        "quality_scope": {
+          "const": "protocol_only"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CapabilityWorkspacePurge": {
+      "type": "object",
+      "properties": {
+        "validation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "enum": [
+            "queued",
+            "completed",
+            "failed"
+          ]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "attempts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8
+        },
+        "next_attempt_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "validation_id",
+        "state",
+        "version",
+        "attempts",
+        "next_attempt_at",
+        "completed_at",
+        "error_code"
+      ],
+      "additionalProperties": false
+    },
+    "VideoVerificationMedia": {
+      "type": "object",
+      "properties": {
+        "container": {
+          "const": "mp4"
+        },
+        "video_codec": {
+          "const": "h264"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "duration_seconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "decoded_video_frames": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "audio_codec": {
+          "anyOf": [
+            {
+              "const": "aac"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "fully_decoded": {
+          "const": true
+        }
+      },
+      "required": [
+        "container",
+        "video_codec",
+        "width",
+        "height",
+        "duration_seconds",
+        "decoded_video_frames",
+        "audio_codec",
+        "sha256",
+        "bytes",
+        "fully_decoded"
+      ],
+      "additionalProperties": false
+    },
+    "VideoVerificationCase": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 15
+        },
+        "operation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "enum": [
+            "prepared",
+            "submitting",
+            "queued",
+            "in_progress",
+            "completed",
+            "failed",
+            "cancelled",
+            "unknown"
+          ]
+        },
+        "size": {
+          "enum": [
+            "720x1280",
+            "1280x720",
+            "1024x1024"
+          ]
+        },
+        "seconds": {
+          "enum": [
+            4,
+            8,
+            12,
+            16,
+            20
+          ]
+        },
+        "progress": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "usage_known": {
+          "type": "boolean"
+        },
+        "actual_micros": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "videos.create",
+              "videos.retrieve",
+              "videos.lookup",
+              "videos.cancel",
+              "videos.content"
+            ]
+          }
+        },
+        "media": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/VideoVerificationMedia"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "ordinal",
+        "operation_id",
+        "state",
+        "size",
+        "seconds",
+        "progress",
+        "usage_known",
+        "actual_micros",
+        "verified",
+        "error_code",
+        "operations",
+        "media"
+      ],
+      "additionalProperties": false
+    },
+    "VideoVerificationSuite": {
+      "type": "object",
+      "properties": {
+        "plan_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "total_cases": {
+          "const": 16
+        },
+        "verified_cases": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16
+        },
+        "quoted_micros": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "known_cost_micros": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "usage_known": {
+          "type": "boolean"
+        },
+        "cancel_requested": {
+          "type": "boolean"
+        },
+        "deadline_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/VideoVerificationCase"
+          },
+          "maxItems": 16
+        }
+      },
+      "required": [
+        "plan_hash",
+        "total_cases",
+        "verified_cases",
+        "quoted_micros",
+        "known_cost_micros",
+        "usage_known",
+        "cancel_requested",
+        "deadline_at",
+        "error_code",
+        "cases"
+      ],
+      "additionalProperties": false
+    },
+    "CapabilityValidation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "release_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "enum": [
+            "running",
+            "passed",
+            "failed",
+            "reconciling",
+            "cancelled"
+          ]
+        },
+        "capability_version_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "#/components/schemas/CapabilityVerificationEvidence"
+        },
+        "workspace_cleanup": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/CapabilityWorkspacePurge"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "video_suite": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/VideoVerificationSuite"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "audio_suite": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/AudioVerificationSuite"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "release_id",
+        "state",
+        "capability_version_id",
+        "created_at",
+        "finished_at",
+        "expires_at",
+        "result",
+        "workspace_cleanup"
+      ],
+      "additionalProperties": false
+    },
+    "CapabilityComparison": {
+      "type": "object",
+      "properties": {
+        "profile_key": {
+          "type": "string",
+          "enum": [
+            "internal-text-v1",
+            "internal-image2-v1",
+            "internal-video-v1",
+            "internal-speech-v1",
+            "internal-transcription-v1"
+          ]
+        },
+        "data_mode": {
+          "type": "string",
+          "enum": [
+            "simulated",
+            "configured_services"
+          ]
+        },
+        "head_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "publication_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "current": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "release_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 2147483647
+                },
+                "document": {
+                  "$ref": "#/components/schemas/CapabilityDocument"
+                }
+              },
+              "required": [
+                "release_id",
+                "version",
+                "document"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "proposed": {
+          "type": "object",
+          "properties": {
+            "release_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            },
+            "document": {
+              "$ref": "#/components/schemas/CapabilityDocument"
+            },
+            "validation_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "capability_version_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "release_id",
+            "version",
+            "document",
+            "validation_id",
+            "capability_version_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "profile_key",
+        "data_mode",
+        "head_revision",
+        "publication_id",
+        "current",
+        "proposed"
+      ],
+      "additionalProperties": false
+    },
+    "CapabilityPublicationPreview": {
+      "type": "object",
+      "properties": {
+        "preview_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "before": {
+          "$ref": "#/components/schemas/CapabilityComparison"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "decision": {
+          "const": "independent_approval"
+        },
+        "creates_business_effect": {
+          "const": false
+        }
+      },
+      "required": [
+        "preview_id",
+        "payload_hash",
+        "before",
+        "expires_at",
+        "decision",
+        "creates_business_effect"
+      ],
+      "additionalProperties": false
+    },
+    "CapabilityDetails": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "llm",
+            "image",
+            "video",
+            "audio",
+            "embedding",
+            "other_ai"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "unverified",
+            "verified",
+            "degraded",
+            "disabled"
+          ]
+        },
+        "model_alias": {
+          "type": "string",
+          "minLength": 1
+        },
+        "wire_protocol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reasoning_effort": {
+          "type": "string",
+          "minLength": 1
+        },
+        "supported_operations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "parameter_schema": {
+          "type": "object"
+        },
+        "limits": {
+          "type": "object"
+        },
+        "verified_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "data_mode": {
+          "type": "string",
+          "enum": [
+            "simulated",
+            "configured_services"
+          ]
+        },
+        "rates": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "publication_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "release_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "head_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "kind",
+        "state",
+        "supported_operations",
+        "data_mode",
+        "rates",
+        "publication_id",
+        "release_id",
+        "head_revision"
+      ],
+      "additionalProperties": false
+    },
+    "CapabilityDetailsList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/CapabilityDetails"
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "additionalProperties": false
+    },
+    "ErrorDetail": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "request_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "request_id",
+        "retryable"
+      ],
+      "additionalProperties": false
+    },
+    "SpeechCapabilityDocument": {
+      "type": "object",
+      "properties": {
+        "kernel": {
+          "const": "codex"
+        },
+        "gateway_policy": {
+          "const": "company_internal_only"
+        },
+        "model_alias": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "profile_key": {
+          "const": "internal-speech-v1"
+        },
+        "reasoning_effort": {
+          "type": "null"
+        },
+        "rates": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000000
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "locales": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "en",
+              "zh-HK",
+              "yue-HK"
+            ]
+          }
+        },
+        "voices": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]{1,80}$"
+          }
+        }
+      },
+      "required": [
+        "kernel",
+        "gateway_policy",
+        "model_alias",
+        "profile_key",
+        "reasoning_effort",
+        "rates",
+        "locales",
+        "voices"
+      ],
+      "additionalProperties": false
+    },
+    "TranscriptionCapabilityDocument": {
+      "type": "object",
+      "properties": {
+        "kernel": {
+          "const": "codex"
+        },
+        "gateway_policy": {
+          "const": "company_internal_only"
+        },
+        "model_alias": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "profile_key": {
+          "const": "internal-transcription-v1"
+        },
+        "reasoning_effort": {
+          "type": "null"
+        },
+        "rates": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000000
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "locales": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "en",
+              "zh-HK",
+              "yue-HK"
+            ]
+          }
+        },
+        "timestamps": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kernel",
+        "gateway_policy",
+        "model_alias",
+        "profile_key",
+        "reasoning_effort",
+        "rates",
+        "locales",
+        "timestamps"
+      ],
+      "additionalProperties": false
+    },
+    "AudioVerificationPlan": {
+      "type": "object",
+      "properties": {
+        "total_cases": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 72
+        },
+        "plan_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "quoted_micros": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "quality_scope": {
+          "const": "protocol_only"
+        }
+      },
+      "required": [
+        "total_cases",
+        "plan_hash",
+        "quoted_micros",
+        "quality_scope"
+      ],
+      "additionalProperties": false
+    },
+    "AudioVerificationDecodedMedia": {
+      "type": "object",
+      "properties": {
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600000
+        },
+        "codec": {
+          "type": "string"
+        },
+        "sample_rate": {
+          "type": "integer",
+          "minimum": 8000,
+          "maximum": 192000
+        },
+        "channels": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 25000000
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "fully_decoded": {
+          "const": true
+        }
+      },
+      "required": [
+        "duration_ms",
+        "codec",
+        "sample_rate",
+        "channels",
+        "bytes",
+        "sha256",
+        "fully_decoded"
+      ],
+      "additionalProperties": false
+    },
+    "AudioVerificationTranscriptMedia": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "$ref": "#/components/schemas/AudioVerificationDecodedMedia"
+        },
+        "utf8_json": {
+          "const": true
+        },
+        "text_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "text_characters": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "segment_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2000
+        },
+        "timing_source": {
+          "enum": [
+            "provider_segments_rounded_to_millisecond",
+            "none"
+          ]
+        },
+        "quality_scope": {
+          "const": "protocol_only"
+        }
+      },
+      "required": [
+        "input",
+        "utf8_json",
+        "text_sha256",
+        "text_characters",
+        "segment_count",
+        "timing_source",
+        "quality_scope"
+      ],
+      "additionalProperties": false
+    },
+    "AudioVerificationCase": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 71
+        },
+        "operation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "enum": [
+            "prepared",
+            "dispatched",
+            "completed",
+            "cancelled",
+            "unknown"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "speech",
+            "transcription"
+          ]
+        },
+        "locale": {
+          "enum": [
+            "en",
+            "zh-HK",
+            "yue-HK"
+          ]
+        },
+        "voice": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "speed": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0.25,
+              "maximum": 4
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mime_type": {
+          "anyOf": [
+            {
+              "enum": [
+                "audio/wav",
+                "audio/mpeg"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "timestamps": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "quoted_micros": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "actual_micros": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "usage_known": {
+          "type": "boolean"
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "response_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "media": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/AudioVerificationDecodedMedia"
+            },
+            {
+              "$ref": "#/components/schemas/AudioVerificationTranscriptMedia"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accounting": {
+          "$ref": "#/components/schemas/AudioAccountingFact"
+        }
+      },
+      "required": [
+        "id",
+        "ordinal",
+        "operation_id",
+        "state",
+        "kind",
+        "locale",
+        "voice",
+        "speed",
+        "mime_type",
+        "timestamps",
+        "quoted_micros",
+        "actual_micros",
+        "usage_known",
+        "verified",
+        "error_code",
+        "response_sha256",
+        "source_sha256",
+        "media",
+        "accounting"
+      ],
+      "additionalProperties": false
+    },
+    "AudioVerificationSuite": {
+      "type": "object",
+      "properties": {
+        "plan_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "total_cases": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 72
+        },
+        "verified_cases": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 72
+        },
+        "quoted_micros": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "known_cost_micros": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "quality_scope": {
+          "const": "protocol_only"
+        },
+        "usage_known": {
+          "type": "boolean"
+        },
+        "cancel_requested": {
+          "type": "boolean"
+        },
+        "deadline_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cases": {
+          "type": "array",
+          "maxItems": 72,
+          "items": {
+            "$ref": "#/components/schemas/AudioVerificationCase"
+          }
+        },
+        "accounting": {
+          "type": "object",
+          "properties": {
+            "confirmed_micros": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            "unconfirmed_cases": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "capacity_held_cases": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "resolved": {
+              "type": "boolean"
+            },
+            "allocation_exceeded": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "confirmed_micros",
+            "unconfirmed_cases",
+            "capacity_held_cases",
+            "resolved",
+            "allocation_exceeded"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "plan_hash",
+        "total_cases",
+        "verified_cases",
+        "quoted_micros",
+        "known_cost_micros",
+        "quality_scope",
+        "usage_known",
+        "cancel_requested",
+        "deadline_at",
+        "error_code",
+        "cases",
+        "accounting"
+      ],
+      "additionalProperties": false
+    },
+    "AudioAccountingFact": {
+      "type": "object",
+      "properties": {
+        "original_state": {
+          "type": "string"
+        },
+        "original_usage_known": {
+          "type": "boolean"
+        },
+        "cost_state": {
+          "enum": [
+            "known",
+            "unknown",
+            "manually_confirmed"
+          ]
+        },
+        "cost_source": {
+          "enum": [
+            "company_tariff",
+            "unknown",
+            "human_evidence"
+          ]
+        },
+        "confirmed_micros": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirmed_units": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cost_confirmation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "termination_confirmation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capacity_held": {
+          "type": "boolean"
+        },
+        "accounting_resolved": {
+          "type": "boolean"
+        },
+        "allocation_exceeded": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "original_state",
+        "original_usage_known",
+        "cost_state",
+        "cost_source",
+        "confirmed_micros",
+        "confirmed_units",
+        "cost_confirmation_id",
+        "termination_confirmation_id",
+        "capacity_held",
+        "accounting_resolved",
+        "allocation_exceeded"
+      ],
+      "additionalProperties": false
+    },
+    "AudioAccountingCost": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "enum": [
+            "known",
+            "unknown",
+            "manually_confirmed"
+          ]
+        },
+        "source": {
+          "enum": [
+            "company_tariff",
+            "unknown",
+            "human_evidence"
+          ]
+        },
+        "rate_micros": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "quoted_units": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "quoted_micros": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "original_billable_units": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "original_micros": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "billable_units": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amount_micros": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirmation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "allocation_exceeded": {
+          "type": "boolean"
+        },
+        "accounting_resolved": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "state",
+        "source",
+        "rate_micros",
+        "quoted_units",
+        "quoted_micros",
+        "original_billable_units",
+        "original_micros",
+        "billable_units",
+        "amount_micros",
+        "confirmation_id",
+        "evidence_id",
+        "allocation_exceeded",
+        "accounting_resolved"
+      ],
+      "additionalProperties": false
+    },
+    "AudioAccountingRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "channel": {
+          "enum": [
+            "audio_customer",
+            "audio_validation"
+          ]
+        },
+        "data_mode": {
+          "enum": [
+            "simulated",
+            "configured_services"
+          ]
+        },
+        "tenant_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "project_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "validation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "release_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "capability_version_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model_alias": {
+          "type": "string"
+        },
+        "gateway_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "kind": {
+          "enum": [
+            "speech",
+            "transcription"
+          ]
+        },
+        "pricing_unit": {
+          "enum": [
+            "unicode_scalar",
+            "input_millisecond"
+          ]
+        },
+        "state": {
+          "type": "string"
+        },
+        "usage_known": {
+          "type": "boolean"
+        },
+        "operation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "request_hash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "dispatched_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capacity_held": {
+          "type": "boolean"
+        },
+        "termination_confirmation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cost": {
+          "$ref": "#/components/schemas/AudioAccountingCost"
+        }
+      },
+      "required": [
+        "id",
+        "channel",
+        "data_mode",
+        "tenant_id",
+        "project_id",
+        "task_id",
+        "validation_id",
+        "release_id",
+        "actor_id",
+        "capability_version_id",
+        "model_alias",
+        "gateway_fingerprint",
+        "kind",
+        "pricing_unit",
+        "state",
+        "usage_known",
+        "operation_id",
+        "request_hash",
+        "source_sha256",
+        "created_at",
+        "dispatched_at",
+        "finished_at",
+        "error_code",
+        "capacity_held",
+        "termination_confirmation_id"
+      ],
+      "additionalProperties": false
+    },
+    "AudioAccountingDetail": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "channel": {
+          "enum": [
+            "audio_customer",
+            "audio_validation"
+          ]
+        },
+        "data_mode": {
+          "enum": [
+            "simulated",
+            "configured_services"
+          ]
+        },
+        "tenant_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "project_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "validation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "release_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "capability_version_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model_alias": {
+          "type": "string"
+        },
+        "gateway_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "kind": {
+          "enum": [
+            "speech",
+            "transcription"
+          ]
+        },
+        "pricing_unit": {
+          "enum": [
+            "unicode_scalar",
+            "input_millisecond"
+          ]
+        },
+        "state": {
+          "type": "string"
+        },
+        "usage_known": {
+          "type": "boolean"
+        },
+        "operation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "request_hash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "dispatched_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capacity_held": {
+          "type": "boolean"
+        },
+        "termination_confirmation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cost": {
+          "$ref": "#/components/schemas/AudioAccountingCost"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "document_hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "actor_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "id",
+              "document_hash",
+              "actor_id",
+              "reason",
+              "created_at"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "channel",
+        "data_mode",
+        "tenant_id",
+        "project_id",
+        "task_id",
+        "validation_id",
+        "release_id",
+        "actor_id",
+        "capability_version_id",
+        "model_alias",
+        "gateway_fingerprint",
+        "kind",
+        "pricing_unit",
+        "state",
+        "usage_known",
+        "operation_id",
+        "request_hash",
+        "source_sha256",
+        "created_at",
+        "dispatched_at",
+        "finished_at",
+        "error_code",
+        "capacity_held",
+        "termination_confirmation_id"
+      ],
+      "additionalProperties": false
+    },
+    "AudioAccountingPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/AudioAccountingRequest"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "additionalProperties": false
+    },
+    "AudioAccountingEvidenceDocument": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "channel": {
+          "enum": [
+            "audio_customer",
+            "audio_validation"
+          ]
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "data_mode": {
+          "enum": [
+            "simulated",
+            "configured_services"
+          ]
+        },
+        "operation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "request_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "model_alias": {
+          "type": "string"
+        },
+        "gateway_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provider_reference": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 300
+        },
+        "source_reference": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 500
+        },
+        "source_note": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 8000
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "terminated": {
+          "const": true
+        },
+        "outcome": {
+          "enum": [
+            "completed",
+            "failed",
+            "cancelled",
+            "not_executed"
+          ]
+        },
+        "currency": {
+          "const": "HKD"
+        },
+        "billed_micros": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,15})$"
+        },
+        "usage": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "speech",
+                "transcription"
+              ]
+            },
+            "pricing_unit": {
+              "enum": [
+                "unicode_scalar",
+                "input_millisecond"
+              ]
+            },
+            "billable_units": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            }
+          },
+          "required": [
+            "kind",
+            "pricing_unit",
+            "billable_units"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "channel",
+        "request_id",
+        "data_mode",
+        "operation_id",
+        "request_hash",
+        "model_alias",
+        "gateway_fingerprint",
+        "source_sha256",
+        "provider_reference",
+        "source_reference",
+        "source_note",
+        "observed_at",
+        "terminated",
+        "outcome",
+        "currency",
+        "billed_micros",
+        "usage"
+      ],
+      "additionalProperties": false
+    },
+    "AudioAccountingEvidenceCreate": {
+      "type": "object",
+      "properties": {
+        "document": {
+          "$ref": "#/components/schemas/AudioAccountingEvidenceDocument"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "document",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "AudioAccountingEvidence": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "document_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "document": {
+          "$ref": "#/components/schemas/AudioAccountingEvidenceDocument"
+        },
+        "source": {
+          "const": "human_submission"
+        },
+        "provider_authenticated": {
+          "const": false
+        }
+      },
+      "required": [
+        "id",
+        "document_hash",
+        "actor_id",
+        "reason",
+        "created_at",
+        "document",
+        "source",
+        "provider_authenticated"
+      ],
+      "additionalProperties": false
+    },
+    "AudioAccountingCommand": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "enum": [
+            "ai.cost.reconcile",
+            "ai.capacity.release"
+          ]
+        },
+        "channel": {
+          "enum": [
+            "audio_customer",
+            "audio_validation"
+          ]
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "evidence_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "action",
+        "channel",
+        "request_id",
+        "evidence_id",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "AudioAccountingPreview": {
+      "type": "object",
+      "properties": {
+        "preview_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "before": {
+          "type": "object",
+          "properties": {
+            "scope": {
+              "type": "object",
+              "properties": {
+                "data_mode": {
+                  "enum": [
+                    "simulated",
+                    "configured_services"
+                  ]
+                },
+                "tenant_id": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "project_id": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "data_mode",
+                "tenant_id",
+                "project_id"
+              ],
+              "additionalProperties": false
+            },
+            "request": {
+              "$ref": "#/components/schemas/AudioAccountingRequest"
+            },
+            "evidence": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "document_hash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "document": {
+                  "$ref": "#/components/schemas/AudioAccountingEvidenceDocument"
+                },
+                "actor_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "document_hash",
+                "document",
+                "actor_id",
+                "reason"
+              ],
+              "additionalProperties": false
+            },
+            "cost": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "billable_units": {
+                      "type": "string",
+                      "pattern": "^[0-9]+$"
+                    },
+                    "rate_micros": {
+                      "type": "string",
+                      "pattern": "^[0-9]+$"
+                    },
+                    "amount_micros": {
+                      "type": "string",
+                      "pattern": "^[0-9]+$"
+                    },
+                    "allocation_exceeded": {
+                      "type": "boolean"
+                    },
+                    "pricing_unit": {
+                      "enum": [
+                        "unicode_scalar",
+                        "input_millisecond"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "billable_units",
+                    "rate_micros",
+                    "amount_micros",
+                    "allocation_exceeded",
+                    "pricing_unit"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "scope",
+            "request",
+            "evidence",
+            "cost"
+          ],
+          "additionalProperties": false
+        },
+        "command": {
+          "$ref": "#/components/schemas/AudioAccountingCommand"
+        },
+        "decision": {
+          "const": "independent_approval"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "creates_business_effect": {
+          "const": false
+        }
+      },
+      "required": [
+        "preview_id",
+        "payload_hash",
+        "policy_version_id",
+        "before",
+        "command",
+        "decision",
+        "expires_at",
+        "creates_business_effect"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
