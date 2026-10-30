@@ -1,0 +1,167 @@
+-- Additive editable workspaces; all earlier migrations and evidence stay immutable.
+ALTER TABLE creative_projects DROP CONSTRAINT creative_projects_kind_check;
+ALTER TABLE creative_projects ADD CONSTRAINT creative_projects_kind_check
+ CHECK(kind IN ('poster','video','creative_matrix','vector','presentation'));
+
+CREATE TABLE editable_project_versions (
+ creative_id uuid NOT NULL REFERENCES creative_projects(id) ON DELETE CASCADE,
+ version integer NOT NULL CHECK(version>0), tenant_id uuid NOT NULL REFERENCES tenants(id),
+ project_id uuid NOT NULL REFERENCES projects(id), kind text NOT NULL CHECK(kind IN ('vector','presentation')),
+ input jsonb NOT NULL, source_versions uuid[] NOT NULL, renderer_profile jsonb NOT NULL,
+ imported_evidence boolean NOT NULL, created_by uuid NOT NULL REFERENCES users(id),
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(), PRIMARY KEY(creative_id,version)
+);
+CREATE TABLE editable_project_outputs (
+ asset_id uuid PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE,
+ creative_id uuid NOT NULL, version integer NOT NULL, tenant_id uuid NOT NULL REFERENCES tenants(id),
+ project_id uuid NOT NULL REFERENCES projects(id),
+ FOREIGN KEY(creative_id,version) REFERENCES editable_project_versions(creative_id,version) ON DELETE CASCADE
+);
+ALTER TABLE editable_project_versions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE editable_project_versions FORCE ROW LEVEL SECURITY;
+ALTER TABLE editable_project_outputs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE editable_project_outputs FORCE ROW LEVEL SECURITY;
+CREATE POLICY editable_project_version_control ON editable_project_versions TO cp_control USING(true) WITH CHECK(true);
+CREATE POLICY editable_project_output_control ON editable_project_outputs TO cp_control USING(true) WITH CHECK(true);
+CREATE POLICY editable_project_version_scope ON editable_project_versions TO cp_app
+ USING(tenant_id=nullif(current_setting('app.tenant_id',true),'')::uuid)
+ WITH CHECK(tenant_id=nullif(current_setting('app.tenant_id',true),'')::uuid);
+CREATE POLICY editable_project_output_scope ON editable_project_outputs TO cp_app
+ USING(tenant_id=nullif(current_setting('app.tenant_id',true),'')::uuid)
+ WITH CHECK(tenant_id=nullif(current_setting('app.tenant_id',true),'')::uuid);
+GRANT SELECT,INSERT ON editable_project_versions,editable_project_outputs TO cp_app;
+GRANT ALL ON editable_project_versions,editable_project_outputs TO cp_control;
+
+CREATE FUNCTION guard_editable_project_version() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
+ SET search_path=pg_catalog,public AS $$
+DECLARE p creative_projects; v asset_versions; a assets; source_id uuid;
+BEGIN
+ IF TG_OP<>'INSERT' THEN
+  IF TG_OP='DELETE' AND coalesce(current_setting('app.erasing_content',true),'false')='true' THEN RETURN OLD; END IF;
+  RAISE EXCEPTION 'Editable project versions are immutable' USING ERRCODE='23514';
+ END IF;
+ SELECT * INTO p FROM creative_projects WHERE id=NEW.creative_id;
+ IF p.id IS NULL OR p.tenant_id<>NEW.tenant_id OR p.project_id<>NEW.project_id OR p.private_owner IS NOT NULL
+  OR p.kind<>NEW.kind OR p.version<>NEW.version OR p.body->'input' IS DISTINCT FROM NEW.input
+  OR p.content_state<>'active' OR p.retention_expires_at<=clock_timestamp()
+  OR cardinality(NEW.source_versions)>1600 OR cardinality(NEW.source_versions)<>(SELECT count(DISTINCT id) FROM unnest(NEW.source_versions) id) THEN
+  RAISE EXCEPTION 'Editable project version scope mismatch' USING ERRCODE='23514'; END IF;
+ FOREACH source_id IN ARRAY NEW.source_versions LOOP
+  SELECT * INTO v FROM asset_versions WHERE id=source_id;
+  SELECT * INTO a FROM assets WHERE id=v.asset_id;
+  IF a.id IS NULL OR a.tenant_id<>p.tenant_id OR a.project_id<>p.project_id OR a.private_owner IS NOT NULL
+   OR a.state<>'active' OR a.retention_expires_at<=clock_timestamp() OR v.erased_at IS NOT NULL
+   OR NOT task_asset_version_sources_available(v.id) THEN
+   RAISE EXCEPTION 'Editable source scope mismatch' USING ERRCODE='23514'; END IF;
+ END LOOP;
+ RETURN NEW;
+END $$;
+ALTER FUNCTION guard_editable_project_version() OWNER TO cp_control;
+REVOKE ALL ON FUNCTION guard_editable_project_version() FROM PUBLIC;
+CREATE TRIGGER editable_project_version_guard BEFORE INSERT OR UPDATE OR DELETE ON editable_project_versions
+ FOR EACH ROW EXECUTE FUNCTION guard_editable_project_version();
+
+-- This direct parent check does not recurse. The existing content walker follows
+-- immutable project_design_source_versions with its visited-version bounds.
+CREATE FUNCTION editable_project_output_available(target uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+ SET search_path=pg_catalog,public AS $$
+ SELECT NOT EXISTS(SELECT 1 FROM editable_project_outputs o
+ JOIN creative_projects p ON p.id=o.creative_id
+ JOIN editable_project_versions v ON v.creative_id=o.creative_id AND v.version=o.version
+ WHERE o.asset_id=target AND (p.content_state<>'active' OR p.retention_expires_at<=clock_timestamp()
+  OR (v.input ? 'brand' AND NOT brand_version_available((v.input->'brand'->>'id')::uuid,(v.input->'brand'->>'version')::integer))))
+$$;
+ALTER FUNCTION editable_project_output_available(uuid) OWNER TO cp_control;
+REVOKE ALL ON FUNCTION editable_project_output_available(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION editable_project_output_available(uuid) TO cp_app,cp_control;
+CREATE FUNCTION editable_project_version_available(target uuid,revision integer) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+ SET search_path=pg_catalog,public AS $$
+ SELECT EXISTS(SELECT 1 FROM editable_project_versions v JOIN creative_projects p ON p.id=v.creative_id
+ WHERE v.creative_id=target AND v.version=revision AND p.content_state='active' AND p.retention_expires_at>clock_timestamp()
+  AND (NOT(v.input ? 'brand') OR brand_version_available((v.input->'brand'->>'id')::uuid,(v.input->'brand'->>'version')::integer))
+  AND NOT EXISTS(SELECT 1 FROM unnest(v.source_versions) source_id
+   LEFT JOIN asset_versions file ON file.id=source_id LEFT JOIN assets asset ON asset.id=file.asset_id
+   WHERE file.id IS NULL OR asset.id IS NULL OR asset.state<>'active' OR asset.retention_expires_at<=clock_timestamp()
+    OR file.erased_at IS NOT NULL OR NOT task_asset_version_sources_available(source_id)))
+$$;
+ALTER FUNCTION editable_project_version_available(uuid,integer) OWNER TO cp_control;
+REVOKE ALL ON FUNCTION editable_project_version_available(uuid,integer) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION editable_project_version_available(uuid,integer) TO cp_app,cp_control;
+CREATE POLICY editable_output_parent_scope ON assets AS RESTRICTIVE FOR SELECT TO cp_app USING(editable_project_output_available(id));
+CREATE POLICY editable_output_version_scope ON asset_versions AS RESTRICTIVE FOR SELECT TO cp_app USING(editable_project_output_available(asset_id));
+
+CREATE FUNCTION guard_editable_project_output() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
+ SET search_path=pg_catalog,public AS $$
+DECLARE p creative_projects; v editable_project_versions; a assets; file asset_versions; bound uuid[];
+BEGIN
+ IF TG_TABLE_NAME='asset_versions' THEN
+  IF TG_OP='UPDATE' THEN
+   IF ROW(OLD.metadata->'editable_project_id',OLD.metadata->'editable_project_version',OLD.metadata->'project_design_source_versions')
+    IS DISTINCT FROM ROW(NEW.metadata->'editable_project_id',NEW.metadata->'editable_project_version',NEW.metadata->'project_design_source_versions')
+    AND (OLD.metadata ? 'editable_project_id' OR NEW.metadata ? 'editable_project_id')
+    AND NOT(NEW.erased_at IS NOT NULL AND coalesce(current_setting('app.erasing_content',true),'false')='true') THEN
+    RAISE EXCEPTION 'Editable project output binding is immutable' USING ERRCODE='23514'; END IF;
+   RETURN NEW;
+  END IF;
+  IF NOT(NEW.metadata ? 'editable_project_id') THEN
+   IF NEW.metadata ? 'project_design_source_versions' THEN RAISE EXCEPTION 'Missing editable project binding' USING ERRCODE='23514'; END IF;
+   RETURN NEW;
+  END IF;
+  SELECT * INTO p FROM creative_projects WHERE id=(NEW.metadata->>'editable_project_id')::uuid;
+  SELECT * INTO v FROM editable_project_versions WHERE creative_id=p.id AND version=(NEW.metadata->>'editable_project_version')::integer;
+  SELECT * INTO a FROM assets WHERE id=NEW.asset_id;
+  IF p.id IS NULL OR v.creative_id IS NULL OR a.project_id<>p.project_id OR a.tenant_id<>p.tenant_id OR a.private_owner IS NOT NULL
+   OR NEW.metadata->>'editable_project_id' IS DISTINCT FROM current_setting('app.editable_project_id',true)
+   OR NEW.metadata->'brand_reference' IS DISTINCT FROM v.input->'brand'
+   OR jsonb_typeof(NEW.metadata->'project_design_source_versions') IS DISTINCT FROM 'array' THEN
+   RAISE EXCEPTION 'Editable project output scope mismatch' USING ERRCODE='23514'; END IF;
+  SELECT coalesce(array_agg(value::uuid ORDER BY value::uuid),'{}') INTO bound FROM jsonb_array_elements_text(NEW.metadata->'project_design_source_versions');
+  IF bound IS DISTINCT FROM ARRAY(SELECT id FROM unnest(v.source_versions) id ORDER BY id) THEN
+   RAISE EXCEPTION 'Editable project source list mismatch' USING ERRCODE='23514'; END IF;
+  RETURN NEW;
+ END IF;
+ SELECT * INTO a FROM assets WHERE id=NEW.asset_id;
+ SELECT * INTO file FROM asset_versions WHERE asset_id=a.id AND version=1;
+ SELECT * INTO v FROM editable_project_versions WHERE creative_id=NEW.creative_id AND version=NEW.version;
+ IF a.id IS NULL OR v.creative_id IS NULL OR a.project_id<>NEW.project_id OR a.tenant_id<>NEW.tenant_id OR a.private_owner IS NOT NULL
+  OR a.current_version<>1 OR NEW.project_id<>v.project_id OR NEW.tenant_id<>v.tenant_id
+  OR file.metadata->>'editable_project_id' IS DISTINCT FROM NEW.creative_id::text
+  OR file.metadata->>'editable_project_version' IS DISTINCT FROM NEW.version::text
+  OR EXISTS(SELECT 1 FROM asset_versions original WHERE original.id=ANY(v.source_versions) AND original.asset_id=a.id) THEN
+  RAISE EXCEPTION 'Editable output registration mismatch' USING ERRCODE='23514'; END IF;
+ RETURN NEW;
+END $$;
+ALTER FUNCTION guard_editable_project_output() OWNER TO cp_control;
+REVOKE ALL ON FUNCTION guard_editable_project_output() FROM PUBLIC;
+CREATE TRIGGER editable_output_binding BEFORE INSERT OR UPDATE OF metadata ON asset_versions FOR EACH ROW EXECUTE FUNCTION guard_editable_project_output();
+CREATE TRIGGER editable_output_registration BEFORE INSERT ON editable_project_outputs FOR EACH ROW EXECUTE FUNCTION guard_editable_project_output();
+
+DO $$ DECLARE definition text; anchor text; hook text; function_name text; BEGIN
+ definition:=pg_get_functiondef('content_source_manifest_before_creative_feedback(uuid,uuid,uuid[],uuid[])'::regprocedure);
+ anchor:='   IF source_version.metadata ? ''brand_reference'' THEN';
+ IF (length(definition)-length(replace(definition,anchor,'')))/length(anchor)<>1 THEN RAISE EXCEPTION 'Unexpected editable workspace traversal'; END IF;
+ hook:=$hook$   IF NOT editable_project_output_available(source_asset.id) THEN RETURN NULL; END IF;
+   IF source_version.metadata ? 'project_design_source_versions' THEN
+    pending_versions:=pending_versions||ARRAY(SELECT value::uuid FROM jsonb_array_elements_text(source_version.metadata->'project_design_source_versions'));
+    targets:=targets||jsonb_build_array(jsonb_build_object('kind','creative_projects','id',source_version.metadata->>'editable_project_id'));
+   END IF;
+$hook$;
+ EXECUTE replace(definition,anchor,hook||anchor);
+ definition:=pg_get_functiondef('publication_input_sources(uuid,uuid)'::regprocedure);
+ anchor:='   IF file_row.metadata ? ''brand_reference'' THEN';
+ IF (length(definition)-length(replace(definition,anchor,'')))/length(anchor)<>1 THEN RAISE EXCEPTION 'Unexpected editable workspace publication traversal'; END IF;
+ hook:=$hook$   IF file_row.metadata ? 'project_design_source_versions' THEN
+    pending_versions:=pending_versions||ARRAY(SELECT value::uuid FROM jsonb_array_elements_text(file_row.metadata->'project_design_source_versions'));
+   END IF;
+$hook$;
+ EXECUTE replace(definition,anchor,hook||anchor);
+ -- Project outputs have no task ID. Both normal download policies and fixed
+ -- version readers must still invoke the bounded content-source traversal.
+ FOREACH function_name IN ARRAY ARRAY['task_asset_sources_available(uuid)','task_asset_version_sources_available(uuid)'] LOOP
+  definition:=pg_get_functiondef(function_name::regprocedure);
+  anchor:='(v.metadata ? ''task_id'' OR';
+  IF (length(definition)-length(replace(definition,anchor,'')))/length(anchor)<>1 THEN RAISE EXCEPTION 'Unexpected editable output visibility predicate'; END IF;
+  EXECUTE replace(definition,anchor,'(v.metadata ? ''project_design_source_versions'' OR v.metadata ? ''task_id'' OR');
+ END LOOP;
+END $$;
+INSERT INTO schema_migrations(version) VALUES(138);

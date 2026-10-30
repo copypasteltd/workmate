@@ -1,0 +1,33 @@
+-- Retain every existing source traversal hook. Workflow inputs are internal
+-- exact versions from the customer's frozen plan, not generic task API data.
+DO $$ DECLARE definition text; anchor text; BEGIN
+ definition:=pg_get_functiondef('content_source_manifest_before_creative_feedback(uuid,uuid,uuid[],uuid[])'::regprocedure);
+ anchor:='FOR r IN SELECT * FROM task_source_reads WHERE task_id=source_task.id LOOP';
+ IF (length(definition)-length(replace(definition,anchor,'')))/length(anchor)<>1 THEN RAISE EXCEPTION 'Missing unique workflow input source anchor'; END IF;
+ definition:=replace(definition,anchor,$hook$
+   IF source_task.input_context ? 'workflow_inputs' THEN
+    IF source_task.private_owner IS DISTINCT FROM source_task.created_by
+     OR (source_task.cloud_workflow_run_id IS NULL AND source_task.desktop_workflow_run_id IS NULL) THEN RETURN NULL; END IF;
+    FOR r IN SELECT x.* FROM jsonb_array_elements(source_task.input_context->'workflow_inputs') b,
+     jsonb_to_recordset(b->'files') AS x(asset_id uuid,asset_version_id uuid,sha256 text) LOOP
+     IF NOT EXISTS(SELECT 1 FROM asset_versions v JOIN assets a ON a.id=v.asset_id
+      WHERE v.id=r.asset_version_id AND v.asset_id=r.asset_id AND v.sha256=r.sha256
+       AND a.tenant_id=source_task.tenant_id AND a.project_id=source_task.project_id
+       AND (a.private_owner IS NULL OR a.private_owner=source_task.created_by)) THEN RETURN NULL; END IF;
+     pending_versions:=array_append(pending_versions,r.asset_version_id);
+    END LOOP;
+   END IF;
+   FOR r IN SELECT * FROM task_source_reads WHERE task_id=source_task.id LOOP$hook$);
+ EXECUTE definition;
+ definition:=pg_get_functiondef('publication_input_sources(uuid,uuid)'::regprocedure);
+ anchor:='FOR item IN SELECT * FROM task_source_reads WHERE task_id=task_row.id LOOP';
+ IF (length(definition)-length(replace(definition,anchor,'')))/length(anchor)<>1 THEN RAISE EXCEPTION 'Missing unique workflow publication input anchor'; END IF;
+ definition:=replace(definition,anchor,$hook$
+   FOR item IN SELECT x.* FROM jsonb_array_elements(coalesce(task_row.input_context->'workflow_inputs','[]'::jsonb)) b,
+    jsonb_to_recordset(b->'files') AS x(asset_version_id uuid) LOOP
+    pending_versions:=array_append(pending_versions,item.asset_version_id);
+   END LOOP;
+   FOR item IN SELECT * FROM task_source_reads WHERE task_id=task_row.id LOOP$hook$);
+ EXECUTE definition;
+END $$;
+INSERT INTO schema_migrations(version) VALUES(140);

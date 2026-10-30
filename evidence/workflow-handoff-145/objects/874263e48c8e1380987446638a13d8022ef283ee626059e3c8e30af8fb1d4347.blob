@@ -1,0 +1,29 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Workmate fixed-version delivery export supplement", "version": "1.0.0" },
+  "paths": {
+    "/v1/tenants/{tenant}/projects/{project}/tasks/{task}/delivery-package": {
+      "get": {
+        "summary": "Download every available output of one exact terminal task delivery",
+        "description": "Authenticated project read and private task scope are required. All source, retention and version checks run again after construction. The entire archive fails before response headers on any stale selection, inaccessible or corrupt file. Completed, failed and cancelled tasks are supported; partial outputs remain explicitly partial. Exporting never runs AI or changes task charges. The package contains delivered cloud artifacts and task text; local-only workspace files remain local.",
+        "parameters": [
+          { "name": "tenant", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "project", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "task", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "expected_version", "in": "query", "required": true, "schema": { "type": "integer", "minimum": 1 } },
+          { "name": "expected_delivery_hash", "in": "query", "required": true, "schema": { "type": "string", "pattern": "^[a-f0-9]{64}$" } }
+        ],
+        "responses": {
+          "200": { "description": "Disk-backed ZIP with result.md when present, artifacts/, manifest.json, bilingual README.md and SHA256SUMS. ZIP64 is used automatically when necessary. Content-Length and X-Content-SHA256 cover the complete archive. Cache-Control is no-store.", "content": { "application/zip": { "schema": { "type": "string", "format": "binary" } } } },
+          "400": { "description": "Malformed fixed-version selection" },
+          "401": { "description": "Session expired" },
+          "404": { "description": "Task, project or authorization unavailable" },
+          "409": { "description": "Task/delivery changed, source unavailable or no delivery exists" },
+          "413": { "description": "Complete export exceeds 16 GiB or 10,000 entries; no files are silently omitted" },
+          "429": { "description": "Export already in progress, two active exports per server or request rate exceeded" },
+          "503": { "description": "Insufficient temporary disk capacity" }
+        }
+      }
+    }
+  }
+}

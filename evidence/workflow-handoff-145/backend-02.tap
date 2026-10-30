@@ -1,0 +1,112 @@
+TAP version 13
+# Subtest: trusted native runner reviews a known failed step before independent remaining local work and keeps the failure
+not ok 1 - trusted native runner reviews a known failed step before independent remaining local work and keeps the failure
+  ---
+  duration_ms: 1.8701
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\tests\\local-workflow-handoff-145-v1.test.ts:1:3449'
+  failureType: 'testCodeFailure'
+  error: 'LOCAL_WORKFLOW_CONTRACT_INVALID'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    parseRun (D:\dev\copypasted\自有agent\dev\copypaste-desktop\src\local-workflow.ts:40:11)
+    executeLocalWorkflow (D:\dev\copypasted\自有agent\dev\copypaste-desktop\src\local-workflow.ts:59:13)
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-desktop\tests\local-workflow-handoff-145-v1.test.ts:35:34)
+    Test.runInAsyncScope (node:async_hooks:211:14)
+    Test.run (node:internal/test_runner/test:979:25)
+    Test.start (node:internal/test_runner/test:877:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: customer rejection at failure review prevents the next local child
+not ok 2 - customer rejection at failure review prevents the next local child
+  ---
+  duration_ms: 0.4284
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\tests\\local-workflow-handoff-145-v1.test.ts:1:3973'
+  failureType: 'testCodeFailure'
+  error: 'LOCAL_WORKFLOW_CONTRACT_INVALID'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    parseRun (D:\dev\copypasted\自有agent\dev\copypaste-desktop\src\local-workflow.ts:40:11)
+    executeLocalWorkflow (D:\dev\copypasted\自有agent\dev\copypaste-desktop\src\local-workflow.ts:59:13)
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-desktop\tests\local-workflow-handoff-145-v1.test.ts:40:54)
+    Test.runInAsyncScope (node:async_hooks:211:14)
+    Test.run (node:internal/test_runner/test:979:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:677:18)
+    Test.postRun (node:internal/test_runner/test:1090:19)
+    Test.run (node:internal/test_runner/test:1018:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: trusted native runner rejects a failure review inconsistent with the frozen step and saved receipt
+not ok 3 - trusted native runner rejects a failure review inconsistent with the frozen step and saved receipt
+  ---
+  duration_ms: 2.6842
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\tests\\local-workflow-handoff-145-v1.test.ts:1:4224'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-desktop\tests\local-workflow-handoff-145-v1.test.ts:43:135)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: trusted native runner rejects future input references before asking for any budget approval
+ok 4 - trusted native runner rejects future input references before asking for any budget approval
+  ---
+  duration_ms: 0.3904
+  ...
+# Subtest: native workflow requires separate exact fee consent and concrete human approval before the corresponding local children
+ok 5 - native workflow requires separate exact fee consent and concrete human approval before the corresponding local children
+  ---
+  duration_ms: 10.1982
+  ...
+# Subtest: declining native workflow fees creates no child or automatic retry
+ok 6 - declining native workflow fees creates no child or automatic retry
+  ---
+  duration_ms: 1.0454
+  ...
+# Subtest: a native workflow rejects already authorized receipts and fabricated cost totals before asking or executing
+ok 7 - a native workflow rejects already authorized receipts and fabricated cost totals before asking or executing
+  ---
+  duration_ms: 0.8922
+  ...
+# Subtest: native workflow frozen definitions and child-role boundaries are rechecked before launch
+ok 8 - native workflow frozen definitions and child-role boundaries are rechecked before launch
+  ---
+  duration_ms: 2.5421
+  ...
+# Subtest: unknown native child results never advance to another paid step or retry the child
+ok 9 - unknown native child results never advance to another paid step or retry the child
+  ---
+  duration_ms: 0.8828
+  ...
+# Subtest: withdrawing native authority after consent prevents a queued child from executing
+ok 10 - withdrawing native authority after consent prevents a queued child from executing
+  ---
+  duration_ms: 0.8141
+  ...
+# Subtest: an external workflow cancellation invalidates a pending human card and sends no stale approval
+ok 11 - an external workflow cancellation invalidates a pending human card and sends no stale approval
+  ---
+  duration_ms: 1003.9661
+  ...
+# Subtest: stopping a native approval wait closes its watcher and never sends a decision
+ok 12 - stopping a native approval wait closes its watcher and never sends a decision
+  ---
+  duration_ms: 12.4573
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 9
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1971.968
