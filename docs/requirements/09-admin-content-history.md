@@ -20,3 +20,14 @@
 [实现与接口方案](../technical/132-admin-content-history.md) · [实际检查点](../quality/content-history-checkpoint-132.json) · [原始证据](../quality/content-history-evidence-132/index.json) · [完整编号待办](../quality/remaining-work-stage132.md)
 
 English: This supplement decomposes existing administrator content and access requirements. It requires complete bounded history, original provenance, live scoped authorization, stale-page rejection, private-state cleanup, no paid work on reads and the existing bilingual brand system. It leaves the ordinary customer input limit and all broader acceptance records intact.
+
+<!-- business-history-stage144 -->
+## 业务资源历史补充 / Business history supplement
+
+| 编号 | 要求 / Requirement |
+|---|---|
+| HIST-R11 | 统一阅读品牌、团队、项目简报、自动化计划，以及普通画布／视频／矢量／演示稿／批量设计的实际已保存历史；保留原三类入口。Read retained business and all five creative histories alongside the original readers. |
+| HIST-R12 | 普通画布后续保存形成不可变历史；已有数据只保留迁移时当前版，未知历史与操作者不得编造。Retain future canvas saves; preserve only existing migration snapshots and never invent missing history or actors. |
+| HIST-R13 | 批量设计按作品及版号区分；新客户品牌保存记录真实操作者；来源撤回、权限和删除同样约束正文。Keep distinct work/version identities, actual actors for new brand saves and current withdrawal/permission/erasure constraints. |
+
+[实现与验证 / Implementation and validation](../development/144-admin-business-content-history.md)。这是既有完整内容治理要求的补充，原完整验收不缩减。This elaborates existing full content governance without narrowing its acceptance scope.

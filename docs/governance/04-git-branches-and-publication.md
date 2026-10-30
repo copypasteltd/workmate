@@ -1,3 +1,8 @@
+<!-- business-history-stage144 -->
+阶段144通过 `prepare_business_history_publication_144_v2.py`、`audit_business_history_publication_144_v1.py` 与 `publish_business_history_publication_144_v1.py --push` 绑定后台业务历史的确切来源、52项相关后端、9项实际页面、原失败及真实媒体，再普通原子更新八引用并读取远端SHA。保留全部401159条历史证明身份；本轮只核查新增历史对象和当前路径／README链接，不改称重跑旧完整历史。用户文件、Desktop根属性与原完整验收保持。
+
+Stage144 binds exact business-history sources,52 related backend cases,9 actual Admin journeys and original failures/media before an ordinary atomic eight-ref push and SHA readback. All401159 historical proof identities retain their original scope. User-owned files, Desktop attributes and whole acceptance scopes stay preserved.
+
 <!-- editable-projects-stage143 -->
 
 阶段143以实际阶段142发布回执为基线，保留399222条历史证明身份和全部原始失败／成功记录。新工程源码、相关检查、实际三端页面及录制绑定当前独立仓库提交。使用新增的 `prepare_editable_projects_publication_143_v1.py` 与 `publish_editable_projects_publication_143_v1.py --push` 审核本轮增量并普通原子推送八个引用，随后读取远端SHA核对。用户12份未跟踪文件与Desktop根属性保持原字节。

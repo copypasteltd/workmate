@@ -1,3 +1,24 @@
+<!-- business-history-stage144 -->
+## 后台业务版本闭环
+
+阶段144补齐品牌、团队、简报、计划及全部设计工程的后台已保存历史，普通画布记录不可变版本，新品牌版本记录真实客户操作者。当前52项相关后端及9项实际Admin浏览器旅程通过。下图和录屏为本轮实际后台界面。
+
+```mermaid
+flowchart LR
+ A[Customer saves] --> B[Immutable saved versions]
+ B --> C[Scoped administrator reader]
+ C --> D[Bounded navigation]
+ E[Authority or source withdrawal] --> F[Clear private body]
+```
+
+![Actual administrator brand history](assets/business-history-144/workmate-business-history-144-01-brand-latest-en.png)
+
+![Actual version navigation recording](assets/business-history-144/workmate-business-history-144-01-business-version-navigation.gif)
+
+[MP4](assets/business-history-144/workmate-business-history-144-01-business-version-navigation.mp4) · [详细方案 / Usage and implementation](development/144-admin-business-content-history.md)
+
+使用「用户端内容 → 阅读内容 → 最新／最早／前后翻页」，展开记录可查看确切定义。阅读要求当前正文权限及项目范围，依赖撤回会隐藏正文；未保存过的旧内容不补造。Desktop继续在客户本机执行Codex，Extension保留原生浏览器右侧栏。原完整产品验收继续开放。
+
 <!-- editable-projects-stage143 -->
 
 [矢量与演示工程 / Vector and presentation workspaces](development/143-editable-project-workspaces.md) · [更新 / Changes](changes/143-editable-project-workspaces.md) · [完整待验收 / Remaining scope](quality/remaining-work-stage143.md)
