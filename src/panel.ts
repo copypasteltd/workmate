@@ -1,3 +1,4 @@
+import { clientFailureMessage, connectionFailure } from "./client-failure.js";
 import { ChatPanel } from "./chat-panel.js";
 import { ClientContent } from "./client-content.js";
 import { mountDeliveryQuality } from "./delivery-quality.js";
@@ -99,7 +100,12 @@ function clearTask() {
 }
 async function send(type: string, body: Record<string, unknown> = {}) {
   const revision = workspaceRevision;
-  const r = await chrome.runtime.sendMessage({ type, ...body });
+  let r;
+  try { r = await chrome.runtime.sendMessage({ type, ...body }); }
+  catch {
+    if (revision !== workspaceRevision) throw new WorkspaceChanged("Workspace changed");
+    throw connectionFailure(["API"].includes(type) ? String(body.method ?? "GET") : ["UPLOAD", "CHAT_UPLOAD", "LOGIN", "LOGOUT"].includes(type) ? "POST" : "GET");
+  }
   if (
     ["API", "UPLOAD", "CHAT_UPLOAD", "STATUS"].includes(type) &&
     revision !== workspaceRevision
@@ -110,14 +116,14 @@ async function send(type: string, body: Record<string, unknown> = {}) {
       throw new WorkspaceChanged("Sign-in state changed");
     if (r?.code === "AUTH_REQUIRED") resetSignedOut();
     const failure = new Error(
-      r?.code === "AUTH_REQUIRED"
+      clientFailureMessage(r, locale) ?? (r?.code === "AUTH_REQUIRED"
         ? tr("登入已失效，請重新登入。", "Your session ended. Sign in again.")
         : r?.code === "AUTH_UNAVAILABLE"
           ? tr(
               "暫時無法更新登入狀態，請稍後再試。",
               "Sign-in could not be refreshed. Try again shortly.",
             )
-          : (r?.error ?? "Extension unavailable"),
+          : (r?.error ?? "Extension unavailable")),
     );
     Object.assign(failure, { status: r?.status, code: r?.code });
     throw failure;
@@ -160,6 +166,7 @@ function resetSignedOut() {
   localFile = null;
   localGrants = [];
   $("folder-browser").hidden = true;
+  currentError = null;
   $("error").replaceChildren();
   $("error").hidden = true;
 }
@@ -193,16 +200,22 @@ const request = (
     idempotencyKey,
     tenantId: tenant || undefined,
   });
-function showError(e: unknown) {
-  $("error").textContent = e instanceof Error ? e.message : String(e);
+let currentError: unknown = null;
+function showError(e: unknown, scroll = true) {
+  currentError = e;
+  $("error").textContent = clientFailureMessage(e, locale) ?? (e instanceof Error ? e.message : String(e));
   $("error").hidden = false;
+  if (scroll) $("error").scrollIntoView({ block: "nearest" });
 }
-async function run(fn: () => Promise<void>) {
-  $("error").hidden = true;
+async function run(fn: () => Promise<void>, preserveNotice = false) {
+  if (!preserveNotice) { currentError = null; $("error").hidden = true; }
   try {
     await fn();
   } catch (e) {
-    if (!(e instanceof WorkspaceChanged)) showError(e);
+    if (!(e instanceof WorkspaceChanged)) {
+      const unconfirmed = currentError && typeof currentError === "object" && "code" in currentError && currentError.code === "CLIENT_RESULT_UNCONFIRMED";
+      if (!(preserveNotice && unconfirmed)) showError(e, !preserveNotice);
+    }
   }
 }
 function option(
@@ -286,7 +299,7 @@ async function populateWorkspace() {
   );
   notificationTimer = setInterval(() => {
     void refreshClientContent();
-    void run(notifications);
+    void run(notifications, true);
     void entitlements();
     void financial();
   }, 15000);
@@ -1612,6 +1625,7 @@ while ((node = walker.nextNode())) {
 }
 async function applyLocale() {
   chat.draw();
+  if (currentError && !$("error").hidden) showError(currentError, false);
   for (const [n, zh] of original)
     n.textContent = locale === "en" ? translations[zh.trim()] : zh;
   document.documentElement.lang = locale === "en" ? "en" : "zh-Hant-HK";
@@ -1662,7 +1676,7 @@ $("locale").addEventListener(
       locale = locale === "en" ? "zh-HK" : "en";
       await chrome.storage.local.set({ locale });
       await applyLocale();
-    }),
+    }, true),
 );
 void chrome.storage.local.get("locale").then((r) => {
   locale = r.locale === "en" ? "en" : "zh-HK";

@@ -1,3 +1,4 @@
+import { ClientFailure, clientFetch, clientJson } from "./client-failure.js";
 import { settings } from "./config.js";
 import {
   NativeSession,
@@ -148,18 +149,18 @@ async function request(
   };
   if (tenantId) headers["X-Tenant-ID"] = tenantId;
   if (body !== undefined) headers["Content-Type"] = "application/json";
-  const response = await fetch(safePath(path), {
+  const response = await clientFetch(safePath(path), {
     method,
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
     redirect: "error",
   });
-  const data = await response.json();
   if (response.status === 401) {
     if (!(await nativeSession.invalidate(t.access_token)))
       throw new NativeSessionError("AUTH_CHANGED");
     throw new NativeSessionError("AUTH_REQUIRED");
   }
+  const data = await clientJson(response, method);
   if (!response.ok) throw new HTTPFailure(data.error?.message ?? "Request failed", response.status, data.error?.code);
   return data;
 }
@@ -175,18 +176,18 @@ async function upload(
   for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
   const form = new FormData();
   form.append("file", new Blob([bytes], { type: file.type }), file.name);
-  const r = await fetch(safePath(path), {
+  const r = await clientFetch(safePath(path), {
     method: "POST",
     headers: { Authorization: `Bearer ${t.access_token}` },
     body: form,
     redirect: "error",
   });
-  const data = await r.json();
   if (r.status === 401) {
     if (!(await nativeSession.invalidate(t.access_token)))
       throw new NativeSessionError("AUTH_CHANGED");
     throw new NativeSessionError("AUTH_REQUIRED");
   }
+  const data = await clientJson(r, "POST");
   if (!r.ok) throw new HTTPFailure(data.error?.message ?? "Upload failed", r.status, data.error?.code);
   return data;
 }
@@ -323,7 +324,7 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
         ok: false,
         error: e.message,
         ...(e instanceof NativeSessionError ? { code: e.code } : {}),
-        ...(e instanceof HTTPFailure ? { status: e.status, code: e.code } : {}),
+        ...(e instanceof HTTPFailure || e instanceof ClientFailure ? { status: e.status, code: e.code } : {}),
       }),
     );
   return true;
