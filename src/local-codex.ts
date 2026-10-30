@@ -596,7 +596,7 @@ export class LocalCodexSession {
               || !call.arguments || typeof call.arguments !== "object" || Array.isArray(call.arguments))
               throw new LocalCodexError("LOCAL_COMPANY_TOOL_SCOPE_INVALID");
             this.validateGrant(); await this.hooks.authorize();
-            if (this.grant.mode === "read-only" && !["delivery_revision_read", "project_assets", "asset_text_read", "connector_read", "external_budget_preview", "external_budget_status", "solution_list", "solution_read", "solution_source_read", "cloud_files", "cloud_file_read", "marketing_metrics", "font_catalog", "video_projects", "video_project_read", "video_project_status", "generated_video_status", "workflow_list", "workflow_read", "workflow_validate", "workflow_status"].includes(call.tool))
+            if (this.grant.mode === "read-only" && !["group_results", "delivery_revision_read", "project_assets", "asset_text_read", "connector_read", "external_budget_preview", "external_budget_status", "solution_list", "solution_read", "solution_source_read", "cloud_files", "cloud_file_read", "marketing_metrics", "font_catalog", "video_projects", "video_project_read", "video_project_status", "generated_video_status", "workflow_list", "workflow_read", "workflow_validate", "workflow_status"].includes(call.tool))
               throw new LocalCodexError("LOCAL_COMPANY_TOOL_READ_ONLY");
             await this.emit("local.company-tool.started", { tool: call.tool, call_id: call.callId });
             const output = await this.hooks.companyTool(call, this.shutdown.signal);

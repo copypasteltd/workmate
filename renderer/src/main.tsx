@@ -20,6 +20,7 @@ import { SeoAudits } from "./seo-audits";
 import { NativeFiles } from "./native-files";
 import { Solutions } from "./solutions";
 import { LocalAgentWorkspace, CloudWorkspaceLink } from "./local-agent";
+import { AgentGroups } from "./agent-groups";
 import { GeoObservations } from "./geo-observations";
 import { DeleteAsset, DeletionProgress } from "./deletions";
 import { DataModeNotice } from "./data-mode";
@@ -654,6 +655,7 @@ const navigation = [
   ["cloud", LayoutGrid, "雲端工作台", "Cloud workspace"],
   ["roles", Sparkles, "專業角色", "Specialists"],
   ["specialists", Users, "我的專家", "Your specialists"],
+  ["teams", Users, "本機團隊", "Local teams"],
   ["skills", BookOpen, "專案技能", "Project methods"],
   ["solutions", Layers, "業務方案", "Business methods"],
   ["notifications", Bell, "工作通知", "Work notifications"],
@@ -846,6 +848,7 @@ function Shell() {
               <Route path="cloud" element={<CloudWorkspaceLink />} />
               <Route path="roles" element={<Roles />} />
               <Route path="specialists" element={<Specialists />} />
+              <Route path="teams" element={<AgentGroups />} />
               <Route path="skills" element={<ProjectSkills />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="conversations" element={<LocalAgentWorkspace />} />

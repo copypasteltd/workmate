@@ -84,6 +84,13 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
   if (/\/desktop-executions(?:\/|$)|^\/v1\/desktop-inference(?:\/|$)/.test(pathname))
     return false;
   if (/\/geo\/experiments\/[a-f0-9-]{36}\/(?:desktop-runs|desktop-configuration)$/i.test(pathname)) return false;
+  // Team definitions are ordinary content. Native execution, admission and
+  // dispatch remain exclusively in the trusted local-agent IPC coordinator.
+  if (pathname === "/v1/agent-groups") return method === "GET" || method === "POST";
+  if (/^\/v1\/agent-groups\/[a-f0-9-]{36}$/i.test(pathname)) return method === "GET" || method === "PATCH";
+  if (/^\/v1\/agent-groups\/[a-f0-9-]{36}\/versions$/i.test(pathname)) return method === "GET";
+  if (/^\/v1\/agent-groups\/[a-f0-9-]{36}\/native\/runs(?:\/[a-f0-9-]{36}(?:\/(?:delivery|download))?)?$/i.test(pathname)) return method === "GET";
+  if (/^\/v1\/agent-groups(?:\/|$)/.test(pathname)) return false;
   const publication = /^\/v1\/tenants\/[a-f0-9-]{36}\/projects\/[a-f0-9-]{36}\/publications(\/.*)?$/i.exec(pathname);
   if (publication) {
     const tail = publication[1] ?? "";

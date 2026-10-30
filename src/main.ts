@@ -724,11 +724,23 @@ async function createWindow() {
       keys["geo.prepare"] = ["tenant", "project", "experiment", "expected_sha256", "name", "budget"];
       keys["geo.list"] = ["tenant", "project"];
       keys["revision"] = ["id", "requestId", "prompt", "budget", "selection"];
+      keys["team.prepare"] = ["tenant", "project", "group", "plan", "mode"];
+      keys["team.start"] = ["id", "preflightId"];
+      keys["team.resume"] = ["id"];
+      keys["team.cancel"] = ["id"];
+      keys["team.list"] = ["tenant", "project"];
+      keys["team.cancel-run"] = ["tenant", "project", "group", "run", "expectedRevision", "requestId"];
       const allowed = keys[action];
       if (!allowed || Object.keys(payload).length !== allowed.length || allowed.some(k => !(k in payload))) throw new Error("LOCAL_REQUEST_INVALID");
       let value;
       switch (action) {
         case "list": value = await localAgent.list(payload); break;
+        case "team.prepare": value = await localAgent.prepareTeam(payload); break;
+        case "team.start": value = await localAgent.startTeam(payload.id, payload.preflightId); break;
+        case "team.resume": value = await localAgent.resumeTeam(payload.id); break;
+        case "team.cancel": value = await localAgent.cancelTeam(payload.id); break;
+        case "team.list": value = await localAgent.listTeams(payload); break;
+        case "team.cancel-run": value = await localAgent.cancelTeamRun(payload); break;
         case "geo.list": value = await localAgent.list(payload, true); break;
         case "geo.prepare": value = await localAgent.prepareGeo(payload); break;
         case "solution.prepare": value = await localAgent.prepareSolution(payload); break;

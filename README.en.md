@@ -1,5 +1,41 @@
 # Workmate · CopyPaste Enterprise Agent · desktop
 
+<!-- native-teams-stage139 -->
+## Native specialist teams · Stage139
+
+Open Local teams, choose a coordinator and members, then enter the brief, step dependencies and budgets. Review selects a native folder and permission. After approval, separate Codex members execute on the customer computer; the coordinator starts only after actual member deliveries finish. Open member sessions to answer questions. New assignments require a new review. Stop or revoke the whole team, then download the completed team delivery.
+
+Up to 16 steps, seven members plus one assistant coordinator and three concurrent members share one explicitly approved folder. Keep concurrent edits in separate files. Review is free; exact budgets are immutable, holds and actual charges remain separate, and unknown accepted operations are never rerun. Revocation stops native tools first and leaves unsynchronized receipts visible. Only submitted outputs enter the team ZIP; local-only files remain local.
+
+60 backend, 36 extension and 81 native controller/download checks, plus six actual Windows journey checks passed. Four screenshots, one GIF/MP4 pair, three layouts and an independently extracted complete team archive bind 1756 exact source files.
+
+Business/model responses and native folder/consent/save decisions are controlled fixtures. Actual OTP/PKCE, native Codex processes, Windows file operations, company metering, revocation and ZIP extraction execute for real. The package is unsigned. Full professional-role quality, signed installation coverage, real company models/ad accounts and portable project recovery remain separately open.
+
+```mermaid
+flowchart LR
+ A[Versioned team and fixed Skills] --> B[Free review: local folder, permission and budgets]
+ B --> C[Customer approval and durable admission]
+ C --> D[Parallel local Codex members]
+ D --> E[Dependent local review]
+ E --> F[Local coordinator]
+ F --> G[Exact results and complete team ZIP]
+ D --> H[Stop or revoke the whole team]
+ H --> I[Recover original receipts, never replay unknown work]
+```
+
+[Requirements](https://github.com/copypasteltd/workmate/blob/main/docs/requirements/16-desktop-native-teams.md) · [API, permissions, recovery and delivery](https://github.com/copypasteltd/workmate/blob/main/docs/technical/139-desktop-native-teams.md) · [Source and evidence](https://github.com/copypasteltd/workmate/blob/main/docs/quality/native-teams-checkpoint-139.json) · [All original identities](https://github.com/copypasteltd/workmate/blob/main/docs/quality/remaining-work-stage139.md)
+
+Actual Desktop workflow, synthetic business content:
+
+![Actual local team delivery](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-native-teams-139-05-completed-local-team-en.png)
+
+![Actual local team delivery](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-native-teams-139-05-local-team.gif)
+
+- [workmate-native-teams-139-05-review-before-local-run-en.png](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-native-teams-139-05-review-before-local-run-en.png)
+- [workmate-native-teams-139-05-completed-local-team-zh.png](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-native-teams-139-05-completed-local-team-zh.png)
+- [workmate-native-teams-139-05-whole-team-access-revoked-zh.png](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-native-teams-139-05-whole-team-access-revoked-zh.png)
+- [workmate-native-teams-139-05-local-team.mp4](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-native-teams-139-05-local-team.mp4)
+
 <!-- delivery-revision-stage138 -->
 ## Source-bound revisions and new delivery · Stage138
 

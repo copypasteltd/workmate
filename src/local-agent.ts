@@ -1,5 +1,7 @@
 import { randomUUID, createHash } from "node:crypto";
 import { nativeDeliveryRevision, type NativeDeliveryRevision } from "./delivery-revision.js";
+import { parseTeamReview, parseTeamRun, parseTeamAssignments, localTeamTerminal,
+  type LocalTeamState, type LocalTeamAssignment } from "./local-team.js";
 import { realpath, mkdir } from "node:fs/promises";
 import path from "node:path";
 import {
@@ -102,6 +104,8 @@ interface LocalRecord extends LocalAgentScope {
   uncertain?: boolean;
   lastSolution?: { versionId: string; trialId?: string };
   companyToolsVersion?: 1;
+  team?: LocalTeamState;
+  teamMember?: { rootId: string; runId: string; stepKey: string };
   browserToolsVersion?: 1;
   programToolsVersion?: 1;
   dispatches?: LocalDispatchReceipt[];
@@ -186,6 +190,8 @@ export class LocalAgentController {
   private busy = new Set<string>();
   private permissions = new Set<string>();
   private running = new Map<string, ActiveLocalOperation>();
+  private teamRuns = new Map<string, { abort: AbortController; done: Promise<void> }>();
+  private teamAdmissions = new Set<string>();
   // Questions and answers are live process state, never journal entries. A
   // renderer refresh can redisplay a question; an app restart cannot replay it.
   private inputs = new Map<
@@ -330,6 +336,13 @@ export class LocalAgentController {
     return response.body;
   }
   private grant(r: LocalRecord) {
+    if (r.teamMember) {
+      const root = this.journal?.sessions.find(s => s.id === r.teamMember!.rootId && s.actorId === r.actorId && s.epoch === r.epoch);
+      if (!root || root.team?.run?.id !== r.teamMember.runId || root.team.cancelled || root.workspaceHash !== r.workspaceHash
+        || root.workspace !== r.workspace || root.revoked || !root.grant || root.grant.id !== r.grant?.id
+        || root.grant.revision !== r.grant?.revision) throw new LocalAgentError("LOCAL_TEAM_PERMISSION_WITHDRAWN");
+      this.grant(root);
+    }
     if (
       r.revoked ||
       !r.grant ||
@@ -347,10 +360,12 @@ export class LocalAgentController {
       workspace: r.workspace,
       role: r.role,
       specialist: r.specialist,
+      team: r.team ? { group: r.team.group, runId: r.team.run?.id, phase: r.team.phase, state: r.team.run?.state,
+        error: r.team.error, rootId: r.id } : r.teamMember ? { rootId:r.teamMember.rootId, runId:r.teamMember.runId, stepKey:r.teamMember.stepKey } : undefined,
       geo: r.geo,
       revoked: r.revoked,
       permission: r.revoked ? null : (r.grant?.mode ?? null),
-      busy: this.busy.has(r.id),
+      busy: this.busy.has(r.id) || this.teamRuns.has(r.id) || this.teamAdmissions.has(r.id),
       phase: r.operation?.phase ?? "idle",
       error: r.error,
       programToolsVersion: r.programToolsVersion,
@@ -595,7 +610,7 @@ export class LocalAgentController {
       generation = this.generation;
     if (r.geo) throw new LocalAgentError("LOCAL_OBSERVATION_PERMISSION_FIXED");
     if (r.revoked) throw new LocalAgentError("LOCAL_PERMISSION_REVOKED");
-    if (this.busy.has(id) || this.permissions.has(id))
+    if (r.team || r.teamMember || this.teamRuns.has(id) || this.teamAdmissions.has(id) || this.busy.has(id) || this.permissions.has(id))
       throw new LocalAgentError("LOCAL_STOP_BEFORE_PERMISSION_CHANGE");
     this.permissions.add(id);
     try {
@@ -618,6 +633,7 @@ export class LocalAgentController {
   }
   async send(id: string, prompt: string, budget: number) {
     const r = await this.record(id);
+    if (r.team || r.teamMember) throw new LocalAgentError("LOCAL_TEAM_APPROVED_PLAN_REQUIRED");
     if (r.geo) throw new LocalAgentError("GEO_NEW_RUN_REQUIRED");
     this.grant(r);
     if (
@@ -652,6 +668,8 @@ export class LocalAgentController {
   }
   async retry(id: string) {
     const r = await this.record(id);
+    if ((r.team || r.teamMember) && r.operation?.phase !== "settling")
+      throw new LocalAgentError("LOCAL_TEAM_RESUME_REQUIRED");
     if (r.operation?.phase !== "settling" && !r.operation?.stopped)
       this.grant(r);
     if (
@@ -945,6 +963,7 @@ export class LocalAgentController {
   }
   async schedulingContext(id: string) {
     const r = await this.record(id);
+    if (r.team || r.teamMember) throw new LocalAgentError("LOCAL_TEAM_APPROVED_PLAN_REQUIRED");
     await this.api(r, this.base(r) + "/runtime");
     if ((await this.record(id)) !== r)
       throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
@@ -960,10 +979,15 @@ export class LocalAgentController {
     };
   }
   async programOwner(id: string, online = false) {
-    const owner = online
-      ? await this.schedulingContext(id)
-      : await this.schedulingOwner(id);
     const r = await this.withdrawalRecord(id);
+    if (online && (r.team || r.teamMember)) {
+      await this.record(id); this.grant(r);
+      await this.api(r,this.base(r)+"/runtime");
+      await this.record(id); this.grant(r);
+      return { ...(await this.schedulingOwner(id)),role:r.role,busy:this.busy.has(id),pending:!!r.operation,
+        uncertain:!!r.uncertain,programToolsVersion:r.programToolsVersion };
+    }
+    const owner = online ? await this.schedulingContext(id) : await this.schedulingOwner(id);
     return { ...owner, programToolsVersion: r.programToolsVersion };
   }
   async revise(id: string, requestId: string, prompt: string, budget: number, selection: unknown) {
@@ -991,6 +1015,7 @@ export class LocalAgentController {
       throw new LocalAgentError("LOCAL_REQUEST_INVALID");
     const r = await this.record(id),
       digest = hash(JSON.stringify(deliveryRevision ? [prompt.trim(), budget, deliveryRevision] : [prompt.trim(), budget]));
+    if (r.team || r.teamMember) throw new LocalAgentError("LOCAL_TEAM_APPROVED_PLAN_REQUIRED");
     if (r.geo) throw new LocalAgentError("GEO_NEW_RUN_REQUIRED");
     r.dispatches ??= [];
     let receipt = r.dispatches.find((row) => row.id === dispatchId);
@@ -1967,7 +1992,238 @@ export class LocalAgentController {
       if (programs) active.programs.delete(programs);
     }
   }
+  /** Review selects an actual folder and obtains native permission, but reserves
+   * no money. The exact reviewed graph is journaled before admission. */
+  async prepareTeam(input: LocalAgentScope & { group: string; plan: unknown; mode: LocalPermissionMode }) {
+    if (!input || !uuid.test(input.group) || !modes.has(input.mode) || !input.plan ||
+      typeof input.plan !== "object" || Array.isArray(input.plan) || JSON.stringify(input.plan).length > 100000)
+      throw new LocalAgentError("LOCAL_REQUEST_INVALID");
+    const view = await this.create(input, "assistant");
+    if (!view) return null;
+    const permitted = await this.permission(view.id, input.mode);
+    if (!permitted.permission) return null;
+    const r = await this.record(view.id), journal = await this.state();
+    this.grant(r);
+    const binding = { device_id: journal.deviceId, local_session_id: r.id, workspace_hash: r.workspaceHash,
+      runtime_version: this.io.runtime.version, runtime_sha256: this.io.runtime.sha256 };
+    const review = parseTeamReview(await this.api(r, `/v1/agent-groups/${input.group}/native/preflight`, "POST",
+      { plan: input.plan, binding }, randomUUID()));
+    await this.record(r.id); this.grant(r);
+    r.team = { group: input.group, review, binding, createKey: randomUUID(), phase: "review" };
+    r.specialist = { id: review.definition.coordinator.agent_id, version: review.definition.coordinator.agent_version,
+      name: review.definition.coordinator.member_name };
+    await this.persist();
+    return { ...review, local_session_id: r.id, workspace: r.workspace, permission: r.grant!.mode };
+  }
+  private teamURL(r: LocalRecord) {
+    if (!r.team) throw new LocalAgentError("LOCAL_TEAM_NOT_FOUND");
+    return `/v1/agent-groups/${r.team.group}/native/runs`;
+  }
+  private async admitTeam(r: LocalRecord) {
+    const t = r.team!;
+    if (t.run) return;
+    t.phase = "accepting";
+    await this.persist();
+    const receipt = await this.api(r, this.teamURL(r), "POST", {
+      preflight_id: t.review.id, expected_version: t.review.version, definition_hash: t.review.definition_hash,
+      approved_budget_micros: t.review.approved_budget_micros, confirm: true, binding: t.binding,
+    }, t.createKey);
+    // Even a late result after local cancellation must retain its original id.
+    t.run = parseTeamRun(receipt.run, t);
+    await this.persist();
+  }
+  async startTeam(id: string, reviewId: string) {
+    const r = await this.record(id), t = r.team;
+    if (!t || t.review.id !== reviewId || t.cancelled || this.teamAdmissions.has(id) || this.teamRuns.has(id))
+      throw new LocalAgentError("LOCAL_TEAM_REVIEW_CHANGED");
+    this.grant(r); this.teamAdmissions.add(id);
+    try {
+      await this.admitTeam(r);
+      await this.record(id); this.grant(r);
+      if (t.cancelled || this.closed) throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
+      this.launchTeam(r);
+      return { run: t.run, local_session_id: r.id };
+    } finally { this.teamAdmissions.delete(id); this.io.changed(); }
+  }
+  async resumeTeam(id: string) {
+    const r = await this.record(id), t = r.team;
+    if (!t || t.cancelled || t.phase === "review" || this.teamRuns.has(id) || this.teamAdmissions.has(id))
+      throw new LocalAgentError("LOCAL_TEAM_RESUME_REQUIRED");
+    this.grant(r);
+    return this.startTeam(id, t.review.id);
+  }
+  async listTeams(scope: LocalAgentScope) {
+    const listed = await this.list(scope);
+    return listed.sessions.filter(s => s.team && !s.team.stepKey);
+  }
+  async cancelTeamRun(input: LocalAgentScope & { group: string; run: string; expectedRevision: number; requestId: string }) {
+    if (![input.tenant,input.project,input.group,input.run,input.requestId].every(v => uuid.test(v)) ||
+      !Number.isSafeInteger(input.expectedRevision) || input.expectedRevision < 1) throw new LocalAgentError("LOCAL_REQUEST_INVALID");
+    const actor = await this.identity(), journal = await this.state();
+    const root = journal.sessions.find(r => r.actorId === actor.actorId && r.epoch === actor.epoch &&
+      r.tenant === input.tenant && r.project === input.project && r.team?.group === input.group && r.team.run?.id === input.run);
+    if (root) { await this.cancelTeam(root.id); return { run: root.team!.run }; }
+    const g = await this.io.request(`/v1/agent-groups/${input.group}`, { tenantId: input.tenant });
+    if (g.status !== 200 || g.body.project_id !== input.project) throw new LocalAgentError("LOCAL_TEAM_NOT_FOUND");
+    const result = await this.io.request(`/v1/agent-groups/${input.group}/native/runs/${input.run}/cancel`, {
+      tenantId: input.tenant, method: "POST", body: { expected_revision: input.expectedRevision }, idempotencyKey: input.requestId,
+    });
+    if (result.status !== 200) throw new LocalAgentError(result.body?.error?.code ?? "LOCAL_COMPANY_API_UNAVAILABLE");
+    const current = await this.identity();
+    if (current.actorId !== actor.actorId || current.epoch !== actor.epoch) throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
+    return result.body;
+  }
+  private teamRecords(root: LocalRecord) {
+    return this.journal!.sessions.filter(r => r.actorId === root.actorId && r.epoch === root.epoch &&
+      (r.id === root.id || r.teamMember?.rootId === root.id));
+  }
+  private async assertTeam(root: LocalRecord, signal: AbortSignal, generation: number) {
+    if (this.closed || signal.aborted || root.team?.cancelled) throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
+    await this.live(signal, () => this.assertReceiptOwner(root, generation));
+    this.grant(root);
+    const resolved = await realpath(root.workspace);
+    if (resolved !== root.workspace || hash(process.platform === "win32" ? resolved.toLowerCase() : resolved) !== root.workspaceHash)
+      throw new LocalAgentError("LOCAL_WORKSPACE_CHANGED");
+    if (this.closed || signal.aborted || root.team?.cancelled) throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
+  }
+  private async teamRecord(root: LocalRecord, a: LocalTeamAssignment) {
+    const t = root.team!, journal = await this.state();
+    let r = journal.sessions.find(row => row.id === a.fields.local_session_id);
+    if (r) {
+      if (r.actorId !== root.actorId || r.epoch !== root.epoch || r.tenant !== root.tenant || r.project !== root.project ||
+        r.workspace !== root.workspace || r.workspaceHash !== root.workspaceHash ||
+        (a.step_key === "coordinator" ? r !== root : r.teamMember?.rootId !== root.id || r.teamMember.runId !== t.run!.id || r.teamMember.stepKey !== a.step_key))
+        throw new LocalAgentError("LOCAL_TEAM_CONTRACT_INVALID");
+      if (r.operation && (r.operation.taskId !== a.task_id || r.operation.prompt !== a.prompt || r.operation.budget !== a.budget_micros))
+        throw new LocalAgentError("LOCAL_TEAM_CONTRACT_INVALID");
+      if (r.operation || r.lastTask?.task_id === a.task_id) return r;
+    }
+    // A running company task without its durable native journal is unknown.
+    if (a.state !== "prepared" || a.status !== "queued") throw new LocalAgentError("LOCAL_TEAM_JOURNAL_REQUIRED");
+    if (!r) {
+      r = { tenant: root.tenant, project: root.project, id: a.fields.local_session_id, actorId: root.actorId, epoch: root.epoch,
+        workspace: root.workspace, workspaceHash: root.workspaceHash, role: a.role_key, revoked: false,
+        specialist: { id: a.agent_id, version: a.agent_version, name: t.review.definition.nodes.find(n => n.key === a.step_key)!.member_name },
+        grant: { ...this.grant(root) }, teamMember: { rootId: root.id, runId: t.run!.id, stepKey: a.step_key },
+        companyToolsVersion: 1, browserToolsVersion: root.browserToolsVersion, programToolsVersion: root.programToolsVersion,
+        messages: [], events: [] };
+      journal.sessions.push(r);
+    }
+    r.operation = { createKey: randomUUID(), startKey: randomUUID(), finishKey: randomUUID(), cancelKey: randomUUID(),
+      taskId: a.task_id, prompt: a.prompt, budget: a.budget_micros, phase: "starting" };
+    r.lastTask = { task_id: a.task_id, state: "prepared", status: "queued", execution_location: "desktop", budget_micros: a.budget_micros };
+    r.messages.push({ role: "user", text: a.prompt }); r.error = undefined;
+    await this.persist();
+    return r;
+  }
+  private launchTeam(root: LocalRecord) {
+    if (this.closed || this.teamRuns.has(root.id)) throw new LocalAgentError("LOCAL_TEAM_ALREADY_RUNNING");
+    const abort = new AbortController(), entry = { abort, done: Promise.resolve() };
+    this.teamRuns.set(root.id, entry);
+    entry.done = this.executeTeam(root, abort.signal).catch(async error => {
+      root.team!.phase = "interrupted";
+      root.team!.error = error instanceof LocalAgentError ? error.code : "LOCAL_TEAM_INTERRUPTED";
+      await this.persist();
+    }).finally(() => { if (this.teamRuns.get(root.id) === entry) this.teamRuns.delete(root.id); this.io.changed(); });
+    // Persist failures remain visible through the original call/write tail;
+    // background completion must never become an unhandled rejection.
+    void entry.done.catch(() => {});
+  }
+  private async executeTeam(root: LocalRecord, signal: AbortSignal) {
+    const t = root.team!, generation = this.generation, jobs = new Map<string, Promise<void>>();
+    let memberError: unknown;
+    t.phase = "running"; t.error = undefined; await this.persist();
+    const start = (r: LocalRecord) => {
+      const op = r.operation;
+      if (!op || jobs.has(r.id) || this.busy.has(r.id)) return;
+      const p = this.execute(r).then(() => {
+        if (r.operation) memberError ??= new LocalAgentError("LOCAL_TEAM_RECEIPT_PENDING");
+      }).catch(e => { memberError ??= e; }).finally(() => { jobs.delete(r.id); });
+      jobs.set(r.id, p);
+    };
+    try {
+      // Recovered accepted turns are converted to saved unknown receipts by
+      // state(). Synchronize those receipts before asking for new assignments.
+      for (const r of this.teamRecords(root)) if (r.operation?.phase === "settling") start(r);
+      await Promise.all(jobs.values());
+      if (memberError) throw memberError;
+      while (true) {
+        await this.assertTeam(root, signal, generation);
+        let receipt = await this.api(root, this.teamURL(root) + "/" + t.run!.id, "GET", undefined, undefined, signal);
+        await this.assertTeam(root, signal, generation);
+        t.run = parseTeamRun(receipt.run, t);
+        if (localTeamTerminal.has(t.run.state)) {
+          t.phase = "finished"; t.error = undefined; await this.persist(); return;
+        }
+        try {
+          receipt = await this.api(root, this.teamURL(root) + "/" + t.run.id + "/advance", "POST",
+            { expected_revision: t.run.revision, binding: t.binding }, randomUUID(), signal);
+        } catch (error) {
+          if (error instanceof LocalAgentError && error.code === "NATIVE_TEAM_REVISION_CHANGED") continue;
+          throw error;
+        }
+        await this.assertTeam(root, signal, generation);
+        t.run = parseTeamRun(receipt.run, t); await this.persist();
+        if (localTeamTerminal.has(t.run.state)) continue;
+        const assigned = parseTeamAssignments(receipt.assignments ?? [], t);
+        for (const a of assigned) {
+          await this.assertTeam(root, signal, generation);
+          const r = await this.teamRecord(root, a);
+          await this.assertTeam(root, signal, generation);
+          if (r.uncertain) throw new LocalAgentError("LOCAL_EXECUTION_RECONCILIATION_REQUIRED");
+          start(r);
+        }
+        if (memberError) throw memberError;
+        await new Promise<void>((resolve, reject) => {
+          const done = () => { clearTimeout(timer); signal.removeEventListener("abort", cancelled); resolve(); };
+          const cancelled = () => { clearTimeout(timer); signal.removeEventListener("abort", cancelled); reject(new LocalAgentError("LOCAL_EXECUTION_CANCELLED")); };
+          const timer = setTimeout(done, 700); signal.addEventListener("abort", cancelled, { once: true });
+          if (signal.aborted) cancelled();
+        });
+      }
+    } finally {
+      // A terminal team or interrupted dispatcher cannot leave member tools
+      // running while the owner is no longer supervising this graph.
+      for (const r of this.teamRecords(root)) {
+        const active = this.running.get(r.id);
+        active?.abort.abort();
+        void active?.runtime?.interrupt().catch(() => {});
+      }
+      await Promise.allSettled(jobs.values());
+    }
+  }
+  async cancelTeam(id: string) {
+    const requested = await this.withdrawalRecord(id);
+    const root = requested.teamMember ? await this.withdrawalRecord(requested.teamMember.rootId) : requested;
+    const t = root.team;
+    if (!t) throw new LocalAgentError("LOCAL_TEAM_NOT_FOUND");
+    t.cancelled = true; this.teamRuns.get(root.id)?.abort.abort();
+    // Withdrawal is immediate and does not depend on credentials or transport.
+    for (const r of this.teamRecords(root)) this.running.get(r.id)?.abort.abort();
+    const stopped = Promise.allSettled(this.teamRecords(root).map(r => this.stopSingle(r.id)));
+    await this.persist();
+    try {
+      if (!t.run && t.phase !== "review") await this.admitTeam(root);
+      if (t.run) {
+        const current = await this.api(root, this.teamURL(root) + "/" + t.run.id);
+        t.run = parseTeamRun(current.run, t);
+        if (!localTeamTerminal.has(t.run.state)) {
+          if (t.cancelRevision !== t.run.revision) { t.cancelKey = randomUUID(); t.cancelRevision = t.run.revision; }
+          await this.persist();
+          const result = await this.api(root, this.teamURL(root) + "/" + t.run.id + "/cancel", "POST",
+            { expected_revision: t.cancelRevision }, t.cancelKey);
+          t.run = parseTeamRun(result.run, t);
+        }
+      }
+      t.phase = "finished"; t.error = undefined;
+    } catch { t.phase = "interrupted"; t.error = "LOCAL_STOPPED_COMPANY_RECEIPT_PENDING"; }
+    await stopped; await this.persist(); return this.view(root);
+  }
   async stop(id: string) {
+    const r = await this.withdrawalRecord(id);
+    return r.team || r.teamMember ? this.cancelTeam(id) : this.stopSingle(id);
+  }
+  private async stopSingle(id: string) {
     const r = await this.withdrawalRecord(id),
       active = this.running.get(id),
       op = r.operation;
@@ -2066,7 +2322,18 @@ export class LocalAgentController {
     return this.view(await this.withdrawalRecord(id));
   }
   async revoke(id: string) {
-    const r = await this.withdrawalRecord(id);
+    const requested = await this.withdrawalRecord(id);
+    const r = requested.teamMember ? await this.withdrawalRecord(requested.teamMember.rootId) : requested;
+    if (r.team) {
+      this.teamRuns.get(r.id)?.abort.abort();
+      for (const member of this.teamRecords(r)) {
+        member.revoked = true;
+        const active = this.running.get(member.id); active?.abort.abort();
+        void active?.runtime?.revoke().catch(() => {});
+      }
+      await this.persist();
+      return this.cancelTeam(r.id);
+    }
     r.revoked = true;
     const active = this.running.get(id);
     active?.abort.abort();
@@ -2079,6 +2346,7 @@ export class LocalAgentController {
   }
   async invalidate() {
     ++this.generation;
+    for (const entry of this.teamRuns.values()) entry.abort.abort();
     const journal = await this.state();
     for (const r of journal.sessions) r.revoked = true;
     const active = [...this.running.values()];
@@ -2095,14 +2363,18 @@ export class LocalAgentController {
     const state = await this.state();
     await this.writeTail;
     return { safe: !this.busy.size && !this.running.size && !this.permissions.size && !this.inputs.size
-      && state.sessions.every(r => !r.operation && !r.uncertain) };
+      && !this.teamRuns.size && !this.teamAdmissions.size
+      && state.sessions.every(r => !r.operation && !r.uncertain && (!r.team ||
+        r.team.phase === "review" || r.team.phase === "finished")) };
   }
   async drainWithdrawn() {
     await Promise.allSettled([...this.running.values()].map(item => item.done));
+    await Promise.allSettled([...this.teamRuns.values()].map(item => item.done));
     await this.writeTail;
   }
   async close() {
     this.closed = true;
+    for (const entry of this.teamRuns.values()) entry.abort.abort();
     for (const item of this.running.values()) item.abort.abort();
     this.inputs.clear();
     await Promise.all(
