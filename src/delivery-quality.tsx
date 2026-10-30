@@ -3,6 +3,7 @@ import { api, download } from "./api";
 import { completeOperation, operationKey } from "./operation-key";
 import { DateText, ErrorNotice, Loading, useData, useI18n } from "./ui";
 import "./delivery-quality.css";
+import { DeliveryRevisionAction, type NativeRevision } from "./delivery-revision";
 
 /** Start from the original conversation without forcing customers into advanced task tools. */
 export function ConversationDeliveryDownload({ base, taskId }: { base: string; taskId: string }) {
@@ -14,10 +15,10 @@ export function ConversationDeliveryDownload({ base, taskId }: { base: string; t
       expected_version: String(data.task_version), expected_delivery_hash: data.delivery_hash,
     }), `workmate-${taskId}-v${data.task_version}.zip`)).then(result => setDone(result.saved)).catch(e => setError(e as Error)).finally(() => setPending(false));
   }}>{pending ? t("正在整理交付包…", "Preparing delivery package…") : t("下載完整交付包", "Download delivery package")}</button>
-    {done && <small role="status">{t("已交給下載管理器。", "Passed to the download manager.")}</small>}<ErrorNotice error={error}/></div>;
+    {done && <small role="status">{t("已交給下載管理器。", "Passed to the download manager.")}</small>}<DeliveryRevisionAction base={base} taskId={taskId}/><ErrorNotice error={error}/></div>;
 }
 
-export function DeliveryQuality({ base, taskId, changed }: { base: string; taskId: string; changed?: () => void }) {
+export function DeliveryQuality({ base, taskId, changed, nativeRevision }: { base: string; taskId: string; changed?: () => void; nativeRevision?: NativeRevision }) {
   const { t } = useI18n(), [revision, setRevision] = useState(0), [pending, setPending] = useState(false), [error, setError] = useState<Error | null>(null);
   const path = `${base}/tasks/${taskId}`, { data, error: loadError, loading } = useData(path + "/quality", revision, 0, "", { retainOnRefresh: true });
   const [decision, setDecision] = useState("accepted"), [comment, setComment] = useState("");
@@ -40,6 +41,7 @@ export function DeliveryQuality({ base, taskId, changed }: { base: string; taskI
     {data && <>
       <p className="muted">{t("工作完成後，由你確認成果是否可用。你的評價會保留所審閱的版本。", "You decide whether the completed work is usable. Each review keeps the version you reviewed.")}</p>
       {data.delivery && (data.delivery.output_sha256 || data.delivery.artifacts.length > 0) && <div className="delivery-package-actions">
+        <DeliveryRevisionAction base={base} taskId={taskId} nativeRevision={nativeRevision} changed={changed}/>
         <button className="button secondary" type="button" disabled={exporting || pending || loading} onClick={() => {
           if (exporting) return; setExporting(true); setExported(false); setError(null);
           const query = new URLSearchParams({ expected_version: String(data.task_version), expected_delivery_hash: data.delivery_hash });
