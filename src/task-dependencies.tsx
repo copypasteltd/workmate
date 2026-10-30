@@ -112,7 +112,7 @@ function InputRequest({
     [error, setError] = useState<Error | null>(null);
   const root = `/v1/tenants/${w.tenant}/task-dependencies/${d.id}`;
   const candidates = useData(
-    d.state === "pending"
+    d.state === "pending" && d.kind !== "question"
       ? root +
           "/resources?" +
           new URLSearchParams({
@@ -124,6 +124,7 @@ function InputRequest({
     refresh + revision + d.version,
   );
   const available = candidates.error ? undefined : candidates.data;
+  if (d.kind === "question") return <QuestionRequest dependency={d} onChange={onChange} />;
   return (
     <article className="input-request" data-dependency={d.id}>
       <div className="section-title">
@@ -290,4 +291,34 @@ function InputRequest({
       )}
     </article>
   );
+}
+
+function QuestionRequest({ dependency: d, onChange }: { dependency: any; onChange: () => void }) {
+  const w = useWorkspace(), { t } = useI18n();
+  const [answer, setAnswer] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  return <article className="input-request" data-dependency={d.id}>
+    <div className="section-title"><strong>{d.description}</strong><Badge value={d.state === "resolved" ? "ready" : d.state} /></div>
+    {d.state === "resolved" ? <p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{d.answer}</p> : d.state === "pending" &&
+      <form onSubmit={e => {
+        e.preventDefault();
+        if (busy || !answer.trim()) return;
+        setBusy(true); setError(null);
+        void post(`/v1/tenants/${w.tenant}/task-dependencies/${d.id}/resolutions`, {
+          expected_version: d.version, answer: answer.trim(),
+        }).then(() => { setAnswer(""); onChange(); }).catch(setError).finally(() => setBusy(false));
+      }}>
+        <fieldset disabled={busy} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+          {!!d.question_options?.length && <div className="input-request-actions" role="group" aria-label={t("建議答案", "Suggested answers")}>
+            {d.question_options.map((choice: string) => <button className="button secondary" type="button" key={choice} aria-pressed={answer === choice}
+              style={{ whiteSpace: "normal", overflowWrap: "anywhere", maxWidth: "100%" }} onClick={() => setAnswer(choice)}>{choice}</button>)}
+          </div>}
+          <Field label={t("你的回答", "Your answer")}><textarea rows={3} maxLength={4000} value={answer} onChange={e => setAnswer(e.target.value)} /></Field>
+          <p className="muted small-text">{t("可選用建議或自行回答。請勿填寫密碼或 API 密鑰。", "Choose a suggestion or write your own answer. Do not include passwords or API keys.")}</p>
+          <ErrorNotice error={error} />
+          <button className="button primary" type="submit" disabled={busy || !answer.trim()}>{busy ? t("正在確認…", "Confirming…") : t("確認回答", "Confirm answer")}</button>
+        </fieldset>
+      </form>}
+  </article>;
 }
