@@ -26,6 +26,8 @@ type Step = {
   message?: string;
   dataset_id?: string;
   budget_micros?: number;
+  input_steps?:number[];
+  on_failure?:"stop"|"review";
 };
 type Run = {
   id: string;
@@ -228,8 +230,9 @@ export function PrivateCloudWorkflows() {
             </p>
             <ol className="private-workflow-steps">
               {run.definition.steps.map((step, index) => {
+                const failed = run.results.some(r=>r.kind === "failure_review" && r.cursor === index);
                 const finished =
-                    index < run.cursor || run.state === "succeeded",
+                    !failed && (index < run.cursor || run.state === "succeeded"),
                   current =
                     index === run.cursor &&
                     ["running", "awaiting_approval"].includes(run.state);
@@ -243,14 +246,14 @@ export function PrivateCloudWorkflows() {
                     <span
                       className="private-step-icon"
                       aria-label={
-                        finished
+                        failed ? t("步驟失敗", "Step failed") : finished
                           ? t("已完成", "Completed")
                           : current
                             ? t("當前步驟", "Current step")
                             : t("未開始", "Not started")
                       }
                     >
-                      {finished ? (
+                      {failed ? <Square size={14} aria-hidden="true" /> : finished ? (
                         <Check size={14} />
                       ) : step.kind === "approval" ? (
                         <PauseCircle size={16} />
@@ -274,6 +277,8 @@ export function PrivateCloudWorkflows() {
                         <small>
                           {t("此步預算上限", "Step budget limit")}{" "}
                           <Money value={step.budget_micros} />
+                          <br />{t("使用成果：", "Uses outputs: ")}{step.input_steps ? step.input_steps.map(i=>i+1).join(", ") || t("無", "None") : t("全部先前步驟", "All prior steps")}
+                          <br />{step.on_failure === "review" ? t("失敗時等待你確認，不會自動重試。", "Wait for your review on failure; never retry automatically.") : t("失敗時停止流程。", "Stop the workflow on failure.")}
                         </small>
                       )}
                     </div>
@@ -310,6 +315,9 @@ export function PrivateCloudWorkflows() {
                       "Not started. No child-step fees have been reserved.",
                     )}
               </p>
+            )}
+            {run.results.at(-1)?.kind === "failure_review" && run.results.at(-1)?.status === "awaiting_customer" && (
+              <p className="notice warning" role="status">{t("有步驟失敗。確認繼續將略過該步驟，保留已產生費用及失敗標記；不會重試。需要該成果的後續步驟將停止。", "A step failed. Continuing skips it, retains incurred charges and the failure record, and never retries it. Later steps that require its output will stop.")}</p>
             )}
             {run.state === "failed" && (
               <p role="status" className="muted">
@@ -369,6 +377,8 @@ export function PrivateCloudWorkflows() {
                       <span>
                         {r.kind === "authorization"
                           ? t("已確認執行及預算", "Execution & budget approved")
+                          : r.kind === "failure_review" ? t("步驟失敗，保留紀錄", "Step failed; record retained")
+                          : r.kind === "failure_review_decision" ? t("已確認略過失敗步驟", "Failed step skipped after review")
                           : r.kind === "approval"
                             ? t("已核准繼續", "Review approved")
                             : r.kind === "codex"
@@ -401,6 +411,12 @@ export function PrivateCloudWorkflows() {
                           {t("下載資料摘要", "Download summary")}
                         </button>
                       )}
+                      {r.files?.map((f:any)=>(
+                        <button type="button" className="button secondary small" key={f.asset_version_id}
+                          onClick={()=>{void download(w.base+"/assets/"+f.asset_id+"/download?version="+f.version,f.name,w.tenant).catch(setFailure);}}>
+                          {t("下載", "Download")} {f.name}
+                        </button>
+                      ))}
                     </li>
                   ))}
                 </ul>
@@ -477,6 +493,9 @@ export function PrivateCloudWorkflows() {
                         "After confirmation, work runs step by step and settles from actual usage. The consultant's preparation is billed separately.",
                       )}
                 </p>
+                {action.run.results.at(-1)?.kind === "failure_review" && action.run.results.at(-1)?.status === "awaiting_customer" && (
+                  <p className="notice warning">{t("你正在確認略過已失敗的步驟。該步驟不會重試；其費用和失敗狀態會保留。只有不依賴其成果的工作才能繼續。", "You are approving a skip of a failed step. It will not be retried; its charges and failure remain. Only work independent of its output can continue.")}</p>
+                )}
                 <ol className="private-confirm-steps">
                   {action.run.definition.steps.map((step, index) => (
                     <li key={index}>
@@ -490,7 +509,7 @@ export function PrivateCloudWorkflows() {
                           )}
                       </p>
                       {step.kind === "codex" && (
-                        <Money value={step.budget_micros} />
+                        <><Money value={step.budget_micros} /><p>{t("使用成果：", "Uses outputs: ")}{step.input_steps ? step.input_steps.map(i=>i+1).join(", ") || t("無", "None") : t("全部先前步驟", "All prior steps")}</p><p>{step.on_failure === "review" ? t("失敗後等待確認，不會重試。", "Review after failure; no retry.") : t("失敗後停止。", "Stop after failure.")}</p></>
                       )}
                     </li>
                   ))}
