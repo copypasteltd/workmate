@@ -16,10 +16,12 @@ export function ResumableUpload({
   asset,
   conversationId,
   onDone,
+  accept,
 }: {
   asset?: any;
   conversationId?: string;
-  onDone: () => void;
+  onDone: (asset?: any) => void;
+  accept?: string;
 }) {
   const { t } = useI18n(),
     w = useWorkspace(),
@@ -65,7 +67,7 @@ export function ResumableUpload({
         await new Promise<void>((r) => setTimeout(r, 0));
       }
       const checksum = hex(digest.digest()),
-        mime = file.type || "application/octet-stream";
+        mime = file.type === "application/x-zip-compressed" ? "application/zip" : file.type || "application/octet-stream";
       const storageKey = `cp_upload:${w.me.user.id}:${w.tenant}:${w.project}:${conversationId ?? "project"}:${asset?.id ?? "new"}:${asset?.current_version ?? 0}:${encodeURIComponent(file.name)}:${checksum}:${file.size}:${mime}`;
       let saved: any;
       try {
@@ -174,7 +176,7 @@ export function ResumableUpload({
       setStage(
         t("伺服器正在核對完整檔案", "Server is verifying the complete file"),
       );
-      await api(`${w.base}/uploads/${saved.upload_id}/complete`, {
+      const completed = await api(`${w.base}/uploads/${saved.upload_id}/complete`, {
         method: "POST",
         signal: c.signal,
         body: JSON.stringify({ sha256: checksum, size_bytes: file.size }),
@@ -182,7 +184,7 @@ export function ResumableUpload({
       localStorage.removeItem(storageKey);
       localStorage.removeItem(storageKey + ":request");
       setPending(null);
-      onDone();
+      onDone(completed);
     } catch (e) {
       if (c.signal.aborted)
         setStage(
@@ -235,6 +237,7 @@ export function ResumableUpload({
       <Field label={t("檔案", "File")}>
         <input
           type="file"
+          accept={accept}
           disabled={busy}
           onChange={(e) => {
             setFile(e.target.files?.[0] ?? null);
