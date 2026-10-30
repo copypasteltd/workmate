@@ -1,5 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- support-access-stage133 -->
+阶段133使用`docs/tools/prepare_support_publication_133_v1.py`绑定受控客服原始来源／正文版本、客户原生授权、59项后台相关检查和13项真实Admin／Web／Desktop旅程。`docs/tools/publish_support_access_133_v1.py --push`沿用已授权的普通原子八引用更新并核对远端SHA。六组件及中央文档的双语README、6截图、3组实时GIF／MP4和原失败一并保留。阶段128／130／131／132的376211条历史证明身份不删除、不改称本轮运行结果；阶段131完整历史扫描仍是历史基线，本轮核查新增对象、全部当前／新增提交路径与当前README链接。用户未跟踪文件保持原字节且不提交；Desktop根属性文件保持原字节，不强推，不关闭尚未完成的完整验收。
+
+Stage133 binds controlled-support source/revision checks and actual native customer grants to exact sources, 59 related backend checks, 13 real Admin/Web/Windows journey checks and original captures. Its ordinary atomic publisher verifies eight remote SHAs, preserves all historical proof identities and user-owned files, and audits new objects/current paths/README destinations. The prior complete-history scan stays explicitly historical. Full product acceptance remains open.
+
 <!-- content-history-stage132 -->
 阶段132以`docs/tools/prepare_content_history_publication_132_v1.py`绑定当前后台历史源码、54项相关后端检查、9项实际界面旅程、双语指南及真实截图/实时GIF。使用`docs/tools/publish_content_history_132_v1.py --push`按既有授权普通原子更新八个映射引用，并读取远端SHA。阶段131的已发布完整历史检查作为明确的历史基线；本轮独立检查新增历史对象、全部当前文件路径和双语README链接，不宣称重新扫描旧历史。阶段128、130、131所有证明分片、失败和原始字节保留。用户未跟踪文件排除于提交并核对原字节；不强推。所有完整验收记录继续开放。
 

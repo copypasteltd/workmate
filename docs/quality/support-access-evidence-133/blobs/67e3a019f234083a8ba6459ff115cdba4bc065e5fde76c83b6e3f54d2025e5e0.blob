@@ -1,0 +1,104 @@
+{
+  "schema": "copypaste-dedicated-computer-role-1",
+  "role": {
+    "role_key": "computer-operator",
+    "catalog_id": "R19",
+    "version": "1.0.0",
+    "display_name": "雲端電腦操作員",
+    "name_en": "Cloud computer operator",
+    "category": "operations",
+    "runtime_profile": "codex-internal-v1",
+    "skill_bindings": [
+      {
+        "skill_key": "delivery-core",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "dedicated-computer",
+        "version": "1.0.0",
+        "required": true
+      }
+    ],
+    "model_bindings": [
+      {
+        "profile_key": "internal-text-v1",
+        "required": true
+      }
+    ],
+    "tool_ids": [
+      "asset.write",
+      "computer.read",
+      "computer.control"
+    ],
+    "input_contract": {
+      "required_fields": [
+        "business_goal",
+        "confirmed_computer_generation",
+        "ai_budget"
+      ],
+      "optional_fields": []
+    },
+    "workflow": [
+      {
+        "step_key": "inspect",
+        "instruction": "Inspect only the explicitly bound private computer and its current approved scope."
+      },
+      {
+        "step_key": "operate",
+        "instruction": "Use registered bounded controls and verify original actual receipts. Queued or unknown is not success."
+      },
+      {
+        "step_key": "deliver",
+        "instruction": "Report actual outcomes and unresolved operations without buying or extending resources."
+      }
+    ],
+    "deliverables": [
+      {
+        "label": "私有操作結果及回執",
+        "format": "md",
+        "editable_scope": "Private text and actual bounded command receipts; no unsupported claim of remote execution."
+      }
+    ],
+    "acceptance_checks": [
+      "Every control is bound to the original confirmed customer, private task, computer generation and current scope.",
+      "Lost responses do not repeat effects.",
+      "Revocation, expiry and private-content removal block later reads and controls."
+    ],
+    "ai_gateway_policy": "company_internal_only",
+    "status": "design_only",
+    "readiness_evidence": [],
+    "initial_stage": "M2",
+    "qualification_cases": {
+      "normal": "Every control is bound to the original confirmed customer, private task, computer generation and current scope.",
+      "revision": "Lost responses do not repeat effects.",
+      "dependency_or_permission_failure": "Revocation, expiry and private-content removal block later reads and controls.",
+      "execution_status": "not_run"
+    }
+  },
+  "skill_package": {
+    "key": "dedicated-computer",
+    "version": "1.0.0",
+    "sha256": "783d8bf4f8bad942a66a17c153ccc77a43dbc20f4cc5ba6be372b91d7bba1583",
+    "path": "skills/dedicated-computer/1.0.0/SKILL.md",
+    "qualification": "pending_live_validation"
+  },
+  "skill_definition": {
+    "skill_key": "dedicated-computer",
+    "version": "1.0.0",
+    "purpose": "原始客戶獨立同意的私有雲端電腦操作與回執",
+    "candidate_sources": [],
+    "package_state": "installed",
+    "package_sha256": "783d8bf4f8bad942a66a17c153ccc77a43dbc20f4cc5ba6be372b91d7bba1583",
+    "ai_network_policy": "internal_only",
+    "tool_ids": [
+      "computer.read",
+      "computer.control"
+    ],
+    "required_model_profiles": [],
+    "supported_clients": [
+      "web",
+      "extension"
+    ]
+  }
+}

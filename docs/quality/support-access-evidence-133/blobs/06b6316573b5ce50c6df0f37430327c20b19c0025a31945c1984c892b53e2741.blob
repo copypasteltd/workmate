@@ -1,0 +1,74 @@
+import assert from "node:assert/strict";
+import {randomUUID} from "node:crypto";
+import {saveAsset} from "../src/storage.js";
+import {historyAdmin, historyCall, historyLogin, historyOk, type HistoryClient, type System} from "./admin-history-fixture.js";
+
+export const supportPermissions = ["admin.support.read", "admin.support.start", "admin.support.revoke",
+  "admin.users.read", "admin.tenants.read", "admin.content.read", "admin.content.body.read"];
+
+export async function supportFixture(s: System, authenticateAdmin = true) {
+  const owner = await historyLogin(s), workspace = await historyOk(s, owner, "POST", "/v1/tenants", {
+    name: "Harbour customer support", project_name: "Approved campaign"});
+  const tenant = workspace.tenant.id as string, project = workspace.project.id as string;
+  owner.tenant = tenant;
+  await historyOk(s, owner, "POST", `/v1/tenants/${tenant}/demo-credit`, {});
+  const operator = await historyAdmin(s, project, supportPermissions, false);
+  await s.db.control.query("UPDATE admin_bindings SET scope_kind='tenant',scope_id=$2 WHERE principal_id=$1", [operator.id, tenant]);
+  await s.db.control.query("UPDATE admin_principals SET name='Harbour support operator' WHERE id=$1", [operator.id]);
+  operator.client = authenticateAdmin ? await historyLogin(s, operator.email, operator.secret) : null;
+  const base = `/v1/tenants/${tenant}/projects/${project}`;
+  const agent = await historyOk(s, owner, "POST", base + "/agents", {name:"Customer campaign specialist", role_key:"assistant", instructions:"Read only customer approved sources"});
+  const f = {owner, operator, tenant, project, base, agent};
+  return f;
+}
+export type SupportFixture = Awaited<ReturnType<typeof supportFixture>>;
+
+export async function supportTask(s: System, f: SupportFixture, name = "Harbour shared campaign", privateTask = false) {
+  let task: string, conversation: string | null = null;
+  if (privateTask) {
+    const c = await historyOk(s, f.owner, "POST", f.base+"/conversations", {name,agent_id:f.agent.id});
+    conversation = c.id;
+    const accepted = await historyOk(s, f.owner, "POST", f.base+`/conversations/${c.id}/messages`, {
+      client_message_id:randomUUID(),expected_version:1,intent:"delegate",body:"Explicit synthetic diagnostic task for "+name,budget_micros:1000000});
+    task = accepted.task.id;
+  } else {
+    const accepted = await historyOk(s, f.owner, "POST", f.base+"/tasks", {title:name,prompt:"Explicit synthetic diagnostic task for "+name,
+      role_key:"assistant",budget_micros:1000000});
+    task = accepted.id;
+  }
+  const stored = (await s.db.control.query("SELECT private_owner FROM tasks WHERE id=$1", [task])).rows[0];
+  assert.equal(stored.private_owner, privateTask ? f.owner.id : null, "Use actual shared/private task product paths");
+  // Model execution is deliberately disabled. The retained result is synthetic;
+  // the customer task, original hold and attached file use real product paths.
+  await s.db.control.query("UPDATE tasks SET prompt=$2,output=$3 WHERE id=$1", [task,
+    "Protected prompt for "+name, "Protected result for "+name]);
+  const file = await s.db.tx(tx => saveAsset(tx,s.storage,{
+    tenant:f.tenant,project:f.project,user:f.owner.id,name:name+".txt",mime:"text/plain",bytes:Buffer.from("Explicit synthetic original evidence for "+name),
+  }),f.tenant,false,f.owner.id);
+  await s.db.control.query("INSERT INTO task_source_reads(tenant_id,project_id,task_id,kind,resource_id,asset_version_id,sha256) VALUES($1,$2,$3,'asset_version',$4,$4,$5)",
+    [f.tenant,f.project,task,file.version.id,file.version.sha256]);
+  const manifest = (await s.db.control.query("SELECT content_source_manifest($1,$2,ARRAY[$3::uuid],'{}'::uuid[]) AS value", [f.tenant,f.project,task])).rows[0].value;
+  assert.ok(manifest, "Original real file must be readable before its withdrawal");
+  return {id:task,asset_id:file.id,version_id:file.version.id,conversation,name};
+}
+
+export async function supportGrant(s: System, f: SupportFixture, minutes = 15, projects = [f.project]) {
+  return historyOk(s,f.owner,"POST","/v1/support-grants",{reason:"Customer explicitly requested scoped assistance",project_ids:projects,
+    expires_at:new Date(Date.now()+minutes*60000).toISOString()});
+}
+export async function supportSession(s: System, f: SupportFixture, grant?: string, expires = new Date(Date.now()+5*60000).toISOString()) {
+  const op = await historyOk(s,f.operator.client,"POST","/v1/admin/support/sessions",{
+    user_id:f.owner.id,tenant_id:f.tenant,project_ids:[f.project],...(grant?{support_grant_id:grant}:{}),mode:"read_only",
+    expires_at:expires,reason:"Investigate the customer reported campaign"});
+  return op.result_ids[0] as string;
+}
+export async function supportRead(s: System, client: HistoryClient | null, session: string, task?: string, extra: Record<string,string> = {}) {
+  const raw = await s.app.inject({method:"GET",url:`/v1/admin/support/sessions/${session}/view`+(task?`/tasks/${task}`:""),
+    headers:{origin:s.db.config.ADMIN_ORIGIN,...(client?{cookie:client.cookie}:{}),"x-copypaste-support-session":session,...extra}});
+  return {status:raw.statusCode,data:raw.json(),raw};
+}
+export const supportCounts = async (s: System) => (await s.db.control.query(`SELECT
+  (SELECT count(*) FROM tasks) AS tasks,(SELECT count(*) FROM reservations) AS reservations,
+  (SELECT count(*) FROM ledger) AS ledger,(SELECT count(*) FROM current_ai_provider_requests) AS requests,
+  (SELECT count(*) FROM sessions WHERE audience='user') AS customer_sessions`)).rows[0];
+export {historyCall,historyOk,historyLogin};

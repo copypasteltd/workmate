@@ -1,0 +1,24 @@
+import assert from "node:assert/strict";
+import {before,after,test} from "node:test";
+import {buildApp} from "../src/server.js";
+import {loadConfig} from "../src/config.js";
+import {isolatedTestEnvironment} from "./native-test-environment.js";
+import {supportFixture,supportTask,supportGrant,supportSession,supportRead} from "./support-access-fixture.js";
+
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>, s: Awaited<ReturnType<typeof buildApp>>;
+before(async()=>{
+  isolated=await isolatedTestEnvironment();
+  s=await buildApp(loadConfig({...isolated.env,NODE_ENV:"test",DEMO_MODE:"true",WORKER_ENABLED:"false"}),{worker:false});
+});
+after(async()=>{try{await s?.app.close();}finally{await isolated?.cleanup();}});
+
+test("support cannot read retained result text after an original source file is quarantined",async()=>{
+  const f=await supportFixture(s), task=await supportTask(s,f), grant=await supportGrant(s,f), session=await supportSession(s,f,grant.id);
+  const readable=await supportRead(s,f.operator.client,session,task.id);
+  assert.equal(readable.status,200,JSON.stringify(readable.data));
+  assert.equal(readable.data.output,"Protected result for "+task.name);
+  await s.db.control.query("UPDATE assets SET state='quarantined',moderation_version=moderation_version+1 WHERE id=$1",[task.asset_id]);
+  const denied=await supportRead(s,f.operator.client,session,task.id);
+  assert.equal(denied.status,403,"A retained task result must not bypass its withdrawn original file");
+  assert.equal(denied.data.output,undefined);
+});
