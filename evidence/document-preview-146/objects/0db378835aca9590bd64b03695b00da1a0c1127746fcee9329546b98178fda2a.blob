@@ -1,0 +1,60 @@
+import { fromBuffer, type Entry, type ZipFile } from "yauzl";
+import { XMLParser } from "fast-xml-parser";
+import { Problem } from "./lib.js";
+const invalid = () => new Problem(422,"DOCUMENT_PREVIEW_OFFICE_UNSAFE","Use an unencrypted Office file without macros, embedded programs or external data connections");
+/** Inspect the archive without extracting names or following package links. */
+export async function inspectOfficePreview(bytes: Buffer, budget={bytes:0,depth:0}): Promise<"docx"|"xlsx"|"pptx"> {
+  if(budget.depth>2)throw invalid();
+  const zip=await new Promise<ZipFile>((resolve,reject)=>fromBuffer(bytes,{lazyEntries:true,decodeStrings:true,validateEntrySizes:true,strictFileNames:true},(e,z)=>e||!z?reject(invalid()):resolve(z)));
+  const names=new Set<string>();let expanded=0,count=0;
+  const parser=new XMLParser({ignoreAttributes:false,attributeNamePrefix:"",removeNSPrefix:true,processEntities:true});
+  try {
+    await new Promise<void>((resolve,reject)=>{
+      const fail=()=>{zip.close();reject(invalid());};zip.once("error",fail);zip.once("end",resolve);
+      zip.on("entry",(entry:Entry)=>{void(async()=>{
+        const name=entry.fileName.toLowerCase(),mode=(entry.externalFileAttributes>>>16)&0xf000;
+        if(++count>3000||names.has(name)||name.split("/").some(p=>p===".."||p===".")||name.startsWith("/")||name.includes(":")
+          ||entry.isEncrypted()||![0,8].includes(entry.compressionMethod)||![0,0x8000,0x4000].includes(mode)
+          ||!Number.isSafeInteger(entry.uncompressedSize)||entry.uncompressedSize>25*1024**2
+          ||/vbaproject|vbasignature|activex|(?:^|\/)macros(?:\/|$)|(?:^|\/)externallinks\/|(?:^|\/)connections\.xml$|querytables\/|afchunk|\.bin$/.test(name))throw invalid();
+        names.add(name);expanded+=entry.uncompressedSize;budget.bytes+=entry.uncompressedSize;if(expanded>100*1024**2||budget.bytes>100*1024**2)throw invalid();
+        const embedded=name.includes('/embeddings/')&&!name.endsWith('/');
+        if(embedded&&!/\.(?:docx|xlsx|pptx)$/.test(name))throw invalid();
+        if(name.endsWith(".rels")||name.endsWith(".xml")||name.endsWith('.svg')||embedded){
+          if(entry.uncompressedSize>8*1024**2)throw invalid();
+          const stream=await new Promise<import("node:stream").Readable>((yes,no)=>zip.openReadStream(entry,(e,s)=>e||!s?no(invalid()):yes(s)));
+          const parts:Buffer[]=[];let size=0;for await(const part of stream){const b=Buffer.from(part);size+=b.length;if(size>entry.uncompressedSize)throw invalid();parts.push(b);}
+          if(size!==entry.uncompressedSize)throw invalid();const member=Buffer.concat(parts);
+          if(embedded){const nested={bytes:budget.bytes,depth:budget.depth+1};await inspectOfficePreview(member,nested);budget.bytes=nested.bytes;zip.readEntry();return;}
+          const xml=member.toString("utf8");
+          if(/<!DOCTYPE|<!ENTITY|DDEAUTO|\bDDE\b|INCLUDETEXT|INCLUDEPICTURE|\bWEBSERVICE\s*\(|\bRTD\s*\(|\bIMAGE\s*\(/i.test(xml))throw invalid();
+          if(name.endsWith(".rels")){
+            const rel=parser.parse(xml)?.Relationships?.Relationship;
+            for(const r of rel===undefined?[]:Array.isArray(rel)?rel:[rel]){
+              const external=r.TargetMode==="External"||/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(String(r.Target??""));
+              if(external&&!String(r.Type??"").endsWith("/hyperlink"))throw invalid();
+              if(/\/(?:afchunk|oleobject|control)$/i.test(String(r.Type??'')))throw invalid();
+              if(!external){let target=String(r.Target??'');try{target=decodeURIComponent(decodeURIComponent(target));}catch{throw invalid();}
+                if(/[:\\\x00-\x1f]/.test(target)||target.startsWith('//'))throw invalid();
+                const base=name==='_rels/.rels'?[]:name.replace(/(?:^|\/)_(?:rels)\/[^/]+\.rels$/,'').split('/').filter(Boolean);
+                const stack=target.startsWith('/')?[]:base;for(const part of target.split('/')){if(part==='..'){if(!stack.length)throw invalid();stack.pop();}else if(part&&part!=='.')stack.push(part);}
+              }
+            }
+          }
+          if(name.endsWith('.svg')){
+            if(/<\s*(?:script|foreignObject)\b|@import/i.test(xml))throw invalid();
+            const document=parser.parse(xml);
+            const scan=(value:unknown,key='')=>{if(typeof value==='string'){
+              if(['href','src'].includes(key)&&!value.startsWith('#')&&!/^data:image\/(?:png|jpeg|gif|webp);base64,/i.test(value))throw invalid();
+              for(const match of value.matchAll(/url\s*\(([^)]*)\)/gi))if(!match[1].trim().replace(/^['"]|['"]$/g,'').startsWith('#'))throw invalid();
+            }else if(value&&typeof value==='object')for(const [k,v]of Object.entries(value))scan(v,k);};scan(document);
+          }
+        }
+        zip.readEntry();
+      })().catch(fail);});zip.readEntry();
+    });
+    if(!names.has("[content_types].xml")||!names.has("_rels/.rels"))throw invalid();
+    const formats=([['word/document.xml','docx'],['xl/workbook.xml','xlsx'],['ppt/presentation.xml','pptx']] as const).filter(([part])=>names.has(part));
+    if(formats.length!==1)throw invalid();return formats[0][1];
+  } finally {zip.close();}
+}

@@ -1,0 +1,230 @@
+{
+  "source": "docs/contracts/openapi.json",
+  "schemas": {
+    "AdminTenant": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "type": "string",
+          "enum": ["active", "suspended", "closed"]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "billing_account_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": ["id", "name", "state", "version", "billing_account_id"],
+      "additionalProperties": false
+    },
+    "AdminTenantList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/AdminTenant"
+          },
+          "minItems": 0
+        },
+        "next_cursor": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["items", "next_cursor"],
+      "additionalProperties": false
+    },
+    "AdminUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "masked_contact": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contact": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "type": "string",
+          "enum": ["active", "frozen", "closed"]
+        },
+        "registered_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_login_at": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tenant_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "confirmed_customer_charges": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vip_summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "auth_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "masked_contact",
+        "state",
+        "registered_at",
+        "last_login_at",
+        "tenant_ids",
+        "version",
+        "auth_version"
+      ],
+      "additionalProperties": false
+    },
+    "AdminUserDetail": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/components/schemas/AdminUser"
+        },
+        "memberships": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "project_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "minItems": 0
+              },
+              "role": {
+                "$ref": "#/components/schemas/Role"
+              },
+              "state": {
+                "type": "string",
+                "enum": ["active", "removed", "suspended"]
+              }
+            },
+            "required": ["tenant_id", "project_ids", "role", "state"],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        },
+        "billing_account_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "effective_entitlements": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "user",
+        "memberships",
+        "billing_account_ids",
+        "effective_entitlements"
+      ],
+      "additionalProperties": false
+    },
+    "AdminUserList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/AdminUser"
+          },
+          "minItems": 0
+        },
+        "next_cursor": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["items", "next_cursor"],
+      "additionalProperties": false
+    },
+    "Money": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string",
+          "enum": ["HKD"]
+        },
+        "amount_micros": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "description": "One millionth of currency; decimal integer string."
+        }
+      },
+      "required": ["currency", "amount_micros"],
+      "additionalProperties": false
+    },
+    "Role": {
+      "type": "string",
+      "enum": ["owner", "admin", "member", "approver", "viewer"]
+    }
+  },
+  "source_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4"
+}

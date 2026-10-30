@@ -1,0 +1,212 @@
+import { randomUUID } from "node:crypto";
+import type { Database, Tx } from "./db.js";
+import type { Principal } from "./auth.js";
+import { Storage } from "./storage.js";
+import { Problem, canonical, hash, seal, unseal, token } from "./lib.js";
+import { assertLiveEnvironment } from "./recovery-fence.js";
+import { publicationSpecification, publicationPolicyBody, publicationDigest, type PublicationSpecification } from "./publication-model.js";
+import { publicationContext, publicationMode, assertPublicationSources, assertPublicationTask, requirePublicationReauthorization } from "./publication-authority.js";
+import { Publications, updatePublication, lockPublicationTarget, assertPublicationAllowance } from "./publication-service.js";
+import { nextPublicationStep, type PublicationWrite, type PublicationProgress } from "./publication-plan.js";
+import { executePublicationWrite, observePublicationProvider, PublicationProviderFailure } from "./publication-provider.js";
+import { persistPublicationReceipt, recoverPublicationReceipts } from "./publication-receipts.js";
+import { expirePublicationContent } from "./publication-erasure.js";
+
+const active = ["preparing", "waiting_media", "publishing", "processing"];
+const principalFor = async (tx: Tx, operation: any): Promise<Principal> => {
+  const user = (await tx.query("SELECT id,name,email FROM users WHERE id=$1", [operation.actor_id])).rows[0];
+  if (!user) throw new Problem(409, "PUBLICATION_ACTOR_UNAVAILABLE", "The publication author is unavailable");
+  return { ...user, audience: "user", authVersion: operation.actor_auth_version, sessionId: "", sessionHash: "" };
+};
+const own = (operation: any, lease: string) => operation?.lease_token === lease && operation.lease_until?.valueOf() > Date.now() && active.includes(operation.state);
+async function operationLock(tx: Tx, id: string) {
+  return (await tx.query("SELECT * FROM publication_operations WHERE id=$1 FOR UPDATE", [id])).rows[0];
+}
+async function failLease(db: Database, row: any, lease: string, code: string, reauthorize = false) {
+  return db.tx(async tx => {
+    const locked = await operationLock(tx, row.id);
+    if (!locked || locked.lease_token !== lease || !active.includes(locked.state)) return;
+    if (reauthorize) await requirePublicationReauthorization(tx, locked);
+    const effects = (await tx.query("SELECT * FROM publication_effects WHERE operation_id=$1 FOR UPDATE", [locked.id])).rows;
+    const uncertain = effects.some(e => ["dispatched", "unknown"].includes(e.state)) || effects.some(e => e.step_key === "publish" && e.state === "applied");
+    for (const effect of effects) if (effect.state === "dispatched") await tx.query(`UPDATE publication_effects SET state='unknown',
+      version=version+1,error_code=$2,finished_at=clock_timestamp() WHERE id=$1`, [effect.id, code]);
+    return updatePublication(tx, locked, { state: uncertain ? "unknown" : code === "PUBLICATION_EXPIRED" ? "expired" : "failed",
+      error_code: code, lease_token: null, lease_until: null, next_check_at: null,
+      finished_at: uncertain ? null : new Date() });
+  }, row.tenant_id, true);
+}
+async function recoverLeases(db: Database) {
+  await db.tx(async tx => {
+    const rows = (await tx.query(`SELECT * FROM publication_operations WHERE state=ANY($1::text[]) AND lease_until<clock_timestamp()
+      ORDER BY lease_until,id FOR UPDATE SKIP LOCKED LIMIT 20`, [active])).rows;
+    for (const row of rows) {
+      const effects = (await tx.query("SELECT * FROM publication_effects WHERE operation_id=$1 FOR UPDATE", [row.id])).rows;
+      const lost = effects.filter(effect => effect.state === "dispatched");
+      for (const effect of lost) await tx.query(`UPDATE publication_effects SET state='unknown',version=version+1,
+        error_code='PUBLICATION_DISPATCH_INTERRUPTED',finished_at=clock_timestamp() WHERE id=$1`, [effect.id]);
+      await updatePublication(tx, row, { ...(lost.length ? { state: "unknown", error_code: "PUBLICATION_DISPATCH_INTERRUPTED" } : {}),
+        lease_token: null, lease_until: null, next_check_at: lost.length ? null : new Date() });
+    }
+  }, undefined, true);
+}
+async function claim(db: Database) {
+  return db.tx(async tx => {
+    const row = (await tx.query(`SELECT * FROM publication_operations WHERE state IN('queued','preparing','waiting_media','publishing','processing')
+      AND data_mode=$1 AND lease_token IS NULL AND (next_check_at IS NULL OR next_check_at<=clock_timestamp())
+      ORDER BY created_at,id FOR UPDATE SKIP LOCKED LIMIT 1`, [publicationMode(db)])).rows[0];
+    if (!row) return null;
+    return updatePublication(tx, row, { state: row.state === "queued" ? "preparing" : row.state,
+      lease_token: randomUUID(), lease_until: new Date(Date.now() + 90_000), next_check_at: null });
+  }, undefined, true);
+}
+async function mediaURLs(db: Database, tx: Tx, row: any, s: PublicationSpecification) {
+  const urls: string[] = [];
+  for (let ordinal = 0; ordinal < s.sources.length; ordinal++) {
+    let grant = (await tx.query("SELECT * FROM publication_media_grants WHERE operation_id=$1 AND ordinal=$2 ORDER BY created_at LIMIT 1", [row.id, ordinal])).rows[0];
+    if (!grant) {
+      const opaque = token();
+      grant = (await tx.query(`INSERT INTO publication_media_grants(tenant_id,operation_id,ordinal,token_sha256,encrypted_token,expires_at)
+        VALUES($1,$2,$3,$4,$5,$6) RETURNING *`, [row.tenant_id, row.id, ordinal, hash(opaque), seal(db.config.MASTER_KEY!, opaque), s.expires_at])).rows[0];
+    }
+    if (grant.revoked_at || !grant.encrypted_token || grant.expires_at.valueOf() <= Date.now())
+      throw new Problem(409, "PUBLICATION_MEDIA_GRANT_EXPIRED", "Review a fresh publication before sharing media");
+    urls.push(db.config.API_ORIGIN + "/v1/publication-media/" + unseal(db.config.MASTER_KEY!, grant.encrypted_token));
+  }
+  return urls;
+}
+
+/** One bounded provider step per lease. Prepared intents may resume; dispatched writes never replay. */
+export async function advancePublications(db: Database, storage: Storage, options: { signal?: AbortSignal; limit?: number; pollIntervalMs?: number } = {}) {
+  await assertLiveEnvironment(db); await recoverPublicationReceipts(db); await recoverLeases(db);
+  await db.tx(tx => expirePublicationContent(tx), undefined, true);
+  const service = new Publications(db, storage), limit = Math.max(1, Math.min(10, options.limit ?? 2));
+  const pollInterval = db.config.NODE_ENV === "test" ? Math.max(0, options.pollIntervalMs ?? 60_000) : 60_000;
+  for (let index = 0; index < limit && !options.signal?.aborted; index++) {
+    const claimed = await claim(db); if (!claimed) break;
+    const lease = claimed.lease_token;
+    let networkWriteDispatched = false;
+    try {
+      const specification = publicationSpecification.parse(claimed.specification), p = await db.tx(tx => principalFor(tx, claimed), claimed.tenant_id, true);
+      await db.tx(async tx => {
+        await publicationContext(db, tx, p, claimed.tenant_id, claimed.project_id, claimed.target_id, "write", specification);
+        await assertPublicationSources(tx, p, claimed.tenant_id, claimed.project_id, specification);
+        await assertPublicationTask(tx, claimed);
+      }, claimed.tenant_id, true, p.id);
+      await service.verifyOutgoing(specification, options.signal);
+      const prepared = await db.tx(async tx => {
+        const context = await publicationContext(db, tx, p, claimed.tenant_id, claimed.project_id, claimed.target_id, "write", specification);
+        await assertPublicationSources(tx, p, claimed.tenant_id, claimed.project_id, specification);
+        await assertPublicationTask(tx, claimed);
+        await lockPublicationTarget(tx, claimed.tenant_id, specification.target);
+        let row = await operationLock(tx, claimed.id);
+        if (!own(row, lease)) return null;
+        const effects = (await tx.query("SELECT * FROM publication_effects WHERE operation_id=$1 ORDER BY created_at,id", [row.id])).rows;
+        const hasPublic = effects.some(e => e.step_key === "publish" && ["dispatched", "applied", "unknown"].includes(e.state));
+        if (!hasPublic && row.expires_at.valueOf() <= Date.now()) throw new Problem(409, "PUBLICATION_EXPIRED", "The publication approval expired");
+        // Expired media grants are irrelevant once the video request has been accepted.
+        const urls = hasPublic ? [] : await mediaURLs(db, tx, row, specification);
+        const next = nextPublicationStep(specification, effects, row.progress, urls);
+        if (next.kind === "unknown" || next.kind === "failed" || next.kind === "succeeded") {
+          row = await updatePublication(tx, row, { state: next.kind, error_code: next.kind === "succeeded" ? null : next.error_code,
+            lease_token: null, lease_until: null, next_check_at: null, finished_at: next.kind === "unknown" ? null : new Date() });
+          return { done: true as const };
+        }
+        if (next.kind === "read") {
+          row = await updatePublication(tx, row, { state: next.purpose === "video" ? "processing" : "waiting_media" });
+          return { done: false as const, next, row, access_token: context.access_token };
+        }
+        await assertPublicationAllowance(tx, row, publicationPolicyBody.parse(context.policy.body).maximum_daily_publications);
+        const digest = publicationDigest(next);
+        let effect = effects.find(e => e.step_key === next.step_key);
+        if (effect && (effect.state !== "prepared" || effect.request_sha256 !== digest))
+          throw new Problem(409, "PUBLICATION_PREPARED_REQUEST_CHANGED", "The original prepared publication cannot be replaced");
+        if (!effect) effect = (await tx.query(`INSERT INTO publication_effects(tenant_id,operation_id,step_key,state,lease_token,
+          request_sha256,request_encrypted) VALUES($1,$2,$3,'prepared',$4,$5,$6) RETURNING *`,
+          [row.tenant_id, row.id, next.step_key, randomUUID(), digest, seal(db.config.MASTER_KEY!, canonical(next))])).rows[0];
+        return { done: false as const, next, row, effect, access_token: context.access_token };
+      }, claimed.tenant_id, true, p.id);
+      if (!prepared || prepared.done) continue;
+      if (prepared.next.kind === "read") {
+        let progress: PublicationProgress;
+        try {
+          progress = await observePublicationProvider(db.config, prepared.access_token, prepared.next.purpose, prepared.next.remote_id, options.signal);
+        } catch (error) {
+          const fatal = error instanceof PublicationProviderFailure && (error.outcome === "rejected" || error.reauthorize || error.code === "PUBLICATION_PROVIDER_RESPONSE_INVALID");
+          if (fatal) throw error;
+          await db.tx(async tx => {
+            const row = await operationLock(tx, claimed.id);
+            if (!own(row, lease)) return;
+            const failures = Number(row.progress?.read_failures ?? 0) + 1;
+            if (failures >= 5) throw new Problem(409, "PUBLICATION_STATUS_UNAVAILABLE", "Reconcile the original publication manually");
+            await updatePublication(tx, row, { progress: { ...row.progress, read_failures: failures }, error_code: "PUBLICATION_STATUS_TEMPORARY",
+              lease_token: null, lease_until: null, next_check_at: new Date(Date.now() + pollInterval) });
+          }, claimed.tenant_id, true);
+          continue;
+        }
+        await db.tx(async tx => {
+          const row = await operationLock(tx, claimed.id);
+          if (!own(row, lease)) return;
+          const combined = { ...row.progress, ...progress, read_failures: 0,
+            containers: { ...row.progress?.containers, ...progress.containers } };
+          const pending = Object.values(progress.containers ?? {}).some(item => item.status === "IN_PROGRESS") ||
+            progress.video && !(progress.video.published && progress.video.status === "ready");
+          await updatePublication(tx, row, { progress: combined, error_code: null, lease_token: null, lease_until: null,
+            next_check_at: new Date(Date.now() + (pending ? pollInterval : 0)) });
+        }, claimed.tenant_id, true);
+        continue;
+      }
+      const admission = await db.tx(async tx => {
+        const context = await publicationContext(db, tx, p, claimed.tenant_id, claimed.project_id, claimed.target_id, "write", specification);
+        await assertPublicationSources(tx, p, claimed.tenant_id, claimed.project_id, specification);
+        await assertPublicationTask(tx, claimed);
+        await lockPublicationTarget(tx, claimed.tenant_id, specification.target);
+        let row = await operationLock(tx, claimed.id);
+        if (!own(row, lease)) return null;
+        if (row.expires_at.valueOf() <= Date.now()) throw new Problem(409, "PUBLICATION_EXPIRED", "The publication approval expired");
+        await assertPublicationAllowance(tx, row, publicationPolicyBody.parse(context.policy.body).maximum_daily_publications);
+        const effect = (await tx.query("SELECT * FROM publication_effects WHERE id=$1 AND operation_id=$2 FOR UPDATE", [prepared.effect!.id, row.id])).rows[0];
+        if (!effect || effect.state !== "prepared" || !effect.request_encrypted) throw new Problem(409, "PUBLICATION_EFFECT_CHANGED", "Reconcile the original publication effect");
+        const command = JSON.parse(unseal(db.config.MASTER_KEY!, effect.request_encrypted)) as PublicationWrite;
+        const latestEffects = (await tx.query("SELECT * FROM publication_effects WHERE operation_id=$1 ORDER BY created_at,id", [row.id])).rows;
+        const exact = nextPublicationStep(specification, latestEffects, row.progress, await mediaURLs(db, tx, row, specification));
+        if (exact.kind === "read") {
+          // A quota/container observation can expire between preparation and admission.
+          // Preserve the exact prepared intent and obtain a fresh read on the next lease.
+          await updatePublication(tx, row, { lease_token: null, lease_until: null, next_check_at: new Date() });
+          return null;
+        }
+        if (exact.kind !== "write" || publicationDigest(exact) !== effect.request_sha256 || publicationDigest(command) !== effect.request_sha256)
+          throw new Problem(409, "PUBLICATION_PREPARED_REQUEST_CHANGED", "Only the exact original request may be dispatched");
+        const dispatched = (await tx.query(`UPDATE publication_effects SET state='dispatched',version=version+1,
+          dispatched_at=clock_timestamp() WHERE id=$1 RETURNING *`, [effect.id])).rows[0];
+        row = await updatePublication(tx, row, { state: command.public_effect ? "publishing" : "preparing", lease_until: new Date(Date.now() + 60_000) });
+        return { row, effect: dispatched, command, access_token: context.access_token };
+      }, claimed.tenant_id, true, p.id);
+      if (!admission) continue;
+      networkWriteDispatched = true;
+      let outcome: "applied" | "rejected" | "unknown", body: Parameters<typeof persistPublicationReceipt>[4];
+      try {
+        const response = await executePublicationWrite(db.config, admission.access_token, admission.command, options.signal);
+        outcome = "applied"; body = { ...response, attribution: "original_provider_response", request_sha256: admission.effect.request_sha256 };
+      } catch (error) {
+        outcome = error instanceof PublicationProviderFailure ? error.outcome : "unknown";
+        body = { request_sha256: admission.effect.request_sha256,
+          attribution: outcome === "rejected" ? "explicit_provider_rejection" : "transport_outcome_unknown",
+          error_code: error instanceof PublicationProviderFailure ? error.code : "PUBLICATION_TRANSPORT_UNKNOWN",
+          reauthorize: error instanceof PublicationProviderFailure && error.reauthorize };
+      }
+      await persistPublicationReceipt(db, admission.row, admission.effect, outcome, body);
+      await db.tx(async tx => {
+        const row = await operationLock(tx, claimed.id);
+        if (own(row, lease)) await updatePublication(tx, row, { lease_token: null, lease_until: null, next_check_at: new Date() });
+      }, claimed.tenant_id, true);
+    } catch (error) {
+      // A known response with a failed DB commit is retained by the encrypted outbox.
+      // Leave its lease intact for recovery; never substitute a second write.
+      if (!networkWriteDispatched) await failLease(db, claimed, lease, error instanceof Problem && /^PUBLICATION_[A-Z0-9_]+$/.test(error.code) ? error.code : "PUBLICATION_AUTHORITY_OR_SOURCE_CHANGED", error instanceof PublicationProviderFailure && error.reauthorize);
+      else console.error(JSON.stringify({ component: "publication.dispatched_recovery", operation_id: claimed.id,
+        error_code: "PUBLICATION_RESPONSE_COMMIT_PENDING" }));
+    }
+  }
+}

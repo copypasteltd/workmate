@@ -1,0 +1,127 @@
+import { Worker } from "node:worker_threads";
+import { spawn } from "node:child_process";
+import { mkdtemp, mkdir, readFile, writeFile, rm, stat, readdir } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { hash, Problem } from "./lib.js";
+import { inspectOfficePreview } from "./document-preview-package.js";
+
+const root=fileURLToPath(new URL(import.meta.url.endsWith('.ts')?'../':'../../',import.meta.url));
+const invalid=()=>new Problem(422,"DOCUMENT_PREVIEW_INVALID","This file cannot be previewed; download the original or upload an unencrypted supported document");
+const workRoot=path.join(root,'.data/document-preview/work');
+export async function removeDocumentPreviewWork(directory:string){
+  if(path.dirname(path.resolve(directory))!==workRoot||!/^preview-[a-zA-Z0-9]+$/.test(path.basename(directory)))throw new Error('Invalid preview cleanup directory');
+  // Windows may retain Office/antivirus handles briefly after job termination.
+  // The outside ownership marker survives a partially completed recursive rm.
+  await rm(directory,{recursive:true,force:true,maxRetries:8,retryDelay:100});
+  await rm(directory+'.owner.json',{force:true,maxRetries:8,retryDelay:100});
+}
+let reclaimed:Promise<void>|undefined;
+async function reclaimOwnedWork(work:string){
+  await mkdir(work,{recursive:true});
+  for(const entry of await readdir(work,{withFileTypes:true})){
+    if(!entry.isDirectory()||!/^preview-[a-zA-Z0-9]+$/.test(entry.name))continue;
+    const directory=path.join(work,entry.name);
+    try{const marker=JSON.parse(await readFile(directory+'.owner.json','utf8').catch(()=>readFile(path.join(directory,'owner.json'),'utf8')));
+      if(marker.schema!=='workmate-document-preview-1'||!Number.isSafeInteger(marker.pid)||marker.pid<1)continue;
+      try{process.kill(marker.pid,0);continue;}catch(e){if((e as NodeJS.ErrnoException).code!=='ESRCH')continue;}
+      // Only this service's marked directories with a dead owning process are eligible.
+      await removeDocumentPreviewWork(directory);
+    }catch{/* Preserve unknown directories and unreadable ownership markers. */}
+  }
+}
+type Runtime={office_path:string;office_sha256:string;host_path:string;host_sha256:string;host_source_sha256:string;version:string};
+type Page={page:number;page_count:number;width:number;height:number;preview_image:{content_type:string;base64:string};text:string};
+export function documentFormat(mime:string,name:string){
+  if(mime==='application/pdf'||/\.pdf$/i.test(name))return 'pdf';
+  for(const [ext,suffix] of [['docx','wordprocessingml.document'],['xlsx','spreadsheetml.sheet'],['pptx','presentationml.presentation']])
+    if(mime==='application/vnd.openxmlformats-officedocument.'+suffix||name.toLowerCase().endsWith('.'+ext))return ext;
+  return null;
+}
+export class DocumentPreviews {
+  private runtime?:Promise<Runtime|null>;
+  private stop=new AbortController();private users=new Set<string>();private operations=new Set<Promise<unknown>>();
+  private cache=new Map<string,{until:number;bytes?:Buffer;pending:Promise<Buffer>}>();
+  private expiry=setInterval(()=>{for(const [key,item] of this.cache)if(item.until<Date.now())this.cache.delete(key);},30000).unref();
+  private office(){return this.runtime??= (async()=>{
+    try{const r=JSON.parse(await readFile(path.join(root,'.data/document-preview/runtime.json'),'utf8')) as Runtime;
+      if(process.platform!=='win32'||![r.office_path,r.host_path].every(path.isAbsolute)
+        ||!['office_sha256','host_sha256','host_source_sha256'].every(k=>/^[a-f0-9]{64}$/.test((r as any)[k])))return null;
+      if(hash(await readFile(r.office_path))!==r.office_sha256||hash(await readFile(r.host_path))!==r.host_sha256
+        ||hash(await readFile(path.join(root,'src/document-preview-host.cs')))!==r.host_source_sha256)return null;return r;
+    }catch{return null;}
+  })();}
+  async capability(mime:string,name:string,size:number){
+    const format=documentFormat(mime,name);if(!format)return undefined;
+    return {format,max_bytes:25*1024**2,max_pages:400,available:size<=25*1024**2&&(format==='pdf'||!!await this.office()),
+      state:size>25*1024**2?'download_required':format!=='pdf'&&!await this.office()?'setup_required':'ready'};
+  }
+  async close(){this.stop.abort();clearInterval(this.expiry);await Promise.allSettled([...this.operations]);this.cache.clear();}
+  async render(user:string,key:string,bytes:Buffer,page:number,signal:AbortSignal):Promise<Page>{
+    if(this.stop.signal.aborted)throw new Problem(503,'DOCUMENT_PREVIEW_STOPPED','Document preview is stopping');
+    if(this.users.has(user)||this.users.size>=2)throw new Problem(429,'DOCUMENT_PREVIEW_BUSY','A document preview is running. Try again when it finishes.');
+    if(!bytes.length||bytes.length>25*1024**2)throw new Problem(413,'DOCUMENT_PREVIEW_SIZE','Preview documents up to 25 MB; download larger originals');
+    this.users.add(user);const stop=AbortSignal.any([signal,this.stop.signal]);
+    const operation=(async()=>{stop.throwIfAborted();let pdf=bytes;
+      if(!bytes.subarray(0,1024).includes(Buffer.from('%PDF-'))){
+        if(bytes.length<4||bytes.readUInt32LE(0)!==0x04034b50)throw invalid();
+        const format=await inspectOfficePreview(bytes);stop.throwIfAborted();
+        let cached=this.cache.get(key);
+        if(cached&&cached.until<Date.now()){this.cache.delete(key);cached=undefined;}
+        if(!cached){
+          if(this.cache.size>=3)this.cache.delete(this.cache.keys().next().value!);
+          const item:{until:number;bytes?:Buffer;pending:Promise<Buffer>}={until:Date.now()+300000,pending:Promise.resolve(Buffer.alloc(0))};
+          item.pending=this.convert(bytes,format,stop).then(b=>{item.bytes=b;if([...this.cache.values()].reduce((n,x)=>n+(x.bytes?.length??0),0)>80*1024**2)this.cache.delete(key);return b;}).catch(e=>{if(this.cache.get(key)===item)this.cache.delete(key);throw e;});
+          this.cache.set(key,item);cached=item;
+        }
+        pdf=await cached.pending;stop.throwIfAborted();
+      }
+      return this.pdfPage(pdf,page,stop);
+    })();this.operations.add(operation);
+    try{return await operation;}finally{this.users.delete(user);this.operations.delete(operation);}
+  }
+  private async convert(bytes:Buffer,format:string,signal:AbortSignal){
+    // Office can exit successfully without publishing its PDF on a cold profile.
+    // One repeat of this private, preflighted, read-only conversion uses a new
+    // profile; AI jobs, billing and customer external actions are never replayed.
+    for(let attempt=0;;attempt++){
+      try{return await this.convertOnce(bytes,format,signal);}
+      catch(e){if(attempt!==0||signal.aborted||!(e instanceof Problem)||e.code!=='DOCUMENT_PREVIEW_EMPTY_RESULT')throw e;}
+    }
+  }
+  private async convertOnce(bytes:Buffer,format:string,signal:AbortSignal){
+    const runtime=await this.office();if(!runtime)throw new Problem(503,'DOCUMENT_PREVIEW_SETUP_REQUIRED','Office preview is unavailable. Download the original document.');
+    // Check the operator-owned launchers at each conversion, including cache renewal.
+    if(hash(await readFile(runtime.office_path))!==runtime.office_sha256||hash(await readFile(runtime.host_path))!==runtime.host_sha256)throw invalid();
+    const work=workRoot;await(reclaimed??=reclaimOwnedWork(work));signal.throwIfAborted();
+    const directory=await mkdtemp(path.join(work,'preview-'));
+    try{
+      await writeFile(directory+'.owner.json',JSON.stringify({schema:'workmate-document-preview-1',pid:process.pid,created_at:new Date().toISOString()}),{flag:'wx',mode:0o600});
+      const profile=path.join(directory,'profile'),output=path.join(directory,'output'),input=path.join(directory,'input.'+format);
+      await mkdir(path.join(profile,'user'),{recursive:true});await mkdir(output);await writeFile(input,bytes,{mode:0o600});
+      await writeFile(path.join(profile,'user/registrymodifications.xcu'),`<?xml version="1.0"?><oor:items xmlns:oor="http://openoffice.org/2001/registry"><item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="MacroSecurityLevel" oor:op="fuse"><value>3</value></prop></item><item oor:path="/org.openoffice.Office.Common/Load"><prop oor:name="UpdateDocMode" oor:op="fuse"><value>0</value></prop></item><item oor:path="/org.openoffice.Office.Calc/Content/Update"><prop oor:name="Link" oor:op="fuse"><value>0</value></prop></item></oor:items>`);
+      await new Promise<void>((resolve,reject)=>{
+        const child=spawn(runtime.host_path,[String(process.pid),runtime.office_path,pathToFileURL(profile).href,output,input,directory],{windowsHide:true,stdio:'ignore'});
+        let settled=false;const finish=(e?:unknown)=>{if(settled)return;settled=true;clearTimeout(timer);signal.removeEventListener('abort',abort);e?reject(e):resolve();};
+        const abort=()=>{child.kill('SIGKILL');};const timer=setTimeout(abort,50000);
+        child.once('error',finish);child.once('close',code=>finish(signal.aborted?signal.reason:code===0?undefined:new Problem(422,'DOCUMENT_PREVIEW_CONVERSION_FAILED','The Office document could not be converted. Download the original or try an unencrypted copy.')));
+        signal.addEventListener('abort',abort,{once:true});if(signal.aborted)abort();
+      });
+      signal.throwIfAborted();const pdf=path.join(output,'input.pdf'),info=await stat(pdf).catch(e=>{if(e.code==='ENOENT')throw new Problem(422,'DOCUMENT_PREVIEW_EMPTY_RESULT','Office could not produce this preview. Download the original or try another unencrypted copy.');throw e;});
+      if(!info.isFile()||info.size>40*1024**2)throw invalid();const result=await readFile(pdf);if(!result.subarray(0,1024).includes(Buffer.from('%PDF-')))throw invalid();return result;
+    }finally{await removeDocumentPreviewWork(directory).catch(()=>{throw new Problem(503,'DOCUMENT_PREVIEW_CLEANUP_PENDING','Temporary preview files could not be cleared yet. Please try again later.');});}
+  }
+  private pdfPage(bytes:Buffer,page:number,signal:AbortSignal):Promise<Page>{
+    return new Promise((resolve,reject)=>{
+      const worker=new Worker(path.join(root,'scripts/document-preview-worker.mjs'),{workerData:{bytes:new Uint8Array(bytes),page},resourceLimits:{maxOldGenerationSizeMb:256}});
+      let result:any,error:unknown,settled=false;
+      const abort=()=>{error=signal.reason??invalid();void worker.terminate();};
+      const timer=setTimeout(()=>{error=new Problem(422,'DOCUMENT_PREVIEW_TIMEOUT','This page took too long to render. Download the original or try another page.');void worker.terminate();},20000);
+      worker.once('message',value=>{result=value;});worker.once('error',e=>{error=e;});
+      worker.once('exit',code=>{if(settled)return;settled=true;clearTimeout(timer);signal.removeEventListener('abort',abort);
+        if(error||code!==0||!result?.ok){const c=result?.code;reject(error instanceof Problem?error:new Problem(c==='DOCUMENT_PREVIEW_PAGE_RANGE'?416:422,c??'DOCUMENT_PREVIEW_INVALID','This page cannot be previewed. Download the original or choose a valid page.'));}
+        else{const {ok,...value}=result;resolve(value);}});
+      signal.addEventListener('abort',abort,{once:true});if(signal.aborted)abort();
+    });
+  }
+}
