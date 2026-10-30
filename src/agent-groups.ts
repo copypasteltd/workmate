@@ -75,7 +75,7 @@ async function cloudOnly(tx: Tx, actor: Principal) {
     );
 }
 
-async function loadGroup(
+export async function loadGroup(
   tx: Tx,
   actor: Principal,
   tenant: string,
@@ -224,6 +224,7 @@ async function memberReady(
   tenant: string,
   project: string,
   node: any,
+  nativeRoles?: readonly string[],
 ) {
   const a = await getAgentVersion(
     tx,
@@ -232,7 +233,7 @@ async function memberReady(
     node.agent_version,
     true,
   );
-  if (a.tenant_id !== tenant || !groupExecutionRoles.has(a.body.role_key))
+  if (a.tenant_id !== tenant || !(nativeRoles ? nativeRoles.includes(a.body.role_key) : groupExecutionRoles.has(a.body.role_key)))
     throw new Problem(
       409,
       "GROUP_ROLE_NOT_READY",
@@ -241,7 +242,7 @@ async function memberReady(
   const role = catalog.role(a.body.role_key, a.body.role_hash);
   await catalog.ensureEnabled(tx, role.role_key, a.body.role_hash);
   await catalog.boundSkills(role);
-  if (!(await catalog.availableFor(tx, db.config, role)).available)
+  if (!nativeRoles && !(await catalog.availableFor(tx, db.config, role)).available)
     throw new Problem(
       503,
       "AI_SETUP_REQUIRED",
@@ -272,7 +273,7 @@ async function memberReady(
   return a;
 }
 
-async function prepare(
+export async function prepareGroup(
   tx: Tx,
   db: Database,
   catalog: Catalog,
@@ -280,6 +281,7 @@ async function prepare(
   g: any,
   v: any,
   input: GroupRunInput,
+  nativeRoles?: readonly string[],
 ) {
   if (g.version !== input.expected_version || g.state !== "active")
     throw stale();
@@ -303,6 +305,7 @@ async function prepare(
       g.tenant_id,
       g.project_id,
       { ...b, budget_micros: request.budget_micros },
+      nativeRoles,
     );
     const context: any = await freezeWorkContext(
       tx,
@@ -354,6 +357,7 @@ async function prepare(
   }
   return {
     schema_version: 1,
+    ...(nativeRoles ? { execution_location: "desktop" as const } : {}),
     group_version_hash: v.sha256,
     brief: input.brief,
     max_parallelism: input.max_parallelism,
@@ -369,12 +373,13 @@ async function prepare(
   };
 }
 
-async function validateFrozen(
+export async function validateFrozenGroup(
   tx: Tx,
   db: Database,
   catalog: Catalog,
   actor: Principal,
   run: any,
+  nativeRoles?: readonly string[],
 ) {
   await projectAccess(tx, actor, run.tenant_id, run.project_id, "write");
   const g = (
@@ -405,10 +410,11 @@ async function validateFrozen(
       run.tenant_id,
       run.project_id,
       node,
+      nativeRoles,
     );
 }
 
-async function publicRun(tx: Tx, run: any) {
+export async function publicGroupRun(tx: Tx, run: any) {
   const tasks = (
     await tx.query(
       `SELECT id,title,status,error_code,agent_group_node_key AS step_key,budget_micros,
@@ -432,7 +438,7 @@ async function publicRun(tx: Tx, run: any) {
     name: run.name,
     state: run.state,
     error_code: run.error_code,
-    execution_location: "cloud",
+    execution_location: run.execution_location ?? "cloud",
     visibility: "private",
     conversation_id: run.conversation_id,
     coordinator_task_id: run.coordinator_task_id,
@@ -476,6 +482,9 @@ export async function stopAgentGroupRun(
   );
 }
 const stopRun = stopAgentGroupRun;
+const prepare = prepareGroup;
+const validateFrozen = validateFrozenGroup;
+const publicRun = publicGroupRun;
 
 export function registerAgentGroups(
   app: FastifyInstance,
@@ -963,7 +972,7 @@ export function registerAgentGroups(
             if (q.before) {
               const anchor = await tx.query(
                 `SELECT id FROM agent_group_runs WHERE id=$1 AND group_id=$2 AND created_by=$3
-                 AND content_state='active' AND retention_expires_at>clock_timestamp() FOR SHARE`,
+                 AND execution_location='cloud' AND content_state='active' AND retention_expires_at>clock_timestamp() FOR SHARE`,
                 [q.before, ids.group, req.principal.id],
               );
               if (!anchor.rowCount) throw missing();
@@ -971,7 +980,7 @@ export function registerAgentGroups(
             const rows = (
               await tx.query(
                 `SELECT * FROM agent_group_runs WHERE group_id=$1 AND created_by=$2
-                 AND content_state='active' AND retention_expires_at>clock_timestamp()
+                 AND execution_location='cloud' AND content_state='active' AND retention_expires_at>clock_timestamp()
                  AND ($3::uuid IS NULL OR id=$3)
                  AND ($4::uuid IS NULL OR (created_at,id)<
                    (SELECT created_at,id FROM agent_group_runs WHERE id=$4))
@@ -1017,7 +1026,7 @@ export function registerAgentGroups(
           await loadGroup(tx, req.principal, tenant, group, true);
           const r = (
             await tx.query(
-              "SELECT * FROM agent_group_runs WHERE id=$1 AND group_id=$2 AND created_by=$3 AND content_state='active' FOR UPDATE",
+              "SELECT * FROM agent_group_runs WHERE id=$1 AND group_id=$2 AND created_by=$3 AND execution_location='cloud' AND content_state='active' FOR UPDATE",
               [run, group, req.principal.id],
             )
           ).rows[0];
@@ -1118,9 +1127,33 @@ export async function groupResults(tx: Tx, task: any) {
 }
 
 export async function advanceAgentGroups(db: Database, catalog: Catalog) {
+  // Reaping native runs never launches a model or creates a cloud outbox.
+  // It releases unclaimed holds after expiry/withdrawal and requests that
+  // running local tasks stop through their existing heartbeat/settlement path.
+  const expiredNative = (await db.control.query(`SELECT r.id,r.tenant_id,r.created_by FROM agent_group_runs r
+    JOIN users u ON u.id=r.created_by JOIN projects p ON p.id=r.project_id JOIN tenants t ON t.id=r.tenant_id
+    WHERE r.execution_location='desktop' AND r.state='running' AND (r.deadline_at<=clock_timestamp()
+      OR r.content_state<>'active' OR u.status<>'active' OR u.auth_version<>r.actor_auth_version OR p.archived
+      OR t.status<>'active' OR NOT EXISTS(SELECT 1 FROM refresh_tokens f JOIN sessions s ON s.id=f.session_id
+        WHERE f.family_id::text=r.native_binding->>'native_family_id' AND f.client_id='desktop'
+        AND f.user_id=r.created_by AND f.revoked_at IS NULL AND f.expires_at>clock_timestamp()
+        AND s.revoked_at IS NULL AND s.expires_at>clock_timestamp() AND s.auth_version=r.actor_auth_version))
+    ORDER BY r.created_at LIMIT 20`)).rows;
+  for (const candidate of expiredNative) await db.tx(async tx => {
+    const run = (await tx.query("SELECT * FROM agent_group_runs WHERE id=$1 AND state='running' FOR UPDATE SKIP LOCKED",[candidate.id])).rows[0];
+    if(run && (await tx.query(`SELECT 1 FROM agent_group_runs r
+      JOIN users u ON u.id=r.created_by JOIN projects p ON p.id=r.project_id JOIN tenants t ON t.id=r.tenant_id
+      WHERE r.id=$1 AND (r.deadline_at<=clock_timestamp() OR r.content_state<>'active' OR u.status<>'active'
+        OR u.auth_version<>r.actor_auth_version OR p.archived OR t.status<>'active'
+        OR NOT EXISTS(SELECT 1 FROM refresh_tokens f JOIN sessions s ON s.id=f.session_id
+          WHERE f.family_id::text=r.native_binding->>'native_family_id' AND f.client_id='desktop'
+          AND f.user_id=r.created_by AND f.revoked_at IS NULL AND f.expires_at>clock_timestamp()
+          AND s.revoked_at IS NULL AND s.expires_at>clock_timestamp() AND s.auth_version=r.actor_auth_version))`,[run.id])).rowCount)
+      await stopAgentGroupRun(tx,run,"cancelled","NATIVE_TEAM_EXPIRED_OR_WITHDRAWN");
+  },candidate.tenant_id,true,candidate.created_by);
   const candidates = (
     await db.control.query(
-      "SELECT id,tenant_id,created_by FROM agent_group_runs WHERE state='running' ORDER BY created_at LIMIT 20",
+      "SELECT id,tenant_id,created_by FROM agent_group_runs WHERE state='running' AND execution_location='cloud' ORDER BY created_at LIMIT 20",
     )
   ).rows;
   for (const candidate of candidates) {

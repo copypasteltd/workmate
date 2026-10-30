@@ -34,7 +34,7 @@ export function deliveryFilename(value: string) {
 }
 const publicFile = ({ storage_key: _key, content: _content, ...file }: File) => file;
 
-async function current(tx: Tx, principal: Principal, scope: Scope, expected: Selection) {
+export async function selectTaskDelivery(tx: Tx, principal: Principal, scope: Scope, expected: Selection) {
   const task = await deliveryTaskAccess(tx, principal, scope.tenant, scope.task, scope.project);
   if (!["succeeded", "failed", "cancelled"].includes(task.status) || task.mode === "plan" || task.version !== expected.expected_version)
     throw new Problem(409, "VERSION_CONFLICT", "Refresh the completed task before exporting its current delivery");
@@ -75,6 +75,7 @@ async function current(tx: Tx, principal: Principal, scope: Scope, expected: Sel
   };
   return { task, files, manifest };
 }
+const current = selectTaskDelivery;
 
 function instructions(manifest: Awaited<ReturnType<typeof current>>["manifest"]) {
   return `# CopyPaste · 完整交付包 / Complete delivery package\n\n` +
@@ -95,7 +96,7 @@ function instructions(manifest: Awaited<ReturnType<typeof current>>["manifest"])
 }
 
 /** Disk-backed ZIP64, one source stream at a time, with verification before any response bytes. */
-export async function writeDeliveryArchive(directory: string, files: File[], manifest: object, storage: Pick<Storage, "stream">, signal: AbortSignal) {
+export async function writeDeliveryArchive(directory: string, files: File[], manifest: object, storage: Pick<Storage, "stream">, signal: AbortSignal, readme?: string) {
   const zip = new ZipFile(), zipOutput = zip.outputStream as Readable, active = new Set<Readable>();
   const output = path.join(directory, "delivery.zip"), digest = createHash("sha256"); let bytes = 0;
   const abort = () => { const error = new Error("Delivery export interrupted"); for (const stream of active) stream.destroy(error); zipOutput.destroy(error); };
@@ -128,7 +129,7 @@ export async function writeDeliveryArchive(directory: string, files: File[], man
         }).catch(error => callback(error, Readable.from([])));
       });
     }
-    for (const [name, content] of [["manifest.json", JSON.stringify(manifest, null, 2) + "\n"], ["README.md", instructions(manifest as any)]] as const) {
+    for (const [name, content] of [["manifest.json", JSON.stringify(manifest, null, 2) + "\n"], ["README.md", readme ?? instructions(manifest as any)]] as const) {
       const buffer = Buffer.from(content); sums.push(`${hash(buffer)}  ${name}`); zip.addBuffer(buffer, name, options);
     }
     zip.addBuffer(Buffer.from(sums.join("\n") + "\n"), "SHA256SUMS", options);

@@ -16,6 +16,7 @@ import { saveAsset } from "./storage.js";
 import { analyticsEvidence } from "./analytics.js";
 import { desktopRuntime } from "./desktop-runtime.js";
 import { assertTaskContentSources, recordTaskSourceRead } from "./task-content-sources.js";
+import { lockNativeTeam } from "./native-agent-groups.js";
 
 export const nativeWorkflowDefinition = z.object({ steps: z.array(z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("codex"), role_key: z.string().min(1).max(80), prompt: z.string().trim().min(5).max(12000),
@@ -34,6 +35,7 @@ const notFound = () => new Problem(404, "NOT_FOUND", "Native workflow not found"
 /** Always acquire root -> run -> child, including cleanup after withdrawal.
  * The root stop trigger takes this same order and cancels child media too. */
 export async function lockNativeWorkflowParent(tx: Tx, task: any, active = false) {
+  await lockNativeTeam(tx, task, active);
   if (!task.desktop_workflow_run_id) return null;
   const hint = (await tx.query("SELECT origin_task_id FROM workflow_runs WHERE id=$1", [task.desktop_workflow_run_id])).rows[0];
   if (!hint) throw unavailable();

@@ -196,7 +196,9 @@ export async function enqueueTask(
     throw new Problem(409, "CLOUD_RUNTIME_AGENT_CONSENT_REQUIRED", "The confirmed computer requires its dedicated operator role");
   await catalog.boundSkills(role);
   await catalog.ensureEnabled(tx, b.role_key, catalog.digest(role));
-  const ready = parent
+  // Team members have their own frozen roles and capability bindings; the
+  // coordinator is a dependency parent, not a substitute runtime profile.
+  const ready = parent && !options.agent_group
     ? (
         await boundTaskAvailability(tx, db.config, catalog, {
           ...parent,

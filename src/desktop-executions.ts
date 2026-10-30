@@ -23,6 +23,7 @@ import { enqueueTask } from "./task-service.js";
 import { revisionSelection } from "./delivery-revision-model.js";
 import { prepareDeliveryRevision } from "./delivery-revisions.js";
 import { deliveryTaskAccess } from "./business-quality.js";
+import { registerNativeAgentGroups } from "./native-agent-groups.js";
 import { event } from "./tasks.js";
 import { assertTaskSkills } from "./skill-lifecycle.js";
 import { projectConfigurationInstructions } from "./project-configuration.js";
@@ -117,6 +118,7 @@ export const desktopLocalRoleKeys = [
   "workflow-consultant",
 ];
 const companyToolNames = new Set([
+  "group_results",
   "project_assets",
   "asset_text_read",
   "cloud_files",
@@ -205,10 +207,15 @@ export async function registerDesktopExecutions(
   registerDesktopSolutions(app, db, catalog, desktopLocalRoleKeys);
   const gateways = new Map<string, Promise<Gateway>>(),
     shutdown = new AbortController();
-  const companyCalls = new Map<
-    string,
-    { taskId: string; abort: AbortController; promise: Promise<unknown> }
-  >();
+  type CompanyCall = { taskId: string; actorId: string; nativeFamilyId: string;
+    fencingToken: string; abort: AbortController; promise: Promise<unknown> };
+  type NativeRenewal = { at: number; calls: CompanyCall[] };
+  const companyCalls = new Map<string, CompanyCall>();
+  const pendingRenewals = new Map<string, Set<NativeRenewal>>();
+  const liveRenewal = (t: any, observed: NativeRenewal) =>
+    observed.at < new Date(t.lease_until).getTime() && observed.calls.some(call =>
+      call.taskId === t.id && call.fencingToken === t.fencing_token && !call.abort.signal.aborted
+      && [...companyCalls.values()].includes(call));
   const base = "/v1/tenants/:tenant/projects/:project/desktop-executions";
   const workflows = new DesktopWorkflows(
     db,
@@ -242,6 +249,7 @@ export async function registerDesktopExecutions(
   }
 
   registerDesktopGeo(app, db, catalog, desktopFamily, desktopLocalRoleKeys);
+  registerNativeAgentGroups(app, db, catalog, desktopFamily, desktopLocalRoleKeys, storage);
 
   async function own(tx: Tx, req: FastifyRequest, write = false, lock = false) {
     const p = executionParams.parse(req.params);
@@ -283,7 +291,7 @@ export async function registerDesktopExecutions(
     return { d, t };
   }
 
-  async function authorize(tx: Tx, d: any, t: any, active = true) {
+  async function authorize(tx: Tx, d: any, t: any, active = true, observedLeaseAt?: number) {
     t.native_method_tools_version = d.method_tools_version;
     const parent = await lockNativeWorkflowParent(tx, t, true);
     if (parent) await authorize(tx, parent.d, parent.t);
@@ -345,7 +353,7 @@ export async function registerDesktopExecutions(
         t.status !== "running" ||
         t.cancel_requested ||
         t.content_state !== "active" ||
-        new Date(t.lease_until).getTime() <= Date.now() ||
+        new Date(t.lease_until).getTime() <= (observedLeaseAt ?? Date.now()) ||
         new Date(d.credential_expires_at).getTime() <= Date.now())
     )
       throw denied();
@@ -884,6 +892,7 @@ export async function registerDesktopExecutions(
       key(req);
       const {
         task: prepared,
+        nativeFamilyId,
         expiresAt,
         videoReady,
       } = await db.tx(async (tx) => {
@@ -924,6 +933,7 @@ export async function registerDesktopExecutions(
         );
         return {
           task: t,
+          nativeFamilyId: d.native_family_id,
           expiresAt: new Date(d.credential_expires_at).getTime(),
           videoReady: !!capabilities.video,
         };
@@ -1014,7 +1024,7 @@ export async function registerDesktopExecutions(
             );
           throw error;
         });
-      const active = { taskId: prepared.id, abort, promise };
+      const active: CompanyCall = { taskId: prepared.id, actorId: req.principal.id, nativeFamilyId, fencingToken: prepared.fencing_token, abort, promise };
       companyCalls.set(callKey, active);
       try {
         return await promise;
@@ -1030,27 +1040,37 @@ export async function registerDesktopExecutions(
     base + "/:execution/heartbeat",
     { preHandler: requireUser(db) },
     async (req) => {
-      const p = executionParams.parse(req.params);
+      const p = executionParams.parse(req.params), receivedAt = Date.now();
       z.object({}).strict().parse(req.body);
-      return db.tx(async (tx) => {
-        const { d, t } = await own(tx, req, true, true);
-        if (
-          d.state === "running" &&
-          t.status === "running" &&
-          !t.cancel_requested
-        ) {
-          await authorize(tx, d, t);
-          const cost = await taskProviderBudgetReceipt(tx, t.id);
-          await tx.query(
-            "UPDATE tasks SET lease_until=now()+interval '45 seconds',accrued_micros=$2 WHERE id=$1",
-            [t.id, cost.knownChargeMicros],
-          );
-        }
-        return publicExecution(
-          d,
-          (await tx.query("SELECT * FROM tasks WHERE id=$1", [t.id])).rows[0],
-        );
-      }, p.tenant);
+      // A company operation may hold the task lock longer than its lease. Only
+      // an authenticated heartbeat received before expiry, for that same owning
+      // native family and actual in-flight operation, may finish its renewal.
+      const candidates = [...companyCalls.values()].filter(call => call.taskId === p.execution
+        && call.actorId === req.principal.id && !call.abort.signal.aborted);
+      const observed: NativeRenewal = { at: receivedAt, calls: [] };
+      if (candidates.length) {
+        const currentFamily = await db.tx(tx => desktopFamily(tx, req.principal), p.tenant, false, req.principal.id);
+        observed.calls = candidates.filter(call => call.nativeFamilyId === currentFamily);
+      }
+      const waiting = pendingRenewals.get(p.execution) ?? new Set<NativeRenewal>();
+      waiting.add(observed); pendingRenewals.set(p.execution, waiting);
+      try {
+        return await db.tx(async (tx) => {
+          const { d, t } = await own(tx, req, true, true);
+          if (d.state === "running" && t.status === "running" && !t.cancel_requested) {
+            await authorize(tx, d, t, true, liveRenewal(t, observed) ? observed.at : undefined);
+            const cost = await taskProviderBudgetReceipt(tx, t.id);
+            await tx.query(
+              "UPDATE tasks SET lease_until=clock_timestamp()+interval '45 seconds',accrued_micros=$2 WHERE id=$1",
+              [t.id, cost.knownChargeMicros],
+            );
+          }
+          return publicExecution(d, (await tx.query("SELECT * FROM tasks WHERE id=$1", [t.id])).rows[0]);
+        }, p.tenant);
+      } finally {
+        waiting.delete(observed);
+        if (!waiting.size && pendingRenewals.get(p.execution) === waiting) pendingRenewals.delete(p.execution);
+      }
     },
   );
 
@@ -1328,12 +1348,19 @@ export async function registerDesktopExecutions(
   async function recover() {
     const rows = (
       await db.control.query(
-        `SELECT d.task_id FROM desktop_executions d JOIN tasks t ON t.id=d.task_id WHERE
+        `SELECT d.task_id,d.state,t.status,t.cancel_requested,d.credential_expires_at,t.fencing_token,t.lease_until
+       FROM desktop_executions d JOIN tasks t ON t.id=d.task_id WHERE
        (d.state='prepared' AND (d.created_at<now()-interval '5 minutes' OR t.cancel_requested OR t.status IN ('cancelled','failed','reconciling')))
        OR (d.state IN ('running','recovering','stopping') AND (t.status='reconciling' OR t.lease_until<=now() OR coalesce(d.credential_expires_at,d.startup_deadline_at)<=now())) LIMIT 100`,
       )
     ).rows;
     for (const row of rows) {
+      // Do not abort an actual server-owned tool while its owning client has
+      // already sent a valid renewal which is waiting for that tool's row lock.
+      // The tool timeout, credential expiry, fencing and cancellation still apply.
+      if (row.state === "running" && row.status === "running" && !row.cancel_requested
+        && new Date(row.credential_expires_at).getTime() > Date.now()
+        && [...(pendingRenewals.get(row.task_id) ?? [])].some(observed => liveRenewal({ ...row, id: row.task_id }, observed))) continue;
       await closeCompanyCalls(row.task_id);
       await closeGateway(row.task_id);
       await db.tx(
