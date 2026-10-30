@@ -1,0 +1,450 @@
+-- Optional, explicitly authorized leases of operator-preprovisioned physical
+-- cloud computers. Existing SQL001-128 and AI task accounting are unchanged.
+CREATE TABLE cloud_runtime_plans (
+ key text NOT NULL,version integer NOT NULL CHECK(version>0),body jsonb NOT NULL,
+ data_mode text NOT NULL CHECK(data_mode IN('simulated','configured_services')),
+ created_by uuid NOT NULL REFERENCES admin_principals(id),created_at timestamptz NOT NULL DEFAULT now(),
+ PRIMARY KEY(key,version),CHECK(jsonb_typeof(body)='object')
+);
+CREATE TABLE cloud_runtime_plan_heads (
+ key text PRIMARY KEY,version integer NOT NULL,enabled boolean NOT NULL DEFAULT false,
+ FOREIGN KEY(key,version) REFERENCES cloud_runtime_plans(key,version)
+);
+CREATE TABLE cloud_runtime_nodes (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),name text NOT NULL,plan_key text NOT NULL REFERENCES cloud_runtime_plan_heads(key),
+ machine_fingerprint text NOT NULL UNIQUE CHECK(machine_fingerprint ~ '^[a-f0-9]{64}$'),
+ token_hash text NOT NULL CHECK(token_hash ~ '^[a-f0-9]{64}$'),token_version integer NOT NULL DEFAULT 1 CHECK(token_version>0),
+ state text NOT NULL DEFAULT 'registered' CHECK(state IN('registered','available','occupied','draining','quarantined')),
+ instance_id uuid,generation integer NOT NULL DEFAULT 0 CHECK(generation>=0),last_heartbeat_at timestamptz,
+ created_by uuid NOT NULL REFERENCES admin_principals(id),created_at timestamptz NOT NULL DEFAULT now(),
+ version integer NOT NULL DEFAULT 1 CHECK(version>0)
+);
+CREATE TABLE cloud_runtime_quotes (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL REFERENCES tenants(id),project_id uuid NOT NULL,
+ private_owner uuid NOT NULL REFERENCES users(id),actor_auth_version integer NOT NULL,
+ billing_account_id uuid NOT NULL REFERENCES wallets(id),plan_key text NOT NULL,plan_version integer NOT NULL,
+ body jsonb NOT NULL,specification_hash text NOT NULL CHECK(specification_hash ~ '^[a-f0-9]{64}$'),
+ maximum_cost_micros bigint NOT NULL CHECK(maximum_cost_micros>0),
+ per_minute_micros bigint NOT NULL CHECK(per_minute_micros>0),
+ state text NOT NULL DEFAULT 'pending' CHECK(state IN('pending','activated','declined')),
+ content_state text NOT NULL DEFAULT 'active' CHECK(content_state IN('active','deleted')),
+ expires_at timestamptz NOT NULL DEFAULT now()+interval '15 minutes',created_at timestamptz NOT NULL DEFAULT now(),
+ FOREIGN KEY(tenant_id,project_id) REFERENCES projects(tenant_id,id),
+ FOREIGN KEY(plan_key,plan_version) REFERENCES cloud_runtime_plans(key,version),UNIQUE(tenant_id,project_id,id)
+);
+CREATE TABLE cloud_runtime_sessions (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,project_id uuid NOT NULL,private_owner uuid NOT NULL REFERENCES users(id),
+ quote_id uuid NOT NULL UNIQUE,node_id uuid NOT NULL REFERENCES cloud_runtime_nodes(id),generation integer NOT NULL CHECK(generation>0),
+ fencing_token uuid NOT NULL DEFAULT gen_random_uuid(),
+ state text NOT NULL DEFAULT 'starting' CHECK(state IN('starting','running','stop_requested','reconciling','stopped','failed')),
+ content_state text NOT NULL DEFAULT 'active' CHECK(content_state IN('active','deleted')),
+ version integer NOT NULL DEFAULT 1 CHECK(version>0),confirmed_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ first_delivered_at timestamptz,started_at timestamptz,expires_at timestamptz NOT NULL,
+ last_customer_activity_at timestamptz NOT NULL DEFAULT clock_timestamp(),stopped_at timestamptz,
+ last_maintained_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ cleanup_verified boolean NOT NULL DEFAULT false,usage_milliseconds bigint,charged_micros bigint NOT NULL DEFAULT 0 CHECK(charged_micros>=0),
+ last_error text,FOREIGN KEY(tenant_id,project_id,quote_id) REFERENCES cloud_runtime_quotes(tenant_id,project_id,id),
+ UNIQUE(tenant_id,project_id,id),UNIQUE(node_id,generation),CHECK(usage_milliseconds IS NULL OR usage_milliseconds>=0),
+ CHECK(state NOT IN('stopped','failed') OR cleanup_verified)
+);
+-- Expiry does not release a computer. A verified cleanup receipt is required
+-- before the same physical node can be assigned to another customer.
+CREATE UNIQUE INDEX cloud_runtime_exclusive_computer ON cloud_runtime_sessions(node_id)
+ WHERE state IN('starting','running','stop_requested','reconciling');
+CREATE INDEX cloud_runtime_due ON cloud_runtime_sessions(expires_at)
+ WHERE state IN('starting','running','stop_requested','reconciling');
+CREATE TABLE cloud_runtime_commands (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,project_id uuid NOT NULL,private_owner uuid NOT NULL,
+ session_id uuid NOT NULL,node_id uuid NOT NULL REFERENCES cloud_runtime_nodes(id),generation integer NOT NULL CHECK(generation>0),
+ kind text NOT NULL CHECK(kind IN('start','input','stop')),body jsonb NOT NULL,task_id uuid REFERENCES tasks(id),
+ state text NOT NULL DEFAULT 'pending' CHECK(state IN('pending','delivered','completed','failed','cancelled')),
+ result text,created_at timestamptz NOT NULL DEFAULT clock_timestamp(),delivered_at timestamptz,completed_at timestamptz,
+ FOREIGN KEY(tenant_id,project_id,session_id) REFERENCES cloud_runtime_sessions(tenant_id,project_id,id),
+ CHECK(result IS NULL OR octet_length(result)<=65536)
+);
+CREATE UNIQUE INDEX cloud_runtime_one_start_stop ON cloud_runtime_commands(session_id,kind) WHERE kind IN('start','stop');
+CREATE TABLE cloud_runtime_holds (
+ session_id uuid PRIMARY KEY REFERENCES cloud_runtime_sessions(id),tenant_id uuid NOT NULL,project_id uuid NOT NULL,private_owner uuid NOT NULL,
+ billing_account_id uuid NOT NULL REFERENCES wallets(id),amount_micros bigint NOT NULL CHECK(amount_micros>0),
+ state text NOT NULL DEFAULT 'reserved' CHECK(state IN('reserved','settled','released','reconciling')),
+ journal_entry_id uuid NOT NULL REFERENCES billing_journal(id),charge_id uuid UNIQUE REFERENCES ledger(id),
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ FOREIGN KEY(tenant_id,project_id,session_id) REFERENCES cloud_runtime_sessions(tenant_id,project_id,id)
+);
+CREATE TABLE cloud_runtime_hold_allocations (
+ session_id uuid NOT NULL REFERENCES cloud_runtime_holds(session_id),lot_id uuid NOT NULL REFERENCES funding_lots(id),
+ amount_micros bigint NOT NULL CHECK(amount_micros>0),PRIMARY KEY(session_id,lot_id)
+);
+CREATE TABLE cloud_runtime_charge_sources (
+ charge_id uuid NOT NULL REFERENCES ledger(id),lot_id uuid REFERENCES funding_lots(id),
+ kind text NOT NULL CHECK(kind IN('paid','gift','credit')),amount_micros bigint NOT NULL CHECK(amount_micros>0),
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),UNIQUE NULLS NOT DISTINCT(charge_id,lot_id),CHECK((kind='credit')=(lot_id IS NULL))
+);
+CREATE TABLE cloud_runtime_frames (
+ session_id uuid PRIMARY KEY REFERENCES cloud_runtime_sessions(id),generation integer NOT NULL CHECK(generation>0),
+ sequence bigint NOT NULL CHECK(sequence>0),body bytea NOT NULL CHECK(octet_length(body) BETWEEN 8 AND 524288),
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp()
+);
+CREATE TABLE cloud_runtime_events (
+ id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,tenant_id uuid NOT NULL,project_id uuid NOT NULL,private_owner uuid NOT NULL,
+ session_id uuid NOT NULL,kind text NOT NULL,body jsonb NOT NULL,created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ FOREIGN KEY(tenant_id,project_id,session_id) REFERENCES cloud_runtime_sessions(tenant_id,project_id,id)
+);
+ALTER TABLE ledger ADD COLUMN cloud_runtime_session_id uuid REFERENCES cloud_runtime_sessions(id);
+CREATE UNIQUE INDEX cloud_runtime_one_charge ON ledger(cloud_runtime_session_id) WHERE cloud_runtime_session_id IS NOT NULL;
+
+DO $$ DECLARE t text; BEGIN
+ FOREACH t IN ARRAY ARRAY['cloud_runtime_plans','cloud_runtime_plan_heads','cloud_runtime_nodes',
+  'cloud_runtime_hold_allocations','cloud_runtime_charge_sources','cloud_runtime_frames'] LOOP
+  EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY',t);
+  EXECUTE format('ALTER TABLE %I FORCE ROW LEVEL SECURITY',t);
+  EXECUTE format('CREATE POLICY runtime_control_only ON %I USING(current_user=''cp_control'') WITH CHECK(current_user=''cp_control'')',t);
+  EXECUTE format('REVOKE ALL ON %I FROM PUBLIC,cp_app,cp_queue',t);
+  EXECUTE format('GRANT SELECT,INSERT,UPDATE,DELETE ON %I TO cp_control',t);
+ END LOOP;
+ FOREACH t IN ARRAY ARRAY['cloud_runtime_quotes','cloud_runtime_sessions','cloud_runtime_commands','cloud_runtime_holds','cloud_runtime_events'] LOOP
+  EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY',t);
+  EXECUTE format('ALTER TABLE %I FORCE ROW LEVEL SECURITY',t);
+  EXECUTE format('CREATE POLICY runtime_private_owner ON %I USING(current_user=''cp_control'' OR (tenant_id=nullif(current_setting(''app.tenant_id'',true),'''')::uuid AND private_owner=nullif(current_setting(''app.actor_id'',true),'''')::uuid)) WITH CHECK(current_user=''cp_control'' OR (tenant_id=nullif(current_setting(''app.tenant_id'',true),'''')::uuid AND private_owner=nullif(current_setting(''app.actor_id'',true),'''')::uuid))',t);
+  EXECUTE format('REVOKE ALL ON %I FROM PUBLIC,cp_app,cp_queue',t);
+  EXECUTE format('GRANT SELECT ON %I TO cp_app',t);
+  EXECUTE format('GRANT SELECT,INSERT,UPDATE ON %I TO cp_control',t);
+ END LOOP;
+END $$;
+GRANT USAGE,SELECT ON SEQUENCE cloud_runtime_events_id_seq TO cp_control;
+
+CREATE FUNCTION guard_cloud_runtime_facts() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+DECLARE q cloud_runtime_quotes;s cloud_runtime_sessions;h cloud_runtime_holds;w wallets;plan cloud_runtime_plans;
+BEGIN
+ IF TG_OP='DELETE' THEN RAISE EXCEPTION 'Dedicated resource facts cannot be deleted' USING ERRCODE='42501'; END IF;
+ IF TG_TABLE_NAME='cloud_runtime_plans' AND TG_OP<>'INSERT' THEN
+  RAISE EXCEPTION 'Published resource price versions are immutable' USING ERRCODE='42501';
+ ELSIF TG_TABLE_NAME='cloud_runtime_quotes' THEN
+  IF TG_OP='INSERT' THEN
+   SELECT * INTO plan FROM cloud_runtime_plans WHERE key=NEW.plan_key AND version=NEW.plan_version;
+   SELECT * INTO w FROM wallets WHERE id=NEW.billing_account_id;
+   IF plan.key IS NULL OR w.id IS NULL OR NEW.body->'plan' IS DISTINCT FROM (plan.body-'reason')
+    OR NEW.body->>'data_mode' IS DISTINCT FROM plan.data_mode
+    OR ((NEW.body->>'minutes')::int BETWEEN 5 AND (plan.body->>'max_minutes')::int) IS NOT TRUE
+    OR NEW.maximum_cost_micros IS DISTINCT FROM (NEW.body->>'minutes')::bigint*(plan.body->>'per_minute_micros')::bigint
+    OR NEW.per_minute_micros IS DISTINCT FROM (plan.body->>'per_minute_micros')::bigint
+    OR NEW.body->>'maximum_cost_micros' IS DISTINCT FROM NEW.maximum_cost_micros::text
+    OR NEW.body->>'kernel' IS DISTINCT FROM 'codex' OR NEW.body->>'ai_routing' IS DISTINCT FROM 'company_only'
+    OR NEW.body->'automatic_renewal' IS DISTINCT FROM 'false'::jsonb
+    OR w.data_mode IS DISTINCT FROM plan.data_mode OR (w.user_id=NEW.private_owner OR w.tenant_id=NEW.tenant_id) IS NOT TRUE
+    OR NEW.body->>'private_owner' IS DISTINCT FROM NEW.private_owner::text OR NEW.body->>'project_id' IS DISTINCT FROM NEW.project_id::text
+    OR NEW.body->>'tenant_id' IS DISTINCT FROM NEW.tenant_id::text
+    OR NEW.body->>'billing_account_id' IS DISTINCT FROM NEW.billing_account_id::text
+    OR NEW.body->>'plan_key' IS DISTINCT FROM NEW.plan_key
+    OR NEW.body->>'plan_version' IS DISTINCT FROM NEW.plan_version::text
+    OR jsonb_typeof(NEW.body->'scope') IS DISTINCT FROM 'object'
+    OR jsonb_typeof(NEW.body->'selected_files') IS DISTINCT FROM 'array'
+    OR jsonb_typeof(NEW.body->'scope'->'terminal') IS DISTINCT FROM 'boolean'
+    OR jsonb_typeof(NEW.body->'scope'->'visual') IS DISTINCT FROM 'boolean'
+    OR (NEW.body->'scope'->>'terminal')::boolean AND NOT (plan.body->>'terminal')::boolean
+    OR (NEW.body->'scope'->>'visual')::boolean AND NOT (plan.body->>'visual')::boolean THEN
+    RAISE EXCEPTION 'Dedicated quote differs from exact price, scope or payer' USING ERRCODE='23514'; END IF;
+  ELSE
+   IF ROW(NEW.id,NEW.tenant_id,NEW.project_id,NEW.private_owner,NEW.actor_auth_version,NEW.billing_account_id,NEW.plan_key,NEW.plan_version,NEW.specification_hash,NEW.maximum_cost_micros,NEW.per_minute_micros,NEW.expires_at,NEW.created_at)
+   IS DISTINCT FROM ROW(OLD.id,OLD.tenant_id,OLD.project_id,OLD.private_owner,OLD.actor_auth_version,OLD.billing_account_id,OLD.plan_key,OLD.plan_version,OLD.specification_hash,OLD.maximum_cost_micros,OLD.per_minute_micros,OLD.expires_at,OLD.created_at)
+   OR (ROW(NEW.body,NEW.content_state) IS DISTINCT FROM ROW(OLD.body,OLD.content_state) AND NOT
+      (NEW.content_state='deleted' AND NEW.body='{}'::jsonb AND coalesce(current_setting('app.erasing_content',true),'')='true'))
+   OR (NEW.state<>OLD.state AND (OLD.state<>'pending' OR NEW.state NOT IN('activated','declined'))) THEN
+   RAISE EXCEPTION 'Reviewed resource quote cannot be rewritten' USING ERRCODE='23514'; END IF;
+  END IF;
+ ELSIF TG_TABLE_NAME='cloud_runtime_sessions' THEN
+  SELECT * INTO q FROM cloud_runtime_quotes WHERE id=NEW.quote_id;
+  IF ROW(NEW.tenant_id,NEW.project_id,NEW.private_owner) IS DISTINCT FROM ROW(q.tenant_id,q.project_id,q.private_owner) THEN
+   RAISE EXCEPTION 'Dedicated session differs from its private quote' USING ERRCODE='23514'; END IF;
+  IF TG_OP='INSERT' THEN
+   IF q.state<>'pending' OR q.content_state<>'active' OR q.expires_at<=clock_timestamp()
+    OR NEW.expires_at>NEW.confirmed_at+(q.body->>'minutes')::int*interval '1 minute' OR NEW.expires_at<=NEW.confirmed_at
+    OR coalesce(current_setting('app.cloud_runtime_confirmation_hash',true),'')<>q.specification_hash
+    OR NOT EXISTS(SELECT 1 FROM users u JOIN memberships m ON m.user_id=u.id JOIN tenants t ON t.id=m.tenant_id
+      JOIN projects p ON p.tenant_id=t.id WHERE u.id=q.private_owner AND u.status='active' AND u.auth_version=q.actor_auth_version
+      AND m.tenant_id=q.tenant_id AND m.status='active' AND t.status='active' AND p.id=q.project_id AND NOT p.archived)
+    OR NOT EXISTS(SELECT 1 FROM cloud_runtime_nodes n WHERE n.id=NEW.node_id AND n.state='available' AND n.plan_key=q.plan_key
+      AND n.generation+1=NEW.generation AND n.last_heartbeat_at>clock_timestamp()-interval '30 seconds') THEN
+    RAISE EXCEPTION 'Dedicated session requires current confirmed cost, scope and an exclusive ready computer' USING ERRCODE='23514'; END IF;
+  ELSIF ROW(NEW.id,NEW.tenant_id,NEW.project_id,NEW.private_owner,NEW.quote_id,NEW.node_id,NEW.generation,NEW.fencing_token,NEW.confirmed_at,NEW.expires_at)
+   IS DISTINCT FROM ROW(OLD.id,OLD.tenant_id,OLD.project_id,OLD.private_owner,OLD.quote_id,OLD.node_id,OLD.generation,OLD.fencing_token,OLD.confirmed_at,OLD.expires_at)
+   OR (NEW.version<>OLD.version+1 AND NOT (NEW.version=OLD.version AND NEW.last_maintained_at>=OLD.last_maintained_at
+     AND to_jsonb(NEW)-'last_maintained_at'=to_jsonb(OLD)-'last_maintained_at'))
+   OR (OLD.state IN('stopped','failed') AND NEW.state<>OLD.state)
+   OR (NEW.state<>OLD.state AND NOT (
+      OLD.state='starting' AND NEW.state IN('running','stop_requested','reconciling','failed') OR
+      OLD.state='running' AND NEW.state IN('stop_requested','reconciling') OR
+      OLD.state='stop_requested' AND NEW.state IN('stopped','failed','reconciling') OR
+      OLD.state='reconciling' AND NEW.state IN('stopped','failed')))
+   OR (OLD.cleanup_verified AND NOT NEW.cleanup_verified)
+   OR NEW.charged_micros>q.maximum_cost_micros THEN
+   RAISE EXCEPTION 'Invalid dedicated session transition or cost' USING ERRCODE='23514'; END IF;
+ ELSIF TG_TABLE_NAME='cloud_runtime_holds' THEN
+  SELECT * INTO s FROM cloud_runtime_sessions WHERE id=NEW.session_id;
+  SELECT * INTO q FROM cloud_runtime_quotes WHERE id=s.quote_id;
+  IF ROW(NEW.tenant_id,NEW.project_id,NEW.private_owner,NEW.billing_account_id,NEW.amount_micros)
+   IS DISTINCT FROM ROW(s.tenant_id,s.project_id,s.private_owner,q.billing_account_id,q.maximum_cost_micros) THEN
+   RAISE EXCEPTION 'Resource hold differs from confirmed payer or ceiling' USING ERRCODE='23514'; END IF;
+  IF NOT EXISTS(SELECT 1 FROM billing_journal j JOIN billing_operations o ON o.id=j.operation_id WHERE j.id=NEW.journal_entry_id
+   AND j.billing_account_id=NEW.billing_account_id AND j.actor_id=NEW.private_owner AND j.amount_micros=NEW.amount_micros
+   AND j.kind='reserve' AND o.action='billing.cloud_runtime.reserve') THEN
+   RAISE EXCEPTION 'Resource hold lacks its original financial consent event' USING ERRCODE='23514'; END IF;
+  IF TG_OP='UPDATE' AND ROW(NEW.session_id,NEW.tenant_id,NEW.project_id,NEW.private_owner,NEW.billing_account_id,NEW.amount_micros,NEW.journal_entry_id,NEW.created_at)
+   IS DISTINCT FROM ROW(OLD.session_id,OLD.tenant_id,OLD.project_id,OLD.private_owner,OLD.billing_account_id,OLD.amount_micros,OLD.journal_entry_id,OLD.created_at) THEN
+   RAISE EXCEPTION 'Resource hold provenance cannot change' USING ERRCODE='23514'; END IF;
+  IF TG_OP='UPDATE' AND (OLD.state IN('settled','released') OR
+    NEW.state NOT IN(OLD.state,'reconciling','settled','released')) THEN
+   RAISE EXCEPTION 'A confirmed resource hold cannot be reopened' USING ERRCODE='23514'; END IF;
+  IF NEW.state='settled' AND (NOT s.cleanup_verified OR s.state NOT IN('stopped','failed') OR NOT EXISTS(
+    SELECT 1 FROM ledger l WHERE l.id=NEW.charge_id AND l.cloud_runtime_session_id=NEW.session_id
+     AND -l.amount_micros=s.charged_micros AND l.billing_account_id=NEW.billing_account_id)) THEN
+   RAISE EXCEPTION 'Resource settlement requires verified exact usage' USING ERRCODE='23514'; END IF;
+  IF NEW.state='released' AND (NEW.charge_id IS NOT NULL OR NOT s.cleanup_verified OR s.charged_micros<>0 OR s.state NOT IN('stopped','failed')) THEN
+   RAISE EXCEPTION 'Only verified unused resource holds can be released' USING ERRCODE='23514'; END IF;
+ ELSIF TG_TABLE_NAME='ledger' THEN
+  IF NEW.cloud_runtime_session_id IS NOT NULL THEN
+   SELECT * INTO h FROM cloud_runtime_holds WHERE session_id=NEW.cloud_runtime_session_id;
+   SELECT * INTO s FROM cloud_runtime_sessions WHERE id=NEW.cloud_runtime_session_id;
+   IF h.session_id IS NULL OR h.state NOT IN('reserved','reconciling') OR NEW.kind<>'charge' OR NEW.task_id IS NOT NULL
+    OR NEW.amount_micros>=0 OR -NEW.amount_micros>h.amount_micros OR NEW.billing_account_id<>h.billing_account_id
+    OR NEW.user_id IS DISTINCT FROM h.private_owner OR NEW.tenant_id IS DISTINCT FROM h.tenant_id
+    OR NOT s.cleanup_verified OR s.state NOT IN('stopped','failed') OR -NEW.amount_micros<>s.charged_micros THEN
+    RAISE EXCEPTION 'Dedicated resource charge lacks its exact funded hold' USING ERRCODE='23514'; END IF;
+  END IF;
+ END IF;
+ RETURN NEW;
+END $$;
+ALTER FUNCTION guard_cloud_runtime_facts() OWNER TO cp_control;
+REVOKE ALL ON FUNCTION guard_cloud_runtime_facts() FROM PUBLIC;
+DO $$ DECLARE t text; BEGIN
+ FOREACH t IN ARRAY ARRAY['cloud_runtime_plans','cloud_runtime_quotes','cloud_runtime_sessions','cloud_runtime_holds'] LOOP
+  EXECUTE format('CREATE TRIGGER cloud_runtime_fact_guard BEFORE INSERT OR UPDATE OR DELETE ON %I FOR EACH ROW EXECUTE FUNCTION guard_cloud_runtime_facts()',t);
+ END LOOP;
+END $$;
+CREATE TRIGGER cloud_runtime_ledger_guard BEFORE INSERT ON ledger FOR EACH ROW EXECUTE FUNCTION guard_cloud_runtime_facts();
+CREATE TRIGGER cloud_runtime_price_immutable BEFORE UPDATE OR DELETE ON cloud_runtime_charge_sources FOR EACH ROW EXECUTE FUNCTION immutable_billing_source();
+CREATE FUNCTION guard_cloud_runtime_event() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+BEGIN
+ IF TG_OP='UPDATE' AND coalesce(current_setting('app.erasing_content',true),'')='true'
+  AND NEW.body='{}'::jsonb AND to_jsonb(NEW)-'body'=to_jsonb(OLD)-'body'
+  AND EXISTS(SELECT 1 FROM cloud_runtime_sessions WHERE id=OLD.session_id AND content_state='deleted') THEN RETURN NEW; END IF;
+ RAISE EXCEPTION 'Resource history is immutable except verified private-content erasure' USING ERRCODE='42501';
+END $$;
+ALTER FUNCTION guard_cloud_runtime_event() OWNER TO cp_control;
+REVOKE ALL ON FUNCTION guard_cloud_runtime_event() FROM PUBLIC;
+CREATE TRIGGER cloud_runtime_event_immutable BEFORE UPDATE OR DELETE ON cloud_runtime_events FOR EACH ROW EXECUTE FUNCTION guard_cloud_runtime_event();
+CREATE TRIGGER cloud_runtime_allocation_immutable BEFORE UPDATE OR DELETE ON cloud_runtime_hold_allocations FOR EACH ROW EXECUTE FUNCTION immutable_billing_source();
+
+-- Preserve the original task branch and function identity. Dedicated leases
+-- bind their existing shared-journal charge to their exact resource hold.
+CREATE OR REPLACE FUNCTION journal_ledger_entry() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+DECLARE sourcekind text;hold_journal uuid;
+BEGIN
+ SELECT kind INTO sourcekind FROM ledger WHERE id=NEW.source_id;
+ IF NEW.kind='adjustment' THEN RAISE EXCEPTION 'Adjustments require a registered compensation controller' USING ERRCODE='23514'; END IF;
+ IF NEW.kind='charge' THEN
+  IF NEW.cloud_runtime_session_id IS NOT NULL THEN
+   SELECT journal_entry_id INTO hold_journal FROM cloud_runtime_holds WHERE session_id=NEW.cloud_runtime_session_id;
+  ELSE SELECT journal_entry_id INTO hold_journal FROM reservations WHERE task_id=NEW.task_id;
+  END IF;
+ ELSE hold_journal=NEW.source_id;
+ END IF;
+ INSERT INTO billing_journal(id,billing_account_id,operation_id,actor_id,kind,direction,bucket,amount_micros,reason,source_entry_id,raw_entry_id,task_id,created_at)
+ VALUES(NEW.id,NEW.billing_account_id,NEW.operation_id,NEW.actor_id,CASE WHEN NEW.kind='charge' THEN 'consume' ELSE NEW.kind END,
+ CASE WHEN NEW.amount_micros>0 THEN 'credit' ELSE 'debit' END,
+ CASE WHEN NEW.kind='charge' THEN 'reserved' WHEN NEW.kind IN('gift','gift_expiry') OR sourcekind='gift' THEN 'promotional' ELSE 'paid' END,
+ abs(NEW.amount_micros),NEW.reason,hold_journal,NEW.id,NEW.task_id,NEW.created_at);
+ RETURN NULL;
+END $$;
+ALTER FUNCTION journal_ledger_entry() OWNER TO cp_control;
+REVOKE ALL ON FUNCTION journal_ledger_entry() FROM PUBLIC;
+
+CREATE FUNCTION validate_cloud_runtime_funding() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+DECLARE entry ledger;lot funding_lots;hold cloud_runtime_holds;
+BEGIN
+ IF TG_TABLE_NAME='cloud_runtime_charge_sources' THEN
+  SELECT * INTO entry FROM ledger WHERE id=NEW.charge_id AND cloud_runtime_session_id IS NOT NULL;
+  IF entry.id IS NULL OR entry.kind<>'charge' THEN RAISE EXCEPTION 'Resource funding needs its confirmed charge' USING ERRCODE='23514'; END IF;
+  IF NEW.lot_id IS NOT NULL THEN
+   SELECT * INTO lot FROM funding_lots WHERE id=NEW.lot_id AND billing_account_id=entry.billing_account_id;
+   IF lot.id IS NULL OR lot.kind<>NEW.kind THEN RAISE EXCEPTION 'Resource funding belongs to another payer or bucket' USING ERRCODE='23514'; END IF;
+  END IF;
+ ELSE
+  SELECT * INTO hold FROM cloud_runtime_holds WHERE session_id=NEW.session_id;
+  SELECT * INTO lot FROM funding_lots WHERE id=NEW.lot_id AND billing_account_id=hold.billing_account_id;
+  IF lot.id IS NULL OR hold.state<>'reserved' OR NEW.amount_micros>hold.amount_micros THEN
+   RAISE EXCEPTION 'Resource allocation differs from its funded hold' USING ERRCODE='23514'; END IF;
+ END IF;
+ RETURN NEW;
+END $$;
+ALTER FUNCTION validate_cloud_runtime_funding() OWNER TO cp_control;
+REVOKE ALL ON FUNCTION validate_cloud_runtime_funding() FROM PUBLIC;
+CREATE TRIGGER cloud_runtime_source_valid BEFORE INSERT ON cloud_runtime_charge_sources FOR EACH ROW EXECUTE FUNCTION validate_cloud_runtime_funding();
+CREATE TRIGGER cloud_runtime_allocation_valid BEFORE INSERT ON cloud_runtime_hold_allocations FOR EACH ROW EXECUTE FUNCTION validate_cloud_runtime_funding();
+
+CREATE OR REPLACE FUNCTION balance_settlement_sources() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE charge uuid;amount bigint;allocated numeric;resource uuid;
+BEGIN
+ IF TG_TABLE_NAME='ledger' THEN charge=NEW.id; ELSE charge=NEW.charge_id; END IF;
+ SELECT -amount_micros,cloud_runtime_session_id INTO amount,resource FROM ledger WHERE id=charge AND tenant_id=NEW.tenant_id AND kind='charge';
+ IF resource IS NOT NULL THEN
+  SELECT coalesce(sum(amount_micros),0) INTO allocated FROM cloud_runtime_charge_sources WHERE charge_id=charge;
+ ELSE
+  SELECT coalesce(sum(amount_micros),0) INTO allocated FROM billing_settlement_sources WHERE charge_id=charge AND tenant_id=NEW.tenant_id;
+ END IF;
+ IF amount IS NULL OR allocated<>amount THEN RAISE EXCEPTION 'Settlement sources must equal the confirmed charge' USING ERRCODE='23514'; END IF;
+ RETURN NULL;
+END $$;
+CREATE FUNCTION balance_cloud_runtime_sources() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+DECLARE amount bigint;allocated numeric;
+BEGIN
+ SELECT -amount_micros INTO amount FROM ledger WHERE id=NEW.charge_id AND cloud_runtime_session_id IS NOT NULL AND kind='charge';
+ SELECT coalesce(sum(amount_micros),0) INTO allocated FROM cloud_runtime_charge_sources WHERE charge_id=NEW.charge_id;
+ IF amount IS NULL OR allocated<>amount THEN RAISE EXCEPTION 'Resource sources must equal the confirmed charge' USING ERRCODE='23514'; END IF;
+ RETURN NULL;
+END $$;
+ALTER FUNCTION balance_cloud_runtime_sources() OWNER TO cp_control;
+REVOKE ALL ON FUNCTION balance_cloud_runtime_sources() FROM PUBLIC;
+CREATE CONSTRAINT TRIGGER cloud_runtime_sources_balanced AFTER INSERT ON cloud_runtime_charge_sources DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION balance_cloud_runtime_sources();
+
+-- A command remains attached to one private lease and computer generation.
+-- Delivery may repeat after a lost HTTP response; completed effects may not.
+CREATE FUNCTION guard_cloud_runtime_command() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+DECLARE s cloud_runtime_sessions;q cloud_runtime_quotes;
+BEGIN
+ IF TG_OP='DELETE' THEN RAISE EXCEPTION 'Resource command history cannot be removed' USING ERRCODE='42501'; END IF;
+ SELECT * INTO s FROM cloud_runtime_sessions WHERE id=NEW.session_id;
+ IF s.id IS NULL OR ROW(NEW.tenant_id,NEW.project_id,NEW.private_owner,NEW.node_id,NEW.generation)
+  IS DISTINCT FROM ROW(s.tenant_id,s.project_id,s.private_owner,s.node_id,s.generation) THEN
+  RAISE EXCEPTION 'Resource command differs from its private lease generation' USING ERRCODE='23514'; END IF;
+ IF TG_OP='INSERT' THEN
+  IF NEW.state<>'pending' OR NEW.delivered_at IS NOT NULL OR NEW.completed_at IS NOT NULL OR NEW.result IS NOT NULL
+   OR s.state NOT IN('starting','running','stop_requested','reconciling') THEN
+   RAISE EXCEPTION 'Resource command requires an active lease and pending delivery' USING ERRCODE='23514'; END IF;
+  SELECT * INTO q FROM cloud_runtime_quotes WHERE id=s.quote_id;
+  IF NEW.kind='start' AND (s.state<>'starting' OR NEW.body->'specification' IS DISTINCT FROM q.body
+    OR NEW.body->>'specification_hash' IS DISTINCT FROM q.specification_hash
+    OR NEW.body->>'kernel' IS DISTINCT FROM 'codex' OR NEW.body->'company_only' IS DISTINCT FROM 'true'::jsonb
+    OR (NEW.body->>'deadline')::timestamptz IS DISTINCT FROM s.expires_at) THEN
+   RAISE EXCEPTION 'Computer start differs from customer-confirmed scope and deadline' USING ERRCODE='23514'; END IF;
+  IF NEW.task_id IS NOT NULL AND (NEW.kind<>'input' OR NOT EXISTS(SELECT 1 FROM cloud_runtime_task_bindings b
+    WHERE b.task_id=NEW.task_id AND b.session_id=s.id AND b.generation=s.generation AND b.private_owner=s.private_owner AND NOT b.revoked)) THEN
+   RAISE EXCEPTION 'Computer command differs from its approved task binding' USING ERRCODE='23514'; END IF;
+  IF NEW.kind='input' AND (s.state<>'running' OR s.expires_at<=clock_timestamp()
+    OR NEW.body->>'kind' IS NULL OR NEW.body->>'kind' NOT IN('terminal','pointer','key')
+    OR NEW.body->>'kind'='terminal' AND q.body->'scope'->'terminal' IS DISTINCT FROM 'true'::jsonb
+    OR NEW.body->>'kind' IN('pointer','key') AND q.body->'scope'->'visual' IS DISTINCT FROM 'true'::jsonb) THEN
+   RAISE EXCEPTION 'Computer input is outside the confirmed controls or lease' USING ERRCODE='23514'; END IF;
+ ELSE
+  IF coalesce(current_setting('app.erasing_content',true),'')='true' AND s.content_state='deleted'
+    AND NEW.result IS NULL AND NEW.body=(CASE WHEN OLD.body ? 'receipt_hash' THEN jsonb_build_object('receipt_hash',OLD.body->'receipt_hash') ELSE '{}'::jsonb END)
+    AND to_jsonb(NEW)-ARRAY['body','result']=to_jsonb(OLD)-ARRAY['body','result'] THEN RETURN NEW; END IF;
+  IF ROW(NEW.id,NEW.tenant_id,NEW.project_id,NEW.private_owner,NEW.session_id,NEW.node_id,NEW.generation,NEW.kind,NEW.created_at,NEW.task_id)
+   IS DISTINCT FROM ROW(OLD.id,OLD.tenant_id,OLD.project_id,OLD.private_owner,OLD.session_id,OLD.node_id,OLD.generation,OLD.kind,OLD.created_at,OLD.task_id)
+   OR OLD.state IN('completed','failed','cancelled')
+   OR NOT (OLD.state='pending' AND NEW.state IN('delivered','cancelled') OR OLD.state='delivered' AND NEW.state IN('delivered','completed','failed'))
+   OR (OLD.delivered_at IS NOT NULL AND NEW.delivered_at IS DISTINCT FROM OLD.delivered_at)
+   OR (NEW.state='delivered' AND (NEW.delivered_at IS NULL OR NEW.body IS DISTINCT FROM OLD.body OR NEW.result IS NOT NULL OR NEW.completed_at IS NOT NULL))
+   OR (NEW.state='cancelled' AND (NEW.kind<>'input' OR NEW.body<>'{}'::jsonb OR NEW.result IS NOT NULL))
+   OR (NEW.state IN('completed','failed') AND (NEW.completed_at IS NULL OR
+       (NEW.body->>'receipt_hash' ~ '^[a-f0-9]{64}$') IS NOT TRUE OR NEW.body-'receipt_hash'<>'{}'::jsonb)) THEN
+   RAISE EXCEPTION 'Resource command effect or receipt cannot be rewritten' USING ERRCODE='23514'; END IF;
+ END IF;
+ RETURN NEW;
+END $$;
+ALTER FUNCTION guard_cloud_runtime_command() OWNER TO cp_control;
+REVOKE ALL ON FUNCTION guard_cloud_runtime_command() FROM PUBLIC;
+CREATE TRIGGER cloud_runtime_command_guard BEFORE INSERT OR UPDATE OR DELETE ON cloud_runtime_commands FOR EACH ROW EXECUTE FUNCTION guard_cloud_runtime_command();
+
+CREATE FUNCTION balance_cloud_runtime_allocations() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+DECLARE ceiling bigint;allocated numeric;
+BEGIN
+ SELECT amount_micros INTO ceiling FROM cloud_runtime_holds WHERE session_id=NEW.session_id;
+ SELECT coalesce(sum(amount_micros),0) INTO allocated FROM cloud_runtime_hold_allocations WHERE session_id=NEW.session_id;
+ IF ceiling IS NULL OR allocated>ceiling THEN
+  RAISE EXCEPTION 'Resource funding allocations exceed the approved hold' USING ERRCODE='23514'; END IF;
+ RETURN NULL;
+END $$;
+ALTER FUNCTION balance_cloud_runtime_allocations() OWNER TO cp_control;
+REVOKE ALL ON FUNCTION balance_cloud_runtime_allocations() FROM PUBLIC;
+CREATE CONSTRAINT TRIGGER cloud_runtime_allocations_balanced AFTER INSERT ON cloud_runtime_hold_allocations DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION balance_cloud_runtime_allocations();
+
+CREATE TRIGGER content_erasure_journal AFTER UPDATE OF content_state ON cloud_runtime_quotes FOR EACH ROW EXECUTE FUNCTION journal_content_erasure('content_state');
+CREATE TRIGGER content_erasure_journal AFTER UPDATE OF content_state ON cloud_runtime_sessions FOR EACH ROW EXECUTE FUNCTION journal_content_erasure('content_state');
+
+-- Agent control is an additional independently confirmed scope. A role cannot
+-- buy, extend or bind a computer, and older customer quotes default to no grant.
+CREATE TABLE cloud_runtime_task_bindings (
+ task_id uuid PRIMARY KEY REFERENCES tasks(id),tenant_id uuid NOT NULL,project_id uuid NOT NULL,private_owner uuid NOT NULL,
+ session_id uuid NOT NULL,generation integer NOT NULL,specification_hash text NOT NULL,revoked boolean NOT NULL DEFAULT false,
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ FOREIGN KEY(tenant_id,project_id,task_id) REFERENCES tasks(tenant_id,project_id,id),
+ FOREIGN KEY(tenant_id,project_id,session_id) REFERENCES cloud_runtime_sessions(tenant_id,project_id,id)
+);
+ALTER TABLE cloud_runtime_task_bindings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cloud_runtime_task_bindings FORCE ROW LEVEL SECURITY;
+CREATE POLICY cloud_task_control ON cloud_runtime_task_bindings TO cp_control USING(true) WITH CHECK(true);
+CREATE POLICY cloud_task_owner ON cloud_runtime_task_bindings FOR SELECT TO cp_app
+ USING(tenant_id=nullif(current_setting('app.tenant_id',true),'')::uuid AND private_owner=nullif(current_setting('app.actor_id',true),'')::uuid);
+REVOKE ALL ON cloud_runtime_task_bindings FROM PUBLIC,cp_app,cp_queue;
+GRANT SELECT ON cloud_runtime_task_bindings TO cp_app;
+GRANT SELECT,INSERT,UPDATE ON cloud_runtime_task_bindings TO cp_control;
+CREATE FUNCTION guard_cloud_task_binding() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+DECLARE t tasks;s cloud_runtime_sessions;q cloud_runtime_quotes;
+BEGIN
+ IF TG_OP='DELETE' OR TG_OP='UPDATE' AND (OLD.revoked OR NOT NEW.revoked OR to_jsonb(NEW)-'revoked'<>to_jsonb(OLD)-'revoked') THEN
+  RAISE EXCEPTION 'Computer task provenance is immutable' USING ERRCODE='23514'; END IF;
+ IF TG_OP='UPDATE' THEN RETURN NEW; END IF;
+ SELECT * INTO t FROM tasks WHERE id=NEW.task_id;
+ SELECT * INTO s FROM cloud_runtime_sessions WHERE id=NEW.session_id;
+ SELECT * INTO q FROM cloud_runtime_quotes WHERE id=s.quote_id;
+ IF t.id IS NULL OR s.id IS NULL OR q.id IS NULL OR NEW.revoked OR t.role_key<>'computer-operator' OR t.mode<>'execute'
+  OR t.execution_location<>'cloud' OR t.status<>'queued' OR t.content_state<>'active' OR s.state<>'running' OR s.expires_at<=clock_timestamp()
+  OR s.content_state<>'active' OR q.content_state<>'active' OR q.body->'scope'->'agent_control' IS DISTINCT FROM 'true'::jsonb
+  OR ROW(NEW.tenant_id,NEW.project_id,NEW.private_owner,NEW.generation,NEW.specification_hash)
+   IS DISTINCT FROM ROW(s.tenant_id,s.project_id,s.private_owner,s.generation,q.specification_hash)
+  OR ROW(t.tenant_id,t.project_id,t.created_by,t.private_owner,t.actor_auth_version)
+   IS DISTINCT FROM ROW(s.tenant_id,s.project_id,s.private_owner,s.private_owner,q.actor_auth_version)
+  OR t.input_context->'dedicated_computer' IS DISTINCT FROM jsonb_build_object('session_id',s.id,'generation',s.generation,'specification_hash',q.specification_hash) THEN
+  RAISE EXCEPTION 'Codex task lacks its original private customer-confirmed computer binding' USING ERRCODE='23514'; END IF;
+ RETURN NEW;
+END $$;
+ALTER FUNCTION guard_cloud_task_binding() OWNER TO cp_control;
+REVOKE ALL ON FUNCTION guard_cloud_task_binding() FROM PUBLIC;
+CREATE TRIGGER cloud_task_binding_guard BEFORE INSERT OR UPDATE OR DELETE ON cloud_runtime_task_bindings FOR EACH ROW EXECUTE FUNCTION guard_cloud_task_binding();
+CREATE FUNCTION guard_cloud_task_locator() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+BEGIN
+ IF TG_OP='UPDATE' AND OLD.input_context->'dedicated_computer' IS DISTINCT FROM NEW.input_context->'dedicated_computer'
+  AND NOT(NEW.content_state='deleted' AND current_setting('app.erasing_content',true)='true') THEN
+  RAISE EXCEPTION 'Approved computer generation cannot be rebound' USING ERRCODE='23514'; END IF;
+ IF TG_OP='INSERT' AND NEW.input_context ? 'dedicated_computer' AND NOT EXISTS(
+  SELECT 1 FROM cloud_runtime_task_bindings b WHERE b.task_id=NEW.id AND b.private_owner=NEW.created_by AND NOT b.revoked) THEN
+  RAISE EXCEPTION 'Computer task requires its original binding in the same transaction' USING ERRCODE='23514'; END IF;
+ RETURN NEW;
+END $$;
+ALTER FUNCTION guard_cloud_task_locator() OWNER TO cp_control;
+REVOKE ALL ON FUNCTION guard_cloud_task_locator() FROM PUBLIC;
+CREATE TRIGGER cloud_task_locator BEFORE UPDATE OF input_context ON tasks FOR EACH ROW EXECUTE FUNCTION guard_cloud_task_locator();
+CREATE CONSTRAINT TRIGGER cloud_task_binding_present AFTER INSERT ON tasks DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION guard_cloud_task_locator();
+
+-- Extend the actual shared traversal. Retain its OID, all old branches and
+-- indirect asset/publication checks, rather than checking only direct task IDs.
+DO $$ DECLARE definition text;anchor text;hook text; BEGIN
+ definition:=pg_get_functiondef('content_source_manifest_before_creative_feedback(uuid,uuid,uuid[],uuid[])'::regprocedure);
+ anchor:='   IF source_task.conversation_id IS NOT NULL AND NOT EXISTS';
+ IF position(anchor IN definition)=0 THEN RAISE EXCEPTION 'Missing retained computer task lineage anchor'; END IF;
+ hook:=$hook$   IF source_task.input_context ? 'dedicated_computer' THEN
+    IF NOT EXISTS(SELECT 1 FROM cloud_runtime_task_bindings b JOIN cloud_runtime_sessions s ON s.id=b.session_id JOIN cloud_runtime_quotes q ON q.id=s.quote_id
+     WHERE b.task_id=source_task.id AND NOT b.revoked AND b.private_owner=source_task.private_owner
+      AND b.generation=s.generation AND b.specification_hash=q.specification_hash
+      AND s.content_state='active' AND q.content_state='active' AND q.body->'scope'->'agent_control'='true'::jsonb) THEN RETURN NULL; END IF;
+    targets:=targets||(SELECT jsonb_build_array(jsonb_build_object('kind','cloud_runtime_sessions','id',s.id),jsonb_build_object('kind','cloud_runtime_quotes','id',s.quote_id))
+      FROM cloud_runtime_task_bindings b JOIN cloud_runtime_sessions s ON s.id=b.session_id WHERE b.task_id=source_task.id);
+   END IF;
+$hook$;
+ EXECUTE replace(definition,anchor,hook||anchor);
+ definition:=pg_get_functiondef('lock_task_content_sources(uuid)'::regprocedure);
+ anchor:='''geo_experiments'',''geo_runs'',''geo_samples''';
+ IF position(anchor IN definition)=0 THEN RAISE EXCEPTION 'Missing retained source lock table anchor'; END IF;
+ EXECUTE replace(definition,anchor,anchor||',''cloud_runtime_sessions'',''cloud_runtime_quotes''');
+END $$;
