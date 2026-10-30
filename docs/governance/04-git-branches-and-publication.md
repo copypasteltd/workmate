@@ -1,5 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- business-inputs-stage136-publication-v2 -->
+阶段136最终发布使用`docs/tools/prepare_business_inputs_publication_136_v2.py`及`docs/tools/publish_business_inputs_136_v2.py --push`，对应`docs/quality/workmate-publication-136-v2.json`。只读复核在执行审计／推送前发现V1审计输出目录仍为阶段135，V2改为本轮原生交付记录目录。V1脚本、绑定清单、证明分片和本地提交逐字节保留，标记为本地预备、未发布；下方V1说明为原记录。产品资格与历史387317条已发布证明身份不变，六组件仍以相同提交普通原子更新八引用并读取远端SHA。
+
+Final Stage136 publication uses the V2 preparer/publisher and manifest. Read-only review caught V1's old audit-output guard before either auditing or pushing; V2 fixes the destination. Original scripts, prepublication manifest, proof shard and local commit retain their bytes and remain explicitly unpublished. Product qualification and all 387317 published historical identities are retained.
+
 <!-- business-inputs-stage136 -->
 阶段136使用`docs/tools/prepare_business_inputs_publication_136_v1.py`及`docs/tools/publish_business_inputs_136_v1.py --push`发布。保留387317条历史证明身份和阶段135实际原子发布回执；只检查新增对象、当前／新增提交路径和当前七组双语README链接。问题问答、实际原生Codex的合成提供方检查及三端实际页面各自登记范围。原失败与原执行脚本保持原字节，六个独立组件普通原子更新八引用并读取远端SHA。12份用户未跟踪文件及Desktop根属性保持不变，不强推，不将增量检查当作全产品完成。
 
