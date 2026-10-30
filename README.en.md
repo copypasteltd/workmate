@@ -1,3 +1,23 @@
+<!-- brand-reuse-stage142 -->
+
+Reuse a brand canvas in another project by selecting a fixed destination brand, mapping fonts, price/promotion facts, Logos and optional colors, reviewing actual changes and explicitly approving a new copy. Web/Desktop continue editing, render PNG/PDF/SVG and export again; Extension uploads, reviews and restores inside its native right Side Panel. Font outlining now preserves source images and shape order in brand/vector/presentation output.
+
+62 related checks and actual three-client journeys passed with5 screenshots and3 recording pairs bound to the sources. Synthetic data; no model requests; unsigned Windows package. All-format restoration, cross-machine and configured-provider acceptance remain open. [方案 / Guide](https://github.com/copypasteltd/workmate/blob/docs/docs/development/142-brand-project-reuse.md).
+
+```mermaid
+flowchart LR
+ A[Fixed source ZIP] --> B[Destination brand maps]
+ B --> C[Review and approve]
+ C --> D[New shared copy]
+ D --> E[Edit / render / export again]
+```
+
+![Actual brand workflow](assets/screenshots/workmate-creative-brand-142-02-native-sidepanel-brand-review-en.png)
+
+[Actual interaction MP4](assets/screenshots/workmate-creative-brand-142-02-project-restore.mp4)
+
+![Actual interaction GIF](assets/screenshots/workmate-creative-brand-142-02-project-restore.gif)
+
 # Workmate · CopyPaste Enterprise Agent · extension
 
 <!-- creative-packages-stage140 -->

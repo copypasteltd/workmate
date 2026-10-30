@@ -1,3 +1,4 @@
+import { mountCreativePackageBrand } from "./creative-package-brand.js";
 type IO = { base: string; scopeKey: string; project: string; live: () => boolean; tr: (zh: string, en: string) => string;
   request: (path: string, method?: string, body?: unknown, key?: string) => Promise<any>;
   read: (key: string) => Promise<any>; write: (key: string, value: unknown) => Promise<void>;
@@ -9,6 +10,7 @@ const encode = (bytes: Uint8Array) => { let text = ""; for (let i = 0; i < bytes
 /** All content operations stay inside the actual SIDE_PANEL. No local Agent dispatch. */
 export function mountCreativePackages(container: HTMLDetailsElement, io: IO) {
   let disposed = false, busy = false, selected: any = null, preview: any = null, pending: any = null;
+  let disposeBrand: (() => void) | undefined;
   const active = () => !disposed && io.live(), root = io.base + "/creative-project-packages", pendingKey = "creative-restore:" + io.scopeKey;
   const make = <K extends keyof HTMLElementTagNameMap>(tag: K, text?: string) => { const e = document.createElement(tag); if (text) e.textContent = text; return e; };
   const summary = make("summary", io.tr("工程打包與恢復", "Project packages & restore")), content = make("div"); content.className = "creative-package-panel";
@@ -32,7 +34,7 @@ export function mountCreativePackages(container: HTMLDetailsElement, io: IO) {
     finally { busy = false; if (active()) { controls(); const retry = review.querySelector<HTMLButtonElement>("[data-restore-retry]"); if (retry) retry.disabled = false; } } };
   const load = async () => { const data = await io.request(root); if (!active()) return;
     projects.replaceChildren(new Option(io.tr("選擇工程", "Choose a project"), ""), ...data.items.map((p: any) => new Option(`${p.name} · v${p.version}`, `${p.id}:${p.version}`))); controls(); };
-  const done = async (result: any) => { await io.write(pendingKey, null); if (!active()) return; pending = null; preview = null; selected = null;
+  const done = async (result: any) => { await io.write(pendingKey, null); if (!active()) return; disposeBrand?.(); pending = null; preview = null; selected = null;
     review.replaceChildren(); file.value = ""; consent.checked = false; status.textContent = io.tr("已恢復，可在 Web／Desktop 的設計畫布繼續編輯：", "Restored. Continue editing in Web/Desktop Design canvas: ") + result.name;
     status.dataset.packageRestored = result.id; await load(); };
   const restore = async () => {
@@ -42,12 +44,21 @@ export function mountCreativePackages(container: HTMLDetailsElement, io: IO) {
     if (receipt.state === "removed") { await io.write(pendingKey, null); pending = null; review.replaceChildren(); throw new Error(io.tr("先前恢復的工程已被移除，不會再次建立。", "The previous restore was removed and will not be recreated.")); }
     const result = await io.request(root + "/restore", "POST", attempt.body, attempt.key); if (active()) await done(result);
   };
-  const showPending = () => { review.replaceChildren(make("h3", io.tr("核對上次恢復結果", "Check previous restore")), make("p", pending.body.name),
+  const showPending = () => { disposeBrand?.(); review.replaceChildren(make("h3", io.tr("核對上次恢復結果", "Check previous restore")), make("p", pending.body.name),
     make("p", io.tr("核對或重試沿用原請求，避免重複建立。", "Checking or retrying keeps the original request to prevent duplicates.")));
     const retry = make("button", io.tr("核對並繼續原恢復", "Check & continue original restore")); retry.type = "button";
     retry.dataset.restoreRetry = "true";
-    retry.onclick = () => void run(async () => { retry.disabled = true; await restore(); }); review.append(retry); controls(); };
+    retry.onclick = () => void run(async () => { retry.disabled = true; await restore(); });
+    const reselect = make("button", io.tr("核對後重新選擇來源", "Check before choosing another source")); reselect.type = "button"; reselect.className = "secondary";
+    reselect.onclick = () => void run(async () => {
+      const receipt = await io.request(root + "/requests/" + pending.key); if (!active()) return;
+      if (receipt.state === "completed") { await done(receipt.result); return; }
+      if (!["not_recorded", "removed"].includes(receipt.state)) throw new Error(io.tr("結果仍未確認，請保留原請求。", "The result is still unknown. Keep the original request."));
+      await io.write(pendingKey, null); if (!active()) return;
+      pending = null; preview = null; selected = null; review.replaceChildren(); file.value = ""; consent.checked = false; controls();
+    }); review.append(retry, reselect); controls(); };
   const showPreview = () => {
+    disposeBrand?.();
     review.replaceChildren(); review.dataset.packagePreview = "true";
     review.append(make("h3", io.tr("恢復前確認", "Review before restoring")), make("p", `${preview.media_count} ${io.tr("個來源素材", "source files")} · ${(preview.total_bytes / 1024 ** 2).toFixed(1)} MiB`));
     for (const line of preview.limitations) review.append(make("p", line));
@@ -57,15 +68,18 @@ export function mountCreativePackages(container: HTMLDetailsElement, io: IO) {
     const rights = make("input"); rights.type = "checkbox"; const label = make("label"); label.className = "creative-package-consent";
     label.append(rights, make("span", io.tr("我確認素材授權，並建立新的專案共用副本；不覆寫來源。", "I confirm media rights and a new shared copy without overwriting the source.")));
     const confirm = make("button", io.tr("恢復為新工程", "Restore a new project")); confirm.type = "button"; confirm.disabled = true;
-    const update = () => { confirm.disabled = busy || !rights.checked || !name.value.trim(); }; rights.onchange = update; name.oninput = update;
+    let brandApproval: any = null;
+    const update = () => { confirm.disabled = busy || !rights.checked || !name.value.trim() || !!preview.brand_requirements && !brandApproval; }; rights.onchange = update; name.oninput = update;
+    if (preview.brand_requirements) { const brand = make("div"); review.append(brand);
+      disposeBrand = mountCreativePackageBrand(brand, { root, live: active, tr: io.tr, request: io.request }, selected, preview, value => { brandApproval = value; update(); }); }
     confirm.onclick = () => void run(async () => {
-      if (!rights.checked || !name.value.trim()) return; confirm.disabled = true;
-      pending = { key: crypto.randomUUID(), body: { ...selected, name: name.value.trim(), preview_hash: preview.preview_hash, confirm_project_sharing: true, confirm_media_rights: true } };
+      if (!rights.checked || !name.value.trim() || preview.brand_requirements && !brandApproval) return; confirm.disabled = true;
+      pending = { key: crypto.randomUUID(), body: { ...selected, name: name.value.trim(), preview_hash: preview.preview_hash, confirm_project_sharing: true, confirm_media_rights: true, ...(brandApproval ?? {}) } };
       await io.write(pendingKey, pending); if (!active()) return; showPending(); await restore();
     }); review.append(name, label, confirm); controls();
   };
   consent.onchange = controls; projects.onchange = controls;
-  file.onchange = () => { preview = null; selected = null; review.replaceChildren(); controls(); };
+  file.onchange = () => { disposeBrand?.(); preview = null; selected = null; review.replaceChildren(); controls(); };
   refresh.onclick = () => void run(load);
   download.onclick = () => void run(async () => { const [id, version] = projects.value.split(":"); await io.download({ id, version: Number(version) }); });
   upload.onclick = () => void run(async () => {
@@ -96,5 +110,5 @@ export function mountCreativePackages(container: HTMLDetailsElement, io: IO) {
     progress.hidden = true; status.textContent = ""; showPreview();
   });
   void run(async () => { pending = await io.read(pendingKey); if (!active()) return; await load(); if (pending?.key && pending?.body?.confirm_project_sharing === true) showPending(); else pending = null; });
-  return () => { disposed = true; container.hidden = true; container.replaceChildren(); };
+  return () => { disposed = true; disposeBrand?.(); container.hidden = true; container.replaceChildren(); };
 }
