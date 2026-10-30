@@ -276,7 +276,11 @@ export function LocalAgentWorkspace() {
             <small>{t("顧問對話及未完成步驟的費用，請到用量記錄查看。", "See usage records for this conversation and any unfinished steps.")}</small>
             {flow.error_code && <p role="status">{flow.error_code}</p>}
           </article>)}
-        {session.task && ["succeeded", "failed", "cancelled"].includes(session.task.status) && <details className="local-agent-activity"><summary>{t("審閱本次交付", "Review this delivery")}</summary><DeliveryQuality key={w.base + session.task.task_id} base={w.base} taskId={session.task.task_id}/></details>}
+        {session.task && ["succeeded", "failed", "cancelled"].includes(session.task.status) && <details className="local-agent-activity"><summary>{t("審閱本次交付", "Review this delivery")}</summary><DeliveryQuality key={w.base + session.task.task_id} base={w.base} taskId={session.task.task_id} nativeRevision={async (selection, instructions, budget, requestId) => {
+          if (activeWorkspace.current !== workspaceKey) throw new Error(t("工作區已變更，請重新選擇成果。", "The workspace changed. Select the delivery again."));
+          try { return await native("revision", { id: session.id, requestId, prompt: instructions, budget, selection }); }
+          finally { await refresh.current(); }
+        }}/></details>}
           {session.inputs?.map(input => <LocalInputCard key={input.requestId} input={input} sessionId={session.id} onDone={() => refresh.current()} onStop={() => void native("stop", { id: session.id }).then(() => refresh.current()).catch(e => setError(e.message))}/>)}<div ref={end}/></div>
         {artifacts.length > 0 && <div className="local-agent-artifacts" tabIndex={0} role="region" aria-label={t("專案成果", "Project artifacts")}><span>{t("專案成果", "Project artifacts")}</span>{artifacts.map(artifact => <button className="button" key={artifact.asset_version_id}
           onClick={() => void download(`${w.base}/assets/${artifact.id}/download?version=${artifact.version}`, artifact.name, w.tenant).catch(e => setError(e.message))}><Download size={14}/><span>{artifact.name} · v{artifact.version}</span></button>)}</div>}

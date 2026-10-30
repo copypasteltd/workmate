@@ -1,4 +1,5 @@
 import { randomUUID, createHash } from "node:crypto";
+import { nativeDeliveryRevision, type NativeDeliveryRevision } from "./delivery-revision.js";
 import { realpath, mkdir } from "node:fs/promises";
 import path from "node:path";
 import {
@@ -48,6 +49,7 @@ interface Operation {
   cancelKey: string;
   dispatchId?: string;
   prompt: string;
+  deliveryRevision?: NativeDeliveryRevision;
   budget: number;
   taskId?: string;
   solution?: {
@@ -964,6 +966,9 @@ export class LocalAgentController {
     const r = await this.withdrawalRecord(id);
     return { ...owner, programToolsVersion: r.programToolsVersion };
   }
+  async revise(id: string, requestId: string, prompt: string, budget: number, selection: unknown) {
+    return this.dispatch(id, requestId, prompt, budget, undefined, nativeDeliveryRevision(selection));
+  }
   /** A durable caller id is committed with the native operation and its terminal
    * receipt. A queue crash between these two journals cannot create a second task. */
   async dispatch(
@@ -972,6 +977,7 @@ export class LocalAgentController {
     prompt: string,
     budget: number,
     beforeNative?: () => Promise<void>,
+    deliveryRevision?: NativeDeliveryRevision,
   ): Promise<LocalDispatchReceipt> {
     if (
       !uuid.test(dispatchId) ||
@@ -984,7 +990,7 @@ export class LocalAgentController {
     )
       throw new LocalAgentError("LOCAL_REQUEST_INVALID");
     const r = await this.record(id),
-      digest = hash(JSON.stringify([prompt.trim(), budget]));
+      digest = hash(JSON.stringify(deliveryRevision ? [prompt.trim(), budget, deliveryRevision] : [prompt.trim(), budget]));
     if (r.geo) throw new LocalAgentError("GEO_NEW_RUN_REQUIRED");
     r.dispatches ??= [];
     let receipt = r.dispatches.find((row) => row.id === dispatchId);
@@ -998,6 +1004,8 @@ export class LocalAgentController {
       if (r.operation.phase !== "settling" && !r.operation.stopped)
         this.grant(r);
     } else {
+      if (deliveryRevision && r.lastTask?.task_id !== deliveryRevision.source_task_id)
+        throw new LocalAgentError("LOCAL_REVISION_SESSION_CHANGED");
       this.grant(r);
       if (
         this.busy.has(id) ||
@@ -1017,6 +1025,7 @@ export class LocalAgentController {
         finishKey: randomUUID(),
         cancelKey: randomUUID(),
         prompt: prompt.trim(),
+        ...(deliveryRevision ? { deliveryRevision } : {}),
         budget,
         phase: "accepting",
       };
@@ -1211,6 +1220,7 @@ export class LocalAgentController {
               ...fields,
               title: op.prompt.slice(0, 100),
               prompt: op.prompt,
+              ...(op.deliveryRevision ? { delivery_revision: op.deliveryRevision } : {}),
               role_key: r.role,
               ...(r.specialist ? { agent_id: r.specialist.id, agent_version: r.specialist.version } : {}),
               budget_micros: op.budget,

@@ -723,6 +723,7 @@ async function createWindow() {
       keys["specialist.create"] = ["tenant", "project", "role", "agent_id", "agent_version"];
       keys["geo.prepare"] = ["tenant", "project", "experiment", "expected_sha256", "name", "budget"];
       keys["geo.list"] = ["tenant", "project"];
+      keys["revision"] = ["id", "requestId", "prompt", "budget", "selection"];
       const allowed = keys[action];
       if (!allowed || Object.keys(payload).length !== allowed.length || allowed.some(k => !(k in payload))) throw new Error("LOCAL_REQUEST_INVALID");
       let value;
@@ -735,6 +736,7 @@ async function createWindow() {
         case "specialist.create": value = await localAgent.create(payload, payload.role, { id: payload.agent_id, version: payload.agent_version }); break;
         case "permission": await localSchedules.withdraw(payload.id); await localPrograms.withdraw(payload.id); value = await localAgent.permission(payload.id, payload.mode); break;
         case "send": value = await localAgent.send(payload.id, payload.prompt, payload.budget); break;
+        case "revision": value = await localAgent.revise(payload.id, payload.requestId, payload.prompt, payload.budget, payload.selection); break;
         case "answer": value = await localAgent.answer(payload.id, payload.requestId, payload.answers); break;
         case "retry": value = await localAgent.retry(payload.id); break;
         case "stop": await localSchedules.withdraw(payload.id); value = await localAgent.stop(payload.id); break;
