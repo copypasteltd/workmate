@@ -3,6 +3,7 @@ import { exactHKD } from "./financial-notice.js";
 import { FolderTransfer } from "./folder-transfer.js";
 import { folderBytes } from "./folder-import.js";
 import { businessQuestion } from "./business-question.js";
+import { openAttachmentPreview } from "./document-preview.js";
 
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 /** A local side-panel view over authenticated cloud conversations. */
@@ -18,8 +19,9 @@ export class ChatPanel {
   private deliveryScope = "";
   private deliveryGeneration = 0;
   private deliveryDownloads = new Map<string, { state: "pending" | "submitted" | "failed"; error?: string }>();
+  private documentPreview?:ReturnType<typeof openAttachmentPreview>;
   private tr(zh: string, en: string) { return this.language() === "en" ? en : zh; }
-  constructor(io: Omit<ChatIO, "changed">, language: () => string, private report: (e: unknown) => void,
+  constructor(private io: Omit<ChatIO, "changed">, language: () => string, private report: (e: unknown) => void,
     private capture: () => Promise<{ title: string; url: string; text: string }>, private details: (id: string) => Promise<void>,
     private download?: (scope: ChatScope, taskId: string) => Promise<unknown>,
     private revise?: (scope: ChatScope, taskId: string) => void) {
@@ -77,7 +79,7 @@ export class ChatPanel {
     try { await fn(); } catch (e) { if (scope === this.state.scope) this.report(e); }
   }
   reset() { this.dispose(); this.folder.cancel(); this.questionDrafts.clear(); this.questionScope = ""; this.state.reset(); }
-  dispose() { if (this.interval) clearInterval(this.interval); this.interval = undefined; }
+  dispose() { if (this.interval) clearInterval(this.interval); this.interval = undefined; this.documentPreview?.close(); this.documentPreview=undefined; }
   async open(scope: ChatScope) {
     this.dispose(); this.followLatest = true; await this.state.open(scope);
     if (!this.state.scope || this.state.scope.actor !== scope.actor || this.state.scope.tenant !== scope.tenant || this.state.scope.project !== scope.project) return;
@@ -85,6 +87,7 @@ export class ChatPanel {
     this.interval = setInterval(() => { if (!document.hidden) void this.run(() => this.state.refresh()); }, 1800);
   }
   draw() {
+    this.documentPreview?.check();
     const s = this.state;
     if (!s) return;
     const t = (zh: string, en: string) => this.tr(zh, en);
@@ -160,7 +163,12 @@ export class ChatPanel {
       const meta = document.createElement("small"); meta.textContent = `${a.type} · ${Math.ceil(a.size / 1024)} KB · ` + (a.state === "ready" ? t("已上傳，待傳送", "Uploaded, not sent") : a.state === "uploading" ? t("上傳中…", "Uploading…") : t("上傳失敗", "Upload failed"));
       if (a.error) meta.textContent += " · " + a.error;
       const remove = document.createElement("button"); remove.type = "button"; remove.textContent = "×"; remove.ariaLabel = t("移除附件 ", "Remove attachment ") + a.name; remove.disabled = locked;
-      remove.addEventListener("click", () => s.removeAttachment(a.id)); chip.append(label, meta, remove); attachments.append(chip);
+      remove.addEventListener("click", () => s.removeAttachment(a.id)); chip.append(label, meta);
+      if(a.state==='ready'&&a.assetId&&a.versionId){const preview=document.createElement('button');preview.type='button';preview.textContent=t('預覽附件','Preview attachment');
+        preview.addEventListener('click',()=>{const scope=s.scope,conversation=s.conversation?.id;if(!scope)return;this.documentPreview?.close();
+          this.documentPreview=openAttachmentPreview({scope,attachment:a,request:this.io.request,tr:(zh,en)=>this.tr(zh,en),
+            live:()=>scope===s.scope&&conversation===s.conversation?.id&&!s.unavailable&&s.attachments.some(x=>x.id===a.id)});});chip.append(preview);}
+      chip.append(remove); attachments.append(chip);
     }
     const feed = el("chat-messages"), atEnd = this.followLatest || feed.scrollHeight - feed.scrollTop - feed.clientHeight < 80;
     const questionScope = JSON.stringify([s.scope, c?.id]);

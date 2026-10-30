@@ -516,3 +516,29 @@ Run this component’s `npm run typecheck`, `npm run build` and documented test 
 Full product acceptance remains open: twelve professional-role qualifications, complete permissions/business/compatibility matrices, live service quality, signed installers/updates, production load/restore and customer business acceptance. Use the numbered inventory rather than test counts as a completion claim. Owned browsers/processes are closed; user resources are preserved.
 
 [Implementation / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/121-dedicated-cloud-and-client-execution.md) · [Checkpoint / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/dedicated-cloud-checkpoint.json) · [Open requirements / 未完成项](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-2026-10-29.md) · [Branch layout / 检出布局](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md)
+
+
+<!-- document-preview-stage146 -->
+## Stage146: actual document pages and complete source selection
+
+Native right Side Panel upload and attachment page turns preserve the private, unsent state.
+
+Open Cloud files, search authorized sources and explicitly select a fixed version before previewing, turning pages, downloading or passing a reference to a specialist. In Extension, preview an uploaded attachment inside the right Side Panel. Previewing does not send it or create an AI task. 19 backend checks and four actual client journeys passed, with nine screenshots and three real-time GIF/MP4 pairs. Office runtime setup and conversion are qualified on Windows x64; other server platforms, production services and complete native Codex/OS acceptance remain open.
+
+```mermaid
+flowchart LR
+  A[Select authorized source] --> B[Choose immutable version]
+  B --> C[Check current authority]
+  C --> D[Render actual document page]
+  D --> E[Recheck authority]
+  E --> F[Preview or pass exact reference]
+```
+
+[Design / 使用方案](https://github.com/copypasteltd/workmate/blob/docs/docs/development/146-document-pages-and-source-selection.md) · [Original numbered ledger / 原编号清单](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage146.md)
+
+![Actual document preview](assets/screenshots/workmate-document-preview-146-04-attachment-page-one-en.png)
+
+![Real-time interaction](assets/screenshots/workmate-document-preview-146-04-attachment-pages.gif)
+
+[Actual MP4 recording](assets/screenshots/workmate-document-preview-146-04-attachment-pages.mp4)
+
