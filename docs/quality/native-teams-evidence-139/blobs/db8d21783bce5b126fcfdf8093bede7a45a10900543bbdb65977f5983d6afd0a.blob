@@ -1,0 +1,118 @@
+{
+  "at": "2026-10-30T11:27:37.554Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "current test discovery",
+      "arguments": [
+        "scripts/run-current-tests-owned-v9.mjs",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "native team exact scope and fee integration",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/native-agent-groups-139-v8.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "cloud teams, native executions and delivery regressions",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/agent-groups.test.ts",
+        "tests/desktop-executions-139-v2.test.ts",
+        "tests/delivery-package-137-v1.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension existing state and upload regressions",
+      "arguments": [
+        "--import",
+        "tsx",
+        "--test",
+        "tests/delivery-revision-138-v1.test.ts",
+        "tests/conversation.test.ts",
+        "tests/native-session.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop durable team, local permissions and download regressions",
+      "arguments": [
+        "--import",
+        "tsx",
+        "--test",
+        "tests/local-team-139-v1.test.ts",
+        "tests/delivery-revision-138-v1.test.ts",
+        "tests/local-agent.test.ts",
+        "tests/download.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-web renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-desktop renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/native-teams-139/backend-10-sources.json",
+    "sha256": "88e9768a26c4548357f4107880ba0a14701db07f73478bf73f67b2be6f805c3d"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "port_closed": true,
+  "reused_owned_native_cluster": {
+    "path": ".data/native-qa/c9e4f69a-b3e6-4721-bcc9-dce7533be749",
+    "provenance": "evidence/native-teams-139/backend-02.json"
+  },
+  "raw_log": {
+    "path": "evidence/native-teams-139/backend-10.tap",
+    "sha256": "02581c9859dcfdb7de6ba01311414ae788f8ba5b2ebaf2049cd0c85e6eafd0a3"
+  },
+  "verifier": {
+    "path": "evidence/native-teams-139/backend-10-verifier.mjs",
+    "sha256": "0048f8f892b47ff512779cdc85fe69ac31dd556296103f000b99075ef48fe184"
+  },
+  "model_mode": "Explicitly synthetic model responses and controller runtime fixture. Real HTTP, OTP/PKCE, native PostgreSQL migration 137, native group DAG admission, company-metered receipts and ZIP extraction. Actual packaged Codex execution is qualified separately. No paid model calls."
+}

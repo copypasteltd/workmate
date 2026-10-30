@@ -1,0 +1,57 @@
+{
+  "at": "2026-10-30T10:52:22.831Z",
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: native team exact scope and fee integration\n\n1 !== 0\n",
+  "commands": [
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "current test discovery",
+      "arguments": [
+        "scripts/run-current-tests-owned-v4.mjs",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "native team exact scope and fee integration",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/native-agent-groups-139-v4.test.ts"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/native-teams-139/backend-04-sources.json",
+    "sha256": "be0e008cf10044ef7cdfd238bd0fc72e313a98d2b15dc72c10135a78109ebd79"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "port_closed": true,
+  "reused_owned_native_cluster": {
+    "path": ".data/native-qa/c9e4f69a-b3e6-4721-bcc9-dce7533be749",
+    "provenance": "evidence/native-teams-139/backend-02.json"
+  },
+  "raw_log": {
+    "path": "evidence/native-teams-139/backend-04.tap",
+    "sha256": "94ececbde26bc0d850be92b5c6fe53cfca8a76086cd370136554f43b188f99c7"
+  },
+  "verifier": {
+    "path": "evidence/native-teams-139/backend-04-verifier.mjs",
+    "sha256": "50203b43c87fe2e42c1b84bfd216beebcc119ce94365e43453d12e99baa895b6"
+  },
+  "model_mode": "Explicitly synthetic model responses and controller runtime fixture. Real HTTP, OTP/PKCE, native PostgreSQL migration 137, native group DAG admission, company-metered receipts and ZIP extraction. Actual packaged Codex execution is qualified separately. No paid model calls."
+}
