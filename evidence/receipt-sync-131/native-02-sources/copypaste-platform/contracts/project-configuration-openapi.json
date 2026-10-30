@@ -1,0 +1,1685 @@
+{
+  "openapi": "3.1.0",
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "info": {
+    "title": "Workmate shared project configuration",
+    "version": "1.0.0",
+    "description": "Draft/CAS, exact preview/publication, immutable history and server-pinned task guidance. Shared references grant no tools, local OS permission, credentials, account authorization or larger budget. Chat attachments remain private until separately published."
+  },
+  "paths": {
+    "/v1/tenants/{tenant}/projects/{project}/project-configuration": {
+      "get": {
+        "operationId": "getVTenantsTenantProjectsProjectProjectConfiguration",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "customerSession": []
+          },
+          {
+            "nativeBearer": []
+          }
+        ],
+        "x-access": "project.read",
+        "x-requirements": [
+          "REQ-005",
+          "REQ-061",
+          "REQ-063",
+          "REQ-065"
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized view; unavailable retained source bodies are hidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Current"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "401": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "403": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "404": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "409": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "410": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/project-configuration/draft": {
+      "get": {
+        "operationId": "getVTenantsTenantProjectsProjectProjectConfigurationDraft",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "customerSession": []
+          },
+          {
+            "nativeBearer": []
+          }
+        ],
+        "x-access": "project.manage",
+        "x-requirements": [
+          "REQ-005",
+          "REQ-061",
+          "REQ-063",
+          "REQ-065"
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized view; unavailable retained source bodies are hidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Draft"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "401": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "403": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "404": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "409": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "410": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          }
+        }
+      },
+      "put": {
+        "operationId": "putVTenantsTenantProjectsProjectProjectConfigurationDraft",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required with cookie-session writes; native Bearer requests use native authentication."
+          }
+        ],
+        "security": [
+          {
+            "customerSession": []
+          },
+          {
+            "nativeBearer": []
+          }
+        ],
+        "x-access": "project.manage",
+        "x-requirements": [
+          "REQ-005",
+          "REQ-061",
+          "REQ-063",
+          "REQ-065"
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized view; unavailable retained source bodies are hidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Saved"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "401": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "403": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "404": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "409": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "410": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Save"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/project-configuration/preview": {
+      "post": {
+        "operationId": "postVTenantsTenantProjectsProjectProjectConfigurationPreview",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required with cookie-session writes; native Bearer requests use native authentication."
+          }
+        ],
+        "security": [
+          {
+            "customerSession": []
+          },
+          {
+            "nativeBearer": []
+          }
+        ],
+        "x-access": "project.manage",
+        "x-requirements": [
+          "REQ-005",
+          "REQ-061",
+          "REQ-063",
+          "REQ-065"
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized view; unavailable retained source bodies are hidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "401": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "403": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "404": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "409": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "410": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/project-configuration/publish": {
+      "post": {
+        "operationId": "postVTenantsTenantProjectsProjectProjectConfigurationPublish",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required with cookie-session writes; native Bearer requests use native authentication."
+          }
+        ],
+        "security": [
+          {
+            "customerSession": []
+          },
+          {
+            "nativeBearer": []
+          }
+        ],
+        "x-access": "project.manage",
+        "x-requirements": [
+          "REQ-005",
+          "REQ-061",
+          "REQ-063",
+          "REQ-065"
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized view; unavailable retained source bodies are hidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Published"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "401": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "403": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "404": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "409": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "410": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/project-configuration/versions": {
+      "get": {
+        "operationId": "getVTenantsTenantProjectsProjectProjectConfigurationVersions",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ],
+        "security": [
+          {
+            "customerSession": []
+          },
+          {
+            "nativeBearer": []
+          }
+        ],
+        "x-access": "project.read",
+        "x-requirements": [
+          "REQ-005",
+          "REQ-061",
+          "REQ-063",
+          "REQ-065"
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized view; unavailable retained source bodies are hidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "401": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "403": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "404": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "409": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "410": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/project-configuration/options": {
+      "get": {
+        "operationId": "getVTenantsTenantProjectsProjectProjectConfigurationOptions",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "resource_query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 160,
+              "default": ""
+            }
+          },
+          {
+            "name": "resource_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "resource_limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          }
+        ],
+        "security": [
+          {
+            "customerSession": []
+          },
+          {
+            "nativeBearer": []
+          }
+        ],
+        "x-access": "project.manage",
+        "x-requirements": [
+          "REQ-005",
+          "REQ-061",
+          "REQ-063",
+          "REQ-065"
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized view; unavailable retained source bodies are hidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Options"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "401": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "403": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "404": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "409": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "410": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/tasks/{task}/project-configuration": {
+      "get": {
+        "operationId": "getVTenantsTenantProjectsProjectTasksTaskProjectConfiguration",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "task",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "customerSession": []
+          },
+          {
+            "nativeBearer": []
+          }
+        ],
+        "x-access": "project.read",
+        "x-requirements": [
+          "REQ-005",
+          "REQ-061",
+          "REQ-063",
+          "REQ-065"
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized view; unavailable retained source bodies are hidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Current"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "401": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "403": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "404": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "409": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          },
+          "410": {
+            "description": "Input, current authority, source availability, exact preview or immutable replay conflict"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Definition": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "const": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 8000,
+            "default": ""
+          },
+          "delivery_requirements": {
+            "type": "string",
+            "maxLength": 4000,
+            "default": ""
+          },
+          "default_agent": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "required": [
+                  "id",
+                  "version"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "required": [
+                  "id",
+                  "version"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "asset_version_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 20,
+            "uniqueItems": true
+          },
+          "connection_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 12,
+            "uniqueItems": true
+          },
+          "max_task_budget_micros": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "schema_version",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "Body": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "const": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 8000,
+            "default": ""
+          },
+          "delivery_requirements": {
+            "type": "string",
+            "maxLength": 4000,
+            "default": ""
+          },
+          "default_agent": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "required": [
+                  "id",
+                  "version"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "required": [
+                  "id",
+                  "version"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "asset_version_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 20,
+            "uniqueItems": true
+          },
+          "connection_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 12,
+            "uniqueItems": true
+          },
+          "max_task_budget_micros": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000000000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resolved": {
+            "type": "object",
+            "properties": {
+              "default_agent": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "role_key": {
+                        "type": "string"
+                      },
+                      "role_hash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "instructions": {
+                        "type": "string"
+                      },
+                      "tool_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "skills": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "installation_id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "skill_version_id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "skill_key": {
+                              "type": "string"
+                            },
+                            "package_version": {
+                              "type": "string"
+                            },
+                            "content_hash": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "installation_id",
+                            "skill_version_id",
+                            "skill_key",
+                            "package_version",
+                            "content_hash"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "name",
+                      "role_key",
+                      "role_hash",
+                      "instructions",
+                      "tool_ids",
+                      "skills"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "brand": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "name",
+                      "sha256"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "resources": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "asset_version_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "asset_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "mime_type": {
+                      "type": "string"
+                    },
+                    "bytes": {
+                      "type": "string",
+                      "pattern": "^[0-9]+$"
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "asset_version_id",
+                    "asset_id",
+                    "name",
+                    "version",
+                    "mime_type",
+                    "bytes",
+                    "sha256"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 20
+              },
+              "connections": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "provider": {
+                      "type": "string"
+                    },
+                    "auth_version": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "account_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "configuration_hash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "provider",
+                    "auth_version",
+                    "account_ids",
+                    "configuration_hash"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 12
+              }
+            },
+            "required": [
+              "default_agent",
+              "brand",
+              "resources",
+              "connections"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "schema_version",
+          "name",
+          "instructions",
+          "delivery_requirements",
+          "default_agent",
+          "brand",
+          "asset_version_ids",
+          "connection_ids",
+          "max_task_budget_micros",
+          "resolved"
+        ],
+        "additionalProperties": false
+      },
+      "Publication": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "body": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Body"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "type": "string"
+          },
+          "current_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "sha256",
+          "body",
+          "available"
+        ],
+        "additionalProperties": false
+      },
+      "Current": {
+        "type": "object",
+        "properties": {
+          "published": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Publication"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "published"
+        ],
+        "additionalProperties": false
+      },
+      "Draft": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "draft": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Definition"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "current_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "content_state": {
+            "enum": [
+              "active",
+              "quarantined",
+              "deleted"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "draft",
+          "current_version"
+        ],
+        "additionalProperties": false
+      },
+      "Save": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "definition": {
+            "$ref": "#/components/schemas/Definition"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "definition"
+        ],
+        "additionalProperties": false
+      },
+      "Saved": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "current_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "current_version"
+        ],
+        "additionalProperties": false
+      },
+      "PreviewRequest": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "draft_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "expected_revision"
+        ],
+        "additionalProperties": false
+      },
+      "PublishRequest": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "draft_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "draft_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "Preview": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "draft_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "proposed_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "body": {
+            "$ref": "#/components/schemas/Body"
+          },
+          "current": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "body": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/Body"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "available": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "version",
+                  "sha256",
+                  "body",
+                  "available"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "revision",
+          "draft_sha256",
+          "proposed_version",
+          "body",
+          "current"
+        ],
+        "additionalProperties": false
+      },
+      "Published": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "current_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "current_version",
+          "sha256"
+        ],
+        "additionalProperties": false
+      },
+      "History": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "body": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Body"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "available": {
+                  "type": "boolean"
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "version",
+                "sha256",
+                "body",
+                "available",
+                "created_at"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 50
+          },
+          "next_before": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_before"
+        ],
+        "additionalProperties": false
+      },
+      "Options": {
+        "type": "object",
+        "properties": {
+          "agents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "role_key": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "version",
+                "role_key"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 200
+          },
+          "brands": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "version"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 200
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asset_version_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "asset_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "mime_type": {
+                  "type": "string"
+                },
+                "bytes": {
+                  "type": "string",
+                  "pattern": "^[0-9]+$"
+                }
+              },
+              "required": [
+                "asset_version_id",
+                "asset_id",
+                "name",
+                "version",
+                "mime_type",
+                "bytes"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 100
+          },
+          "connections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": "string"
+                },
+                "account_count": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "provider",
+                "account_count"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 200
+          },
+          "limit": {
+            "const": 200
+          },
+          "resources_limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "resources_next_after": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "agents",
+          "brands",
+          "resources",
+          "connections",
+          "limit",
+          "resources_limit",
+          "resources_next_after"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "customerSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_session"
+      },
+      "nativeBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

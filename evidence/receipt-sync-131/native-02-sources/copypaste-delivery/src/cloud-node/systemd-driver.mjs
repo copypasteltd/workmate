@@ -1,0 +1,202 @@
+import { spawn } from "node:child_process";
+import { mkdir, writeFile, lstat, realpath, rm, readFile, statfs, chmod } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { check, uuid, sha256 } from "./protocol.mjs";
+import { workspaceMount, workspacePath, quotaCommands, requireProjectQuotaState } from "./workspace-quota.mjs";
+import { availableParallelism } from "node:os";
+import { requireHostCapacity } from "./host-admission.mjs";
+
+const runner = fileURLToPath(new URL("./lease-runner.mjs", import.meta.url));
+const guardLibrary = fileURLToPath(new URL("../../native/cloud-runner-guard.so", import.meta.url));
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+export function unitIdentity(command) {
+  check(uuid(command.session_id) && Number.isSafeInteger(command.generation) && command.generation > 0, "UNIT_IDENTITY_INVALID");
+  return `workmate-cloud-${command.session_id}-g${command.generation}.service`;
+}
+export function unitArguments(command, spec, staging, remaining) {
+  const unit = unitIdentity(command);
+  check(/^\/var\/lib\/workmate-cloud\/leases\/[0-9a-f-]{36}-g[1-9][0-9]*$/.test(staging), "LEASE_STAGING_PATH_INVALID");
+  check(Number.isSafeInteger(remaining) && remaining > 0 && remaining <= 86_400_000, "LEASE_RUNTIME_INVALID");
+  return ["--quiet", "--wait", "--pipe", "--unit=" + unit, "--service-type=exec",
+    "--property=DynamicUser=yes", "--property=NoNewPrivileges=yes", "--property=CapabilityBoundingSet=", "--property=AmbientCapabilities=",
+    "--property=ProtectSystem=strict", "--property=ProtectHome=yes", "--property=PrivateTmp=yes", "--property=PrivateNetwork=yes",
+    "--property=ProtectKernelTunables=yes", "--property=ProtectKernelModules=yes", "--property=ProtectKernelLogs=yes", "--property=ProtectControlGroups=yes",
+    "--property=ProtectClock=yes", "--property=RestrictSUIDSGID=yes", "--property=RestrictNamespaces=yes", "--property=LockPersonality=yes",
+    "--property=RestrictRealtime=yes", "--property=ProtectProc=invisible", "--property=UMask=0077", "--property=KillMode=control-group",
+    "--property=SendSIGKILL=yes", "--property=TimeoutStopSec=3s", "--property=TasksMax=256",
+    "--property=MemoryMax=" + spec.plan.memory_mib + "M", "--property=MemorySwapMax=0", "--property=CPUQuota=" + spec.plan.cpu_cores * 100 + "%",
+    "--property=RuntimeMaxSec=" + Math.max(0.001, remaining / 1000).toFixed(3) + "s",
+    "--property=BindPaths=" + workspacePath(command) + ":/workspace",
+    "--property=TemporaryFileSystem=/tmp:rw,size=64M,mode=1777 /var/tmp:rw,size=16M,mode=1777",
+    "--property=BindReadOnlyPaths=" + staging + ":/inputs",
+    "--property=InaccessiblePaths=/root /home -/etc/copypaste-cloud-node.json",
+    "--working-directory=/workspace", "--setenv=HOME=/workspace", "--setenv=DISPLAY=:77", "--setenv=PATH=/usr/bin:/bin",
+    "/usr/bin/env", "-i", "PATH=/usr/bin:/bin", "LANG=C.UTF-8", "HOME=/workspace", "DISPLAY=:77", "LD_PRELOAD=" + guardLibrary, "/usr/bin/node", runner];
+}
+export function requireProtectedRunner(status, fdOwner) {
+  const uid = status.match(/^Uid:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*$/m);
+  check(uid && uid.slice(1).every(value => Number(value) > 0) && fdOwner === 0, "LEASE_RPC_PROCESS_NOT_PROTECTED");
+}
+export function measuredUnitUsage(current, state, bootId) {
+  const saved = current.host_observation;
+  check(uuid(bootId) && saved?.boot_id === bootId, "HOST_USAGE_BOOT_UNCERTAIN");
+  check(["inactive", "failed"].includes(state.ActiveState) && state.MainPID === "0" && /^[a-f0-9]{32}$/.test(state.InvocationID ?? ""), "HOST_USAGE_EXIT_UNCERTAIN");
+  check(/^[1-9][0-9]*$/.test(state.ExecMainStartTimestampMonotonic ?? "") && /^[1-9][0-9]*$/.test(state.ExecMainExitTimestampMonotonic ?? ""), "HOST_USAGE_TIMESTAMPS_UNCERTAIN");
+  if (saved.invocation_id) check(saved.invocation_id === state.InvocationID && saved.start_microseconds === state.ExecMainStartTimestampMonotonic, "HOST_USAGE_INVOCATION_CHANGED");
+  const start = BigInt(state.ExecMainStartTimestampMonotonic), end = BigInt(state.ExecMainExitTimestampMonotonic);
+  check(end >= start && Number.isSafeInteger(current.maximum_milliseconds) && current.maximum_milliseconds > 0 && current.maximum_milliseconds <= 86_400_000, "HOST_USAGE_INTERVAL_INVALID");
+  return Math.min(current.maximum_milliseconds, Number((end - start + 999n) / 1000n));
+}
+
+async function command(binary, args, timeout = 8000, allowFailure = false) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(binary, args, { shell: false, windowsHide: true, env: { PATH: "/usr/bin:/bin", LANG: "C.UTF-8" }, stdio: ["ignore", "pipe", "pipe"] });
+    let output = "", total = 0; const timer = setTimeout(() => child.kill("SIGKILL"), timeout);
+    for (const stream of [child.stdout, child.stderr]) stream.on("data", bytes => { total += bytes.length; if (total > 65_536) child.kill("SIGKILL"); else output += bytes.toString(); });
+    child.once("error", error => { clearTimeout(timer); reject(error); });
+    child.once("close", code => { clearTimeout(timer); if (code === 0 || allowFailure) resolve(output); else reject(new Error("HOST_COMMAND_FAILED")); });
+  });
+}
+const properties = output => Object.fromEntries(output.trim().split("\n").filter(Boolean).map(line => { const i = line.indexOf("="); return [line.slice(0, i), line.slice(i + 1)]; }));
+
+/** Native Linux processes and cgroups only. This driver never provisions a
+ * machine or invokes Docker, WSL, a VM runtime, SSH or a provider AI endpoint. */
+export class SystemdLeaseDriver {
+  constructor() { this.pending = new Map(); this.serial = 0; }
+  identity(command) {
+    const unit = unitIdentity(command);
+    if (this.unit !== unit) { check(!this.child, "HOST_ALREADY_OWNED"); this.unit = unit; this.recovering = false; this.started = false; this.spawnAttempted = false; this.startMicroseconds = undefined; this.stoppedReceipt = undefined; }
+    return unit;
+  }
+  async preflight(config) {
+    check(process.platform === "linux" && process.getuid?.() === 0, "ROOT_NATIVE_LINUX_HOST_REQUIRED");
+    check(runner.startsWith("/opt/copypaste-cloud-node/") && await realpath(runner) === runner, "INSTALL_TRUSTED_NODE_UNDER_OPT");
+    let directory = path.dirname(runner);
+    while (directory !== "/") { const stat = await lstat(directory); check(!stat.isSymbolicLink() && stat.uid === 0 && (stat.mode & 0o022) === 0, "TRUSTED_NODE_DIRECTORY_INVALID"); directory = path.dirname(directory); }
+    const stat = await lstat(runner); check(stat.uid === 0 && (stat.mode & 0o022) === 0 && !stat.isSymbolicLink(), "TRUSTED_RUNNER_INVALID");
+    for (const file of [guardLibrary, guardLibrary.replace(/\.so$/, "-build.json"), guardLibrary.replace(/\.so$/, ".c")]) {
+      const stat = await lstat(file); check(stat.isFile() && !stat.isSymbolicLink() && stat.uid === 0 && (stat.mode & 0o022) === 0 && stat.size <= 1_048_576 && await realpath(file) === file, "TRUSTED_RUNNER_GUARD_REQUIRED");
+    }
+    const guard = JSON.parse(await readFile(guardLibrary.replace(/\.so$/, "-build.json"), "utf8"));
+    check(guard.format === 1 && guard.library_sha256 === sha256(await readFile(guardLibrary)) && guard.source_sha256 === sha256(await readFile(guardLibrary.replace(/\.so$/, ".c"))), "RUNNER_GUARD_BUILD_INTEGRITY_FAILED");
+    for (const file of ["/usr/bin/systemd-run", "/usr/bin/systemctl", "/usr/bin/Xvfb", "/usr/bin/openbox", "/usr/bin/xterm", "/usr/bin/import", "/usr/bin/xdotool", "/usr/bin/timeout", "/usr/bin/node", "/usr/bin/flock", "/usr/bin/env", "/usr/sbin/xfs_quota"])
+      check((await lstat(file)).isFile() || (await lstat(file)).isSymbolicLink(), "NATIVE_NODE_DEPENDENCY_MISSING");
+    this.hostConfig = config;
+    this.bootId = (await readFile("/proc/sys/kernel/random/boot_id", "utf8")).trim(); check(uuid(this.bootId), "HOST_BOOT_ID_INVALID");
+    await this.capacity(config);
+    const root = await lstat(workspaceMount);
+    check(root.isDirectory() && !root.isSymbolicLink() && root.uid === 0 && (root.mode & 0o077) === 0 && await realpath(workspaceMount) === workspaceMount, "PHYSICAL_WORKSPACE_MOUNT_NOT_PRIVATE");
+    check((await statfs(workspaceMount)).type === 0x58465342, "DEDICATED_PHYSICAL_XFS_REQUIRED");
+    requireProjectQuotaState(await command("/usr/sbin/xfs_quota", ["-x", "-c", "state", workspaceMount]));
+  }
+  admissionFacts() { check(uuid(this.bootId), "HOST_BOOT_ID_INVALID"); return { boot_id: this.bootId }; }
+  async capacity(config) {
+    requireHostCapacity(config, {
+      system_state: await command("/usr/bin/systemctl", ["is-system-running"], 4000, true),
+      controllers: await readFile("/sys/fs/cgroup/cgroup.controllers", "utf8"),
+      cpu_count: availableParallelism(), meminfo: await readFile("/proc/meminfo", "utf8"),
+    });
+  }
+  async start(commandBody, spec, files, remaining, signal) {
+    const deadline = performance.now() + remaining;
+    check(!this.child, "HOST_ALREADY_OWNED"); signal.throwIfAborted();
+    await this.capacity(this.hostConfig);
+    this.unit = unitIdentity(commandBody); this.staging = `/var/lib/workmate-cloud/leases/${commandBody.session_id}-g${commandBody.generation}`;
+    const capacity = await statfs(workspaceMount, { bigint: true });
+    check(capacity.bavail * capacity.bsize >= BigInt(spec.plan.disk_mib) * 1_048_576n, "PHYSICAL_WORKSPACE_CAPACITY_UNAVAILABLE");
+    this.workspace = workspacePath(commandBody); await mkdir(this.workspace, { mode: 0o700 }); await chmod(this.workspace, 0o1777);
+    for (const args of quotaCommands(commandBody, spec)) await command("/usr/sbin/xfs_quota", args);
+    await mkdir(this.staging, { recursive: false, mode: 0o755 });
+    for (const file of files) { signal.throwIfAborted(); check(uuid(file.id), "STAGING_FILE_ID_INVALID"); const target=path.join(this.staging,file.id); await writeFile(target, file.bytes, { mode: 0o400, flag: "wx" }); await chmod(target,0o444); }
+    await chmod(this.staging,0o755);
+    signal.throwIfAborted(); const admittedRemaining = Math.floor(deadline - performance.now()); check(admittedRemaining > 0, "LEASE_DEADLINE_INVALID");
+    this.started = false; this.stoppedReceipt = undefined; this.maximumMilliseconds = spec.minutes * 60_000; this.spawnAttempted = true;
+    this.child = spawn("/usr/bin/systemd-run", unitArguments(commandBody, spec, this.staging, admittedRemaining), {
+      shell: false, env: { PATH: "/usr/bin:/bin", LANG: "C.UTF-8" }, stdio: ["pipe", "pipe", "pipe"],
+    });
+    this.childClosed = new Promise(resolve => { this.child.once("close", resolve); this.child.once("error", () => resolve(1)); });
+    let buffer = "";
+    this.child.stdout.on("data", bytes => {
+      buffer += bytes.toString(); if (Buffer.byteLength(buffer) > 1_000_000) { this.child.kill("SIGKILL"); return; }
+      let boundary; while ((boundary = buffer.indexOf("\n")) >= 0) {
+        const line = buffer.slice(0, boundary); buffer = buffer.slice(boundary + 1);
+        try { const reply = JSON.parse(line), request = this.pending.get(reply.id); if (request) { this.pending.delete(reply.id); clearTimeout(request.timer); reply.ok ? request.resolve(reply) : request.reject(new Error("LEASE_OPERATION_FAILED")); } }
+        catch { /* Lease stdout is untrusted. It cannot prove host cleanup. */ }
+      }
+    });
+    // Discard untrusted stderr instead of leaking private terminal output into operator logs.
+    this.child.stderr.resume();
+    await this.rpc({ kind: "ready" }, signal);
+    const state = await this.inspect(this.unit);
+    check(state.ActiveState === "active" && /^[1-9][0-9]*$/.test(state.MainPID) && /^[1-9][0-9]*$/.test(state.ExecMainStartTimestampMonotonic), "NATIVE_UNIT_NOT_RUNNING");
+    requireProtectedRunner(await readFile("/proc/" + state.MainPID + "/status", "utf8"), (await lstat("/proc/" + state.MainPID + "/fd")).uid);
+    this.startMicroseconds = BigInt(state.ExecMainStartTimestampMonotonic); this.started = true;
+    check(/^[a-f0-9]{32}$/.test(state.InvocationID ?? ""), "NATIVE_INVOCATION_UNAVAILABLE");
+    return { ...this.admissionFacts(), invocation_id: state.InvocationID, start_microseconds: state.ExecMainStartTimestampMonotonic };
+  }
+  rpc(body, signal, timeout = 12_000) {
+    check(this.child?.stdin.writable, "LEASE_PROCESS_UNAVAILABLE"); signal?.throwIfAborted();
+    const id = ++this.serial;
+    return new Promise((resolve, reject) => {
+      const finish = error => { const pending = this.pending.get(id); if (!pending) return; this.pending.delete(id); clearTimeout(pending.timer); reject(error); };
+      const timer = setTimeout(() => finish(new Error("LEASE_OPERATION_TIMEOUT")), timeout);
+      const abort = () => finish(new Error("LEASE_OPERATION_CANCELLED")); signal?.addEventListener("abort", abort, { once: true });
+      this.pending.set(id, { timer, resolve: result => { signal?.removeEventListener("abort", abort); resolve(result); }, reject: error => { signal?.removeEventListener("abort", abort); reject(error); } });
+      this.child.stdin.write(JSON.stringify({ id, ...body }) + "\n", error => { if (error) finish(error); });
+    });
+  }
+  async input(body, signal) { return (await this.rpc(body, signal)).result ?? ""; }
+  async frame() {
+    const reply = await this.rpc({ kind: "frame" }, undefined, 4000);
+    check(typeof reply.base64 === "string" && reply.base64.length <= 700_000, "FRAME_REPLY_INVALID");
+    const bytes = Buffer.from(reply.base64, "base64"); check(bytes.toString("base64") === reply.base64, "FRAME_ENCODING_INVALID"); return bytes;
+  }
+  inspect(unit) { return command("/usr/bin/systemctl", ["show", unit, "--property=LoadState,ActiveState,MainPID,ControlGroup,InvocationID,ExecMainStartTimestampMonotonic,ExecMainExitTimestampMonotonic"], 4000, true).then(properties); }
+  async stop(current) {
+    const unit = current.driver_identity;
+    if (this.stoppedReceipt && this.unit === unit) return this.stoppedReceipt;
+    check(unit === unitIdentity(current), "CLEANUP_UNIT_IDENTITY_MISMATCH");
+    const before = await this.inspect(unit), cgroup = before.ControlGroup;
+    check(!cgroup || cgroup === "/system.slice/" + unit, "CLEANUP_CGROUP_IDENTITY_MISMATCH");
+    // An abnormal exit retains systemd's root-owned invocation timestamps.
+    // Calling stop first can garbage-collect a transient unit before observation.
+    await command("/usr/bin/systemctl", ["kill", "--kill-whom=all", "--signal=SIGKILL", unit], 4000, true);
+    const limit = performance.now() + 6000; let empty = false, finalState;
+    do {
+      const state = await this.inspect(unit);
+      if ((state.LoadState === "not-found" || ["inactive", "failed"].includes(state.ActiveState)) && (!state.MainPID || state.MainPID === "0")) {
+        let populated = false;
+        if (cgroup) try { populated = !/^populated 0$/m.test(await readFile("/sys/fs/cgroup" + cgroup + "/cgroup.events", "utf8")); } catch (error) { if (error.code !== "ENOENT") throw error; }
+        if (!populated) { empty = true; finalState = state; break; }
+      }
+      await delay(50);
+    } while (performance.now() < limit);
+    check(empty, "HOST_CGROUP_NOT_EMPTY");
+    if (this.child) { this.child.stdin.destroy(); await Promise.race([this.childClosed, delay(2000).then(() => { this.child?.kill("SIGKILL"); })]); }
+    const staging = `/var/lib/workmate-cloud/leases/${current.session_id}-g${current.generation}`;
+    check(/^\/var\/lib\/workmate-cloud\/leases\/[0-9a-f-]{36}-g[1-9][0-9]*$/.test(staging), "CLEANUP_STAGING_IDENTITY_INVALID");
+    try { const stat = await lstat(staging); check(stat.isDirectory() && !stat.isSymbolicLink() && await realpath(staging) === staging, "CLEANUP_STAGING_NOT_OWNED"); await rm(staging, { recursive: true }); } catch (error) { if (error.code !== "ENOENT") throw error; }
+    const workspace = workspacePath(current);
+    try { const stat = await lstat(workspace); check(stat.isDirectory() && !stat.isSymbolicLink() && await realpath(workspace) === workspace, "CLEANUP_WORKSPACE_NOT_OWNED"); await rm(workspace, { recursive: true }); } catch (error) { if (error.code !== "ENOENT") throw error; }
+    await command("/usr/sbin/xfs_quota", ["-x", "-c", `limit -p bsoft=0 bhard=0 isoft=0 ihard=0 ${current.generation}`, workspaceMount]);
+    // Root-observed systemd entry/exit timestamps exclude shutdown bookkeeping.
+    // A same-boot daemon restart can reconcile that exact invocation. A reboot,
+    // collected transient unit or absent timestamps cannot invent free usage.
+    const neverStarted = !this.recovering && this.unit === unit && !this.spawnAttempted && before.LoadState === "not-found";
+    const observed = finalState?.ExecMainExitTimestampMonotonic && finalState.ExecMainExitTimestampMonotonic !== "0" ? finalState : before;
+    const running = neverStarted ? 0 : measuredUnitUsage(current, observed, this.bootId);
+    this.child = undefined; this.stoppedReceipt = { cleanup_verified: true, running_milliseconds: running }; return this.stoppedReceipt;
+  }
+  async recover(current) {
+    if (current.cleanup?.cleanup_verified) return current.cleanup;
+    this.recovering = true;
+    return this.stop(current);
+  }
+  async retire(current) {
+    check(current.cleanup?.cleanup_verified === true && current.driver_identity === unitIdentity(current), "RETIRED_UNIT_NOT_VERIFIED");
+    const state = await this.inspect(current.driver_identity);
+    check(state.LoadState === "not-found" || ["failed", "inactive"].includes(state.ActiveState) && state.MainPID === "0", "RETIRED_UNIT_STILL_RUNNING");
+    await command("/usr/bin/systemctl", ["reset-failed", current.driver_identity], 4000, true);
+  }
+}
