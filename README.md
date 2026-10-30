@@ -547,3 +547,29 @@ Linux 物理节点源码使用原生 Node22/systemd、cgroup、XFS project quota
 完整产品验收仍开放：至少十二个专业角色资格、全权限/业务/兼容矩阵、真实服务质量、签名安装更新、生产负载恢复及客户业务接受。以编号清单管理完成条件，不以测试数量推算完成率；使用后清理自建浏览器/进程，保留用户资源。
 
 [Implementation / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/121-dedicated-cloud-and-client-execution.md) · [Checkpoint / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/dedicated-cloud-checkpoint.json) · [Open requirements / 未完成项](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-2026-10-29.md) · [Branch layout / 检出布局](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md)
+
+
+<!-- document-preview-stage146 -->
+## 阶段146：实际文档分页与完整素材选择
+
+文件分页、跳页、历史版本搜索和原件下载；打开文件失权后清除内容。
+
+进入文件工作区，搜索获准素材，明确选择固定版本，再预览／翻页／下载或交给角色。Extension点击已上传附件的预览按钮；预览不会发送附件或产生AI任务。19项后端检查、4组真实三端流程通过，9张截图与3组时序GIF／MP4。当前Office预览设置与真实验收为Windows x64，其他服务器平台待验收；生产AI与完整本机Codex／OS验收继续开放。
+
+```mermaid
+flowchart LR
+  A[Select authorized source] --> B[Choose immutable version]
+  B --> C[Check current authority]
+  C --> D[Render actual document page]
+  D --> E[Recheck authority]
+  E --> F[Preview or pass exact reference]
+```
+
+[Design / 使用方案](https://github.com/copypasteltd/workmate/blob/docs/docs/development/146-document-pages-and-source-selection.md) · [Original numbered ledger / 原编号清单](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage146.md)
+
+![Actual document preview](assets/screenshots/workmate-document-preview-146-04-page-one-en.png)
+
+![Real-time interaction](assets/screenshots/workmate-document-preview-146-04-document-pages.gif)
+
+[Actual MP4 recording](assets/screenshots/workmate-document-preview-146-04-document-pages.mp4)
+
