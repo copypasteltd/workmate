@@ -1,3 +1,19 @@
+<!-- editable-projects-stage143 -->
+
+新增矢量设计／演示文稿的持续编辑工程：从专员固定来源建立、逐页和逐层修改、保存历史版本、真实预览与SVG/PNG/PDF/PPTX交付、完整工程包跨项目恢复、品牌逐项核对与图表原值独立确认。同时补齐预览与保存排队、后台删除历史及实际衍生文件。
+
+42项相关检查及真实三端旅程通过。使用假业务／模型数据，实际原生登录、存储和文件渲染；Windows包未签名。全部专业格式、Office与跨机器整项验收仍开放。 [方案与使用 / Design and usage](https://github.com/copypasteltd/workmate/blob/docs/docs/development/143-editable-project-workspaces.md).
+
+```mermaid
+flowchart LR
+ A[Fixed editable source or ZIP] --> B[Project and brand/data review]
+ B --> C[Edit layers pages and notes]
+ C --> D[Save immutable version]
+ D --> E[SVG PNG PDF PPTX]
+ E --> F[Complete portable ZIP]
+ F --> B
+```
+
 <!-- brand-reuse-stage142 -->
 
 品牌工程可在新项目选择目的品牌固定版本，逐项映射字体、价格／促销事实、Logo和可选配色，核对实际差异并确认后恢复新副本。Web/Desktop继续编辑、输出PNG/PDF/SVG并再次打包；扩展在原生右侧栏完成上传、核对与恢复。修复文字矢量化导致品牌／矢量／演示稿源图片丢失的问题，保留图像和形状层叠顺序。

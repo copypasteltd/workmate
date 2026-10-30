@@ -6,12 +6,14 @@ import { Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { open, type Entry, type ZipFile } from "yauzl";
 import { canonical, hash, Problem } from "./lib.js";
-import { creativePackageLimit, packageManifest, parseCreativeSource, creativeReferences } from "./creative-package-model.js";
+import { creativePackageLimit, packageManifest, parseCreativeSource, creativeReferences, creativeReferenceKey } from "./creative-package-model.js";
+import { importedDesignEvidence, selectDesignEvidence } from "./portable-design-evidence.js";
+import { editableScenes, type EditableInput } from "./editable-project-source.js";
 import { validatePackageBrand } from "./creative-package-brand.js";
 
 type Member = { file: string; bytes: number; sha256: string };
 const invalid = () => new Problem(422, "CREATIVE_PACKAGE_INVALID", "This is not a complete supported CopyPaste creative project archive");
-const allowed = /^(?:manifest\.json|project\.json|preview\.svg|README\.md|SHA256SUMS|fonts\/(?:NotoSansTC-VF\.ttf|OFL\.txt)|media\/[0-9]{3}\.(?:png|wav|mp3))$/;
+const allowed = /^(?:manifest\.json|project\.json|preview\.svg|previews\/page-(?:0[1-9]|1\d|20)\.png|README\.md|SHA256SUMS|fonts\/(?:NotoSansTC-VF\.ttf|CopyPasteSansTC-(?:Regular|Bold)\.ttf|OFL\.txt)|media\/[0-9]{3,4}\.(?:png|wav|mp3|json))$/;
 
 /** Lazy, disk-backed reader. Portable v1 uses stored entries, so there is no decompression bomb or executable extraction. */
 export async function readCreativePackage(archive: string, directory: string, signal: AbortSignal) {
@@ -20,7 +22,7 @@ export async function readCreativePackage(archive: string, directory: string, si
   const members = new Map<string, Member>(); let total = 0;
   const interrupt = () => zip.close(); signal.throwIfAborted(); signal.addEventListener("abort", interrupt, { once: true });
   try {
-    if (zip.entryCount > 110 || zip.entryCount < 4) throw invalid();
+    if (zip.entryCount > 1645 || zip.entryCount < 4) throw invalid();
     await new Promise<void>((resolve, reject) => {
       const fail = (error: unknown) => { zip.close(); reject(error instanceof Problem ? error : invalid()); };
       zip.once("error", fail); zip.once("end", resolve); zip.once("close", () => { if (signal.aborted) reject(signal.reason); });
@@ -31,7 +33,7 @@ export async function readCreativePackage(archive: string, directory: string, si
           || entry.isEncrypted() || (mode !== 0 && mode !== 0x8000) || entry.uncompressedSize !== entry.compressedSize
           || !Number.isSafeInteger(entry.uncompressedSize) || entry.uncompressedSize < 1 || entry.uncompressedSize > 30 * 1024 ** 2)
           throw invalid();
-        if (!entry.fileName.startsWith("media/") && !entry.fileName.startsWith("fonts/") && entry.fileName !== "preview.svg" && entry.uncompressedSize > 4 * 1024 ** 2) throw invalid();
+        if (!entry.fileName.startsWith("media/") && !entry.fileName.startsWith("fonts/") && !entry.fileName.startsWith("previews/") && entry.fileName !== "preview.svg" && entry.uncompressedSize > 4 * 1024 ** 2) throw invalid();
         total += entry.uncompressedSize; if (total > creativePackageLimit) throw invalid();
         const file = path.join(directory, "member-" + members.size), sha = createHash("sha256"); let bytes = 0;
         const input = await new Promise<import("node:stream").Readable>((yes, no) => zip.openReadStream(entry, (e, stream) => e || !stream ? no(invalid()) : yes(stream)));
@@ -63,12 +65,24 @@ export async function readCreativePackage(archive: string, directory: string, si
     if (checked.size !== members.size - 1 || !members.has("README.md")) throw invalid();
     const refs = creativeReferences(manifest.kind, definition), mapped = new Set<string>(), mediaPaths = new Set<string>();
     for (const media of manifest.media) {
-      const key = media.asset_id + ":" + media.version;
+      const editable = manifest.kind === "vector" || manifest.kind === "presentation";
+      const key = editable ? media.source_version_id ?? "" : media.asset_id + ":" + media.version;
+      const source = refs.find(r => creativeReferenceKey(r) === key);
       if (!/^media\//.test(media.path) || !declared.has(media.path) || mapped.has(key) || mediaPaths.has(media.path)
-        || !refs.some(r => r.asset_id === media.asset_id && r.version === media.version)
-        || !media.path.endsWith(media.mime_type === "image/png" ? ".png" : media.mime_type === "audio/wav" ? ".wav" : ".mp3")
-        || members.get(media.path)!.bytes > (media.mime_type === "image/png" ? 8_000_000 : 30_000_000)) throw invalid();
-      mapped.add(key); mediaPaths.add(media.path);
+        || !source || editable && (!key || media.source_sha256 !== source.sha256
+          || source.role === "image" && (media.mime_type !== "image/png" || members.get(media.path)!.sha256 !== source.sha256) || source.role === "evidence" && media.mime_type !== "application/json")
+        || !editable && (media.source_version_id || media.source_sha256 || media.mime_type === "application/json")
+        || !media.path.endsWith(media.mime_type === "image/png" ? ".png" : media.mime_type === "audio/wav" ? ".wav" : media.mime_type === "application/json" ? ".json" : ".mp3")
+        || members.get(media.path)!.bytes > (media.mime_type === "image/png" ? editable ? 10 * 1024 ** 2 : 8_000_000 : media.mime_type === "application/json" ? 4 * 1024 ** 2 : 30_000_000)) throw invalid();
+      mapped.add(key!); mediaPaths.add(media.path);
+      if (media.mime_type === "application/json") {
+        let data; try { data = importedDesignEvidence.parse(JSON.parse(await text(media.path))); } catch { throw invalid(); }
+        const scenes = editableScenes(manifest.kind as "vector" | "presentation", definition as EditableInput);
+        const layers = scenes.flatMap(s => s.layers.flatMap(l => l.kind === "chart" && l.source_version_id === key ? [l] : []));
+        const ids = new Set(layers.flatMap(l => l.evidence_ids));
+        if (data.rows.length !== ids.size || data.rows.some(r => !ids.has(r.id))) throw invalid();
+        for (const layer of layers) selectDesignEvidence(data.rows, layer.evidence_ids);
+      }
       // Check content signatures as well as the MIME label and digest before any database writes.
       const member = members.get(media.path)!;
       const handle = createReadStream(member.file, { start: 0, end: 31 }); const chunks: Buffer[] = [];

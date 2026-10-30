@@ -242,7 +242,7 @@ function pageSVG(
     .join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${scene.width}" height="${scene.height}" viewBox="0 0 ${scene.width} ${scene.height}"><rect width="100%" height="100%" fill="${scene.background}"/>${body}</svg>`;
 }
-async function fontFiles(texts: string[]) {
+export async function editableFontFiles(texts: string[] = []) {
   const metadata = await loadVideoFont(texts);
   let dir = path.resolve(import.meta.dirname, "../assets/fonts/noto-sans-tc");
   let bytes: Buffer;
@@ -474,7 +474,7 @@ export async function renderEditableDesign(
     .flatMap((s) => s.layers)
     .filter((l) => l.kind === "text")
     .map((l) => (l as TextLayer).text);
-  const font = await fontFiles(texts);
+  const font = await editableFontFiles(texts);
   const alias = "CPEditable_" + randomUUID().replaceAll("-", "");
   const registered: FontKey[] = [];
   const families: FontFamilies = {

@@ -4,10 +4,12 @@ import type { Storage } from "./storage.js";
 import { poster, renderProjectPoster } from "./business.js";
 import { brandDefinition, brandVersion, prepareBrandProduction } from "./brand-production.js";
 import { canonical, hash, Problem } from "./lib.js";
-import { packageBrandRequirements, type PackageBrandRequirements, type PackageBrandTarget } from "./creative-package-model.js";
+import { packageBrandRequirements, type PackageBrandRequirements, type PackageBrandTarget, type CreativeKind } from "./creative-package-model.js";
+import { prepareEditablePackageBrand, validateEditablePackageBrand } from "./creative-package-editable.js";
 
 /** Archive declarations describe content; they never grant destination authority. */
-export function validatePackageBrand(kind: "poster" | "video", source: unknown, requirements?: PackageBrandRequirements) {
+export function validatePackageBrand(kind: CreativeKind, source: unknown, requirements?: PackageBrandRequirements) {
+  if (kind === "vector" || kind === "presentation") return validateEditablePackageBrand(kind, source, requirements);
   if (kind !== "poster") { if (requirements) throw new Problem(422, "CREATIVE_PACKAGE_INVALID", "Video cannot declare canvas brand bindings"); return; }
   const p = poster.parse(source);
   if (!!p.brand !== !!requirements) throw new Problem(422, "PACKAGE_BRAND_REBIND_REQUIRED", "Brand canvases require a complete explicit binding description");
@@ -41,7 +43,8 @@ function exactMap(rows: { source_key: string; target_key: string }[], required: 
 }
 
 export async function preparePackageBrand(tx: Tx, storage: Storage, project: string, source: unknown,
-  requirements: PackageBrandRequirements, target: PackageBrandTarget, archiveHash: string, previewHash: string) {
+  requirements: PackageBrandRequirements, target: PackageBrandTarget, archiveHash: string, previewHash: string, kind: CreativeKind = "poster") {
+  if (kind === "vector" || kind === "presentation") return prepareEditablePackageBrand(tx, storage, project, kind, source, requirements, target, archiveHash, previewHash);
   validatePackageBrand("poster", source, requirements);
   const original = poster.parse(source), row = await brandVersion(tx, project, target.binding.id, target.binding.version), b = brandDefinition.parse(row.body);
   const fonts = exactMap(target.fonts, requirements.texts.map(t => t.font_key), b.font_bindings.map(f => f.key), "fonts"),

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "baseline": "implemented-routes.json",
   "baseline_lf_sha256": "4cfe133903ad3e046a697453a3aefbf498de83dbaede3085b4224057297146e0",
-  "scope": "Explicit client, support, delivery, native-team, project-recovery, publication and Admin operations, including current additions through stage142. Exact actual registered-route equality remains mandatory; the immutable baseline is unchanged.",
+  "scope": "Explicit client, support, delivery, native-team, project-recovery, publication and Admin operations, including current additions through stage143. Exact actual registered-route equality remains mandatory; the immutable baseline is unchanged.",
   "routes": [
     {
       "method": "GET",
@@ -319,6 +319,38 @@
     {
       "method": "POST",
       "path": "/v1/admin/tenants/:tenant/projects/:project/publications/operations/:id/close-unknown"
+    },
+    {
+      "path": "/v1/tenants/:tenant/projects/:project/editable-projects/sources",
+      "method": "GET"
+    },
+    {
+      "path": "/v1/tenants/:tenant/projects/:project/editable-projects/requests/:key",
+      "method": "GET"
+    },
+    {
+      "path": "/v1/tenants/:tenant/projects/:project/editable-projects",
+      "method": "GET"
+    },
+    {
+      "path": "/v1/tenants/:tenant/projects/:project/editable-projects",
+      "method": "POST"
+    },
+    {
+      "path": "/v1/tenants/:tenant/projects/:project/editable-projects/:id",
+      "method": "GET"
+    },
+    {
+      "path": "/v1/tenants/:tenant/projects/:project/editable-projects/:id",
+      "method": "PUT"
+    },
+    {
+      "path": "/v1/tenants/:tenant/projects/:project/editable-projects/:id/preview",
+      "method": "GET"
+    },
+    {
+      "path": "/v1/tenants/:tenant/projects/:project/editable-projects/:id/render",
+      "method": "POST"
     }
   ],
   "conditional_routes": []

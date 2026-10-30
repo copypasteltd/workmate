@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { createReadStream, createWriteStream } from "node:fs";
 import { mkdir, mkdtemp, readFile, realpath, rm, statfs } from "node:fs/promises";
 import path from "node:path";
@@ -10,7 +10,7 @@ import type { Database, Tx } from "./db.js";
 import { audit, requireUser, type Principal } from "./auth.js";
 import { projectAccess, replay, key } from "./access.js";
 import { lockUserAuthorities } from "./user-authority.js";
-import { Storage, saveAssetFile } from "./storage.js";
+import { Storage, saveAssetFile, saveAsset } from "./storage.js";
 import { canonical, hash, Problem, uuid } from "./lib.js";
 import { renderPoster, renderProjectPoster, poster } from "./business.js";
 import { brandDefinition, factEligibility } from "./brand-production.js";
@@ -20,15 +20,18 @@ import { createVideoProject } from "./video-projects.js";
 import { videoRendererProfile } from "./video-render.js";
 import { loadVideoFont } from "./video-font.js";
 import { creativePackageLimit, packageManifest, packageSelection, packageRestore, parseCreativeSource,
-  creativeReferences, remapCreativeSource, packageBrandTarget } from "./creative-package-model.js";
+  creativeReferences, creativeReferenceKey, remapCreativeSource, packageBrandTarget, type CreativeRemap } from "./creative-package-model.js";
 import { readCreativePackage } from "./creative-package-reader.js";
+import { selectEditablePackage, verifyEditablePackageFonts, editableDesignColors } from "./creative-package-editable.js";
+import { createEditableProject } from "./editable-projects.js";
+import { importedDesignEvidence } from "./portable-design-evidence.js";
 
 const scopeSchema = z.object({ tenant: uuid, project: uuid });
 type Scope = z.infer<typeof scopeSchema>;
 type Selected = z.infer<typeof packageSelection>;
 type ArchiveFile = { path: string; name: string; bytes: number; sha256: string; mime_type: string; storage_key?: string; content?: Buffer };
 const available = "a.state='active' AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND analysis_asset_available(a.id) AND matrix_asset_available(a.id) AND video_asset_available(a.id)";
-const readme = `# CopyPaste · 可恢復工程 / Restorable project\n\n在「設計畫布 → 恢復工程」上傳本 ZIP、檢視清單，再確認建立新的專案共用工程。來源工程不會被覆寫。\nUpload this ZIP in Design canvas → Restore project, review the manifest, then confirm a new project-shared copy. The source is never overwritten.\n\nproject.json 保留可編輯圖層或影片腳本、分鏡、字幕、時間線及音訊設定；media/ 包含每個固定版本的來源。manifest.json 與 SHA256SUMS 記錄大小和 SHA-256。\nproject.json retains editable layers or video script, storyboard, subtitles, timeline and audio settings. media/ contains every fixed source version. manifest.json and SHA256SUMS record sizes and digests.\n\n影片附帶固定 Noto Sans TC 字型及 OFL 授權，仍需相容的 CopyPaste 原生渲染服務。畫布的系統字型參照保留於來源；換機字型差異可能改變排版，preview.svg 供原環境比對。\nVideo includes the pinned Noto Sans TC font and OFL license and requires a compatible native CopyPaste renderer. Canvas system-font references remain in source; fonts on another host can change layout. preview.svg records the source-environment review.\n\n匯入會重新分配工程與素材編號，不恢復帳戶、費用、權限、連接器或原任務的已驗證狀態。請確認素材授權適用於目的專案。\nImport allocates new content IDs and never restores accounts, costs, permissions, connectors or verified task provenance. Confirm media rights for the destination project.\n\n匯出與恢復不呼叫 AI；後續啟動 Agent 按現有費用與權限流程處理。\nExport and restore make no AI call. Later Agent work follows existing cost and permission confirmations.\n`;
+const readme = `# CopyPaste · 可恢復工程 / Restorable project\n\n在「設計畫布 → 恢復工程」上傳本 ZIP、檢視清單，再確認建立新的專案共用工程。來源工程不會被覆寫。\nUpload this ZIP in Design canvas → Restore project, review the manifest, then confirm a new project-shared copy. The source is never overwritten.\n\nproject.json 保留可編輯畫布、矢量圖層、演示文稿分頁、備註，或影片腳本、分鏡、字幕、時間線及音訊設定；media/ 包含每個固定版本的來源。manifest.json 與 SHA256SUMS 記錄大小和 SHA-256。\nproject.json retains editable canvas/vector layers, presentation pages and notes, or video script, storyboard, subtitles, timeline and audio settings. media/ contains every fixed source version. manifest.json and SHA256SUMS record sizes and digests.\n\n矢量、演示文稿及影片附帶固定 Noto Sans TC 字型及 OFL 授權，仍需相容的 CopyPaste 原生渲染服務。畫布的系統字型參照保留於來源；換機字型差異可能改變排版，preview.svg 供原環境比對。\nVector, presentation and video include the pinned Noto Sans TC font and OFL license and requires a compatible native CopyPaste renderer. Canvas system-font references remain in source; fonts on another host can change layout. preview.svg records the source-environment review.\n\n匯入圖表須核對原值與範圍，資料會標示為自行確認的匯入快照。匯入會重新分配工程、素材與圖表資料編號，不恢復帳戶、費用、權限、連接器或原任務的已驗證狀態。請確認素材授權適用於目的專案。\nReview imported chart values and scope; they are labelled as user-attested snapshots. Import allocates new project, asset and evidence IDs and never restores accounts, costs, permissions, connectors or verified task provenance. Confirm media rights for the destination project.\n\n匯出與恢復不呼叫 AI；後續啟動 Agent 按現有費用與權限流程處理。\nExport and restore make no AI call. Later Agent work follows existing cost and permission confirmations.\n`;
 
 async function selectArchiveAsset(tx: Tx, principal: Principal, scope: Scope, selection: Selected, lock = false) {
   await projectAccess(tx, principal, scope.tenant, scope.project, "write");
@@ -47,9 +50,10 @@ async function selectArchiveAsset(tx: Tx, principal: Principal, scope: Scope, se
 async function selectProject(tx: Tx, principal: Principal, scope: Scope, id: string, version: number, storage: Storage, db: Database) {
   await projectAccess(tx, principal, scope.tenant, scope.project);
   const p = (await tx.query(`SELECT * FROM creative_projects WHERE id=$1 AND tenant_id=$2 AND project_id=$3
-    AND kind IN ('poster','video') AND content_state='active' AND retention_expires_at>clock_timestamp()`, [id, scope.tenant, scope.project])).rows[0];
+    AND kind IN ('poster','video','vector','presentation') AND content_state='active' AND retention_expires_at>clock_timestamp()`, [id, scope.tenant, scope.project])).rows[0];
   if (!p) throw new Problem(404, "NOT_FOUND", "Creative project is unavailable");
   if (p.version !== version) throw new Problem(409, "VERSION_CONFLICT", "Refresh the creative project before exporting");
+  if (p.kind === "vector" || p.kind === "presentation") return selectEditablePackage(tx, storage, db, scope.project, p);
   let definition: unknown = p.body, renderer_profile: Record<string, unknown> = { renderer: "poster-system-fonts-1", font_portability: "system_font_reference" };
   if (p.kind === "video") {
     if (p.body.data_mode !== (db.config.DEMO_MODE ? "simulated" : "configured_services")) throw new Problem(404, "NOT_FOUND", "Video project is unavailable in this mode");
@@ -77,7 +81,7 @@ async function selectProject(tx: Tx, principal: Principal, scope: Scope, id: str
     }
     const file = `media/${String(media.length + 1).padStart(3, "0")}.${v.mime_type === "image/png" ? "png" : v.mime_type === "audio/wav" ? "wav" : "mp3"}`;
     files.push({ path: file, name: file, bytes: Number(v.bytes), sha256: v.sha256, mime_type: v.mime_type, storage_key: v.storage_key });
-    media.push({ ...ref, path: file, mime_type: v.mime_type });
+    media.push({ asset_id: ref.asset_id!, version: ref.version!, path: file, mime_type: v.mime_type });
   }
   if (p.kind === "video") {
     const font = await loadVideoFont();
@@ -132,7 +136,8 @@ export function registerCreativePackages(app: FastifyInstance, db: Database, sto
       return { items: rows.slice(0, 20).map(r => { const b = brandDefinition.parse(r.body); return {
         id: r.id, brand_id: r.brand_id, version: r.version, name: r.name, sha256: r.sha256, available: r.available,
         channels: b.channels, locales: b.locales, colors: b.colors,
-        fonts: b.font_bindings.map(f => ({ key: f.key, label: f.label, channels: f.rights.channels, valid_until: f.rights.valid_until })),
+        fonts: b.font_bindings.map((f, index) => ({ key: f.key, label: f.label, channels: f.rights.channels, valid_until: f.rights.valid_until,
+          editable_supported: index === 0 && "builtin" in f.source && f.source.builtin === "noto-sans-tc" })),
         facts: b.facts.map(f => ({ key: f.key, kind: f.kind, text: f.text, state: factEligibility(f) })),
         logos: b.logos.map(l => ({ key: l.key, usage: l.usage, min_width: l.min_width, clear_space: l.clear_space })),
       }; }), next_cursor: rows.length > 20 ? rows[19].id : null };
@@ -155,7 +160,7 @@ export function registerCreativePackages(app: FastifyInstance, db: Database, sto
     const scope = scopeSchema.parse(req.params);
     return db.tx(async tx => { await projectAccess(tx, req.principal, scope.tenant, scope.project);
       return { items: (await tx.query(`SELECT id,name,kind,version,private_owner FROM creative_projects WHERE project_id=$1
-        AND kind IN ('poster','video') AND content_state='active' AND retention_expires_at>clock_timestamp()
+        AND kind IN ('poster','video','vector','presentation') AND content_state='active' AND retention_expires_at>clock_timestamp()
         AND (kind='poster' OR body->>'data_mode'=$2) ORDER BY created_at DESC,id DESC LIMIT 100`,
       [scope.project, db.config.DEMO_MODE ? "simulated" : "configured_services"])).rows }; }, scope.tenant);
   });
@@ -203,6 +208,7 @@ export function registerCreativePackages(app: FastifyInstance, db: Database, sto
       const font = await loadVideoFont();
       if (font.sha256 !== profile.font_sha256) throw new Problem(503, "VIDEO_FONT_INTEGRITY", "The video font is unavailable");
     }
+    if (parsed.manifest.kind === "vector" || parsed.manifest.kind === "presentation") await verifyEditablePackageFonts(parsed);
     return { asset, ...parsed };
   }
   for (const action of ["preview", "brand-preview", "restore"] as const) app.post(base + "/" + action, guard, async (req, reply) => {
@@ -221,43 +227,66 @@ export function registerCreativePackages(app: FastifyInstance, db: Database, sto
           origin: loaded.manifest.origin, preview_hash: loaded.preview_hash, files: loaded.manifest.files, media_count: loaded.manifest.media.length,
           total_bytes: loaded.total_bytes, limitations: loaded.manifest.limitations, target_project_id: scope.project,
           visibility: "project_shared", ai_cost_micros: "0" };
-        if (action === "preview") return { ...preview, ...(loaded.manifest.brand_requirements ? { brand_requirements: loaded.manifest.brand_requirements,
-          brand_design_colors: [...new Set([poster.parse(loaded.definition).background, ...poster.parse(loaded.definition).layers.flatMap(l => l.type === "image" ? [] : [l.color])].map(c => c.toLowerCase()))] } : {}) };
+        if (action === "preview") {
+          const evidence_rows = [];
+          for (const media of loaded.manifest.media.filter(m => m.mime_type === "application/json")) {
+            const data = importedDesignEvidence.parse(JSON.parse(await readFile(loaded.members.get(media.path)!.file, "utf8")));
+            evidence_rows.push(...data.rows.map(row => ({ ...row, source_version_id: media.source_version_id })));
+          }
+          return { ...preview, has_imported_evidence: evidence_rows.length > 0, evidence_rows,
+            ...(loaded.manifest.brand_requirements ? { brand_requirements: loaded.manifest.brand_requirements,
+              brand_design_colors: loaded.manifest.kind === "poster" ? [...new Set([poster.parse(loaded.definition).background, ...poster.parse(loaded.definition).layers.flatMap(l => l.type === "image" ? [] : [l.color])].map(c => c.toLowerCase()))]
+                : editableDesignColors(loaded.manifest.kind as "vector" | "presentation", loaded.definition) } : {}) };
+        }
         if (action === "brand-preview") {
           if (!loaded.manifest.brand_requirements) throw new Problem(422, "PACKAGE_BRAND_NOT_REQUIRED", "This package has no source brand to rebind");
           const target = packageBrandTarget.parse((body as any).brand_target), prepared = await preparePackageBrand(tx, storage, scope.project,
-            loaded.definition, loaded.manifest.brand_requirements, target, body.sha256, loaded.preview_hash);
+            loaded.definition, loaded.manifest.brand_requirements, target, body.sha256, loaded.preview_hash, loaded.manifest.kind);
           return { ...prepared.review, review_hash: prepared.review_hash };
         }
         const input = packageRestore.parse(body);
         if (input.preview_hash !== loaded.preview_hash) throw new Problem(409, "PACKAGE_PREVIEW_CHANGED", "Review this exact archive before restoring");
         const result = await replay(tx, req.principal.id, `creative.package.restore:${scope.tenant}:${scope.project}`, requestKey, input, async () => {
+          if (loaded.manifest.media.some(m => m.mime_type === "application/json") && !input.confirm_imported_evidence)
+            throw new Problem(422, "PACKAGE_EVIDENCE_REVIEW_REQUIRED", "Review the exact imported chart values and explicitly confirm their snapshot provenance");
           const requirements = loaded.manifest.brand_requirements;
           if (requirements && (!input.brand_target || !input.brand_review_hash || !input.confirm_brand_review))
             throw new Problem(422, "PACKAGE_BRAND_REVIEW_REQUIRED", "Choose, map and explicitly review the destination brand before restoring");
           if (!requirements && (input.brand_target || input.brand_review_hash || input.confirm_brand_review))
             throw new Problem(422, "PACKAGE_BRAND_NOT_REQUIRED", "This package has no source brand to rebind");
           const rebound = requirements ? await preparePackageBrand(tx, storage, scope.project, loaded.definition, requirements,
-            input.brand_target!, input.sha256, loaded.preview_hash) : null;
+            input.brand_target!, input.sha256, loaded.preview_hash, loaded.manifest.kind) : null;
           if (rebound && rebound.review_hash !== input.brand_review_hash)
             throw new Problem(409, "PACKAGE_BRAND_REVIEW_CHANGED", "Review the current destination brand mappings before restoring");
-          const mapping = new Map<string, { asset_id: string; version: number }>();
+          const mapping = new Map<string, CreativeRemap>();
           let imported = 0;
           for (const media of loaded.manifest.media) {
             signal.throwIfAborted(); const member = loaded.members.get(media.path)!;
-            const replacement = rebound?.assetOverrides.get(media.asset_id + ":" + media.version);
-            if (replacement) { mapping.set(media.asset_id + ":" + media.version, replacement); continue; }
+            const referenceKey = media.source_version_id ?? media.asset_id + ":" + media.version;
+            const replacement = rebound?.assetOverrides.get(referenceKey);
+            if (replacement) { mapping.set(referenceKey, replacement); continue; }
+            if (media.mime_type === "application/json") {
+              const snapshot = importedDesignEvidence.parse(JSON.parse(await readFile(member.file, "utf8"))), evidence_ids: Record<string, string> = {};
+              const rows = snapshot.rows.map(r => { const id = randomUUID(); evidence_ids[r.id] = id; return { ...r, id }; });
+              const saved = await saveAsset(tx, storage, { tenant: scope.tenant, project: scope.project, user: req.principal.id,
+                name: `${input.name}-${path.basename(media.path)}`, mime: "application/json", kind: "imported_design_evidence",
+                bytes: Buffer.from(JSON.stringify({ ...snapshot, rows }, null, 2) + "\n"),
+                metadata: { design_evidence_provenance: "user_attested_import", package_sha256: input.sha256, rights_attested_by: req.principal.id } });
+              mapping.set(referenceKey, { asset_id: saved.id, version: saved.version.version, asset_version_id: saved.version.id, sha256: saved.version.sha256, evidence_ids }); imported++; continue;
+            }
             const saved = await saveAssetFile(tx, storage, { tenant: scope.tenant, project: scope.project, user: req.principal.id,
               name: `${input.name}-${path.basename(media.path)}`, mime: media.mime_type, kind: "imported_creative_source",
               file: member.file, size: member.bytes, sha256: member.sha256,
               metadata: { source: "user_uploaded_creative_package", package_sha256: input.sha256, rights_attested_by: req.principal.id } });
-            mapping.set(media.asset_id + ":" + media.version, { asset_id: saved.id, version: saved.version.version });
+            mapping.set(referenceKey, { asset_id: saved.id, version: saved.version.version, asset_version_id: saved.version.id, sha256: saved.version.sha256 });
             imported++;
           }
           const definition = remapCreativeSource(loaded.manifest.kind, rebound?.definition ?? loaded.definition, mapping);
           let project;
           if (loaded.manifest.kind === "video") project = await createVideoProject(tx, db, req.principal, scope.tenant, scope.project,
             { name: input.name, definition: definition as import("./video-project-model.js").VideoDefinition }, loaded.manifest.renderer_profile);
+          else if (loaded.manifest.kind === "vector" || loaded.manifest.kind === "presentation") project = await createEditableProject(tx, db, storage, req.principal,
+            scope, loaded.manifest.kind, input.name, definition, loaded.manifest.renderer_profile);
           else project = (await tx.query("INSERT INTO creative_projects(tenant_id,project_id,name,kind,body,created_by) VALUES($1,$2,$3,'poster',$4,$5) RETURNING id,version",
             [scope.tenant, scope.project, input.name, definition, req.principal.id])).rows[0];
           signal.throwIfAborted();

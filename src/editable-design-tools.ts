@@ -9,6 +9,7 @@ import {
 import { taskPrivateAssetScopeSQL } from "./task-private-asset-scope.js";
 import { readAnalysisSource } from "./analysis-role-tools.js";
 import { calculationDigest } from "./analysis-role-delivery.js";
+import { importedDesignEvidence, importedEvidenceDigest } from "./portable-design-evidence.js";
 import { prepareBrandProduction } from "./brand-production.js";
 import {
   editableDesignSchema,
@@ -135,6 +136,12 @@ async function analysis(
   id: string,
   expected?: string,
 ) {
+  const imported = await version(tx, storage, t, id, expected);
+  if (imported.v.mime_type === "application/json" && imported.v.metadata.design_evidence_provenance === "user_attested_import") {
+    const snapshot = importedDesignEvidence.parse(JSON.parse(imported.bytes.toString("utf8")));
+    return { source_version_id: id, sha256: imported.v.sha256, calculation_sha256: importedEvidenceDigest(snapshot.rows),
+      evidence: snapshot.rows, provenance: "user_attested_import" as const };
+  }
   const read = await readAnalysisSource(tx, storage, t, id);
   if (expected && read.sha256 !== expected)
     throw new Problem(
@@ -158,6 +165,7 @@ async function analysis(
     source_version_id: id,
     sha256: read.sha256,
     calculation_sha256: read.calculation_sha256,
+    provenance: "current_project_analysis" as const,
     evidence: body.calculation.evidence as Array<{
       id: string;
       value: string | null;
@@ -185,6 +193,7 @@ export async function readDesignChart(
     source_version_id: a.source_version_id,
     sha256: a.sha256,
     calculation_sha256: a.calculation_sha256,
+    data_provenance: a.provenance,
     evidence: a.evidence.slice(input.offset, input.offset + 24),
     next_offset:
       input.offset + 24 < a.evidence.length ? input.offset + 24 : null,
@@ -233,7 +242,7 @@ export async function readDesignSource(
       "Revise this actual input and supply revision_of with its exact source version ID and SHA-256. Existing source/deliverable bytes remain intact. A prepared presentation still requires slides_render before it is delivered.",
   };
 }
-function decodePNG(bytes: Buffer) {
+export function decodePNG(bytes: Buffer) {
   if (
     bytes.length < 57 ||
     bytes.length > 10 * 1024 * 1024 ||
@@ -458,6 +467,7 @@ async function resources(
           sha256: a.sha256,
           calculation_sha256: a.calculation_sha256,
           evidence_ids: layer.evidence_ids,
+          source_status: a.provenance,
         });
       }
     }
@@ -581,7 +591,7 @@ export async function buildSlides(
     "presentation",
     input,
     checked.resources,
-    t.data_mode,
+    checked.sources.some(s => s.source_status === "user_attested_import") ? "user_attested_import" : t.data_mode,
   );
   const body = {
     schema: editableDesignSchema,
@@ -592,6 +602,7 @@ export async function buildSlides(
     font: rendered.font,
     pages: rendered.pages,
     data_mode: t.data_mode,
+    data_provenance: checked.sources.some(s => s.source_status === "user_attested_import") ? "user_attested_import" : "current_project_sources",
   };
   const source = await save(
     tx,
@@ -630,7 +641,7 @@ async function deliver(
     kind,
     input,
     checked.resources,
-    t.data_mode,
+    checked.sources.some(s => s.source_status === "user_attested_import") ? "user_attested_import" : t.data_mode,
   );
   const body = {
     schema: editableDesignSchema,
@@ -641,6 +652,7 @@ async function deliver(
     font: rendered.font,
     pages: rendered.pages,
     data_mode: t.data_mode,
+    data_provenance: checked.sources.some(s => s.source_status === "user_attested_import") ? "user_attested_import" : "current_project_sources",
   };
   rendered.files.push({
     name: kind === "vector" ? "vector.source.json" : "presentation.source.json",
@@ -651,6 +663,7 @@ async function deliver(
     schema: "copypaste-editable-design-manifest-1",
     kind,
     data_mode: t.data_mode,
+    data_provenance: body.data_provenance,
     revision_of: input.revision_of ?? null,
     prepared_source: source ?? null,
     pages: rendered.pages,
@@ -690,6 +703,7 @@ async function deliver(
     state: "delivered",
     kind,
     data_mode: t.data_mode,
+    data_provenance: body.data_provenance,
     files: saved,
     pages: rendered.pages,
     editable_source: {
