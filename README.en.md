@@ -1,3 +1,21 @@
+<!-- editable-projects-stage143 -->
+
+Vector and presentation workspaces now support exact-source creation, text/page/notes editing, saved history, actual SVG/PNG/PDF/PPTX delivery and portable ZIP restoration. Imported chart values require their own acknowledgement; destination brand review remains explicit. Preview/save operations queue safely, and administrative deletion clears workspace history and physical derived files.
+
+42 related checks and real Web, frameless Windows and native Chrome right Side Panel journeys passed. Synthetic model/business fixtures; actual native auth/render/storage. Windows package unsigned; complete professional-format, Office and cross-machine acceptance stays open. [方案与使用 / Design and usage](https://github.com/copypasteltd/workmate/blob/docs/docs/development/143-editable-project-workspaces.md).
+
+```mermaid
+flowchart LR
+ A[Fixed editable source or ZIP] --> B[Project and brand/data review]
+ B --> C[Edit layers pages and notes]
+ C --> D[Save immutable version]
+ D --> E[SVG PNG PDF PPTX]
+ E --> F[Complete portable ZIP]
+ F --> B
+```
+
+Existing project content controls apply to the new creative kinds; this increment does not add a new administrator authorization path.
+
 <!-- brand-reuse-stage142 -->
 
 Reuse a brand canvas in another project by selecting a fixed destination brand, mapping fonts, price/promotion facts, Logos and optional colors, reviewing actual changes and explicitly approving a new copy. Web/Desktop continue editing, render PNG/PDF/SVG and export again; Extension uploads, reviews and restores inside its native right Side Panel. Font outlining now preserves source images and shape order in brand/vector/presentation output.
