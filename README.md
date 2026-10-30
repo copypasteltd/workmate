@@ -1,3 +1,17 @@
+<!-- brand-reuse-stage142 -->
+
+品牌工程可在新项目选择目的品牌固定版本，逐项映射字体、价格／促销事实、Logo和可选配色，核对实际差异并确认后恢复新副本。Web/Desktop继续编辑、输出PNG/PDF/SVG并再次打包；扩展在原生右侧栏完成上传、核对与恢复。修复文字矢量化导致品牌／矢量／演示稿源图片丢失的问题，保留图像和形状层叠顺序。
+
+62项相关检查、真实三端旅程、5张截图和3组GIF／MP4已通过并绑定源码。假数据，无模型调用；Windows包未签名。全部格式恢复、跨机器和正式服务验收仍开放。 [方案 / Guide](https://github.com/copypasteltd/workmate/blob/docs/docs/development/142-brand-project-reuse.md).
+
+```mermaid
+flowchart LR
+ A[Fixed source ZIP] --> B[Destination brand maps]
+ B --> C[Review and approve]
+ C --> D[New shared copy]
+ D --> E[Edit / render / export again]
+```
+
 # Workmate · CopyPaste Enterprise Agent · admin
 
 <!-- creative-packages-stage140 -->
