@@ -1,0 +1,127 @@
+import assert from "node:assert/strict";
+import {before,after,test} from "node:test";
+import pg from "pg";
+import {buildApp} from "../src/server.js";
+import {loadConfig} from "../src/config.js";
+import {isolatedTestEnvironment} from "./native-test-environment.js";
+import {supportFixture,supportTask,supportGrant,supportSession,supportRead,supportCounts,supportPermissions} from "./support-access-fixture.js";
+
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>, s: Awaited<ReturnType<typeof buildApp>>, owner: pg.Pool;
+before(async()=>{
+  isolated=await isolatedTestEnvironment();
+  owner=new pg.Pool({connectionString:isolated.env.OWNER_DATABASE_URL});
+  s=await buildApp(loadConfig({...isolated.env,NODE_ENV:"test",DEMO_MODE:"true",WORKER_ENABLED:"false"}),{worker:false});
+});
+after(async()=>{try{await s?.app.close();await owner?.end();}finally{await isolated?.cleanup();}});
+
+test("support cannot read retained result text after an original source file is quarantined",async()=>{
+  const f=await supportFixture(s), task=await supportTask(s,f), grant=await supportGrant(s,f), session=await supportSession(s,f,grant.id);
+  const readable=await supportRead(s,f.operator.client,session,task.id);
+  assert.equal(readable.status,200,JSON.stringify(readable.data));
+  assert.equal(readable.data.output,"Protected result for "+task.name);
+  await s.db.control.query("UPDATE assets SET state='quarantined',moderation_version=moderation_version+1 WHERE id=$1",[task.asset_id]);
+  const denied=await supportRead(s,f.operator.client,session,task.id);
+  assert.equal(denied.status,403,"A retained task result must not bypass its withdrawn original file");
+  assert.equal(denied.data.output,undefined);
+  const view = await supportRead(s,f.operator.client,session);
+  const row = view.data.tasks.find((t: any)=>t.id===task.id);
+  assert.equal(row.source_unavailable,true);assert.equal(row.title,null);assert.equal(row.error_code,null);
+  assert.equal(row.body_available,false);assert.equal(row.body_revision,null);
+});
+
+test("current revision binds the selected shared body and rejects changed or cross-task revisions",async()=>{
+  const f=await supportFixture(s), task=await supportTask(s,f), other=await supportTask(s,f,"Other explicit campaign"),
+    grant=await supportGrant(s,f), session=await supportSession(s,f,grant.id);
+  const view=await supportRead(s,f.operator.client,session), token=view.data.tasks.find((t:any)=>t.id===task.id).body_revision;
+  assert.match(token,/^[a-f0-9]{64}$/);assert.equal(view.raw.headers["cache-control"],"no-store");
+  const current=await supportRead(s,f.operator.client,session,task.id,{"if-match":`"${token}"`});
+  assert.equal(current.status,200);assert.equal(current.data.body_revision,token);assert.equal(current.raw.headers["cache-control"],"no-store");
+  assert.equal((await supportRead(s,f.operator.client,session,other.id,{"if-match":`"${token}"`})).status,409);
+  await s.db.control.query("UPDATE tasks SET output='Revised explicit synthetic result' WHERE id=$1",[task.id]);
+  const stale=await supportRead(s,f.operator.client,session,task.id,{"if-match":`"${token}"`});
+  assert.equal(stale.status,409);assert.equal(stale.data.error.code,"SUPPORT_CONTENT_CHANGED");assert.equal(stale.data.output,undefined);
+  const latest=await supportRead(s,f.operator.client,session,task.id);
+  assert.equal(latest.status,200);assert.notEqual(latest.data.body_revision,token);assert.equal(latest.data.output,"Revised explicit synthetic result");
+  for(const invalid of ["*",'W/"'+token+'"',`"${token}","${token}"`])
+    assert.equal((await supportRead(s,f.operator.client,session,task.id,{"if-match":invalid})).status,400);
+});
+
+test("private tasks expose neither bodies nor revision fingerprints despite a tenant owner grant",async()=>{
+  const f=await supportFixture(s), task=await supportTask(s,f,"Actual private conversation",true),
+    grant=await supportGrant(s,f), session=await supportSession(s,f,grant.id);
+  const view=await supportRead(s,f.operator.client,session),row=view.data.tasks.find((t:any)=>t.id===task.id);
+  assert.equal(row.private,true);assert.equal(row.title,null);assert.equal(row.body_available,false);assert.equal(row.body_revision,null);
+  assert.equal((await supportRead(s,f.operator.client,session,task.id)).status,403);
+});
+
+test("customer grant and independent body permission are required even to expose the body revision",async()=>{
+  const f=await supportFixture(s), task=await supportTask(s,f), metadata=await supportSession(s,f);
+  const m=await supportRead(s,f.operator.client,metadata);
+  assert.equal(m.data.tasks[0].body_available,false);assert.equal(m.data.tasks[0].body_revision,null);
+  assert.equal((await supportRead(s,f.operator.client,metadata,task.id)).status,403);
+  const grant=await supportGrant(s,f), session=await supportSession(s,f,grant.id);
+  await s.db.control.query("UPDATE admin_roles SET permissions=$2 WHERE key=$1",[f.operator.role,JSON.stringify(supportPermissions.filter(p=>p!=="admin.content.body.read"))]);
+  const view=await supportRead(s,f.operator.client,session);
+  assert.equal(view.status,200);assert.equal(view.data.tasks[0].body_revision,null);assert.equal(view.data.tasks[0].body_available,false);
+  assert.equal((await supportRead(s,f.operator.client,session,task.id)).status,403);
+});
+
+for(const withdrawal of ["retention expiry","erased version","quarantined task"] as const)
+test("retained support output stops after "+withdrawal,async()=>{
+  const f=await supportFixture(s),task=await supportTask(s,f),grant=await supportGrant(s,f),session=await supportSession(s,f,grant.id);
+  assert.equal((await supportRead(s,f.operator.client,session,task.id)).status,200);
+  if(withdrawal==="retention expiry")await s.db.control.query("UPDATE assets SET retention_expires_at=clock_timestamp()-interval '1 second' WHERE id=$1",[task.asset_id]);
+  else if(withdrawal==="erased version")await s.db.control.query("UPDATE asset_versions SET erased_at=clock_timestamp() WHERE id=$1",[task.version_id]);
+  else await s.db.control.query("UPDATE tasks SET content_state='quarantined',moderation_version=moderation_version+1 WHERE id=$1",[task.id]);
+  const denied=await supportRead(s,f.operator.client,session,task.id);
+  assert.equal(denied.status,403,JSON.stringify(denied.data));assert.equal(denied.data.prompt,undefined);assert.equal(denied.data.output,undefined);
+});
+
+async function duringBodyAudit(session: string, read:()=>Promise<any>, change:()=>Promise<void>) {
+  const lock = 183300000 + Math.floor(Math.random()*10000), client=await s.db.control.connect();
+  let pending:Promise<any>|undefined;
+  try {
+    await client.query("SELECT pg_advisory_lock($1)",[lock]);
+    assert.match(session,/^[a-f0-9-]{36}$/);
+    await owner.query(`CREATE FUNCTION test_support_source_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+      IF NEW.action='admin.support.body.read' AND NEW.target='${session}' THEN PERFORM pg_advisory_xact_lock(${lock}); END IF; RETURN NEW; END $$;
+      CREATE TRIGGER test_support_source_audit BEFORE INSERT ON audit_log FOR EACH ROW EXECUTE FUNCTION test_support_source_audit()`);
+    pending=read();const until=Date.now()+10000;
+    for(;;){const blocked=(await s.db.control.query("SELECT 1 FROM pg_locks WHERE locktype='advisory' AND objid=$1 AND NOT granted",[lock])).rowCount;
+      if(blocked)break;assert.ok(Date.now()<until,"Actual body read reaches held audit transaction");await new Promise(r=>setTimeout(r,50));}
+    await change();await client.query("SELECT pg_advisory_unlock($1)",[lock]);return await pending;
+  } finally {
+    await client.query("SELECT pg_advisory_unlock_all()");client.release();if(pending)await pending;
+    await owner.query("DROP TRIGGER IF EXISTS test_support_source_audit ON audit_log; DROP FUNCTION IF EXISTS test_support_source_audit()");
+  }
+}
+
+test("an original file withdrawn while the actual body audit is held cannot leak its captured body",async()=>{
+  const f=await supportFixture(s),task=await supportTask(s,f),grant=await supportGrant(s,f),session=await supportSession(s,f,grant.id);
+  const read=await duringBodyAudit(session,()=>supportRead(s,f.operator.client,session,task.id),
+    ()=>s.db.control.query("UPDATE assets SET state='quarantined',moderation_version=moderation_version+1 WHERE id=$1",[task.asset_id]).then(()=>{}));
+  assert.equal(read.status,403);assert.equal(read.data.error.code,"SUPPORT_SOURCE_UNAVAILABLE");assert.equal(read.data.output,undefined);
+});
+
+test("a result changed during the actual audit returns a conflict instead of its earlier captured revision",async()=>{
+  const f=await supportFixture(s),task=await supportTask(s,f),grant=await supportGrant(s,f),session=await supportSession(s,f,grant.id);
+  const read=await duringBodyAudit(session,()=>supportRead(s,f.operator.client,session,task.id),
+    ()=>s.db.control.query("UPDATE tasks SET output='Concurrent synthetic changed result' WHERE id=$1",[task.id]).then(()=>{}));
+  assert.equal(read.status,409);assert.equal(read.data.output,undefined);
+});
+
+test("support diagnostics and body reads create no work, holds, charges, provider requests or customer sessions",async()=>{
+  const f=await supportFixture(s),task=await supportTask(s,f),grant=await supportGrant(s,f),session=await supportSession(s,f,grant.id),before=await supportCounts(s);
+  const view=await supportRead(s,f.operator.client,session);
+  assert.equal(view.status,200);assert.equal(view.data.actor.id,f.operator.id);assert.equal(view.data.target.id,f.owner.id);
+  assert.equal(view.data.read_only,true);
+  assert.equal((await supportRead(s,f.operator.client,session,task.id)).status,200);
+  const forbidden=await s.app.inject({method:"POST",url:f.base+"/tasks",headers:{origin:s.db.config.ADMIN_ORIGIN,
+    cookie:f.operator.client!.cookie,"x-csrf-token":f.operator.client!.csrf,"idempotency-key":crypto.randomUUID(),"x-copypaste-support-session":session},
+    payload:{title:"Forbidden support write",prompt:"Must not start paid work",role_key:"assistant",budget_micros:1}});
+  assert.equal(forbidden.statusCode,403);assert.equal(forbidden.json().error.code,"SUPPORT_READ_ONLY");
+  assert.deepEqual(await supportCounts(s),before);
+  const audits=(await s.db.control.query("SELECT principal_id,detail FROM audit_log WHERE target=$1 AND action='admin.support.body.read'",[session])).rows;
+  assert.equal(audits.length,1);assert.equal(audits[0].principal_id,f.operator.id);
+  assert.ok(!JSON.stringify(audits).includes("Protected prompt"));assert.ok(!JSON.stringify(audits).includes("Protected result"));
+});
