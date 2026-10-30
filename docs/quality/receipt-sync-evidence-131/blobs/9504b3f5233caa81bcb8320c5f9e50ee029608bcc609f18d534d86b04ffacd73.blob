@@ -1,0 +1,889 @@
+import { before, after, test } from "node:test";
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import pg from "pg";
+import * as OTPAuth from "otpauth";
+import { buildApp } from "../src/server.js";
+import { loadConfig } from "../src/config.js";
+import { canonical, hmac, seal } from "../src/lib.js";
+import { defaults } from "../src/plans.js";
+import { projectAccess } from "../src/access.js";
+import { saveAsset } from "../src/storage.js";
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>,
+  s: Awaited<ReturnType<typeof buildApp>>;
+type Client = {
+  id: string;
+  cookie: string;
+  csrf: string;
+  email: string;
+  admin: boolean;
+  tenant?: string;
+};
+const permissions = [
+  "admin.content.read",
+  "admin.content.body.read",
+  "admin.content.version.create",
+];
+async function call(
+  c: Client | undefined,
+  method: string,
+  url: string,
+  body?: any,
+  key: string = randomUUID(),
+) {
+  const raw = await s.app.inject({
+    method: method as any,
+    url,
+    headers: {
+      origin: url.startsWith("/v1/admin/")
+        ? s.db.config.ADMIN_ORIGIN
+        : s.db.config.WEB_ORIGIN,
+      ...(c ? { cookie: c.cookie, "x-csrf-token": c.csrf } : {}),
+      ...(c?.tenant ? { "x-tenant-id": c.tenant } : {}),
+      "idempotency-key": key,
+      ...(body === undefined ? {} : { "content-type": "application/json" }),
+    },
+    ...(body === undefined ? {} : { payload: JSON.stringify(body) }),
+  });
+  return { status: raw.statusCode, data: raw.json(), raw };
+}
+async function ok(
+  c: Client | undefined,
+  method: string,
+  url: string,
+  body?: any,
+  key?: string,
+) {
+  const r = await call(c, method, url, body, key);
+  assert.ok(
+    r.status >= 200 && r.status < 300,
+    `${method} ${url}: ${r.status} ${JSON.stringify(r.data)}`,
+  );
+  return r.data;
+}
+async function login(
+  email = `${randomUUID()}@example.invalid`,
+  secret?: OTPAuth.Secret,
+): Promise<Client> {
+  const base = secret ? "/v1/admin/auth" : "/v1/auth";
+  const challenge = await ok(undefined, "POST", base + "/challenge", { email });
+  const mail = JSON.parse(
+    await readFile(
+      `${s.db.config.DATA_DIR}/mailbox/${challenge.challenge_id}.json`,
+      "utf8",
+    ),
+  );
+  let code: string | undefined;
+  if (secret) {
+    const previous = Number(
+      (
+        await s.db.control.query(
+          "SELECT last_totp_step FROM admin_principals WHERE email=$1",
+          [email],
+        )
+      ).rows[0].last_totp_step,
+    );
+    // Use the next accepted authenticator step; never reset replay protection.
+    if (previous > Math.floor(Date.now() / 30_000))
+      await new Promise((resolve) =>
+        setTimeout(resolve, previous * 30_000 - Date.now() + 50),
+      );
+    const step = Math.max(Math.floor(Date.now() / 30_000), previous + 1);
+    code = new OTPAuth.TOTP({
+      secret,
+      digits: 6,
+      period: 30,
+      algorithm: "SHA1",
+    }).generate({ timestamp: step * 30_000 });
+  }
+  const r = await call(undefined, "POST", base + "/verify", {
+    challenge_id: challenge.challenge_id,
+    code: mail.text.match(/\b\d{6}\b/)[0],
+    ...(secret
+      ? {
+          totp: code,
+        }
+      : {}),
+  });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  const cookie = r.raw.cookies.find(
+    (v) => v.name === (secret ? "cp_admin_session" : "cp_session"),
+  )!;
+  return {
+    id: r.data.user?.id ?? r.data.admin?.id,
+    email,
+    csrf: r.data.csrf_token,
+    cookie: cookie.name + "=" + cookie.value,
+    admin: !!secret,
+  };
+}
+async function admin(project: string, allowed = permissions) {
+  const email = `revision-${randomUUID()}@example.invalid`,
+    secret = new OTPAuth.Secret({ size: 20 });
+  const id = (
+    await s.db.control.query(
+      "INSERT INTO admin_principals(email,name,totp_secret) VALUES($1,'Scoped revision operator',$2) RETURNING id",
+      [email, seal(s.db.config.MASTER_KEY!, secret.base32)],
+    )
+  ).rows[0].id;
+  const role = "revision_" + randomUUID();
+  await s.db.control.query(
+    "INSERT INTO admin_roles(key,name,permissions) VALUES($1,'Revision fixture',$2)",
+    [role, JSON.stringify(allowed)],
+  );
+  await s.db.control.query(
+    "INSERT INTO admin_bindings(principal_id,role_key,scope_kind,scope_id) VALUES($1,$2,'project',$3)",
+    [id, role, project],
+  );
+  return { client: await login(email, secret), secret, role };
+}
+async function fixture() {
+  const owner = await login(),
+    w = await ok(owner, "POST", "/v1/tenants", {
+      name: "Clearly synthetic revision customer",
+      project_name: "Hong Kong marketing",
+    });
+  owner.tenant = w.tenant.id;
+  const tenant = w.tenant.id,
+    project = w.project.id,
+    userBase = `/v1/tenants/${tenant}/projects/${project}`;
+  await ok(owner, "POST", `/v1/tenants/${tenant}/demo-credit`, {});
+  await s.db.control.query(
+    "INSERT INTO entitlements(tenant_id,plan,starts_at,ends_at,reason,plan_body) VALUES($1,'business',now()-interval '1 minute',now()+interval '1 day','Explicit synthetic revision capacity; no payment received',$2)",
+    [tenant, defaults.business],
+  );
+  const agents = [];
+  for (const name of ["Coordinator", "Designer"])
+    agents.push(
+      await ok(owner, "POST", userBase + "/agents", {
+        name,
+        role_key: "assistant",
+        instructions: "Use authorized source material and company tools.",
+      }),
+    );
+  const group = await ok(owner, "POST", "/v1/agent-groups", {
+    project_id: project,
+    name: "Original team",
+    coordinator_agent_id: agents[0].id,
+    members: [
+      {
+        agent_id: agents[1].id,
+        role_description: "Prepare the approved deliverable",
+      },
+    ],
+  });
+  const config = {
+    schema_version: 1,
+    name: "Original brief",
+    instructions: "Original approved facts",
+    delivery_requirements: "繁中及英文 / Chinese and English",
+    default_agent: null,
+    brand: null,
+    asset_version_ids: [],
+    connection_ids: [],
+    max_task_budget_micros: null,
+  };
+  const draft = await ok(
+    owner,
+    "PUT",
+    userBase + "/project-configuration/draft",
+    { expected_revision: 0, definition: config },
+  );
+  const preview = await ok(
+    owner,
+    "POST",
+    userBase + "/project-configuration/preview",
+    { expected_revision: draft.revision },
+  );
+  await ok(owner, "POST", userBase + "/project-configuration/publish", {
+    expected_revision: draft.revision,
+    draft_sha256: preview.draft_sha256,
+  });
+  const template = (await ok(owner, "GET", "/v1/agent-templates")).items.find(
+    (r: any) => r.role_key === "assistant",
+  );
+  const solution = await ok(owner, "POST", "/v1/solution-versions", {
+    project_id: project,
+    name: "Original method",
+    instructions:
+      "Read the approved reference material and deliver an evidence-based draft.",
+    agent_template_ids: [template.id],
+    skill_version_ids: [],
+    required_assets: [],
+    required_connectors: [],
+  });
+  const operator = await admin(project);
+  return {
+    owner,
+    tenant,
+    project,
+    userBase,
+    agents,
+    group,
+    configId: draft.id,
+    solution,
+    ...operator,
+    admin: operator.client,
+  };
+}
+type Fixture = Awaited<ReturnType<typeof fixture>>;
+function path(f: Fixture, kind = "agent_groups") {
+  return `/v1/admin/content-revisions/${kind}/${kind === "agent_groups" ? f.group.id : kind === "project_configurations" ? f.configId : f.solution.id}`;
+}
+async function preview(f: Fixture, kind = "agent_groups", patch: any = {}) {
+  const url = path(f, kind),
+    editor = await ok(f.admin, "GET", url);
+  return ok(f.admin, "POST", url + "/previews", {
+    expected_version: editor.version,
+    expected_moderation_version: editor.moderation_version,
+    definition: {
+      ...editor.definition,
+      name: "Revised by authorized administrator",
+      ...patch,
+    },
+    reason: "Customer-approved content correction",
+  });
+}
+const payload = (p: any) => ({
+  ...p.request,
+  ticket: p.ticket,
+  confirmed: true,
+});
+async function count(f: Fixture) {
+  return (
+    await s.db.control.query(
+      `SELECT (SELECT count(*)::int FROM tasks WHERE tenant_id=$1) AS tasks,
+    (SELECT count(*)::int FROM reservations WHERE tenant_id=$1) AS reservations,
+    (SELECT count(*)::int FROM admin_content_revisions WHERE tenant_id=$1) AS revisions`,
+      [f.tenant],
+    )
+  ).rows[0];
+}
+function sign(ticket: any) {
+  const { signature: _, ...body } = ticket;
+  return {
+    ...body,
+    signature: hmac(
+      s.db.config.MASTER_KEY!,
+      "admin-content-revision-v1:" + canonical(body),
+    ),
+  };
+}
+before(async () => {
+  isolated = await isolatedTestEnvironment();
+  s = await buildApp(
+    loadConfig({
+      ...isolated.env,
+      NODE_ENV: "test",
+      DEMO_MODE: "true",
+      WORKER_ENABLED: "false",
+    }),
+    { worker: false },
+  );
+});
+after(async () => {
+  try {
+    await s?.app.close();
+  } finally {
+    await isolated?.cleanup();
+  }
+});
+
+for (const kind of ["agent_groups", "project_configurations", "solutions"])
+  test(`${kind}: actual immutable admin revision, customer read and distinct provenance without execution or charge`, async () => {
+    const f = await fixture(),
+      original = await count(f),
+      p = await preview(f, kind);
+    assert.deepEqual(await count(f), original);
+    assert.ok(p.changes.some((v: any) => v.field === "name"));
+    const result = await ok(
+      f.admin,
+      "POST",
+      path(f, kind) + "/apply",
+      payload(p),
+    );
+    assert.equal(result.created_by_admin, f.admin.id);
+    assert.equal(result.version, p.ticket.target_version);
+    assert.deepEqual(await count(f), {
+      ...original,
+      revisions: original.revisions + 1,
+    });
+    const table =
+      kind === "solutions"
+        ? "solution_versions"
+        : kind === "agent_groups"
+          ? "agent_group_versions"
+          : "project_configuration_versions";
+    const field =
+      kind === "agent_groups"
+        ? "group_id"
+        : kind === "solutions"
+          ? "id"
+          : "configuration_id";
+    const versions = (
+      await s.db.control.query(
+        `SELECT * FROM ${table} WHERE ${field}=$1 AND version=$2`,
+        [result.target_id, result.version],
+      )
+    ).rows;
+    assert.equal(versions.length, 1);
+    assert.equal(versions[0].created_by, null);
+    assert.equal(versions[0].created_by_admin, f.admin.id);
+    assert.equal(versions[0].admin_revision_id, result.revision_id);
+    const audit = (
+      await s.db.control.query(
+        "SELECT * FROM audit_log WHERE action='admin.content.revision.create' AND target=$1",
+        [result.revision_id],
+      )
+    ).rows;
+    assert.equal(audit.length, 1);
+    assert.equal(audit[0].actor_kind, "admin");
+    assert.equal(audit[0].principal_id, f.admin.id);
+    assert.equal(
+      JSON.stringify(audit[0].detail).includes(p.request.reason),
+      false,
+    );
+    const history = await ok(f.admin, "GET", path(f, kind) + "/history");
+    assert.equal(history.items[0].id, result.revision_id);
+    assert.equal(
+      history.items[0].administrator_name,
+      "Scoped revision operator",
+    );
+    if (kind === "agent_groups") {
+      const current = await ok(
+        f.owner,
+        "GET",
+        `/v1/agent-groups/${f.group.id}`,
+      );
+      assert.equal(current.name, p.request.definition.name);
+      assert.equal(current.version, result.version);
+      assert.equal(
+        (
+          await s.db.control.query(
+            "SELECT created_by,created_by_admin FROM agent_group_versions WHERE group_id=$1 AND version=1",
+            [f.group.id],
+          )
+        ).rows[0].created_by,
+        f.owner.id,
+      );
+    } else if (kind === "project_configurations") {
+      const current = await ok(
+          f.owner,
+          "GET",
+          f.userBase + "/project-configuration",
+        ),
+        draft = await ok(
+          f.owner,
+          "GET",
+          f.userBase + "/project-configuration/draft",
+        );
+      assert.equal(current.published.body.name, p.request.definition.name);
+      assert.equal(draft.draft.name, p.request.definition.name);
+      assert.equal(
+        (
+          await s.db.control.query(
+            "SELECT created_by FROM project_configuration_versions WHERE configuration_id=$1 AND version=1",
+            [f.configId],
+          )
+        ).rows[0].created_by,
+        f.owner.id,
+      );
+    } else {
+      const current = (
+        await s.db.control.query(
+          "SELECT * FROM solution_versions WHERE id=$1",
+          [result.target_id],
+        )
+      ).rows[0];
+      assert.equal(current.state, "draft");
+      assert.equal(current.published_at, null);
+      assert.equal(current.validation_task_id, null);
+      assert.equal(current.definition.name, p.request.definition.name);
+      assert.equal(
+        (
+          await s.db.control.query(
+            "SELECT created_by,definition FROM solution_versions WHERE id=$1",
+            [f.solution.id],
+          )
+        ).rows[0].created_by,
+        f.owner.id,
+      );
+    }
+  });
+
+test("all three permissions must intersect at this project; each missing permission and explicit deny is rejected", async () => {
+  const f = await fixture(),
+    other = await fixture();
+  for (const missing of permissions) {
+    const a = await admin(
+      f.project,
+      permissions.filter((p) => p !== missing),
+    );
+    assert.equal((await call(a.client, "GET", path(f))).status, 403);
+  }
+  assert.equal((await call(f.admin, "GET", path(other))).status, 403);
+  await s.db.control.query(
+    "INSERT INTO admin_bindings(principal_id,role_key,scope_kind,scope_id,effect) VALUES($1,$2,'project',$3,'deny')",
+    [f.admin.id, f.role, f.project],
+  );
+  assert.equal((await call(f.admin, "GET", path(f))).status, 403);
+});
+test("recent MFA, current admin session and CSRF are mandatory; a customer session cannot use the editor", async () => {
+  const f = await fixture();
+  assert.ok([401, 403].includes((await call(f.owner, "GET", path(f))).status));
+  const p = await preview(f);
+  assert.equal(
+    (
+      await call(
+        { ...f.admin, csrf: "invalid" },
+        "POST",
+        path(f) + "/apply",
+        payload(p),
+      )
+    ).status,
+    403,
+  );
+  await s.db.control.query(
+    "UPDATE sessions SET mfa_at=now()-interval '11 minutes' WHERE admin_id=$1",
+    [f.admin.id],
+  );
+  assert.equal(
+    (await call(f.admin, "POST", path(f) + "/apply", payload(p))).data.error
+      .code,
+    "MFA_REQUIRED",
+  );
+  assert.equal((await count(f)).revisions, 0);
+});
+test("preview and confirmation bind exact content, administrator, object, session, reason and explicit consent", async () => {
+  const f = await fixture(),
+    p = await preview(f),
+    original = await count(f),
+    other = await admin(f.project);
+  const altered = [
+    {
+      body: { ...payload(p), confirmed: false },
+      status: 400,
+      code: "VALIDATION_ERROR",
+    },
+    {
+      body: { ...payload(p), reason: "Different reason" },
+      status: 409,
+      code: "CONTENT_REVISION_CHANGED",
+    },
+    {
+      body: {
+        ...payload(p),
+        definition: { ...p.request.definition, name: "Different content" },
+      },
+      status: 409,
+      code: "CONTENT_REVISION_CHANGED",
+    },
+    {
+      body: { ...payload(p), ticket: { ...p.ticket, target_version: 999 } },
+      status: 409,
+      code: "CONTENT_REVISION_PREVIEW_INVALID",
+    },
+    {
+      body: {
+        ...payload(p),
+        ticket: {
+          ...p.ticket,
+          signature:
+            (p.ticket.signature[0] === "0" ? "1" : "0") +
+            p.ticket.signature.slice(1),
+        },
+      },
+      status: 409,
+      code: "CONTENT_REVISION_PREVIEW_INVALID",
+    },
+  ];
+  for (const check of altered) {
+    const rejected = await call(
+      f.admin,
+      "POST",
+      path(f) + "/apply",
+      check.body,
+    );
+    assert.equal(rejected.status, check.status, JSON.stringify(rejected.data));
+    assert.equal(rejected.data.error.code, check.code);
+  }
+  assert.equal(
+    (await call(other.client, "POST", path(f) + "/apply", payload(p))).status,
+    409,
+  );
+  const renewed = await login(f.admin.email, f.secret);
+  assert.equal(
+    (await call(renewed, "POST", path(f) + "/apply", payload(p))).status,
+    409,
+  );
+  assert.deepEqual(await count(f), original);
+});
+test("expired signed preview never applies; its absent original request is terminal only after taking the original request lock", async () => {
+  const f = await fixture(),
+    p = await preview(f),
+    key = randomUUID(),
+    ticket = sign({
+      ...p.ticket,
+      expires_at: new Date(Date.now() - 1000).toISOString(),
+    });
+  assert.equal(
+    (
+      await call(
+        f.admin,
+        "POST",
+        path(f) + "/apply",
+        { ...payload(p), ticket },
+        key,
+      )
+    ).data.error.code,
+    "CONTENT_REVISION_PREVIEW_EXPIRED",
+  );
+  assert.equal(
+    (await ok(f.admin, "POST", path(f) + "/requests/" + key, { ticket }))
+      .status,
+    "expired_not_applied",
+  );
+  assert.equal((await count(f)).revisions, 0);
+});
+test("same-key concurrent confirms commit one revision, and metadata-only recovery works after a new login", async () => {
+  const f = await fixture(),
+    p = await preview(f),
+    key = randomUUID();
+  assert.equal(
+    (
+      await ok(f.admin, "POST", path(f) + "/requests/" + key, {
+        ticket: p.ticket,
+      })
+    ).status,
+    "pending",
+  );
+  const [a, b] = await Promise.all([
+    ok(f.admin, "POST", path(f) + "/apply", payload(p), key),
+    ok(f.admin, "POST", path(f) + "/apply", payload(p), key),
+  ]);
+  assert.deepEqual(a, b);
+  assert.equal((await count(f)).revisions, 1);
+  const renewed = await login(f.admin.email, f.secret);
+  const recovered = await ok(renewed, "POST", path(f) + "/requests/" + key, {
+    ticket: p.ticket,
+  });
+  assert.equal(recovered.status, "applied");
+  assert.deepEqual(recovered.result, a);
+  assert.equal(JSON.stringify(recovered).includes(p.request.reason), false);
+  assert.equal(
+    JSON.stringify(recovered).includes(p.request.definition.name),
+    false,
+  );
+});
+test("competing previews cannot silently overwrite a winner", async () => {
+  const f = await fixture(),
+    a = await preview(f, "agent_groups", { name: "First proposal" }),
+    b = await preview(f, "agent_groups", { name: "Second proposal" });
+  const results = await Promise.all([
+    call(f.admin, "POST", path(f) + "/apply", payload(a)),
+    call(f.admin, "POST", path(f) + "/apply", payload(b)),
+  ]);
+  assert.deepEqual(results.map((r) => r.status).sort(), [200, 409]);
+  assert.equal((await count(f)).revisions, 1);
+});
+test("customer draft edits invalidate an administrator's preview and are preserved", async () => {
+  const f = await fixture(),
+    p = await preview(f, "project_configurations"),
+    url = f.userBase + "/project-configuration/draft";
+  const original = await ok(f.owner, "GET", url),
+    definition = {
+      ...original.draft,
+      instructions: "Customer changed this draft after preview",
+    };
+  await ok(f.owner, "PUT", url, {
+    expected_revision: original.revision,
+    definition,
+  });
+  assert.equal(
+    (
+      await call(
+        f.admin,
+        "POST",
+        path(f, "project_configurations") + "/apply",
+        payload(p),
+      )
+    ).status,
+    409,
+  );
+  assert.equal(
+    (await ok(f.owner, "GET", url)).draft.instructions,
+    definition.instructions,
+  );
+  assert.equal((await count(f)).revisions, 0);
+});
+test("revoked specialist dependencies and permissions are rechecked at confirmation", async () => {
+  const f = await fixture(),
+    p = await preview(f);
+  await ok(f.owner, "PATCH", f.userBase + "/agents/" + f.agents[1].id, {
+    expected_version: 1,
+    enabled: false,
+    name: "Disabled specialist",
+    role_key: "assistant",
+    instructions: "Use authorized source material and company tools.",
+  });
+  assert.equal(
+    (await call(f.admin, "POST", path(f) + "/apply", payload(p))).status,
+    409,
+  );
+  await s.db.control.query(
+    "INSERT INTO admin_bindings(principal_id,role_key,scope_kind,scope_id,effect) VALUES($1,$2,'project',$3,'deny')",
+    [f.admin.id, f.role, f.project],
+  );
+  assert.equal(
+    (await call(f.admin, "POST", path(f) + "/apply", payload(p))).status,
+    403,
+  );
+  assert.equal((await count(f)).revisions, 0);
+});
+test("scope changes, duplicate team members, private files and unrelated skills are rejected before creating a version", async () => {
+  const f = await fixture(),
+    original = await count(f);
+  const edits: [string, any][] = [
+    ["agent_groups", { project_id: randomUUID() }],
+    [
+      "agent_groups",
+      {
+        members: [
+          {
+            agent_id: f.agents[0].id,
+            role_description: "Duplicate coordinator",
+          },
+        ],
+      },
+    ],
+    ["project_configurations", { asset_version_ids: [randomUUID()] }],
+    ["solutions", { project_id: randomUUID() }],
+    ["solutions", { skill_version_ids: [randomUUID()] }],
+  ];
+  for (const [kind, patch] of edits) {
+    const e = await ok(f.admin, "GET", path(f, kind));
+    const r = await call(f.admin, "POST", path(f, kind) + "/previews", {
+      expected_version: e.version,
+      expected_moderation_version: e.moderation_version,
+      definition: { ...e.definition, ...patch },
+      reason: "Explicit negative fixture",
+    });
+    assert.ok([404, 409, 422].includes(r.status), JSON.stringify(r.data));
+  }
+  assert.deepEqual(await count(f), original);
+});
+test("audit insertion failure rolls back the revision, immutable version and replay receipt together", async () => {
+  const f = await fixture(),
+    p = await preview(f),
+    key = randomUUID(),
+    owner = new pg.Client({
+      connectionString: isolated.env.OWNER_DATABASE_URL,
+    });
+  await owner.connect();
+  try {
+    await owner.query(`CREATE FUNCTION fixture_reject_revision_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+      IF NEW.action='admin.content.revision.create' THEN RAISE EXCEPTION 'Explicit audit rollback fixture'; END IF; RETURN NEW; END $$;
+      CREATE TRIGGER fixture_reject_revision_audit BEFORE INSERT ON audit_log FOR EACH ROW EXECUTE FUNCTION fixture_reject_revision_audit()`);
+    assert.equal(
+      (await call(f.admin, "POST", path(f) + "/apply", payload(p), key)).status,
+      500,
+    );
+    assert.equal((await count(f)).revisions, 0);
+    assert.equal(
+      (
+        await s.db.control.query(
+          "SELECT version FROM agent_groups WHERE id=$1",
+          [f.group.id],
+        )
+      ).rows[0].version,
+      1,
+    );
+    assert.equal(
+      (
+        await s.db.control.query(
+          "SELECT 1 FROM request_replays WHERE actor_id=$1 AND key=$2",
+          [f.admin.id, key],
+        )
+      ).rowCount,
+      0,
+    );
+  } finally {
+    await owner.query(
+      "DROP TRIGGER IF EXISTS fixture_reject_revision_audit ON audit_log; DROP FUNCTION IF EXISTS fixture_reject_revision_audit()",
+    );
+    await owner.end();
+  }
+});
+test("application and queue roles cannot forge admin revision facts, and committed facts and provenance are immutable", async () => {
+  const f = await fixture(),
+    p = await preview(f),
+    result = await ok(f.admin, "POST", path(f) + "/apply", payload(p));
+  for (const pool of [s.db.app, s.db.queue])
+    await assert.rejects(
+      pool.query("INSERT INTO admin_content_revisions DEFAULT VALUES"),
+      (e: any) => e.code === "42501",
+    );
+  for (const sql of [
+    "UPDATE admin_content_revisions SET reason='Changed reason' WHERE id=$1",
+    "DELETE FROM admin_content_revisions WHERE id=$1",
+  ])
+    await assert.rejects(
+      s.db.control.query(sql, [result.revision_id]),
+      (e: any) => e.code === "42501",
+    );
+  const owner = new pg.Client({
+    connectionString: isolated.env.OWNER_DATABASE_URL,
+  });
+  await owner.connect();
+  try {
+    await assert.rejects(
+      owner.query(
+        "UPDATE admin_content_revisions SET reason='Changed reason' WHERE id=$1",
+        [result.revision_id],
+      ),
+      (e: any) => e.code === "23514",
+    );
+    await assert.rejects(
+      owner.query("DELETE FROM admin_content_revisions WHERE id=$1", [
+        result.revision_id,
+      ]),
+      (e: any) => e.code === "23514",
+    );
+    await assert.rejects(
+      owner.query(
+        "UPDATE agent_group_versions SET created_by=$2,created_by_admin=NULL,admin_revision_id=NULL WHERE group_id=$1 AND version=2",
+        [f.group.id, f.owner.id],
+      ),
+      (e: any) => e.code === "23514",
+    );
+  } finally {
+    await owner.end();
+  }
+});
+
+test("reference search exposes actual shared project files, preserves least privilege and rejects private or foreign versions", async () => {
+  const f = await fixture(),
+    other = await fixture();
+  async function file(target: Fixture, name: string, privateOwner?: string) {
+    return s.db.tx(async (tx) => {
+      await projectAccess(
+        tx,
+        {
+          id: target.owner.id,
+          email: target.owner.email,
+          name: "Fixture customer",
+          audience: "user",
+          authVersion: 1,
+          sessionId: "",
+          sessionHash: "",
+        },
+        target.tenant,
+        target.project,
+        "write",
+      );
+      return saveAsset(tx, s.storage, {
+        tenant: target.tenant,
+        project: target.project,
+        user: target.owner.id,
+        name,
+        mime: "text/plain",
+        bytes: Buffer.from("Explicit authorized fixture"),
+        ...(privateOwner ? { privateOwner } : {}),
+      });
+    }, target.tenant);
+  }
+  const shared = await file(f, "Harbour approved prices.txt"),
+    privateFile = await file(f, "Harbour private draft.txt", f.owner.id),
+    foreign = await file(other, "Harbour other workspace.txt");
+  const url = path(f, "project_configurations"),
+    options = await ok(f.admin, "GET", url + "/options?q=Harbour");
+  assert.deepEqual(
+    options.assets.map((v: any) => v.id),
+    [shared.version.id],
+  );
+  assert.equal(JSON.stringify(options).includes(privateFile.version.id), false);
+  assert.equal(JSON.stringify(options).includes(foreign.version.id), false);
+  assert.deepEqual(options.connections, []);
+  for (const asset of [privateFile, foreign]) {
+    const current = await ok(f.admin, "GET", url);
+    const rejected = await call(f.admin, "POST", url + "/previews", {
+      expected_version: current.version,
+      expected_moderation_version: current.moderation_version,
+      definition: {
+        ...current.definition,
+        asset_version_ids: [asset.version.id],
+      },
+      reason: "Verify that administrator cannot share a private source",
+    });
+    assert.equal(rejected.status, 409);
+    assert.equal(rejected.data.error.code, "SHARED_RESOURCE_REQUIRED");
+  }
+  const valid = await preview(f, "project_configurations", {
+    asset_version_ids: [shared.version.id],
+  });
+  await ok(f.admin, "POST", url + "/apply", payload(valid));
+  const published = await ok(
+    f.owner,
+    "GET",
+    f.userBase + "/project-configuration",
+  );
+  assert.equal(
+    published.published.body.resolved.resources[0].asset_version_id,
+    shared.version.id,
+  );
+  assert.deepEqual(
+    (
+      await s.db.control.query(
+        "SELECT has_table_privilege('cp_app','agent_templates','UPDATE') AS templates,has_table_privilege('cp_app','agent_template_versions','UPDATE') AS versions",
+      )
+    ).rows[0],
+    { templates: false, versions: false },
+  );
+});
+
+test("revision history uses stable bounded pages and rejects a cursor from another scoped object", async () => {
+  const f = await fixture(),
+    foreign = await fixture(),
+    committed: string[] = [];
+  for (let n = 0; n < 21; n++) {
+    const p = await preview(f, "agent_groups", {
+      name: "Approved revision " + (n + 1),
+    });
+    const result = await ok(f.admin, "POST", path(f) + "/apply", payload(p));
+    committed.push(result.revision_id);
+  }
+  const first = await ok(f.admin, "GET", path(f) + "/history");
+  assert.equal(first.items.length, 20);
+  assert.deepEqual(
+    first.items.map((v: any) => v.id),
+    committed.slice(1).reverse(),
+  );
+  assert.equal(first.next_before, committed[1]);
+  const second = await ok(
+    f.admin,
+    "GET",
+    path(f) + "/history?before=" + first.next_before,
+  );
+  assert.deepEqual(
+    second.items.map((v: any) => v.id),
+    [committed[0]],
+  );
+  assert.equal(second.next_before, null);
+  const p = await preview(foreign),
+    unrelated = await ok(
+      foreign.admin,
+      "POST",
+      path(foreign) + "/apply",
+      payload(p),
+    );
+  const denied = await call(
+    f.admin,
+    "GET",
+    path(f) + "/history?before=" + unrelated.revision_id,
+  );
+  assert.equal(denied.status, 404);
+  assert.equal(JSON.stringify(first).includes('"definition"'), false);
+});

@@ -1,0 +1,201 @@
+{
+  "normative_source": "docs/contracts/openapi.json",
+  "normative_source_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
+  "scope": "Supplemental current-user financial inbox; original Money definition is copied exactly and the original OpenAPI remains unchanged. schemas are definitions in the components.schemas namespace.",
+  "schemas": {
+    "Money": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string",
+          "enum": [
+            "HKD"
+          ]
+        },
+        "amount_micros": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "description": "One millionth of currency; decimal integer string."
+        }
+      },
+      "required": [
+        "currency",
+        "amount_micros"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialNotification": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "recorded_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "delivered_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "subject": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "enum": [
+                "user",
+                "tenant"
+              ]
+            },
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ]
+        },
+        "billing_account_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "data_mode": {
+          "enum": [
+            "simulated",
+            "configured_services"
+          ]
+        },
+        "event_type": {
+          "enum": [
+            "billing.reserve",
+            "billing.consume",
+            "billing.release",
+            "billing.top_up",
+            "billing.gift",
+            "billing.gift_expiry",
+            "billing.debit",
+            "billing.refund",
+            "billing.compensation",
+            "billing.credit_limit",
+            "payment.recorded",
+            "payment.confirmed",
+            "refund.requested",
+            "refund.paid",
+            "refund.not_paid",
+            "refund.unknown",
+            "refund.mismatch"
+          ]
+        },
+        "source_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "operation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "amount": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/Money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requested_amount": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/Money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "direction": {
+          "enum": [
+            "credit",
+            "debit",
+            "neutral"
+          ]
+        },
+        "bucket": {
+          "enum": [
+            "paid",
+            "promotional",
+            "reserved",
+            "credit_limit",
+            null
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "read",
+        "recorded_at",
+        "delivered_at",
+        "subject",
+        "billing_account_id",
+        "data_mode",
+        "event_type",
+        "source_id",
+        "operation_id",
+        "amount",
+        "requested_amount",
+        "direction",
+        "bucket"
+      ]
+    },
+    "FinancialNotificationList": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/components/schemas/FinancialNotification"
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "FinancialReadReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "read": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "read"
+      ]
+    }
+  }
+}

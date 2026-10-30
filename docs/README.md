@@ -1,5 +1,48 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- durable-receipt-stage131 -->
+## 本机结果与费用回执持久同步 · 阶段131
+
+本机子任务完成后，即使公司接口未收到完成请求，或已结算但响应丢失，原始结果仍保存在本机。父任务只有确认子任务回执后才能清理操作记录。恢复连线后选择“同步已储存的回执”；撤销本机权限后或完整退出并重新打开应用后，仍可同步原回执。同步不会重新运行命令、启动QA或新增模型请求。
+
+已知成功的子任务按公司实际观测结算一次。未知父任务继续保留原预算、等待费用核对；同步成功不代表整个流程成功，也不解除未知本机副作用限制。账号切换和服务端权限继续校验，不能绕过原登录族或企业权限。
+
+```mermaid
+flowchart LR
+  A[保存原子任务报告] --> B[补交原回执]
+  B --> C[原任务终态确认]
+  C --> D[提交父任务结果]
+  D --> E[未知父任务待核对]
+  B --> F[断网或响应丢失]
+  F --> G[保留本机记录]
+  G --> H[重启或撤权后同步]
+  H --> B
+```
+
+限定验证通过：124项控制层检查（含15项新增回执边界）、43项真实固定Codex检查、3条真实本机/SQL回执丢失流程、2项编译检查和8项实际未签名Desktop界面检查。旧版与新版对照确认原缺陷：旧版遗漏子任务完成请求，新版先子后父。真实进程、命令、文件、数据库、HTTP响应丢失和完整应用重启已运行；模型回答及系统对话框选择为测试输入。全部所属测试资源已关闭，原始失败、执行脚本和源码快照保留。
+
+[实现方案](technical/131-desktop-durable-receipt-sync.md) · [当前检查点](quality/receipt-sync-checkpoint-131.json) · [完整编号待办](quality/remaining-work-stage131.md)
+
+![Saved native receipts awaiting synchronization](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-receipt-sync-131-01-saved-receipts-pending-en.png)
+
+![Actual receipt loss and local permission withdrawal](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-receipt-sync-131-01-receipt-loss-and-permission-withdrawal.gif)
+
+![Actual synchronization after full application restart](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-receipt-sync-131-01-receipt-sync-after-application-restart.gif)
+
+[Fee confirmation](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-receipt-sync-131-01-child-fee-confirmation-en.png) · [撤权后中文提示](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-receipt-sync-131-01-revoked-receipts-pending-zh.png) · [Original receipts synchronized](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-receipt-sync-131-01-original-receipts-synchronized-en.png) · [Loss/withdrawal MP4](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-receipt-sync-131-01-receipt-loss-and-permission-withdrawal.mp4) · [Restart/sync MP4](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-receipt-sync-131-01-receipt-sync-after-application-restart.mp4)
+
+当前仍有89条必需、12条未确认建议、1条可选完整验收记录开放，不能理解为102个模块尚未编码。任意崩溃/旧进程回收、换登录族后的处理、全部父任务账务核对、专业角色、正式模型/媒体及签名安装继续推进。当前增量使用阶段131独立清单与发布器；阶段128和130证据保持各自历史范围。
+
+```powershell
+python -X utf8 docs/tools/record_receipt_sync_131_v1.py --verify
+python -X utf8 docs/tools/prepare_receipt_publication_131_v1.py --verify
+python -X utf8 docs/tools/publish_receipt_sync_131_v1.py --push
+```
+
+发布器核对阶段130真实远端回执、完整历史安全与README链接、当前Git字节和八个远端分支；只进行普通原子推送，不强推。常规开发者构建/启动方式见后续仓库说明。
+
+---
+
 <!-- workflow-recovery-stage130 -->
 ## 本机父子流程恢复与取消 · 阶段130
 

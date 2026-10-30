@@ -1,0 +1,225 @@
+.modal:has(.budget-control) {
+  width: min(1000px, calc(100vw - 32px));
+  max-width: none;
+}
+.budget-control {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.budget-intro h2 {
+  font-size: clamp(25px, 3vw, 38px);
+  line-height: 1.15;
+  margin: 12px 0;
+}
+.budget-intro p,
+.budget-section p {
+  line-height: 1.6;
+  color: var(--muted);
+}
+.budget-section {
+  padding: 22px 0;
+  border-top: 1px solid var(--line);
+  min-width: 0;
+}
+.budget-section-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.budget-section-heading h3 {
+  margin: 0;
+}
+.budget-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 20px;
+}
+.budget-facts div {
+  min-width: 0;
+}
+.budget-facts dt {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.budget-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.budget-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 16px;
+  align-items: end;
+}
+.budget-form .button {
+  justify-self: start;
+}
+.budget-policy {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--surface-alt, var(--bg));
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  min-width: 0;
+}
+.budget-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.budget-check input {
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+.budget-preview {
+  display: grid;
+  gap: 12px;
+  background: var(--surface-alt, var(--bg));
+  padding: 24px;
+  margin-top: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.budget-preview h3,
+.budget-preview p {
+  margin: 0;
+}
+.budget-preview .button {
+  justify-self: start;
+}
+.budget-amount-change {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 18px 0;
+}
+.budget-amount-change strong {
+  font-size: clamp(21px, 3vw, 32px);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.budget-history {
+  display: grid;
+  gap: 8px;
+}
+.budget-history-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 16px;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 10px;
+  min-width: 0;
+  cursor: pointer;
+  font: inherit;
+}
+.budget-history-row.selected {
+  border-color: var(--accent, #2563eb);
+}
+.budget-history-row span {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.budget-history-row strong,
+.budget-history-row small {
+  overflow-wrap: anywhere;
+}
+.budget-history-row small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.budget-state {
+  display: inline-block;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.budget-state.succeeded,
+.budget-state.no_change {
+  color: #12815d;
+}
+.budget-state.unknown,
+.budget-state.awaiting_confirmation {
+  color: #ad6508;
+}
+.budget-operation-detail {
+  display: grid;
+  gap: 12px;
+}
+.budget-digest,
+.budget-receipts code {
+  display: block;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.budget-unknown {
+  padding: 20px;
+  border: 1px solid #ad650844;
+  border-radius: 12px;
+  display: grid;
+  gap: 12px;
+}
+.budget-events {
+  padding-left: 20px;
+}
+.budget-events li {
+  margin: 14px 0;
+}
+.budget-events small {
+  display: block;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.budget-control textarea {
+  max-width: 100%;
+  min-height: 90px;
+  resize: vertical;
+}
+.budget-control input,
+.budget-control select {
+  min-width: 0;
+  max-width: 100%;
+}
+@media (max-width: 600px) {
+  .budget-history-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .budget-section {
+    padding: 18px 0;
+  }
+  .budget-preview,
+  .budget-policy,
+  .budget-unknown {
+    padding: 16px;
+  }
+  .budget-amount-change {
+    gap: 10px;
+  }
+  .budget-amount-change strong {
+    font-size: 22px;
+  }
+}
