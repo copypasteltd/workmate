@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "npm run typecheck && npm run test:surfaces",
+    "test": "npm run typecheck && npm run test:surfaces && npm run test:transport",
     "test:surfaces": "node --test tests/native-surface-integrity.test.mjs",
     "start": "node scripts/dev.mjs",
     "demo": "node scripts/dev.mjs --demo",
@@ -81,7 +81,9 @@
     "upgrade:capabilities-local": "node scripts/upgrade-capabilities-local.mjs",
     "qa:support-candidate": "node scripts/run-support-candidate.mjs",
     "qa:support-migrations": "node scripts/qa-support-migrations.mjs",
-    "upgrade:support-local": "node scripts/upgrade-support-local.mjs"
+    "upgrade:support-local": "node scripts/upgrade-support-local.mjs",
+    "test:transport": "node --import tsx --test tests/client-failure-135-v2.test.ts tests/api-transport.test.ts",
+    "qa:client-errors": "node scripts/qualify-client-errors-135-v9.mjs"
   },
   "devDependencies": {
     "@types/chrome": "0.3.5",

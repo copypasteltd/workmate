@@ -1,0 +1,127 @@
+import type { FastifyInstance } from "fastify";
+import { z } from "zod";
+import type { Database, Tx } from "./db.js";
+import { audit, requireAdmin, type Principal } from "./auth.js";
+import { lockAdminAccess, permit } from "./admin-access.js";
+import { canonical, equal, hmac, Problem, uuid } from "./lib.js";
+
+const pageSize = 50;
+const kinds = z.enum(["conversations", "agents", "memories"]);
+type Kind = z.infer<typeof kinds>;
+const revision = z.string().regex(/^[1-9][0-9]{0,18}$/);
+const positive = z.number().int().positive();
+const stamp = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/);
+const cursorBody = z.object({
+  protocol: z.literal(1), source_id: uuid, actor_id: uuid, session_id: uuid,
+  auth_version: z.number().int().nonnegative(), history_revision: revision,
+  version: positive, moderation_version: z.number().int().nonnegative(),
+  direction: z.enum(["next", "previous"]),
+  anchor: z.discriminatedUnion("kind", [
+    z.object({kind: z.literal("conversations"), id: uuid, at: stamp}).strict(),
+    z.object({kind: z.literal("agents"), version: positive}).strict(),
+    z.object({kind: z.literal("memories"), version: positive}).strict(),
+  ]), expires_at: z.string().datetime(),
+}).strict();
+const cursorSchema = cursorBody.extend({ signature: z.string().regex(/^[a-f0-9]{64}$/) });
+const query = z.object({ edge: z.enum(["first", "last"]).optional(), cursor: z.string().min(1).max(2048).optional() })
+  .strict().refine(v => !(v.cursor && v.edge), "Choose a cursor or an edge");
+const changed = () => new Problem(409, "CONTENT_HISTORY_CHANGED",
+  "This content changed. Refresh its history before continuing");
+
+async function load(tx: Tx, actor: Principal, kind: Kind, id: string) {
+  await lockAdminAccess(tx);
+  // Hold the original session and authority while reading this bounded page.
+  const session = await tx.query(`SELECT s.id FROM sessions s JOIN admin_principals p ON p.id=s.admin_id
+    WHERE s.id=$1 AND p.id=$2 AND s.audience='admin' AND s.revoked_at IS NULL
+    AND s.expires_at>clock_timestamp() AND p.status='active' AND p.enrollment_state='enrolled'
+    AND s.auth_version=p.auth_version AND p.auth_version=$3 AND s.mfa_at IS NOT NULL FOR SHARE OF s,p`,
+    [actor.sessionId, actor.id, actor.authVersion]);
+  if (!session.rowCount) throw new Problem(401, "SESSION_EXPIRED", "Sign in again to read private content");
+  // kind is a closed, parsed enum, never arbitrary SQL from the request.
+  const row = (await tx.query(`SELECT * FROM ${kind} WHERE id=$1 FOR SHARE`, [id])).rows[0];
+  if (!row) throw new Problem(404, "NOT_FOUND", "Content not found");
+  for (const permission of ["admin.content.read", "admin.content.body.read"])
+    await permit(tx, actor, permission, { tenant: row.tenant_id, project: row.project_id });
+  if (row.content_state === "deleted") throw new Problem(410, "CONTENT_DELETED", "Deleted content is unavailable");
+  return row;
+}
+const historyRevision = (kind: Kind, row: any) => String(kind === "conversations" ? row.history_revision : row.version);
+function checkRevision(kind: Kind, row: any, expected: z.infer<typeof cursorSchema>) {
+  if (historyRevision(kind, row) !== expected.history_revision || row.version !== expected.version
+    || row.moderation_version !== expected.moderation_version) throw changed();
+}
+function decode(db: Database, actor: Principal, kind: Kind, id: string, raw: string) {
+  let c: z.infer<typeof cursorSchema>;
+  try { c = cursorSchema.parse(JSON.parse(Buffer.from(raw, "base64url").toString("utf8"))); }
+  catch { throw new Problem(400, "CONTENT_HISTORY_CURSOR_INVALID", "Refresh the content history"); }
+  const { signature, ...body } = c;
+  if (!equal(signature, hmac(db.config.MASTER_KEY!, "admin-content-history-v1:" + canonical(body)))
+    || c.actor_id !== actor.id || c.session_id !== actor.sessionId || c.auth_version !== actor.authVersion
+    || c.source_id !== id || c.anchor.kind !== kind)
+    throw new Problem(400, "CONTENT_HISTORY_CURSOR_INVALID", "Refresh the content history");
+  if (Date.parse(c.expires_at) <= Date.now()) throw changed();
+  return c;
+}
+function encode(db: Database, actor: Principal, kind: Kind, row: any, item: any, direction: "next" | "previous", expires: string) {
+  const body = cursorBody.parse({ protocol: 1, source_id: row.id, actor_id: actor.id,
+    session_id: actor.sessionId, auth_version: actor.authVersion, history_revision: historyRevision(kind, row),
+    version: row.version, moderation_version: row.moderation_version, direction,
+    anchor: kind === "conversations" ? {kind, id: item.id, at: item.cursor_at} : {kind, version: item.version},
+    expires_at: expires });
+  return Buffer.from(JSON.stringify({ ...body,
+    signature: hmac(db.config.MASTER_KEY!, "admin-content-history-v1:" + canonical(body)) })).toString("base64url");
+}
+
+export function registerAdminContentHistory(app: FastifyInstance, db: Database) {
+  app.get("/v1/admin/content/:kind/:id/history", { preHandler: requireAdmin(db) }, async (req, reply) => {
+    const {kind, id} = z.object({kind: kinds, id: uuid}).parse(req.params), q = query.parse(req.query);
+    const result = await db.tx(async tx => {
+      const row = await load(tx, req.principal, kind, id), c = q.cursor ? decode(db, req.principal, kind, id, q.cursor) : null;
+      if (c) checkRevision(kind, row, c);
+      const backwards = c ? c.direction === "previous" : q.edge === "last";
+      const args: any[] = [id];
+      let anchor = "", sql: string;
+      if (kind === "conversations") {
+        args.push(row.tenant_id, row.project_id);
+        if (c?.anchor.kind === "conversations") {
+          args.push(c.anchor.at, c.anchor.id);
+          anchor = `AND (m.created_at,m.id) ${backwards ? "<" : ">"} ($4::timestamptz,$5::uuid)`;
+        }
+        // Keep exact microseconds in signed cursors; JS Date rounding must not
+        // skip messages sharing the same millisecond or timestamp.
+        sql = `SELECT m.id,m.role,m.intent,m.task_id,m.created_at,
+          CASE WHEN m.role='assistant' AND m.task_id IS NOT NULL AND content_source_manifest($2::uuid,$3::uuid,ARRAY[m.task_id],'{}'::uuid[]) IS NULL
+            THEN NULL ELSE m.body END AS body,
+          (m.role='assistant' AND m.task_id IS NOT NULL AND content_source_manifest($2::uuid,$3::uuid,ARRAY[m.task_id],'{}'::uuid[]) IS NULL) AS source_unavailable,
+          to_char(m.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_at
+          FROM conversation_messages m WHERE m.conversation_id=$1 AND m.tenant_id=$2 AND m.project_id=$3 ${anchor}
+          ORDER BY m.created_at ${backwards ? "DESC" : "ASC"},m.id ${backwards ? "DESC" : "ASC"} LIMIT ${pageSize + 1}`;
+      } else {
+        if (c && c.anchor.kind !== "conversations") {
+          args.push(c.anchor.version); anchor = `AND version ${backwards ? ">" : "<"} $2`;
+        }
+        const table = kind === "agents" ? "agent_versions" : "memory_versions";
+        const parent = kind === "agents" ? "agent_id" : "memory_id";
+        sql = `SELECT version,${kind === "agents" ? "body" : "content AS body,definition"},created_at,
+          CASE WHEN created_by_admin IS NOT NULL THEN 'administrator' ELSE 'customer' END AS origin
+          FROM ${table} WHERE ${parent}=$1 ${anchor} ORDER BY version ${backwards ? "ASC" : "DESC"} LIMIT ${pageSize + 1}`;
+      }
+      const fetched = (await tx.query(sql, args)).rows;
+      const more = fetched.length > pageSize, items = fetched.slice(0, pageSize);
+      if (backwards) items.reverse();
+      const expires = c?.expires_at ?? new Date(Date.now() + 30 * 60_000).toISOString();
+      const first = items[0], last = items.at(-1);
+      const previous = !!first && (backwards ? more : !!c);
+      const next = !!last && (backwards ? !!c : more);
+      await audit(tx, req.principal, "admin.content.body.read", id, "succeeded",
+        { kind, page_items: items.length, direction: backwards ? "previous" : "next" }, row.tenant_id);
+      return { id, kind, name: row.name, history_revision: historyRevision(kind, row), version: row.version,
+        moderation_version: row.moderation_version, page_size: pageSize,
+        items: items.map(({ cursor_at, ...item }) => item),
+        previous_cursor: previous ? encode(db, req.principal, kind, row, first, "previous", expires) : null,
+        next_cursor: next ? encode(db, req.principal, kind, row, last, "next", expires) : null };
+    }, undefined, true);
+    reply.header("Cache-Control", "no-store");
+    return result;
+  });
+}

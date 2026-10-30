@@ -1,0 +1,80 @@
+{
+  "schema": "copypaste-admin-content-history-v1",
+  "scope": "Implemented Stage132 route supplement; not a regenerated full route inventory",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/v1/admin/content/:kind/:id/history",
+      "audience": "admin",
+      "permissions_all": ["admin.content.read", "admin.content.body.read"],
+      "authorization_scope": ["tenant", "project"],
+      "deny_wins": true,
+      "path_parameters": {
+        "kind": {"enum": ["conversations", "agents", "memories"]},
+        "id": {"type": "string", "format": "uuid"}
+      },
+      "query": {
+        "type": "object",
+        "properties": {
+          "edge": {"enum": ["first", "last"]},
+          "cursor": {"type": "string", "minLength": 1, "maxLength": 2048}
+        },
+        "additionalProperties": false,
+        "not": {"required": ["edge", "cursor"]}
+      },
+      "response": {
+        "type": "object",
+        "required": ["id", "kind", "name", "history_revision", "version", "moderation_version", "page_size", "items", "previous_cursor", "next_cursor"],
+        "properties": {
+          "id": {"type": "string", "format": "uuid"},
+          "kind": {"enum": ["conversations", "agents", "memories"]},
+          "name": {"type": "string"},
+          "history_revision": {"type": "string", "pattern": "^[1-9][0-9]{0,18}$"},
+          "version": {"type": "integer", "minimum": 1},
+          "moderation_version": {"type": "integer", "minimum": 0},
+          "page_size": {"const": 50},
+          "items": {"type": "array", "maxItems": 50, "items": {"type": "object"}},
+          "previous_cursor": {"type": ["string", "null"]},
+          "next_cursor": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      },
+      "item_fields": {
+        "conversations": ["id", "role", "intent", "task_id", "created_at", "body", "source_unavailable"],
+        "agents": ["version", "body", "created_at", "origin"],
+        "memories": ["version", "body", "definition", "created_at", "origin"]
+      },
+      "origin_values": ["customer", "administrator"],
+      "ordering": {
+        "conversations": "created_at ASC, id ASC; cursor preserves six fractional timestamp digits",
+        "agents": "version DESC",
+        "memories": "version DESC"
+      },
+      "cursor": {
+        "signature_domain": "admin-content-history-v1:",
+        "valid_minutes": 30,
+        "sliding_expiry": false,
+        "bindings": ["actor_id", "session_id", "auth_version", "source_id", "anchor.kind", "history_revision", "version", "moderation_version", "direction", "anchor", "expires_at"]
+      },
+      "errors": {
+        "400": "Malformed query, cursor, kind or UUID; invalid signature or wrong cursor identity",
+        "401": "Missing, expired or revoked administrator session",
+        "403": "Current permission intersection or resource scope denied",
+        "404": "Resource does not exist",
+        "409": "History/content/moderation revision changed or cursor expired",
+        "410": "Content was deleted"
+      },
+      "cache_control": "no-store",
+      "audit_event": "admin.content.body.read",
+      "audit_metadata": ["kind", "page_items", "direction"],
+      "creates_model_or_paid_work": false
+    }
+  ],
+  "legacy_body_response_additions": {
+    "kinds": ["conversations", "agents", "memories"],
+    "limit": 200,
+    "fields": ["truncated", "history_url"],
+    "history_url_pattern": "/v1/admin/content/{kind}/{id}/history"
+  },
+  "qualification": "54 related native SQL/backend tests and 9 actual browser journey checks; exact source snapshots retained by Stage132 evidence. This descriptor documents those implemented behaviors."
+}
