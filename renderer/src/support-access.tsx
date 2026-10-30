@@ -13,6 +13,11 @@ type Grant = {
   granted_by: string;
 };
 export function SupportAccess() {
+  const w = useWorkspace();
+  const role = w.me?.memberships?.find((m: any) => m.id === w.tenant)?.role;
+  return <SupportGrantForm key={`${w.me?.user?.id}:${w.tenant}:${role}`} />;
+}
+function SupportGrantForm() {
   const w = useWorkspace(),
     { t } = useI18n();
   const [rows, setRows] = useState<Grant[]>([]),
@@ -25,42 +30,50 @@ export function SupportAccess() {
   const revision = useRef(0),
     identity = `${w.me?.user?.id}:${w.tenant}`;
   const current = useRef(identity);
+  const pending = useRef<AbortController | null>(null), working = useRef(busy);
   current.current = identity;
+  working.current = busy;
   const can = w.me?.memberships?.some(
     (m: any) => m.id === w.tenant && ["owner", "admin"].includes(m.role),
   );
-  const request = (path: string, body?: unknown) =>
+  const request = (path: string, body?: unknown, signal?: AbortSignal) =>
     api(path, {
       ...(body === undefined
         ? {}
         : { method: "POST", body: JSON.stringify(body) }),
       headers: { "X-Tenant-ID": w.tenant },
+      signal,
     });
   async function load(cursor?: string) {
     const r = ++revision.current,
-      scope = identity;
+      scope = identity, controller = new AbortController();
+    pending.current?.abort(); pending.current = controller;
     setLoading(true);
     setError(null);
     try {
       const result = await request(
         "/v1/support-grants?limit=20" +
-          (cursor ? "&cursor=" + encodeURIComponent(cursor) : ""),
+          (cursor ? "&cursor=" + encodeURIComponent(cursor) : ""), undefined, controller.signal,
       );
       if (revision.current !== r || current.current !== scope) return;
       setRows((old) => (cursor ? [...old, ...result.items] : result.items));
       setNext(result.next_cursor);
+      return true;
     } catch (e) {
       if (revision.current === r && current.current === scope) {
         setRows([]);
         setNext(null);
         setError(e as Error);
       }
+      return false;
     } finally {
       if (revision.current === r && current.current === scope)
         setLoading(false);
+      if (pending.current === controller) pending.current = null;
     }
   }
   useEffect(() => {
+    current.current = identity;
     ++revision.current;
     setRows([]);
     setNext(null);
@@ -73,10 +86,17 @@ export function SupportAccess() {
       return;
     }
     void load();
-    const timer = setInterval(() => void load(), 15000);
+    const refresh = () => {
+      if (document.visibilityState === "visible" && !working.current) void load();
+    };
+    const timer = setInterval(refresh, 15000);
+    document.addEventListener("visibilitychange", refresh);
     return () => {
+      current.current = "";
       ++revision.current;
+      pending.current?.abort(); pending.current = null;
       clearInterval(timer);
+      document.removeEventListener("visibilitychange", refresh);
     };
   }, [identity, can]);
   if (!can || !w.tenant) return null;
@@ -127,8 +147,8 @@ export function SupportAccess() {
             if (current.current !== scope) return;
             form.reset();
             setSelected([]);
-            await load();
-            setNotice(
+            const refreshed = await load();
+            if (current.current === scope && refreshed) setNotice(
               t(
                 "授權已建立。將授權 ID 提供給客服；可隨時撤銷。",
                 "Grant created. Share its ID with support; you can revoke it at any time.",
@@ -198,7 +218,7 @@ export function SupportAccess() {
       )}
       <div className="support-grant-list">
         {rows.map((row) => (
-          <article key={row.id} className="support-grant-row">
+          <article key={row.id} className="support-grant-row" data-grant-id={row.id}>
             <strong>{row.reason}</strong>
             <span>
               {t("狀態", "State")}:{" "}
@@ -225,11 +245,12 @@ export function SupportAccess() {
                 type="button"
                 className="button secondary"
                 onClick={async () => {
+                  const scope = identity;
                   try {
                     await navigator.clipboard.writeText(row.id);
-                    setNotice(t("已複製授權 ID。", "Grant ID copied."));
+                    if (current.current === scope) setNotice(t("已複製授權 ID。", "Grant ID copied."));
                   } catch {
-                    setError(
+                    if (current.current === scope) setError(
                       new Error(
                         t(
                           "請選取並複製上方的授權 ID。",
@@ -260,8 +281,8 @@ export function SupportAccess() {
                         ),
                       });
                       if (current.current === scope) {
-                        await load();
-                        setNotice(
+                        const refreshed = await load();
+                        if (current.current === scope && refreshed) setNotice(
                           t(
                             "授權已撤銷，支援視圖將停止存取。",
                             "Grant revoked. Support can no longer access the view.",
