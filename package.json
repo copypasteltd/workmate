@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p renderer/tsconfig.json",
     "start": "electron .",
     "pretest": "node scripts/build-program-host.mjs && node scripts/build-update-host.mjs && node scripts/build-native-host.mjs",
-    "test": "node --import tsx --test tests/*.test.ts",
+    "test": "node scripts/run-current-tests-v1.mjs",
     "test:local": "node --import tsx --test --test-concurrency=1 tests/integration/local-codex.native.test.ts",
     "runtime:prepare": "node scripts/prepare-local-codex.mjs",
     "package": "npm run runtime:prepare && npm run build && electron-builder --win portable nsis",

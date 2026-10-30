@@ -4,7 +4,7 @@ import type { LocalInputRequest, LocalInputAnswers } from "./local-input.js";
 interface NativeWorkflowRun {
   id: string; workflow_id: string; version: number; revision: number; state: string; cursor: number;
   authorized: boolean; execution_location: "desktop"; results: unknown[]; error_code?: string;
-  definition: { steps: ({ kind: "codex"; role_key: string; prompt: string; budget_micros: number }
+  definition: { steps: ({ kind: "codex"; role_key: string; prompt: string; budget_micros: number; input_steps?:number[]; on_failure?:"stop"|"review" }
     | { kind: "approval"; message: string } | { kind: "analytics.summary"; dataset_id: string })[] };
 }
 export interface NativeWorkflowChild {
@@ -38,11 +38,14 @@ function parseRun(value: any): NativeWorkflowRun {
     || !["running", "awaiting_approval", ...terminal].includes(value.state) || typeof value.authorized !== "boolean"
     || !Array.isArray(value.results) || !Array.isArray(value.definition?.steps) || !value.definition.steps.length || value.definition.steps.length > 8)
     throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
-  for (const step of value.definition.steps) {
+  for (const [index,step] of value.definition.steps.entries()) {
     if (step.kind === "codex") {
       if (typeof step.role_key !== "string" || step.role_key === "workflow-consultant" || typeof step.prompt !== "string"
         || step.prompt.length < 5 || step.prompt.length > 12000 || !Number.isSafeInteger(step.budget_micros)
         || step.budget_micros < 10000 || step.budget_micros > 10_000_000_000) throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
+      if (step.on_failure !== undefined && !["stop","review"].includes(step.on_failure)) throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
+      if (step.input_steps !== undefined && (!Array.isArray(step.input_steps) || step.input_steps.length>7 || new Set(step.input_steps).size!==step.input_steps.length
+        || step.input_steps.some((i:any)=>!Number.isSafeInteger(i)||i<0||i>=index||value.definition.steps[i]?.kind === "approval"))) throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
     } else if (step.kind === "approval") {
       if (typeof step.message !== "string" || step.message.length < 3 || step.message.length > 2000) throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
     } else if (step.kind !== "analytics.summary" || !uuid.test(step.dataset_id)) throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
@@ -104,7 +107,7 @@ export async function executeLocalWorkflow(io: NativeWorkflowIO, initial: any) {
     await update(response.run);
   };
   const steps = run.definition.steps.map((step, index) => `${index + 1}. ` + (step.kind === "codex"
-    ? `${step.role_key} · HK$ ${hkd(step.budget_micros)}\n${step.prompt.slice(0, 180)}`
+    ? `${step.role_key} · HK$ ${hkd(step.budget_micros)}\n${step.prompt.slice(0, 180)}\n輸入步驟 / Input steps: ${step.input_steps ? step.input_steps.map(i=>i+1).join(", ") || "無 / None" : "全部先前成果 / All prior outputs"}\n失敗處理 / On failure: ${step.on_failure === "review" ? "等待確認，絕不自動重試 / Wait for review; never auto-retry" : "停止 / Stop"}`
     : step.kind === "approval" ? "人工審批 / Human approval: " + step.message.slice(0, 160) : "廣告數據匯總 / Analytics summary: " + step.dataset_id));
   await update(run);
   await decision("launch", `Codex 將在本機逐步執行，沿用目前工作目錄及本機權限。\nCodex steps run locally using the current workspace and OS grant.\n\n子步驟費用上限合計 / Additional child-step limit: HK$ ${hkd(total)}\n不包括目前流程顧問對話的額度；每步分別預留及結算。\nExcludes this consultant conversation; each step reserves and settles separately.\n\n${steps.join("\n\n")}`);
@@ -119,8 +122,17 @@ export async function executeLocalWorkflow(io: NativeWorkflowIO, initial: any) {
     } else if (result.action === "approval") {
       if (typeof result.message !== "string") throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
       const step = run.definition.steps[run.cursor];
-      if (step.kind !== "approval" || result.message !== step.message || run.state !== "awaiting_approval") throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
-      await decision("step", step.message);
+      const last:any = run.results.at(-1), failedStep = run.definition.steps[last?.cursor];
+      if (result.failure_review) {
+        if (run.state !== "awaiting_approval" || !run.authorized || last?.kind!=="failure_review" || last.status!=="awaiting_customer"
+          || !Number.isInteger(last.cursor) || last.cursor+1!==run.cursor || failedStep?.kind!=="codex" || failedStep.on_failure!=="review"
+          || !uuid.test(last.task_id) || !/^[A-Z0-9_]{1,100}$/.test(last.error_code) || last.automatically_replayed!==false
+          || canonical(last)!==canonical(result.failure_review)) throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
+        await decision("step", `步驟 ${last.cursor+1} 已失敗：${last.error_code}。是否略過並繼續其餘步驟？不會重試失敗步驟；需要其成果的後續工作會停止。已產生費用保留，整體流程仍會標示包含失敗。\nStep ${last.cursor+1} failed: ${last.error_code}. Skip it and continue? It will never be retried. Dependent steps cannot proceed without its output. Incurred charges remain and the overall run will retain its failure.`);
+      } else {
+        if (step?.kind !== "approval" || result.message !== step.message || run.state !== "awaiting_approval") throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
+        await decision("step", step.message);
+      }
     } else if (result.action === "codex") {
       const child: NativeWorkflowChild = result.child, step = run.definition.steps[run.cursor];
       if (!child || !uuid.test(child.task_id) || seenChildren.has(child.task_id) || step?.kind !== "codex" || child.role_key !== step.role_key
