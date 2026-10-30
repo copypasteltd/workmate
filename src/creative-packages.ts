@@ -35,7 +35,7 @@ export function mountCreativePackages(container: HTMLDetailsElement, io: IO) {
   const load = async () => { const data = await io.request(root); if (!active()) return;
     projects.replaceChildren(new Option(io.tr("選擇工程", "Choose a project"), ""), ...data.items.map((p: any) => new Option(`${p.name} · v${p.version}`, `${p.id}:${p.version}`))); controls(); };
   const done = async (result: any) => { await io.write(pendingKey, null); if (!active()) return; disposeBrand?.(); pending = null; preview = null; selected = null;
-    review.replaceChildren(); file.value = ""; consent.checked = false; status.textContent = io.tr("已恢復，可在 Web／Desktop 的設計畫布繼續編輯：", "Restored. Continue editing in Web/Desktop Design canvas: ") + result.name;
+    review.replaceChildren(); file.value = ""; consent.checked = false; status.textContent = io.tr("已恢復，可在 Web／Desktop 的對應工程繼續編輯：", "Restored. Continue editing in the matching Web/Desktop project: ") + result.name;
     status.dataset.packageRestored = result.id; await load(); };
   const restore = async () => {
     if (!pending) return; const attempt = pending; await io.write(pendingKey, attempt); if (!active()) return;
@@ -68,13 +68,29 @@ export function mountCreativePackages(container: HTMLDetailsElement, io: IO) {
     const rights = make("input"); rights.type = "checkbox"; const label = make("label"); label.className = "creative-package-consent";
     label.append(rights, make("span", io.tr("我確認素材授權，並建立新的專案共用副本；不覆寫來源。", "I confirm media rights and a new shared copy without overwriting the source.")));
     const confirm = make("button", io.tr("恢復為新工程", "Restore a new project")); confirm.type = "button"; confirm.disabled = true;
-    let brandApproval: any = null;
-    const update = () => { confirm.disabled = busy || !rights.checked || !name.value.trim() || !!preview.brand_requirements && !brandApproval; }; rights.onchange = update; name.oninput = update;
+    let brandApproval: any = null, evidenceApproved = !preview.has_imported_evidence;
+    const update = () => { confirm.disabled = busy || !rights.checked || !name.value.trim() || !evidenceApproved || !!preview.brand_requirements && !brandApproval; }; rights.onchange = update; name.oninput = update;
     if (preview.brand_requirements) { const brand = make("div"); review.append(brand);
       disposeBrand = mountCreativePackageBrand(brand, { root, live: active, tr: io.tr, request: io.request }, selected, preview, value => { brandApproval = value; update(); }); }
+    if (preview.has_imported_evidence) {
+      const evidence = make("section"); evidence.className = "creative-evidence-review"; evidence.ariaLabel = io.tr("匯入圖表資料核對", "Imported chart data review");
+      evidence.append(make("h4", io.tr("核對圖表原值與範圍", "Review chart values and scope")), make("p", io.tr("這是工程包內的資料快照，恢復後標示為自行確認的匯入資料。", "This package contains a snapshot, labelled as user-attested imported data after restore.")));
+      const records = make("div"), position = make("p"), prev = make("button", io.tr("上一頁資料", "Previous records")), next = make("button", io.tr("下一頁資料", "Next records"));
+      let page = 0; const rows = preview.evidence_rows;
+      const show = () => { records.replaceChildren(); position.textContent = `${page + 1}/${Math.ceil(rows.length / 20)} · ${rows.length}`;
+        for (const r of rows.slice(page * 20, (page + 1) * 20)) { const card = make("article"), detail = make("details");
+          detail.append(make("summary", io.tr("資料定義與範圍", "Definition & scope")), make("p", r.metric_id), make("pre", JSON.stringify(JSON.parse(r.scope), null, 2)));
+          card.append(make("strong", r.label), make("p", `${r.value ?? io.tr("缺少數值", "Missing value")} ${r.unit}`)); if (r.value === null) card.append(make("p", r.null_reason)); card.append(detail); records.append(card); }
+        prev.disabled = page === 0; next.disabled = (page + 1) * 20 >= rows.length;
+      };
+      prev.type = next.type = "button"; prev.onclick = () => { page--; show(); }; next.onclick = () => { page++; show(); }; show();
+      const ack = make("input"), consent = make("label"); ack.type = "checkbox"; consent.className = "creative-package-consent";
+      consent.append(ack, make("span", io.tr("我已核對匯入圖表原值與範圍，了解這些資料尚未透過目的專案的平台帳戶核實。", "I reviewed the imported chart values and scope and understand they have not been verified against the destination project's platform accounts.")));
+      ack.onchange = () => { evidenceApproved = ack.checked; update(); }; evidence.append(position, records, prev, next, consent); review.append(evidence);
+    }
     confirm.onclick = () => void run(async () => {
-      if (!rights.checked || !name.value.trim() || preview.brand_requirements && !brandApproval) return; confirm.disabled = true;
-      pending = { key: crypto.randomUUID(), body: { ...selected, name: name.value.trim(), preview_hash: preview.preview_hash, confirm_project_sharing: true, confirm_media_rights: true, ...(brandApproval ?? {}) } };
+      if (!rights.checked || !name.value.trim() || !evidenceApproved || preview.brand_requirements && !brandApproval) return; confirm.disabled = true;
+      pending = { key: crypto.randomUUID(), body: { ...selected, name: name.value.trim(), preview_hash: preview.preview_hash, confirm_project_sharing: true, confirm_media_rights: true, ...(preview.has_imported_evidence && evidenceApproved ? { confirm_imported_evidence: true } : {}), ...(brandApproval ?? {}) } };
       await io.write(pendingKey, pending); if (!active()) return; showPending(); await restore();
     }); review.append(name, label, confirm); controls();
   };

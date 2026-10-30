@@ -62,7 +62,7 @@ export function mountCreativePackageBrand(host: HTMLElement, io: Context, select
     const review = make("button", tr("核對品牌替換內容", "Review brand changes")); review.type = "button"; maps.append(review);
     const update = () => { review.disabled = !channel.value || !locale.value || controls.some(c => !c.field.value || c.field.selectedOptions[0]?.disabled); };
     const updateFonts = () => { for (const c of controls.filter(v => v.kind === "fonts")) for (const option of c.field.options) {
-      const f = b.fonts.find((v: any) => v.key === option.value); if (f) option.disabled = !f.channels.includes(channel.value) || !!f.valid_until && Date.parse(f.valid_until) <= Date.now();
+      const f = b.fonts.find((v: any) => v.key === option.value); if (f) option.disabled = (["vector", "presentation"].includes(preview.kind) && !f.editable_supported) || !f.channels.includes(channel.value) || !!f.valid_until && Date.parse(f.valid_until) <= Date.now();
     } };
     for (const e of [channel, locale, ...controls.map(c => c.field), ...palette.map((c: any) => c.field)]) e.onchange = () => { resetReview(); updateFonts(); update(); };
     updateFonts(); update();
