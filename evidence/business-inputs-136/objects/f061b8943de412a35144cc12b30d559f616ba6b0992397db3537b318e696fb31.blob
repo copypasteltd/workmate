@@ -1,0 +1,1228 @@
+{
+  "source": "docs/contracts/openapi.json",
+  "source_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
+  "schemas": {
+    "TaskCreate": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "agent_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "type": {
+          "$ref": "#/components/schemas/TaskType"
+        },
+        "input": {
+          "type": "object"
+        },
+        "budget": {
+          "$ref": "#/components/schemas/Money"
+        },
+        "device_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "conversation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "source_artifact_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "source_cell_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "agent_group_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "execute",
+            "plan",
+            "ask"
+          ]
+        },
+        "confirmed_plan_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "project_config_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/PreExecutionInput"
+          },
+          "maxItems": 8,
+          "description": "Explicit prerequisites before the first model turn: authorized files, connections or business questions. Paid continuation requires a completed measured native input checkpoint."
+        }
+      },
+      "required": [
+        "project_id",
+        "type",
+        "input",
+        "budget"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "delegation"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/DelegationInput"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "creative_image"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/CreativeInput"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "creative_video"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/VideoInput"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "analysis"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/AnalysisSpec"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "seo"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/SeoInput"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "geo"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/GeoInput"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "workflow"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/WorkflowInput"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "local_file"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "input": {
+                "$ref": "#/components/schemas/LocalInput"
+              }
+            }
+          }
+        }
+      ],
+      "oneOf": [
+        {
+          "required": [
+            "agent_id"
+          ],
+          "not": {
+            "required": [
+              "agent_group_id"
+            ]
+          }
+        },
+        {
+          "required": [
+            "agent_group_id"
+          ],
+          "not": {
+            "required": [
+              "agent_id"
+            ]
+          }
+        }
+      ]
+    },
+    "TaskType": {
+      "type": "string",
+      "enum": [
+        "delegation",
+        "creative_image",
+        "creative_video",
+        "analysis",
+        "seo",
+        "geo",
+        "workflow",
+        "local_file"
+      ]
+    },
+    "Money": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string",
+          "enum": [
+            "HKD"
+          ]
+        },
+        "amount_micros": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "description": "One millionth of currency; decimal integer string."
+        }
+      },
+      "required": [
+        "currency",
+        "amount_micros"
+      ],
+      "additionalProperties": false
+    },
+    "PreExecutionInput": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "file",
+            "connection",
+            "question"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "provider": {
+          "type": "string",
+          "enum": [
+            "google_ads",
+            "ga4",
+            "search_console",
+            "meta"
+          ]
+        },
+        "resource_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          },
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "answer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      },
+      "required": [
+        "kind",
+        "description"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "connection"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "provider"
+            ],
+            "properties": {
+              "resource_ids": {
+                "maxItems": 1
+              }
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "provider"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "question"
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "required": [
+                "resource_ids"
+              ]
+            }
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "options"
+                  ]
+                },
+                {
+                  "required": [
+                    "answer"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "DelegationInput": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "asset_version_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "prompt"
+      ],
+      "additionalProperties": false
+    },
+    "CreativeInput": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "asset_version_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "brand_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "locales": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "zh-HK",
+              "en-HK"
+            ]
+          },
+          "minItems": 1
+        },
+        "sizes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Size"
+          },
+          "minItems": 1
+        },
+        "factual_text": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "prompt",
+        "locales",
+        "sizes"
+      ],
+      "additionalProperties": false
+    },
+    "Size": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16384
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16384
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    },
+    "VideoInput": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "template",
+            "generative"
+          ]
+        },
+        "template_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "asset_version_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "duration_frames": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fps_num": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fps_den": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "locale": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "prompt",
+        "mode",
+        "asset_version_ids",
+        "duration_frames",
+        "fps_num",
+        "fps_den",
+        "locale"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "template"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "template_version_id"
+            ]
+          }
+        }
+      ]
+    },
+    "AnalysisSpec": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "snapshot_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "connection_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "date_from": {
+          "type": "string",
+          "format": "date"
+        },
+        "date_to": {
+          "type": "string",
+          "format": "date"
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1
+        },
+        "currency_policy": {
+          "type": "string",
+          "enum": [
+            "group_by_currency"
+          ]
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "spend",
+              "impressions",
+              "clicks",
+              "conversions",
+              "conversion_value",
+              "ctr",
+              "cpc",
+              "cpm",
+              "cvr",
+              "cpa",
+              "roas"
+            ]
+          },
+          "minItems": 1
+        },
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "account_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "attribution_definition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "comparison": {
+          "type": "object",
+          "properties": {
+            "date_from": {
+              "type": "string",
+              "format": "date"
+            },
+            "date_to": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          "required": [
+            "date_from",
+            "date_to"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "prompt",
+        "date_from",
+        "date_to",
+        "timezone",
+        "currency_policy",
+        "metrics",
+        "dimensions"
+      ],
+      "additionalProperties": false
+    },
+    "SeoInput": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start_urls": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "minItems": 1
+        },
+        "allowed_hosts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "max_pages": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "connection_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "allowed_path_prefixes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^/"
+          },
+          "minItems": 0
+        },
+        "concurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "cache_policy": {
+          "type": "string",
+          "enum": [
+            "reuse_valid",
+            "refresh"
+          ]
+        }
+      },
+      "required": [
+        "prompt",
+        "start_urls",
+        "allowed_hosts",
+        "max_pages"
+      ],
+      "additionalProperties": false
+    },
+    "GeoInput": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "experiment_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "prompt",
+        "experiment_id"
+      ],
+      "additionalProperties": false
+    },
+    "WorkflowInput": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workflow_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "asset_version_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "prompt",
+        "workflow_version_id"
+      ],
+      "additionalProperties": false
+    },
+    "LocalInput": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "grant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "relative_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "operation": {
+          "type": "string",
+          "enum": [
+            "scan",
+            "read",
+            "transform"
+          ]
+        }
+      },
+      "required": [
+        "prompt",
+        "grant_id",
+        "relative_paths",
+        "operation"
+      ],
+      "additionalProperties": false
+    },
+    "TaskAccepted": {
+      "type": "object",
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "status": {
+          "$ref": "#/components/schemas/TaskStatus"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "task_id",
+        "status",
+        "version",
+        "location"
+      ],
+      "additionalProperties": false
+    },
+    "TaskStatus": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "needs_input",
+        "queued",
+        "running",
+        "waiting_approval",
+        "waiting_device",
+        "paused",
+        "cancelling",
+        "succeeded",
+        "partially_succeeded",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "Task": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "project_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "agent_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "type": {
+          "$ref": "#/components/schemas/TaskType"
+        },
+        "status": {
+          "$ref": "#/components/schemas/TaskStatus"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "review_state": {
+          "type": "string",
+          "enum": [
+            "pending_review",
+            "accepted",
+            "changes_requested",
+            "discarded"
+          ]
+        },
+        "artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "confirmed_cost": {
+          "$ref": "#/components/schemas/Money"
+        },
+        "cost_state": {
+          "type": "string",
+          "enum": [
+            "estimated",
+            "confirmed",
+            "reconciling"
+          ]
+        },
+        "input": {
+          "type": "object"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/TaskStep"
+          },
+          "minItems": 0
+        },
+        "conversation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "pending_input_fields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "agent_group_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "execute",
+            "plan",
+            "ask"
+          ]
+        },
+        "parent_task_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "group_run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "initial_mode": {
+          "type": "string",
+          "enum": [
+            "execute",
+            "plan",
+            "ask"
+          ]
+        },
+        "confirmed_plan_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "project_config_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "execution_class": {
+          "type": "string",
+          "enum": [
+            "text",
+            "image",
+            "media"
+          ]
+        },
+        "capacity_wait_reason": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "platform",
+                "tenant",
+                "user",
+                "capability",
+                "tenant_media"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "tenant_id",
+        "project_id",
+        "attempt_id",
+        "type",
+        "status",
+        "version",
+        "last_seq",
+        "created_at",
+        "review_state",
+        "artifact_ids",
+        "confirmed_cost",
+        "cost_state"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": [
+            "agent_id"
+          ],
+          "not": {
+            "required": [
+              "agent_group_id"
+            ]
+          }
+        },
+        {
+          "required": [
+            "agent_group_id"
+          ],
+          "not": {
+            "required": [
+              "agent_id"
+            ]
+          }
+        }
+      ]
+    },
+    "TaskStep": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "running",
+            "waiting",
+            "completed",
+            "failed",
+            "skipped",
+            "cancelled",
+            "unknown"
+          ]
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "error_code": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "key",
+        "state",
+        "attempt_id",
+        "artifact_ids"
+      ],
+      "additionalProperties": false
+    },
+    "TaskList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Task"
+          },
+          "minItems": 0
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "additionalProperties": false
+    },
+    "TaskControl": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "cancel",
+            "pause",
+            "resume",
+            "retry"
+          ]
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "action",
+        "expected_version"
+      ],
+      "additionalProperties": false
+    },
+    "TaskInput": {
+      "type": "object",
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "answers": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 32,
+          "additionalProperties": {
+            "$ref": "#/components/schemas/TaskInputAnswer"
+          }
+        },
+        "asset_version_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "expected_version",
+        "answers"
+      ],
+      "additionalProperties": false
+    },
+    "TaskInputAnswer": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "resource_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "minItems": 1,
+              "maxItems": 20,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "resource_ids"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "answer": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "answer"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}
