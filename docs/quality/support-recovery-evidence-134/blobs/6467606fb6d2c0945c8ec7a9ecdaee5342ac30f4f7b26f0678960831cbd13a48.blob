@@ -1,0 +1,147 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Customer support grant receipt recovery addition",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/v1/support-grants/attempts/{key}": {
+      "get": {
+        "operationId": "recoverSupportGrant",
+        "summary": "Read only the current customer own grant receipt in the selected workspace",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Tenant-ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current state; never re-executes the grant command. Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportGrantRecovery"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Current customer login required"
+          },
+          "403": {
+            "description": "Current workspace Owner/Admin required"
+          },
+          "404": {
+            "description": "Workspace or current membership unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SupportGrant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "active",
+              "revoked",
+              "expired"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "expires_at",
+          "state"
+        ],
+        "additionalProperties": false
+      },
+      "SupportGrantRecovery": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "committed"
+              },
+              "as_of": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "grant": {
+                "$ref": "#/components/schemas/SupportGrant"
+              }
+            },
+            "required": [
+              "state",
+              "as_of",
+              "grant"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "not_found"
+              },
+              "as_of": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "state",
+              "as_of"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "removed"
+              },
+              "as_of": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "state",
+              "as_of"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "x-contract-note": "Explicit additive endpoint. Original docs/contracts/openapi.json and original SupportGrant schemas remain unchanged."
+}

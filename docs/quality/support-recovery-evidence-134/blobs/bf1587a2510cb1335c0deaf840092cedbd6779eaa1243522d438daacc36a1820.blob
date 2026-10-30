@@ -1,0 +1,907 @@
+import { z } from "zod";
+import type { Database, Tx } from "./db.js";
+import type { Catalog } from "./catalog.js";
+import type { Principal } from "./auth.js";
+import { audit } from "./auth.js";
+import { projectAccess, tenantAccess } from "./access.js";
+import { canonical, Problem } from "./lib.js";
+import { assessTemplate } from "./agent-templates.js";
+import { enqueueTask } from "./task-service.js";
+import { assertTaskContentSources } from "./task-content-sources.js";
+import { recordDeliveryReview } from "./business-quality.js";
+import { effectivePlan } from "./plans.js";
+import { desktopSessionFamily } from "./desktop-family.js";
+import type { desktopSolutionBinding } from "./desktop-solutions.js";
+import {
+  solutionCreate,
+  solutionPreview,
+  solutionTrial,
+  solutionReview,
+  solutionDigest,
+  solutionDTO,
+  emptySolutionBindings,
+  type SolutionBindings,
+} from "./solution-model.js";
+
+export const solutionMissing = () =>
+  new Problem(404, "NOT_FOUND", "Solution or authorized target not found");
+const conflict = (code: string, message: string) =>
+  new Problem(409, code, message);
+
+/** Resolve a method's exact template and skill bindings after caller authorization. */
+export async function freezeSolutionDefinition(
+  tx: Tx,
+  definition: z.infer<typeof solutionCreate>,
+  lockCurrentTemplates = false,
+) {
+  const ids = definition.agent_template_ids.length
+    ? definition.agent_template_ids
+    : [
+        (
+          await tx.query(
+            "SELECT id FROM agent_templates WHERE role_key='assistant'",
+          )
+        ).rows[0].id,
+      ];
+  const frozen: any[] = [];
+  for (const id of ids) {
+    const row = (
+      await tx.query(
+        // Customer creation reads an immutable version with its existing SELECT privilege.
+        // The control plane also locks the mutable current-version pointer during confirmation.
+        "SELECT v.*,t.role_key FROM agent_templates t JOIN agent_template_versions v ON v.template_id=t.id AND v.version=t.current_version WHERE t.id=$1" +
+          (lockCurrentTemplates ? " FOR SHARE OF t" : ""),
+        [id],
+      )
+    ).rows[0];
+    if (!row) throw solutionMissing();
+    frozen.push({
+      template_id: id,
+      template_version: row.version,
+      template_version_id: row.id,
+      template_hash: row.definition_hash,
+      role_key: row.role_key,
+      role_hash: row.body.role_hash,
+      runtime_profile_id: row.runtime_profile_id,
+      skill_version_ids: row.body.skill_version_ids,
+      name: row.body.name,
+    });
+  }
+  const allowed = new Set(frozen.flatMap((v) => v.skill_version_ids));
+  if (definition.skill_version_ids.some((id) => !allowed.has(id)))
+    throw new Problem(
+      422,
+      "SOLUTION_SKILL_SCOPE",
+      "Choose only exact methods bound to the selected templates",
+    );
+  return frozen;
+}
+
+export class Solutions {
+  constructor(
+    readonly db: Database,
+    readonly catalog: Catalog,
+  ) {}
+
+  async version(
+    tx: Tx,
+    actor: Principal,
+    tenant: string,
+    id: string,
+    write = false,
+  ) {
+    await tenantAccess(tx, actor, tenant);
+    const row = (
+      await tx.query(
+        "SELECT s.* FROM solution_versions s JOIN projects p ON p.id=s.project_id AND p.tenant_id=s.tenant_id WHERE s.id=$1 AND s.tenant_id=$2 AND NOT p.archived " +
+          (write ? "FOR UPDATE OF s" : "FOR SHARE OF s"),
+        [id, tenant],
+      )
+    ).rows[0];
+    if (!row) throw solutionMissing();
+    if (write || row.state !== "published")
+      await projectAccess(
+        tx,
+        actor,
+        tenant,
+        row.project_id,
+        write ? "manage" : "read",
+      );
+    return row;
+  }
+
+  async create(
+    tx: Tx,
+    actor: Principal,
+    tenant: string,
+    definition: z.infer<typeof solutionCreate>,
+    prior?: any,
+  ) {
+    await projectAccess(tx, actor, tenant, definition.project_id, "manage");
+    if (prior && prior.project_id !== definition.project_id)
+      throw solutionMissing();
+    if (prior)
+      await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
+        "solution-family:" + tenant + ":" + prior.family_id,
+      ]);
+    const frozen = await freezeSolutionDefinition(tx, definition);
+    const row = (
+      await tx.query(
+        `INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *`,
+        [
+          tenant,
+          definition.project_id,
+          prior?.family_id ?? null,
+          prior
+            ? Number(
+                (
+                  await tx.query(
+                    "SELECT max(version)+1 AS n FROM solution_versions WHERE tenant_id=$1 AND family_id=$2",
+                    [tenant, prior.family_id],
+                  )
+                ).rows[0].n,
+              )
+            : 1,
+          definition,
+          JSON.stringify(frozen),
+          solutionDigest({ definition, frozen }),
+          actor.id,
+        ],
+      )
+    ).rows[0];
+    await audit(
+      tx,
+      actor,
+      "solution.create",
+      row.id,
+      "succeeded",
+      { version: row.version, prior_version_id: prior?.id ?? null },
+      tenant,
+    );
+    return solutionDTO(row);
+  }
+
+  async installation(
+    tx: Tx,
+    actor: Principal,
+    tenant: string,
+    id: string,
+    action: "read" | "manage" | "write" = "read",
+  ) {
+    const row = (
+      await tx.query(
+        "SELECT * FROM solution_installations WHERE tenant_id=$1 AND id=$2" +
+          (action === "read" ? "" : " FOR UPDATE"),
+        [tenant, id],
+      )
+    ).rows[0];
+    if (!row) throw solutionMissing();
+    await projectAccess(tx, actor, tenant, row.project_id, action);
+    return row;
+  }
+
+  async assess(
+    tx: Tx,
+    actor: Principal,
+    tenant: string,
+    s: any,
+    input: z.infer<typeof solutionPreview>,
+    executionLocation: "cloud" | "desktop" = "cloud",
+  ) {
+    await projectAccess(tx, actor, tenant, input.project_id, "write");
+    if (s.state === "disabled")
+      throw conflict(
+        "SOLUTION_DISABLED",
+        "This method version has been disabled",
+      );
+    if (s.state !== "published" && s.project_id !== input.project_id)
+      throw solutionMissing();
+    if (input.installation_id) {
+      const i = await this.installation(
+        tx,
+        actor,
+        tenant,
+        input.installation_id,
+        "write",
+      );
+      if (i.solution_version_id !== s.id || i.project_id !== input.project_id)
+        throw solutionMissing();
+      if (canonical(i.bindings) !== canonical(input.bindings))
+        throw conflict(
+          "SOLUTION_BINDINGS_CHANGED",
+          "Save and review the current installation settings",
+        );
+    }
+    const missing: string[] = [],
+      checks: any[] = [],
+      resolved_sources: any[] = [];
+    for (const item of s.frozen) {
+      const row = (
+        await tx.query(
+          "SELECT v.*,t.role_key FROM agent_template_versions v JOIN agent_templates t ON t.id=v.template_id WHERE v.id=$1",
+          [item.template_version_id],
+        )
+      ).rows[0];
+      if (!row || row.definition_hash !== item.template_hash)
+        throw conflict(
+          "SOLUTION_TEMPLATE_CHANGED",
+          "The pinned template is unavailable",
+        );
+      const checked = await assessTemplate(
+        tx,
+        this.db,
+        this.catalog,
+        actor,
+        tenant,
+        row,
+        {
+          project_id: input.project_id,
+          template_version: item.template_version,
+        },
+        executionLocation,
+      );
+      checks.push({
+        template_id: item.template_id,
+        template_version_id: item.template_version_id,
+        role_key: item.role_key,
+        role_hash: item.role_hash,
+        state: checked.state,
+        policy_version: checked.policy_version,
+        resolved_capability_version_ids:
+          checked.resolved_capability_version_ids,
+        missing_required_dependencies: checked.missing_required_dependencies,
+      });
+      missing.push(
+        ...checked.missing_required_dependencies.map(
+          (reason: string) => `template:${item.template_id}:${reason}`,
+        ),
+      );
+    }
+    const bindings = input.bindings;
+    if (
+      bindings.assets.some(
+        (v) => !s.definition.required_assets.includes(v.requirement),
+      ) ||
+      bindings.connectors.some(
+        (v) => !s.definition.required_connectors.includes(v.provider),
+      )
+    )
+      throw new Problem(
+        422,
+        "SOLUTION_UNKNOWN_REQUIREMENT",
+        "Bind only requirements declared by this version",
+      );
+    const assets: any[] = [];
+    for (const requirement of s.definition.required_assets) {
+      const ref = bindings.assets.find((v) => v.requirement === requirement);
+      if (!ref) {
+        missing.push("asset:" + requirement);
+        continue;
+      }
+      const row = (
+        await tx.query(
+          `SELECT v.id,v.sha256,v.version,v.bytes,v.mime_type,a.id AS asset_id,a.name,a.private_owner
+         FROM asset_versions v JOIN assets a ON a.id=v.asset_id WHERE v.id=$1 AND a.tenant_id=$2 AND a.project_id=$3
+         AND (a.private_owner IS NULL OR a.private_owner=$4) AND a.state='active' AND v.erased_at IS NULL
+         AND a.retention_expires_at>clock_timestamp() AND task_asset_version_sources_available(v.id) FOR SHARE OF a NOWAIT`,
+          [ref.asset_version_id, tenant, input.project_id, actor.id],
+        )
+      ).rows[0];
+      if (!row || row.sha256 !== ref.sha256) throw solutionMissing();
+      assets.push({ requirement, ...row });
+    }
+    const connectors: any[] = [];
+    for (const provider of s.definition.required_connectors) {
+      const ref = bindings.connectors.find((v) => v.provider === provider);
+      if (!ref) {
+        missing.push("connector:" + provider);
+        continue;
+      }
+      try {
+        await tx.query("SELECT lock_solution_connectors($1::uuid[],$2,$3)", [
+          [ref.connection_id],
+          tenant,
+          input.project_id,
+        ]);
+      } catch (error) {
+        if ((error as { code?: string }).code === "55P03")
+          throw conflict(
+            "SOLUTION_CONNECTION_BUSY",
+            "The reporting connection is changing; preview again",
+          );
+        throw error;
+      }
+      const row = (
+        await tx.query(
+          `SELECT c.id,c.provider,c.state,p.auth_version,p.version,p.catalog_state,p.account_ids,p.project_ids,p.data_mode,p.configuration_hash
+         FROM connections c JOIN connector_profiles p ON p.connection_id=c.id
+         WHERE c.id=$1 AND c.tenant_id=$2 AND c.project_id=$3`,
+          [ref.connection_id, tenant, input.project_id],
+        )
+      ).rows[0];
+      if (
+        !row ||
+        (row.provider === "meta" ? "meta_ads" : row.provider) !== provider
+      )
+        throw solutionMissing();
+      if (
+        row.state !== "connected" ||
+        row.catalog_state !== "complete" ||
+        row.version !== ref.version ||
+        row.auth_version !== ref.auth_version ||
+        !row.account_ids.includes(ref.account_id) ||
+        !row.project_ids.includes(input.project_id) ||
+        row.configuration_hash === "0".repeat(64) ||
+        row.data_mode !==
+          (this.db.config.DEMO_MODE ? "simulated" : "configured_services")
+      )
+        throw conflict(
+          "SOLUTION_CONNECTION_CHANGED",
+          "Reconnect or select the current authorized reporting account",
+        );
+      const account = (
+        await tx.query(
+          "SELECT body FROM connector_accounts WHERE connection_id=$1 AND auth_version=$2 AND account_id=$3",
+          [row.id, row.auth_version, ref.account_id],
+        )
+      ).rows[0];
+      if (!account?.body.readable || account.body.kind === "manager")
+        throw conflict(
+          "SOLUTION_ACCOUNT_UNREADABLE",
+          "Choose a readable reporting account",
+        );
+      const captured = (
+        await tx.query(
+          `SELECT s.id AS snapshot_id,v.id AS asset_version_id,v.sha256,s.captured_at FROM connector_snapshots s
+         JOIN connector_jobs j ON j.id=s.job_id JOIN asset_versions v ON v.asset_id=s.asset_id AND v.version=s.asset_version
+         JOIN assets a ON a.id=s.asset_id
+         WHERE j.connection_id=$1 AND s.project_id=$2 AND j.connection_auth_version=$3 AND j.binding_version=$4
+          AND j.specification->'accounts' ? $5 AND s.state='complete' AND a.state='active' AND v.erased_at IS NULL
+          AND a.retention_expires_at>clock_timestamp() AND task_asset_version_sources_available(v.id)
+         ORDER BY s.captured_at DESC,s.id DESC LIMIT 1`,
+          [
+            row.id,
+            input.project_id,
+            row.auth_version,
+            row.version,
+            ref.account_id,
+          ],
+        )
+      ).rows[0];
+      if (!captured) missing.push("connector_data:" + provider);
+      else
+        resolved_sources.push({
+          provider,
+          account_id: ref.account_id,
+          snapshot_id: captured.snapshot_id,
+          asset_version_id: captured.asset_version_id,
+          sha256: captured.sha256,
+        });
+      connectors.push({
+        ...ref,
+        account_name: account.body.name,
+        configuration_hash: row.configuration_hash,
+        snapshot: captured ?? null,
+      });
+    }
+    const requiredSkills = [
+      ...new Set(s.frozen.flatMap((f: any) => f.skill_version_ids)),
+    ];
+    for (const id of requiredSkills) {
+      if (
+        !(
+          await tx.query(
+            "SELECT 1 FROM skill_versions WHERE id=$1 AND state='verified'",
+            [id],
+          )
+        ).rowCount
+      )
+        missing.push("skill:" + id);
+    }
+    const snapshot = {
+      solution_version_id: s.id,
+      definition_hash: s.definition_hash,
+      project_id: input.project_id,
+      actor_id: actor.id,
+      installation_id: input.installation_id ?? null,
+      bindings,
+      checks,
+      resolved_sources,
+      missing_requirements: [...new Set(missing)],
+      state: missing.length ? "needs_configuration" : "ready",
+      ...(executionLocation === "desktop"
+        ? { execution_location: "desktop" }
+        : {}),
+    };
+    const plan = await effectivePlan(tx, tenant, actor.id);
+    const active = (
+      await tx.query(
+        "SELECT count(*)::int n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND status IN ('queued','running','paused','awaiting_approval','reconciling','needs_input')",
+        [tenant, actor.id],
+      )
+    ).rows[0].n;
+    return {
+      ...snapshot,
+      preview_hash: solutionDigest(snapshot),
+      template_checks: checks,
+      assets,
+      connectors,
+      definition: s.definition,
+      frozen_templates: s.frozen,
+      required_skill_version_ids: requiredSkills,
+      data_mode: this.db.config.DEMO_MODE ? "simulated" : "configured_services",
+      excluded_from_copy: [
+        "credentials",
+        "connection_accounts",
+        "source_files",
+        "private_memories",
+        "source_conversations",
+        "trial_brief",
+        "trial_results",
+      ],
+      qualification: "customer_review_required",
+      execution_location: executionLocation,
+      task_capacity: {
+        required: s.frozen.length,
+        available: Math.max(0, plan.body.max_active_tasks - active),
+        limit: plan.body.max_active_tasks,
+      },
+    };
+  }
+
+  async installationDTO(
+    tx: Tx,
+    actor: Principal,
+    tenant: string,
+    i: any,
+    s: any,
+  ) {
+    let missing: string[];
+    try {
+      missing = (
+        await this.assess(
+          tx,
+          actor,
+          tenant,
+          s,
+          {
+            project_id: i.project_id,
+            installation_id: i.id,
+            bindings: i.bindings,
+          },
+          (await desktopSessionFamily(tx, actor, false)) ? "desktop" : "cloud",
+        )
+      ).missing_requirements;
+    } catch (error) {
+      if (!(error instanceof Problem)) throw error;
+      missing = [error.code];
+    }
+    return {
+      id: i.id,
+      project_id: i.project_id,
+      solution_version_id: i.solution_version_id,
+      missing_requirements: missing,
+      state: missing.length ? "needs_configuration" : "ready",
+    };
+  }
+
+  async trial(
+    tx: Tx,
+    actor: Principal,
+    tenant: string,
+    s: any,
+    input: z.infer<typeof solutionTrial>,
+    requestKey: string,
+    native?: {
+      family: string;
+      sessions: z.infer<typeof desktopSolutionBinding>[];
+    },
+  ) {
+    if (s.state !== "published")
+      await projectAccess(tx, actor, tenant, s.project_id, "manage");
+    const preview = await this.assess(
+      tx,
+      actor,
+      tenant,
+      s,
+      input,
+      native ? "desktop" : "cloud",
+    );
+    if (preview.state !== "ready")
+      throw new Problem(
+        409,
+        "SOLUTION_REQUIREMENTS_REQUIRED",
+        "Resolve every method dependency before approving paid work",
+        preview,
+      );
+    if (preview.preview_hash !== input.expected_preview_hash)
+      throw conflict(
+        "SOLUTION_PREVIEW_CHANGED",
+        "Review the current method and target bindings again",
+      );
+    const n = s.frozen.length,
+      perTask = Math.floor(input.budget_micros / n);
+    if (perTask < 1000)
+      throw new Problem(
+        422,
+        "SOLUTION_TRIAL_BUDGET",
+        "Allow at least 1000 micro-HKD for each selected role",
+      );
+    // The complete batch is atomic. Do not queue a partial method or evade the
+    // current customer's task allowance by quietly using a different account.
+    await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
+      `task-quota:${tenant}:${actor.id}`,
+    ]);
+    const plan = await effectivePlan(tx, tenant, actor.id);
+    const active = (
+      await tx.query(
+        "SELECT count(*)::int n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND status IN ('queued','running','paused','awaiting_approval','reconciling','needs_input')",
+        [tenant, actor.id],
+      )
+    ).rows[0].n;
+    if (active + n > plan.body.max_active_tasks)
+      throw new Problem(
+        409,
+        "SOLUTION_TRIAL_CAPACITY",
+        "This complete method needs more available task slots; finish current work or ask your workspace administrator",
+        {
+          required: n,
+          available: Math.max(0, plan.body.max_active_tasks - active),
+        },
+      );
+    const run = (
+      await tx.query(
+        `INSERT INTO solution_trials(tenant_id,project_id,solution_version_id,installation_id,private_owner,definition_hash,preview_hash,bindings,budget_micros,resolved_sources,execution_location,native_bindings)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
+        [
+          tenant,
+          input.project_id,
+          s.id,
+          input.installation_id ?? null,
+          actor.id,
+          s.definition_hash,
+          preview.preview_hash,
+          input.bindings,
+          input.budget_micros,
+          JSON.stringify(preview.resolved_sources),
+          native ? "desktop" : "cloud",
+          native ? JSON.stringify(native) : null,
+        ],
+      )
+    ).rows[0];
+    for (let position = 0; position < n; position++) {
+      const item = s.frozen[position];
+      const binding = {
+        trial_id: run.id,
+        solution_version_id: s.id,
+        definition_hash: s.definition_hash,
+        template_version_id: item.template_version_id,
+        bindings: input.bindings,
+        resolved_sources: preview.resolved_sources,
+      };
+      const task = await enqueueTask(
+        tx,
+        this.db,
+        this.catalog,
+        actor,
+        tenant,
+        input.project_id,
+        {
+          title: (s.definition.name + " · " + item.name).slice(0, 120),
+          role_key: item.role_key,
+          budget_micros:
+            perTask + (position === 0 ? input.budget_micros % n : 0),
+          mode: "execute",
+          prompt: `Execute this exact reviewed reusable method as ${item.role_key}. Use only authorized project resources. This is one independent role in a reviewed trial; do not create more paid tasks or external writes. Read approved UTF-8 text using solution_source_read with its exact asset_version_id. Use the role's actual exact-version reader for binary files, and connector_read for fixed captured reporting sources. Never invent account facts.\n\nReusable method:\n${s.definition.instructions}\n\nPrivate request (excluded from the published method):\n${input.brief}\n\nApproved fixed inputs:\n${canonical(input.bindings)}\n\nFixed captured reporting sources:\n${canonical(preview.resolved_sources)}`,
+        },
+        requestKey + ":" + position,
+        {
+          role_hash: item.role_hash,
+          solution_trial: binding,
+          execution_location: native ? "desktop" : "cloud",
+        },
+      );
+      if (native) {
+        const session = native.sessions[position];
+        await tx.query(
+          `INSERT INTO desktop_executions(task_id,tenant_id,project_id,actor_id,device_id,local_session_id,native_family_id,workspace_hash,runtime_sha256)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+          [
+            task.id,
+            tenant,
+            input.project_id,
+            actor.id,
+            session.device_id,
+            session.local_session_id,
+            native.family,
+            session.workspace_hash,
+            session.runtime_sha256,
+          ],
+        );
+      }
+      await tx.query(
+        "INSERT INTO solution_trial_tasks(trial_id,tenant_id,task_id,position,template_version_id,private_owner) VALUES($1,$2,$3,$4,$5,$6)",
+        [run.id, tenant, task.id, position, item.template_version_id, actor.id],
+      );
+    }
+    await audit(
+      tx,
+      actor,
+      "solution.trial",
+      run.id,
+      "succeeded",
+      {
+        solution_version_id: s.id,
+        tasks: n,
+        budget_micros: input.budget_micros,
+      },
+      tenant,
+    );
+    return {
+      id: run.id,
+      solution_version_id: s.id,
+      project_id: run.project_id,
+      budget_micros: Number(run.budget_micros),
+      tasks: (
+        await tx.query(
+          "SELECT task_id,position FROM solution_trial_tasks WHERE trial_id=$1 ORDER BY position",
+          [run.id],
+        )
+      ).rows,
+      execution_location: native ? "desktop" : "cloud",
+      ...(native
+        ? {
+            local_sessions: native.sessions.map((v, position) => ({
+              local_session_id: v.local_session_id,
+              position,
+              budget_micros:
+                perTask + (position === 0 ? input.budget_micros % n : 0),
+            })),
+          }
+        : {}),
+      data_mode: this.db.config.DEMO_MODE ? "simulated" : "configured_services",
+    };
+  }
+
+  async trialRows(tx: Tx, actor: Principal, tenant: string, id: string) {
+    const run = (
+      await tx.query(
+        "SELECT * FROM solution_trials WHERE tenant_id=$1 AND id=$2 AND private_owner=$3 FOR UPDATE",
+        [tenant, id, actor.id],
+      )
+    ).rows[0];
+    if (!run) throw solutionMissing();
+    await projectAccess(tx, actor, tenant, run.project_id, "write");
+    const tasks = (
+      await tx.query(
+        "SELECT t.*,st.position FROM solution_trial_tasks st JOIN tasks t ON t.id=st.task_id WHERE st.trial_id=$1 ORDER BY st.position FOR UPDATE OF t",
+        [id],
+      )
+    ).rows;
+    if (!tasks.length) throw solutionMissing();
+    for (const task of tasks) {
+      if (
+        task.private_owner !== actor.id ||
+        task.content_state !== "active" ||
+        task.retention_expires_at <= new Date()
+      )
+        throw solutionMissing();
+      await assertTaskContentSources(tx, task);
+    }
+    return { run, tasks };
+  }
+
+  async trialDTO(tx: Tx, actor: Principal, tenant: string, id: string) {
+    const { run, tasks } = await this.trialRows(tx, actor, tenant, id);
+    const results = [];
+    for (const task of tasks) {
+      const snapshot = (
+        await tx.query(
+          "SELECT business_delivery_snapshot($1) AS body,business_review_state($1) AS review",
+          [task.id],
+        )
+      ).rows[0];
+      results.push({
+        task_id: task.id,
+        role_key: task.role_key,
+        status: task.status,
+        task_version: task.version,
+        output: task.output,
+        error_code: task.error_code,
+        charged_micros: Number(task.charged_micros),
+        delivery: snapshot.body,
+        delivery_hash: solutionDigest(snapshot.body),
+        review_state: snapshot.review,
+      });
+    }
+    const readVersions = (
+      await tx.query(
+        "SELECT DISTINCT r.asset_version_id,r.sha256 FROM solution_content_reads r JOIN solution_trial_tasks st ON st.task_id=r.task_id WHERE st.trial_id=$1",
+        [id],
+      )
+    ).rows;
+    const requiredVersions = [...run.bindings.assets, ...run.resolved_sources];
+    return {
+      id,
+      solution_version_id: run.solution_version_id,
+      project_id: run.project_id,
+      budget_micros: Number(run.budget_micros),
+      reviewed: !!run.reviewed_at,
+      ...(run.execution_location === "desktop"
+        ? { execution_location: "desktop" }
+        : {}),
+      tasks: results,
+      unread_required_sources: requiredVersions
+        .filter(
+          (v: any) =>
+            !readVersions.some(
+              (read) =>
+                read.asset_version_id === v.asset_version_id &&
+                read.sha256 === v.sha256,
+            ),
+        )
+        .map((v: any) => v.asset_version_id),
+      validation_task_id: tasks[0].id,
+      data_mode: this.db.config.DEMO_MODE ? "simulated" : "configured_services",
+    };
+  }
+
+  async review(
+    tx: Tx,
+    actor: Principal,
+    tenant: string,
+    id: string,
+    input: z.infer<typeof solutionReview>,
+  ) {
+    const { run, tasks } = await this.trialRows(tx, actor, tenant, id);
+    await projectAccess(tx, actor, tenant, run.project_id, "approve");
+    if (run.reviewed_at)
+      throw conflict(
+        "SOLUTION_TRIAL_REVIEWED",
+        "This trial already has a fixed acceptance record",
+      );
+    if (input.tasks.length !== tasks.length)
+      throw conflict(
+        "SOLUTION_TRIAL_INCOMPLETE",
+        "Review the actual delivery from every selected role",
+      );
+    if (
+      (await this.trialDTO(tx, actor, tenant, id)).unread_required_sources
+        .length
+    )
+      throw conflict(
+        "SOLUTION_INPUT_NOT_READ",
+        "A required source was not read by any role in this trial; run a new trial with the required evidence",
+      );
+    const hashes = [];
+    for (const task of tasks) {
+      const selected = input.tasks.find((v) => v.task_id === task.id);
+      if (!selected)
+        throw conflict(
+          "SOLUTION_TRIAL_INCOMPLETE",
+          "Review the actual delivery from every selected role",
+        );
+      await recordDeliveryReview(tx, actor, task, {
+        ...selected,
+        decision: "accepted",
+        comment: input.comment,
+      });
+      hashes.push({
+        task_id: task.id,
+        delivery_hash: selected.expected_delivery_hash,
+      });
+    }
+    await tx.query(
+      "UPDATE solution_trials SET reviewed_at=clock_timestamp(),review_hashes=$2 WHERE id=$1",
+      [id, JSON.stringify(hashes)],
+    );
+    await audit(
+      tx,
+      actor,
+      "solution.trial.review",
+      id,
+      "succeeded",
+      { tasks: tasks.length },
+      tenant,
+    );
+    return this.trialDTO(tx, actor, tenant, id);
+  }
+
+  async publish(
+    tx: Tx,
+    actor: Principal,
+    tenant: string,
+    s: any,
+    expected: number,
+    taskId: string,
+  ) {
+    await projectAccess(tx, actor, tenant, s.project_id, "manage");
+    if (s.version !== expected || s.state !== "draft")
+      throw conflict(
+        "SOLUTION_VERSION_CONFLICT",
+        "Publish only the currently reviewed draft version",
+      );
+    const link = (
+      await tx.query(
+        "SELECT trial_id FROM solution_trial_tasks WHERE tenant_id=$1 AND task_id=$2 AND private_owner=$3",
+        [tenant, taskId, actor.id],
+      )
+    ).rows[0];
+    if (!link)
+      throw conflict(
+        "SOLUTION_VALIDATION_REQUIRED",
+        "Use a completed, accepted trial for this exact method",
+      );
+    const { run, tasks } = await this.trialRows(
+      tx,
+      actor,
+      tenant,
+      link.trial_id,
+    );
+    if (
+      run.solution_version_id !== s.id ||
+      run.definition_hash !== s.definition_hash ||
+      !run.reviewed_at ||
+      run.project_id !== s.project_id ||
+      tasks.length !== s.frozen.length
+    )
+      throw conflict(
+        "SOLUTION_VALIDATION_REQUIRED",
+        "Use a completed, accepted trial for this exact method",
+      );
+    const checked = await this.assess(
+      tx,
+      actor,
+      tenant,
+      s,
+      {
+        project_id: run.project_id,
+        bindings: run.bindings,
+      },
+      run.execution_location,
+    );
+    if (checked.state !== "ready")
+      throw conflict(
+        "SOLUTION_DEPENDENCY_CHANGED",
+        "A pinned method dependency is unavailable",
+      );
+    for (const task of tasks) {
+      const state = (
+        await tx.query(
+          "SELECT business_review_state($1) AS review,business_delivery_snapshot($1) AS delivery",
+          [task.id],
+        )
+      ).rows[0];
+      if (
+        task.status !== "succeeded" ||
+        state.review !== "accepted" ||
+        !run.review_hashes.some(
+          (v: any) =>
+            v.task_id === task.id &&
+            v.delivery_hash === solutionDigest(state.delivery),
+        )
+      )
+        throw conflict(
+          "SOLUTION_VALIDATION_STALE",
+          "A trial delivery or its acceptance changed; run and review a new trial",
+        );
+    }
+    const updated = (
+      await tx.query(
+        "UPDATE solution_versions SET state='published',published_at=clock_timestamp(),validation_task_id=$2 WHERE id=$1 RETURNING *",
+        [s.id, taskId],
+      )
+    ).rows[0];
+    await audit(
+      tx,
+      actor,
+      "solution.publish",
+      s.id,
+      "succeeded",
+      { version: s.version, trial_id: run.id, data_mode: tasks[0].data_mode },
+      tenant,
+    );
+    return solutionDTO(updated);
+  }
+}

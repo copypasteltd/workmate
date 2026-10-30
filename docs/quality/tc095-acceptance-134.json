@@ -1,0 +1,189 @@
+{
+  "at": "2026-10-30T03:16:53.657026+00:00",
+  "requirement": "REQ-095",
+  "test_case": "TC-095",
+  "status": "accepted_original_scope",
+  "criteria": [
+    {
+      "id": "095-01",
+      "condition": "客服默认元数据；正文需独立权限及有效客户授权",
+      "status": "passed",
+      "backend_tap": {
+        "path": "dev/copypaste-delivery/evidence/support-recovery-134/backend-01.tap",
+        "sha256": "c92da4323862fd61fd00f5d864508c6e36eb3bf2a985404c7b6f7be1772a678a",
+        "line": 422,
+        "passing_case": "ok 18 - body requires both a current explicit grant and independent body permission; private task bodies remain unavailable"
+      }
+    },
+    {
+      "id": "095-02",
+      "condition": "只读明确获准的用户、企业和项目",
+      "status": "passed",
+      "backend_tap": {
+        "path": "dev/copypaste-delivery/evidence/support-recovery-134/backend-01.tap",
+        "sha256": "c92da4323862fd61fd00f5d864508c6e36eb3bf2a985404c7b6f7be1772a678a",
+        "line": 437,
+        "passing_case": "ok 21 - scope is explicit: empty selection never includes projects, foreign projects and target users are refused"
+      }
+    },
+    {
+      "id": "095-03",
+      "condition": "实际管理员、客户、范围与只读提示持续显示",
+      "status": "passed",
+      "backend_tap": {
+        "path": "dev/copypaste-delivery/evidence/support-recovery-134/backend-01.tap",
+        "sha256": "c92da4323862fd61fd00f5d864508c6e36eb3bf2a985404c7b6f7be1772a678a",
+        "line": 412,
+        "passing_case": "ok 16 - canonical grant/session/list/operation use original strict schemas and preserve the real administrator"
+      }
+    },
+    {
+      "id": "095-04",
+      "condition": "写入拒绝",
+      "status": "passed",
+      "backend_tap": {
+        "path": "dev/copypaste-delivery/evidence/support-recovery-134/backend-01.tap",
+        "sha256": "c92da4323862fd61fd00f5d864508c6e36eb3bf2a985404c7b6f7be1772a678a",
+        "line": 417,
+        "passing_case": "ok 17 - customer grant alone never grants body, VIP, billing or impersonation; explicit context refuses every other endpoint"
+      }
+    },
+    {
+      "id": "095-05",
+      "condition": "付款拒绝",
+      "status": "passed",
+      "backend_tap": {
+        "path": "dev/copypaste-delivery/evidence/support-recovery-134/backend-01.tap",
+        "sha256": "c92da4323862fd61fd00f5d864508c6e36eb3bf2a985404c7b6f7be1772a678a",
+        "line": 417,
+        "passing_case": "ok 17 - customer grant alone never grants body, VIP, billing or impersonation; explicit context refuses every other endpoint"
+      }
+    },
+    {
+      "id": "095-06",
+      "condition": "开通VIP拒绝",
+      "status": "passed",
+      "backend_tap": {
+        "path": "dev/copypaste-delivery/evidence/support-recovery-134/backend-01.tap",
+        "sha256": "c92da4323862fd61fd00f5d864508c6e36eb3bf2a985404c7b6f7be1772a678a",
+        "line": 417,
+        "passing_case": "ok 17 - customer grant alone never grants body, VIP, billing or impersonation; explicit context refuses every other endpoint"
+      }
+    },
+    {
+      "id": "095-07",
+      "condition": "客户登录凭证读取拒绝",
+      "status": "passed",
+      "backend_tap": {
+        "path": "dev/copypaste-delivery/evidence/support-recovery-134/backend-01.tap",
+        "sha256": "c92da4323862fd61fd00f5d864508c6e36eb3bf2a985404c7b6f7be1772a678a",
+        "line": 417,
+        "passing_case": "ok 17 - customer grant alone never grants body, VIP, billing or impersonation; explicit context refuses every other endpoint"
+      }
+    },
+    {
+      "id": "095-08",
+      "condition": "无隐身登录或新增客户凭证",
+      "status": "passed",
+      "backend_tap": {
+        "path": "dev/copypaste-delivery/evidence/support-recovery-134/backend-01.tap",
+        "sha256": "c92da4323862fd61fd00f5d864508c6e36eb3bf2a985404c7b6f7be1772a678a",
+        "line": 928,
+        "passing_case": "ok 46 - support diagnostics and body reads create no work, holds, charges, provider requests or customer sessions"
+      }
+    },
+    {
+      "id": "095-09",
+      "condition": "真实时钟到期后立即拒绝，重试不能续期",
+      "status": "passed",
+      "backend_tap": {
+        "path": "dev/copypaste-delivery/evidence/support-recovery-134/backend-01.tap",
+        "sha256": "c92da4323862fd61fd00f5d864508c6e36eb3bf2a985404c7b6f7be1772a678a",
+        "line": 432,
+        "passing_case": "ok 20 - actual clock expiry ends a view without a worker, and an idempotent create cannot extend its deadline"
+      }
+    },
+    {
+      "id": "095-10",
+      "condition": "真实截止、撤销后页面清空",
+      "status": "passed",
+      "backend_tap": {
+        "path": "dev/copypaste-delivery/evidence/support-recovery-134/backend-01.tap",
+        "sha256": "c92da4323862fd61fd00f5d864508c6e36eb3bf2a985404c7b6f7be1772a678a",
+        "line": 427,
+        "passing_case": "ok 19 - revocation is immediate, one-way, audited, durable and idempotent without replaying active authorization"
+      }
+    },
+    {
+      "id": "095-11",
+      "condition": "审计保留真实管理员身份",
+      "status": "passed",
+      "backend_tap": {
+        "path": "dev/copypaste-delivery/evidence/support-recovery-134/backend-01.tap",
+        "sha256": "c92da4323862fd61fd00f5d864508c6e36eb3bf2a985404c7b6f7be1772a678a",
+        "line": 457,
+        "passing_case": "ok 25 - support context denials retain the administrator in the audit and grant lists use tenant-bound cursors"
+      }
+    },
+    {
+      "id": "095-12",
+      "condition": "审计失败关闭且命令整体回滚",
+      "status": "passed",
+      "backend_tap": {
+        "path": "dev/copypaste-delivery/evidence/support-recovery-134/backend-01.tap",
+        "sha256": "c92da4323862fd61fd00f5d864508c6e36eb3bf2a985404c7b6f7be1772a678a",
+        "line": 477,
+        "passing_case": "ok 27 - a failing audit rolls back the support command and no data is returned by a failed view audit"
+      }
+    }
+  ],
+  "basis": [
+    {
+      "path": "docs/requirements/01-srs.md",
+      "sha256": "a9f8ee2f58a373ba2bfc89a957218845a357b5b29f9ef817651fecb880904bcc"
+    },
+    {
+      "path": "docs/quality/01-test-and-acceptance-plan.md",
+      "sha256": "cd863fe8ec896b5551f81fd076241f1d60c9df077bb86ea8f61c153914f1fc2f"
+    }
+  ],
+  "backend": {
+    "path": "dev/copypaste-delivery/evidence/support-recovery-134/backend-01.json",
+    "sha256": "ac54984fae14a987a429d1d234efa1beff43c8738f6ec6c67cb27f30d42c32cb"
+  },
+  "actual_ui_journey": {
+    "path": "dev/copypaste-delivery/evidence/support-recovery-134/ui-04-journey.json",
+    "sha256": "d694e7adb5fff7641eb5be8377514bdab31ade1aa7af1c99aec5c950bceae439"
+  },
+  "ui_observations": [
+    "Administrator completes actual email challenge and TOTP using an independent scoped identity",
+    "Unsigned packaged native Desktop completes real browser OTP and PKCE and opens its own customer support form",
+    "Native HTTP response loss and renderer reload recover the original customer grant without another authorization or deadline extension",
+    "Desktop creates a real customer-owned, explicitly scoped 15-minute grant without granting administrator permissions",
+    "A delayed customer receipt cannot repopulate grants or success notices after an actual in-app workspace switch",
+    "Web response loss and reload retrieve the original committed authorization and exact deadline without persisting the consent reason",
+    "A keyboard-submitted uncommitted request retries the identical key, reason, scope and deadline; a changed intent cannot create another grant",
+    "Web creates and revokes an actual metadata-only grant; an empty project selection never means all projects",
+    "Actual Admin form creates a scoped read-only session with a permanent identity banner and private-task body exclusion",
+    "A delayed real response for task A cannot overwrite task B after the administrator changes selection",
+    "Switching sessions opens the newly selected real view while the previous view response is still held",
+    "Metadata revision polling clears an obsolete body before rereading, and actual HTML-like output remains inert text",
+    "An actual original-file quarantine removes both the opened result and its diagnostic body action",
+    "Actual 375/768/1024/1440 Admin layouts, Chinese dark view, native widths and keyboard form controls pass without Desktop rails or menus",
+    "Support pages retain working keyboard controls and no horizontal overflow at 200 percent text enlargement; native Desktop uses actual webContents zoom without visible rails",
+    "Actual server-clock expiry clears an opened authorized body without a worker or simulated clock",
+    "Native customer revocation is durable and clears the separately authenticated administrator view",
+    "Support reads and customer authorization create no extra tasks, holds, charges, provider calls or customer credentials; bodies stay out of browser storage"
+  ],
+  "original_execution_records_unchanged": true,
+  "qualification": "Current source-bound native PostgreSQL, HTTP, independent email/TOTP administrator and customer OTP/PKCE, actual Web/Admin and unsigned native Desktop. Synthetic business data and no model calls.",
+  "credential_boundary": "The actual journey asserts unchanged user/native sessions, refresh-token rows and native-authorization-code rows before and after support activity; stored bodies/credentials are not used for support impersonation.",
+  "separate_open_requirements": {
+    "REQ-055": "Whole-platform accessibility, screen readers, browser zoom and reduced-motion",
+    "REQ-094": "Whole-platform role/action/field/concurrency matrix",
+    "REQ-039": "Signed installation and remaining native platform qualification",
+    "REQ-060": "Complete source delivery and reproduction acceptance"
+  },
+  "enlargement_methods": "Web/Admin CSS zoom=2; actual native Desktop webContents zoomFactor=2. These do not close whole-platform accessibility.",
+  "policy_clarification": "Explicit revocation, expiry and changed identity/member versions cannot be revived by replay. Temporary project availability may recover for a fresh current-authorized query; cached bodies never reappear automatically."
+}

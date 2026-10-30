@@ -1,0 +1,179 @@
+.cloud-events {
+  padding-block: 26px;
+  border-block: 1px solid var(--line);
+  min-width: 0;
+}
+.cloud-events .section-title {
+  align-items: flex-start;
+  gap: 18px;
+}
+.cloud-events h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-block: 12px;
+}
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 370px), 1fr));
+  gap: 20px;
+}
+.event-card {
+  min-width: 0;
+  padding: 24px;
+  border-top: 3px solid var(--brand, #1f5eff);
+}
+.event-card header,
+.event-history header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+.event-card h3,
+.event-issued h3 {
+  font-size: 24px;
+  margin: 20px 0 16px;
+  overflow-wrap: anywhere;
+}
+.event-type {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--brand, #1f5eff);
+  padding-block: 14px;
+}
+.event-type strong {
+  font-size: 17px;
+  overflow-wrap: anywhere;
+  font-weight: 550;
+}
+.event-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-block: 18px;
+}
+.event-card p,
+.event-facts,
+.event-issued,
+.event-connection,
+.event-history {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.event-pending {
+  border-top-style: dashed;
+}
+.event-empty {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 24px;
+}
+.event-facts dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.event-facts dt {
+  font-size: 12px;
+  color: var(--muted);
+}
+.event-facts dd {
+  font-size: 13px;
+  max-width: 60%;
+  margin: 0;
+  text-align: right;
+}
+.event-facts .muted,
+.event-connection p {
+  font-size: 12px;
+  line-height: 1.8;
+}
+.event-facts li {
+  margin-block: 12px;
+  white-space: pre-wrap;
+}
+.event-facts details,
+.event-connection {
+  border-block-start: 1px solid var(--line);
+  padding-block: 14px;
+}
+.event-facts summary,
+.event-connection summary,
+.event-history summary {
+  cursor: pointer;
+  font-size: 13px;
+}
+.event-digest {
+  font-size: 11px;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+}
+.event-output {
+  white-space: pre-wrap;
+}
+.event-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+.event-editor fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.event-editor input,
+.event-editor select,
+.event-editor textarea,
+.event-issued input,
+.event-issued textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+.event-connection pre,
+.event-history pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-size: 11px;
+  border: 1px solid var(--line);
+  padding: 14px;
+  border-radius: 12px;
+  max-width: 100%;
+}
+.event-history article {
+  padding-block: 20px;
+  border-bottom: 1px solid var(--line);
+}
+.event-history strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  margin-top: 12px;
+}
+@media (max-width: 600px) {
+  .event-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .event-card {
+    padding: 20px;
+  }
+  .event-facts dl > div {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .event-facts dd {
+    text-align: left;
+    max-width: 100%;
+  }
+  .event-card h3,
+  .event-issued h3 {
+    font-size: 22px;
+  }
+}
