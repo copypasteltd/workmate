@@ -1,4 +1,5 @@
 import { prepareBrandProduction } from "./brand-production.js";
+import { readDeliveryRevision } from "./delivery-revisions.js";
 import { publicationTools as buildPublicationTools } from "./publication-tools.js";
 import {
   budgetToolPreview,
@@ -270,7 +271,15 @@ export class TaskBusinessTools {
           false,
           actor.id,
         );
+    const revisionRead = z.object({ offset: z.number().int().min(0).max(100000).default(0),
+      limit: z.number().int().positive().max(16000).default(16000) }).strict();
     const tools: RuntimeContext["tools"] = [
+      {
+        name: "delivery_revision_read",
+        description: "Read the exact original delivery selected by this customer for this revision. Output text is paged by Unicode code points. Returns fixed artifact versions, hashes and the customer's image, time or text anchor. This read grants no other files, tools, writes or budget.",
+        inputSchema: z.toJSONSchema(revisionRead),
+        run: readTool((tx, args) => readDeliveryRevision(tx, t, args.offset, args.limit), revisionRead),
+      },
       {
         name: "effects_catalog",
         description:
@@ -506,6 +515,13 @@ export class TaskBusinessTools {
                 ],
               )
             ).rows,
+            // Native Codex freezes its dynamic tool descriptors in its thread.
+            // Reuse this existing read descriptor so old threads keep their exact
+            // binding, permissions and resume identity. Only bound revisions add
+            // the authorized original source to the result; metadata listing is
+            // not a receipt that any source file bytes were consumed.
+            ...(t.execution_location === "desktop" && t.input_context?.delivery_revision
+              ? { delivery_revision: await readDeliveryRevision(tx, t, 0, 100000) } : {}),
           }),
           z.object({}).strict(),
         ),
@@ -1668,6 +1684,7 @@ export class TaskBusinessTools {
             request_input:
               t.mode === "execute",
             project_assets: role.tool_ids.includes("asset.read"),
+            delivery_revision_read: t.execution_location !== "desktop" && !!t.input_context?.delivery_revision,
             solution_list: role.tool_ids.includes("asset.read"),
             solution_read: role.tool_ids.includes("asset.read"),
             solution_source_read:
@@ -1837,6 +1854,7 @@ export class TaskBusinessTools {
             "solution_read",
             "solution_source_read",
             "asset_text_read",
+            "delivery_revision_read",
             "project_reference_read",
             "cloud_files",
             "cloud_file_read",

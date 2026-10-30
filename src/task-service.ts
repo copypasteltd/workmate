@@ -7,6 +7,7 @@ import { authorizeTaskPlan } from "./plans.js";
 import { reserve } from "./billing.js";
 import { Problem } from "./lib.js";
 import type { WorkContext } from "./persistent-work.js";
+import type { RevisionBinding } from "./delivery-revision-model.js";
 import { freezeTaskSkills } from "./skill-lifecycle.js";
 import { freezeProjectConfiguration } from "./project-configuration.js";
 import {
@@ -41,6 +42,8 @@ export async function enqueueTask(
     conversation?: any;
     billing_account_id?: string;
     content_source_task_id?: string;
+    /** Server-validated fixed delivery and feedback anchor; never generic task input. */
+    delivery_revision?: RevisionBinding;
     execution_location?: "cloud" | "desktop";
     role_hash?: string;
     /** Internal, independently customer-confirmed dedicated computer binding. */
@@ -277,6 +280,8 @@ export async function enqueueTask(
           : (parent?.private_owner ?? null),
         {
           ...(options.context ?? {}),
+          ...((options.delivery_revision ?? parent?.input_context?.delivery_revision)
+            ? { delivery_revision: options.delivery_revision ?? parent.input_context.delivery_revision } : {}),
           ...(options.dedicated_computer ? { dedicated_computer: options.dedicated_computer } : {}),
           ...(options.media_effect
             ? { media_effect: options.media_effect }
@@ -287,8 +292,8 @@ export async function enqueueTask(
           ...(projectConfiguration
             ? { project_configuration: projectConfiguration }
             : {}),
-          ...(options.content_source_task_id
-            ? { plan_source_task_id: options.content_source_task_id }
+          ...((options.content_source_task_id ?? parent?.input_context?.delivery_revision?.source_task_id)
+            ? { plan_source_task_id: options.content_source_task_id ?? parent.input_context.delivery_revision.source_task_id }
             : {}),
         },
         plan,

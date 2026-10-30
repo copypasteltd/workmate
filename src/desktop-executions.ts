@@ -20,6 +20,9 @@ import {
 } from "./lib.js";
 import { validFederation } from "./federation-session.js";
 import { enqueueTask } from "./task-service.js";
+import { revisionSelection } from "./delivery-revision-model.js";
+import { prepareDeliveryRevision } from "./delivery-revisions.js";
+import { deliveryTaskAccess } from "./business-quality.js";
 import { event } from "./tasks.js";
 import { assertTaskSkills } from "./skill-lifecycle.js";
 import { projectConfigurationInstructions } from "./project-configuration.js";
@@ -75,6 +78,7 @@ const createBody = binding
     budget_micros: micros,
     agent_id: uuid.optional(),
     agent_version: z.number().int().positive().optional(),
+    delivery_revision: revisionSelection.optional(),
   })
   .strict()
   .refine(
@@ -721,6 +725,12 @@ export async function registerDesktopExecutions(
               ),
             );
           }
+          const revision = b.delivery_revision ? await (async () => {
+            if (!previous || b.delivery_revision!.source_task_id !== previous.task_id)
+              throw denied("DESKTOP_REVISION_SESSION_CHANGED");
+            const original = await deliveryTaskAccess(tx, req.principal, p.tenant, previous.task_id, p.project);
+            return prepareDeliveryRevision(tx, storage, req.principal, original, b.delivery_revision!, b.prompt);
+          })() : undefined;
           const t = await enqueueTask(
             tx,
             db,
@@ -730,13 +740,15 @@ export async function registerDesktopExecutions(
             p.project,
             {
               title: b.title,
-              prompt: b.prompt,
+              prompt: revision?.prompt ?? b.prompt,
               role_key: b.role_key,
               budget_micros: b.budget_micros,
               ...(previous ? { parent_id: previous.task_id } : {}),
+              ...(revision ? { dependencies: revision.dependencies } : {}),
             },
             key(req),
-            { execution_location: "desktop", ...(context ? { context } : {}) },
+            { execution_location: "desktop", ...(context ? { context } : {}),
+              ...(revision ? { delivery_revision: revision.binding, content_source_task_id: previous.task_id } : {}) },
           );
           const d = (
             await tx.query(

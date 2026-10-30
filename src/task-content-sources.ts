@@ -1,9 +1,10 @@
 import type { Tx } from "./db.js";
 import { Problem } from "./lib.js";
+import { assertDeliveryRevisionSource } from "./delivery-revision-source.js";
 
 /** The scoped definer locks read-only source tables without granting broader
  * update permissions to the application role. */
-export async function assertTaskContentSources(tx: Tx, task: { id: string }) {
+export async function assertTaskContentSources(tx: Tx, task: { id: string; input_context?: any }) {
   await tx.query("SAVEPOINT content_source_locks");
   try {
     if (
@@ -15,6 +16,7 @@ export async function assertTaskContentSources(tx: Tx, task: { id: string }) {
         "TASK_SOURCE_REVOKED",
         "A source used by this result is no longer available",
       );
+    await assertDeliveryRevisionSource(tx, task);
     await tx.query("RELEASE SAVEPOINT content_source_locks");
   } catch (error) {
     await tx.query("ROLLBACK TO SAVEPOINT content_source_locks");
