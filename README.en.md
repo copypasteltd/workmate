@@ -1,3 +1,24 @@
+<!-- business-history-stage144 -->
+## Administrator business histories
+
+Stage144 adds administrator saved-version reading for brands, teams, briefs, schedules and every creative project kind. Ordinary canvas saves now retain immutable versions; new customer brand saves preserve their actor. Current checks: 52 related backend cases and 9 real Admin browser journeys. The capture below is the actual administrator interface shared by this release.
+
+```mermaid
+flowchart LR
+ A[Customer saves] --> B[Immutable saved versions]
+ B --> C[Scoped administrator reader]
+ C --> D[Bounded navigation]
+ E[Authority or source withdrawal] --> F[Clear private body]
+```
+
+![Actual administrator brand history](assets/screenshots/workmate-business-history-144-01-brand-latest-en.png)
+
+![Actual version navigation recording](assets/screenshots/workmate-business-history-144-01-business-version-navigation.gif)
+
+[MP4](assets/screenshots/workmate-business-history-144-01-business-version-navigation.mp4) · [详细方案 / Usage and implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/144-admin-business-content-history.md)
+
+Use Client content → Read content → Newest/Oldest/Next/Previous. Expand a saved record for its exact definition. Reads require both content permissions and current project scope; revoked dependencies redact the body. Earlier unsaved versions are not invented. Desktop keeps customer-local Codex execution and Extension keeps its actual browser Side Panel. Original whole-product acceptance remains open.
+
 <!-- editable-projects-stage143 -->
 
 Vector and presentation workspaces now support exact-source creation, text/page/notes editing, saved history, actual SVG/PNG/PDF/PPTX delivery and portable ZIP restoration. Imported chart values require their own acknowledgement; destination brand review remains explicit. Preview/save operations queue safely, and administrative deletion clears workspace history and physical derived files.
