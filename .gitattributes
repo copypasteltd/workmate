@@ -47,3 +47,9 @@ evidence/support-recovery-134/*.tap -text -whitespace
 # Stage135 executed verifiers, sources and native/browser raw output are immutable.
 evidence/client-errors-135/objects/** -diff -text -whitespace
 evidence/client-errors-135/*.tap -text -whitespace
+
+# Stage137 executable verifiers and their qualified package metadata retain exact bytes.
+scripts/*delivery-package*137* -text whitespace=cr-at-eol
+package.json -text whitespace=cr-at-eol
+evidence/delivery-package-137/objects/** -diff -text -whitespace
+evidence/delivery-package-137/*.tap -text -whitespace
