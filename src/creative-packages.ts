@@ -12,13 +12,15 @@ import { projectAccess, replay, key } from "./access.js";
 import { lockUserAuthorities } from "./user-authority.js";
 import { Storage, saveAssetFile } from "./storage.js";
 import { canonical, hash, Problem, uuid } from "./lib.js";
-import { renderPoster } from "./business.js";
+import { renderPoster, renderProjectPoster, poster } from "./business.js";
+import { brandDefinition, factEligibility } from "./brand-production.js";
+import { describePackageBrand, preparePackageBrand } from "./creative-package-brand.js";
 import { writeDeliveryArchive } from "./delivery-package.js";
 import { createVideoProject } from "./video-projects.js";
 import { videoRendererProfile } from "./video-render.js";
 import { loadVideoFont } from "./video-font.js";
 import { creativePackageLimit, packageManifest, packageSelection, packageRestore, parseCreativeSource,
-  creativeReferences, remapCreativeSource } from "./creative-package-model.js";
+  creativeReferences, remapCreativeSource, packageBrandTarget } from "./creative-package-model.js";
 import { readCreativePackage } from "./creative-package-reader.js";
 
 const scopeSchema = z.object({ tenant: uuid, project: uuid });
@@ -56,6 +58,8 @@ async function selectProject(tx: Tx, principal: Principal, scope: Scope, id: str
     definition = v.definition; renderer_profile = v.renderer_profile;
   }
   definition = parseCreativeSource(p.kind, definition);
+  const brandRequirements = p.kind === "poster" ? await describePackageBrand(tx, storage, scope.project, definition) : undefined;
+  if (brandRequirements) renderer_profile = { renderer: "poster-brand-outlines-1", font_portability: "destination_brand_rebind_required" };
   const files: ArchiveFile[] = [], media: z.infer<typeof packageManifest>["media"] = [];
   const content = (name: string, bytes: Buffer, mime: string) => files.push({ path: name, name, bytes: bytes.length, sha256: hash(bytes), mime_type: mime, content: bytes });
   content("project.json", Buffer.from(JSON.stringify(definition, null, 2) + "\n"), "application/json");
@@ -84,12 +88,28 @@ async function selectProject(tx: Tx, principal: Principal, scope: Scope, id: str
     if (hash(bytes) !== font.sha256) throw new Problem(503, "VIDEO_FONT_INTEGRITY", "The pinned video font changed");
     content("fonts/NotoSansTC-VF.ttf", bytes, "font/ttf"); content("fonts/OFL.txt", await readFile(path.join(directory, "OFL.txt")), "text/plain");
   } else {
-    content("preview.svg", Buffer.from(renderPoster(definition, Object.fromEntries(media.map(m => [m.asset_id + ":" + m.version, m.path])))), "image/svg+xml");
+    const paths = Object.fromEntries(media.map(m => [m.asset_id + ":" + m.version, m.path]));
+    let svg = brandRequirements ? await renderProjectPoster(tx, storage, scope.project, definition) : renderPoster(definition, paths);
+    if (brandRequirements) {
+      // The font renderer must receive actual image bytes. Rebase the verified embedded images only after outlining;
+      // passing unresolved archive-relative paths to that renderer silently drops the images.
+      const replaced = new Set<string>();
+      for (const m of media) {
+        const file = files.find(f => f.path === m.path)!;
+        const bytes = await storage.get(file.storage_key!);
+        if (bytes.length !== file.bytes || hash(bytes) !== file.sha256) throw new Problem(409, "VERSION_CONFLICT", "A preview source changed during export");
+        const uri = "data:image/png;base64," + bytes.toString("base64");
+        if (replaced.has(uri)) continue;
+        if (!svg.includes(uri)) throw new Problem(422, "PACKAGE_PREVIEW_UNSUPPORTED", "The font renderer did not preserve an exact source image");
+        svg = svg.replaceAll(uri, m.path); replaced.add(uri);
+      }
+    }
+    content("preview.svg", Buffer.from(svg), "image/svg+xml");
   }
   const manifest = packageManifest.parse({ schema_version: "copypaste-creative-package-1", kind: p.kind, name: p.name,
-    origin: { project_id: scope.project, creative_id: id, version }, renderer_profile,
+    origin: { project_id: scope.project, creative_id: id, version }, renderer_profile, ...(brandRequirements ? { brand_requirements: brandRequirements } : {}),
     files: files.map(({ path, bytes, sha256 }) => ({ path, bytes, sha256 })), media,
-    limitations: p.kind === "poster" ? ["System fonts can change layout on another host; review the included source-environment preview before production."]
+    limitations: brandRequirements ? ["Choose and review an authorized destination brand version. Fonts, facts and Logos require explicit mappings; unmapped copy and colors stay unchanged. Source brand authority and font files are not imported."] : p.kind === "poster" ? ["System fonts can change layout on another host; review the included source-environment preview before production."]
       : ["Requires a compatible native CopyPaste campaign-cuts renderer; embedded font and source media are verified before restore."] });
   if (files.reduce((n, f) => n + f.bytes, 0) + 1024 ** 2 > creativePackageLimit)
     throw new Problem(413, "CREATIVE_PACKAGE_TOO_LARGE", "This project exceeds the portable package limit of 100 MiB");
@@ -100,6 +120,24 @@ export function registerCreativePackages(app: FastifyInstance, db: Database, sto
   const base = "/v1/tenants/:tenant/projects/:project/creative-project-packages", inFlight = new Set<string>();
   const guard = { preHandler: requireUser(db), config: { rateLimit: { hook: "preHandler" as const, max: 8, timeWindow: "1 minute",
     keyGenerator: (req: FastifyRequest) => req.principal?.id ?? req.ip } } };
+  app.get(base + "/brand-options", { preHandler: requireUser(db) }, async req => {
+    const scope = scopeSchema.parse(req.params), q = z.object({ cursor: uuid.optional() }).strict().parse(req.query);
+    return db.tx(async tx => {
+      await projectAccess(tx, req.principal, scope.tenant, scope.project, "write");
+      if (q.cursor && !(await tx.query("SELECT 1 FROM brand_profile_versions WHERE id=$1 AND project_id=$2 AND erased_at IS NULL", [q.cursor, scope.project])).rowCount)
+        throw new Problem(410, "CURSOR_UNAVAILABLE", "Refresh destination brand versions");
+      const rows = (await tx.query(`SELECT v.*,brand_version_available(v.brand_id,v.version) AS available FROM brand_profile_versions v
+        JOIN brand_profiles b ON b.id=v.brand_id WHERE v.project_id=$1 AND v.erased_at IS NULL AND b.content_state='active'
+        AND v.body->>'schema_version'='2' AND ($2::uuid IS NULL OR v.id>$2) ORDER BY v.id LIMIT 21`, [scope.project, q.cursor ?? null])).rows;
+      return { items: rows.slice(0, 20).map(r => { const b = brandDefinition.parse(r.body); return {
+        id: r.id, brand_id: r.brand_id, version: r.version, name: r.name, sha256: r.sha256, available: r.available,
+        channels: b.channels, locales: b.locales, colors: b.colors,
+        fonts: b.font_bindings.map(f => ({ key: f.key, label: f.label, channels: f.rights.channels, valid_until: f.rights.valid_until })),
+        facts: b.facts.map(f => ({ key: f.key, kind: f.kind, text: f.text, state: factEligibility(f) })),
+        logos: b.logos.map(l => ({ key: l.key, usage: l.usage, min_width: l.min_width, clear_space: l.clear_space })),
+      }; }), next_cursor: rows.length > 20 ? rows[19].id : null };
+    }, scope.tenant);
+  });
   app.get(base + "/requests/:key", { preHandler: requireUser(db) }, async req => {
     const scope = scopeSchema.extend({ key: z.string().regex(/^[\w:-]{16,128}$/) }).parse(req.params);
     return db.tx(async tx => {
@@ -167,8 +205,9 @@ export function registerCreativePackages(app: FastifyInstance, db: Database, sto
     }
     return { asset, ...parsed };
   }
-  for (const action of ["preview", "restore"] as const) app.post(base + "/" + action, guard, async (req, reply) => {
-    const scope = scopeSchema.parse(req.params), body = action === "preview" ? packageSelection.parse(req.body) : packageRestore.parse(req.body);
+  for (const action of ["preview", "brand-preview", "restore"] as const) app.post(base + "/" + action, guard, async (req, reply) => {
+    const scope = scopeSchema.parse(req.params), body = action === "preview" ? packageSelection.parse(req.body)
+      : action === "brand-preview" ? packageSelection.extend({ brand_target: packageBrandTarget }).strict().parse(req.body) : packageRestore.parse(req.body);
     const requestKey = action === "restore" ? key(req) : "";
     if (inFlight.size >= 2 || inFlight.has(req.principal.id)) throw new Problem(429, "CREATIVE_PACKAGE_BUSY", "Another creative package operation is still running");
     inFlight.add(req.principal.id);
@@ -182,20 +221,40 @@ export function registerCreativePackages(app: FastifyInstance, db: Database, sto
           origin: loaded.manifest.origin, preview_hash: loaded.preview_hash, files: loaded.manifest.files, media_count: loaded.manifest.media.length,
           total_bytes: loaded.total_bytes, limitations: loaded.manifest.limitations, target_project_id: scope.project,
           visibility: "project_shared", ai_cost_micros: "0" };
-        if (action === "preview") return preview;
+        if (action === "preview") return { ...preview, ...(loaded.manifest.brand_requirements ? { brand_requirements: loaded.manifest.brand_requirements,
+          brand_design_colors: [...new Set([poster.parse(loaded.definition).background, ...poster.parse(loaded.definition).layers.flatMap(l => l.type === "image" ? [] : [l.color])].map(c => c.toLowerCase()))] } : {}) };
+        if (action === "brand-preview") {
+          if (!loaded.manifest.brand_requirements) throw new Problem(422, "PACKAGE_BRAND_NOT_REQUIRED", "This package has no source brand to rebind");
+          const target = packageBrandTarget.parse((body as any).brand_target), prepared = await preparePackageBrand(tx, storage, scope.project,
+            loaded.definition, loaded.manifest.brand_requirements, target, body.sha256, loaded.preview_hash);
+          return { ...prepared.review, review_hash: prepared.review_hash };
+        }
         const input = packageRestore.parse(body);
         if (input.preview_hash !== loaded.preview_hash) throw new Problem(409, "PACKAGE_PREVIEW_CHANGED", "Review this exact archive before restoring");
         const result = await replay(tx, req.principal.id, `creative.package.restore:${scope.tenant}:${scope.project}`, requestKey, input, async () => {
+          const requirements = loaded.manifest.brand_requirements;
+          if (requirements && (!input.brand_target || !input.brand_review_hash || !input.confirm_brand_review))
+            throw new Problem(422, "PACKAGE_BRAND_REVIEW_REQUIRED", "Choose, map and explicitly review the destination brand before restoring");
+          if (!requirements && (input.brand_target || input.brand_review_hash || input.confirm_brand_review))
+            throw new Problem(422, "PACKAGE_BRAND_NOT_REQUIRED", "This package has no source brand to rebind");
+          const rebound = requirements ? await preparePackageBrand(tx, storage, scope.project, loaded.definition, requirements,
+            input.brand_target!, input.sha256, loaded.preview_hash) : null;
+          if (rebound && rebound.review_hash !== input.brand_review_hash)
+            throw new Problem(409, "PACKAGE_BRAND_REVIEW_CHANGED", "Review the current destination brand mappings before restoring");
           const mapping = new Map<string, { asset_id: string; version: number }>();
+          let imported = 0;
           for (const media of loaded.manifest.media) {
             signal.throwIfAborted(); const member = loaded.members.get(media.path)!;
+            const replacement = rebound?.assetOverrides.get(media.asset_id + ":" + media.version);
+            if (replacement) { mapping.set(media.asset_id + ":" + media.version, replacement); continue; }
             const saved = await saveAssetFile(tx, storage, { tenant: scope.tenant, project: scope.project, user: req.principal.id,
               name: `${input.name}-${path.basename(media.path)}`, mime: media.mime_type, kind: "imported_creative_source",
               file: member.file, size: member.bytes, sha256: member.sha256,
               metadata: { source: "user_uploaded_creative_package", package_sha256: input.sha256, rights_attested_by: req.principal.id } });
             mapping.set(media.asset_id + ":" + media.version, { asset_id: saved.id, version: saved.version.version });
+            imported++;
           }
-          const definition = remapCreativeSource(loaded.manifest.kind, loaded.definition, mapping);
+          const definition = remapCreativeSource(loaded.manifest.kind, rebound?.definition ?? loaded.definition, mapping);
           let project;
           if (loaded.manifest.kind === "video") project = await createVideoProject(tx, db, req.principal, scope.tenant, scope.project,
             { name: input.name, definition: definition as import("./video-project-model.js").VideoDefinition }, loaded.manifest.renderer_profile);
@@ -205,8 +264,10 @@ export function registerCreativePackages(app: FastifyInstance, db: Database, sto
           await selectArchiveAsset(tx, req.principal, scope, body, true);
           await audit(tx, req.principal, "creative.package.restore", project.id, "succeeded", { package_sha256: input.sha256,
             kind: loaded.manifest.kind, source_asset_id: input.asset_id, source_version: input.version, files: loaded.manifest.media.length,
-            visibility: "project_shared", rights_attested_by: req.principal.id, ai_cost_micros: "0" }, scope.tenant);
-          return { ...project, name: input.name, kind: loaded.manifest.kind, imported_assets: mapping.size,
+            visibility: "project_shared", rights_attested_by: req.principal.id, ai_cost_micros: "0",
+            ...(rebound ? { brand_review_hash: rebound.review_hash, target_brand: input.brand_target!.binding, target_sha256: rebound.review.target_sha256 } : {}) }, scope.tenant);
+          return { ...project, name: input.name, kind: loaded.manifest.kind, imported_assets: imported,
+            ...(rebound ? { brand: rebound.review.target_brand, brand_review_hash: rebound.review_hash, reused_brand_assets: rebound.assetOverrides.size } : {}),
             visibility: "project_shared", ai_cost_micros: "0", source_package_sha256: input.sha256 };
         });
         const exists = (await tx.query("SELECT id FROM creative_projects WHERE id=$1 AND project_id=$2 AND created_by=$3 AND content_state='active' AND retention_expires_at>clock_timestamp()",

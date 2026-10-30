@@ -7,6 +7,7 @@ import { pipeline } from "node:stream/promises";
 import { open, type Entry, type ZipFile } from "yauzl";
 import { canonical, hash, Problem } from "./lib.js";
 import { creativePackageLimit, packageManifest, parseCreativeSource, creativeReferences } from "./creative-package-model.js";
+import { validatePackageBrand } from "./creative-package-brand.js";
 
 type Member = { file: string; bytes: number; sha256: string };
 const invalid = () => new Problem(422, "CREATIVE_PACKAGE_INVALID", "This is not a complete supported CopyPaste creative project archive");
@@ -46,6 +47,7 @@ export async function readCreativePackage(archive: string, directory: string, si
     let manifest, definition;
     try { manifest = packageManifest.parse(JSON.parse(await text("manifest.json"))); definition = parseCreativeSource(manifest.kind, JSON.parse(await text("project.json"))); }
     catch (e) { if (e instanceof Problem) throw e; throw invalid(); }
+    validatePackageBrand(manifest.kind, definition, manifest.brand_requirements);
     const declared = new Set<string>();
     for (const member of manifest.files) {
       const actual = members.get(member.path);

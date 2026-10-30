@@ -1,7 +1,6 @@
 import {
   GlobalFonts,
   createCanvas,
-  convertSVGTextToPath,
   type FontKey,
 } from "@napi-rs/canvas";
 import { Resvg } from "@resvg/resvg-js";
@@ -14,6 +13,7 @@ import { zipSync, unzipSync, type Zippable } from "fflate";
 import { XMLValidator } from "fast-xml-parser";
 import { loadVideoFont } from "./video-font.js";
 import { canonical, csvCell, hash, Problem } from "./lib.js";
+import { outlineCanvasText } from "./brand-font.js";
 import {
   editableDesignSchema,
   type DesignScene,
@@ -501,7 +501,7 @@ export async function renderEditableDesign(
       for (const l of scene.layers)
         if (l.kind === "text") lines.set(l.id, wrap(l, families[l.weight]));
       const svg = pageSVG(scene, lines, families, resources);
-      const outlined = convertSVGTextToPath(svg).toString("utf8");
+      const outlined = outlineCanvasText(svg);
       const png = Buffer.from(
         new Resvg(outlined, { font: { loadSystemFonts: false } })
           .render()

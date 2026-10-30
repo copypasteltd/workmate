@@ -2,7 +2,7 @@
   "schema_version": 1,
   "baseline": "implemented-routes.json",
   "baseline_lf_sha256": "4cfe133903ad3e046a697453a3aefbf498de83dbaede3085b4224057297146e0",
-  "scope": "Explicit client content, private cloud schedule, authenticated preview and persistent Admin data-job additions. Exact registered-route equality remains mandatory.",
+  "scope": "Explicit client, support, delivery, native-team, project-recovery, publication and Admin operations, including current additions through stage142. Exact actual registered-route equality remains mandatory; the immutable baseline is unchanged.",
   "routes": [
     {
       "method": "GET",
@@ -103,6 +103,222 @@
     {
       "method": "GET",
       "path": "/v1/admin/data-jobs/:id/download"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/tasks/:task/delivery-package"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/tasks/:task/revision-context"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/tasks/:task/revision-preview/:version"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/tasks/:task/revisions"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/agent-groups/:group/native/preflight"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/agent-groups/:group/native/runs"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/agent-groups/:group/native/runs"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/agent-groups/:group/native/runs/:run"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/agent-groups/:group/native/runs/:run/delivery"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/agent-groups/:group/native/runs/:run/download"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/agent-groups/:group/native/runs/:run/advance"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/agent-groups/:group/native/runs/:run/cancel"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/support-grants/attempts/:key"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/creative-project-packages/brand-options"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/creative-project-packages/requests/:key"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/creative-project-packages"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/creative-project-packages/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/creative-project-packages/preview"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/creative-project-packages/brand-preview"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/creative-project-packages/restore"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/content/:kind/:id/history"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/settings"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/connections"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/connections/authorize"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/publication/callback"
+    },
+    {
+      "method": "PUT",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/connections/:id/scope"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/connections/:id/disconnect"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/policy"
+    },
+    {
+      "method": "PUT",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/policy/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/previews"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/operations"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/operations/:id/decision"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/operations/:id/cancel"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/operations/:id/observe"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/operations/:id/close-unknown"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/operations"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/operations/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/requests/:requestKey"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/previews/:id/media/:ordinal"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/previews/:id/media/:ordinal/info"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/operations/:id/media/:ordinal"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/publications/operations/:id/media/:ordinal/info"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/publication-media/:opaque"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/publications/operations"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/tenants/:tenant/projects/:project/publications/connections"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/tenants/:tenant/projects/:project/publications/policy"
+    },
+    {
+      "method": "PUT",
+      "path": "/v1/admin/tenants/:tenant/projects/:project/publications/policy/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/tenants/:tenant/projects/:project/publications/operations/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/tenants/:tenant/projects/:project/publications/operations/:id/media/:ordinal"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/tenants/:tenant/projects/:project/publications/operations/:id/media/:ordinal/info"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/tenants/:tenant/projects/:project/publications/requests/:requestKey"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/tenants/:tenant/projects/:project/publications/operations/:id/observe"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/tenants/:tenant/projects/:project/publications/operations/:id/cancel"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/tenants/:tenant/projects/:project/publications/operations/:id/close-unknown"
     }
   ],
   "conditional_routes": []
