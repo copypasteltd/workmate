@@ -2,6 +2,7 @@ import { ConversationState, unfinished, type ChatIO, type ChatScope } from "./co
 import { exactHKD } from "./financial-notice.js";
 import { FolderTransfer } from "./folder-transfer.js";
 import { folderBytes } from "./folder-import.js";
+import { businessQuestion } from "./business-question.js";
 
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 /** A local side-panel view over authenticated cloud conversations. */
@@ -12,6 +13,8 @@ export class ChatPanel {
   private followLatest = true;
   private resize?: ResizeObserver;
   private language: () => string;
+  private questionDrafts = new Map<string, string>();
+  private questionScope = "";
   private tr(zh: string, en: string) { return this.language() === "en" ? en : zh; }
   constructor(io: Omit<ChatIO, "changed">, language: () => string, private report: (e: unknown) => void,
     private capture: () => Promise<{ title: string; url: string; text: string }>, private details: (id: string) => Promise<void>) {
@@ -68,7 +71,7 @@ export class ChatPanel {
     const scope = this.state.scope;
     try { await fn(); } catch (e) { if (scope === this.state.scope) this.report(e); }
   }
-  reset() { this.dispose(); this.folder.cancel(); this.state.reset(); }
+  reset() { this.dispose(); this.folder.cancel(); this.questionDrafts.clear(); this.questionScope = ""; this.state.reset(); }
   dispose() { if (this.interval) clearInterval(this.interval); this.interval = undefined; }
   async open(scope: ChatScope) {
     this.dispose(); this.followLatest = true; await this.state.open(scope);
@@ -155,7 +158,9 @@ export class ChatPanel {
       remove.addEventListener("click", () => s.removeAttachment(a.id)); chip.append(label, meta, remove); attachments.append(chip);
     }
     const feed = el("chat-messages"), atEnd = this.followLatest || feed.scrollHeight - feed.scrollTop - feed.clientHeight < 80;
-    const signature = JSON.stringify([c?.messages, s.progress, s.loading, s.unavailable, this.language()]);
+    const questionScope = JSON.stringify([s.scope, c?.id]);
+    if (questionScope !== this.questionScope || s.unavailable) { this.questionScope = questionScope; this.questionDrafts.clear(); }
+    const signature = JSON.stringify([c?.messages, s.progress, s.inputRequests, s.loading, s.unavailable, this.language()]);
     if (feed.dataset.signature !== signature) {
       feed.dataset.signature = signature; feed.replaceChildren();
       if (!c?.messages?.length && !s.loading && !s.unavailable) {
@@ -177,6 +182,13 @@ export class ChatPanel {
         const text = progress.events.filter(e => e.kind === "message.delta").map(e => e.body?.text ?? "").join("");
         const content = document.createElement("div"); content.className = "chat-message-body"; content.textContent = text || t("助手正在處理…", "Your assistant is working…");
         const phase = document.createElement("small"); const last = progress.events.at(-1); phase.textContent = task.status + (last?.kind ? " · " + last.kind : ""); live.append(content, phase); feed.append(live);
+      }
+      if (!s.unavailable) for (const d of s.inputRequests.filter(d => d.kind === "question")) {
+        const key = d.id + ":" + d.version;
+        feed.append(businessQuestion(d, { draft: this.questionDrafts.get(key) ?? "", language: this.language(),
+          changed: answer => this.questionDrafts.set(key, answer),
+          confirmed: async answer => { await s.answerInput(d.id, d.version, answer); if (questionScope === this.questionScope) this.questionDrafts.delete(key); },
+        }));
       }
       if (atEnd) feed.scrollTop = feed.scrollHeight;
     }

@@ -1,5 +1,6 @@
 import { clientFailureMessage, connectionFailure } from "./client-failure.js";
 import { ChatPanel } from "./chat-panel.js";
+import { businessQuestion } from "./business-question.js";
 import { ClientContent } from "./client-content.js";
 import { mountDeliveryQuality } from "./delivery-quality.js";
 import { mountGeneratedVideos } from "./generated-videos.js";
@@ -990,6 +991,14 @@ async function drawTask(t: any) {
     endpoint === base() &&
     task === t.id;
   for (const d of data.items) {
+    if (d.kind === "question") {
+      area.append(businessQuestion(d, { draft: "", language: locale, changed: () => {}, confirmed: async answer => {
+        if (!live()) return;
+        await request(`/v1/tenants/${tenant}/task-dependencies/${d.id}/resolutions`, "POST", { expected_version: d.version, answer });
+        if (live()) { dependencyFingerprint = ""; await openTask(t.id); await tasks(); await chat.state.refresh(); }
+      } }));
+      continue;
+    }
     const row = document.createElement("section");
     row.className = "input-request";
     row.dataset.dependency = d.id;

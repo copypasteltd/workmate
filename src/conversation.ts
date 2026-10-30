@@ -41,6 +41,7 @@ export class ConversationState {
   loading = false;
   sending = false;
   unavailable = false;
+  inputRequests: any[] = [];
   pending?: Pending;
   creation?: ConversationCreation;
   private creating?: Promise<any>;
@@ -69,6 +70,7 @@ export class ConversationState {
     this.loading = false; this.sending = false; this.unavailable = false; this.pending = undefined;
     this.creation = undefined; this.creating = undefined; this.fileImport = undefined;
     this.activeTask = null; this.events = []; this.cursor = 0; this.poll = undefined;
+    this.inputRequests = [];
     this.notify();
   }
   async open(scope: ChatScope) {
@@ -178,7 +180,7 @@ export class ConversationState {
     if (!this.scope || this.sending || this.pending || this.importing) throw new Error("Resolve the pending message or folder first / 請先確認待發送訊息或資料夾");
     const s = this.scope, g = ++this.generation;
     this.loading = true; this.unavailable = false; this.poll = undefined; this.attachments = []; this.draft = ""; this.activeTask = null; this.events = []; this.cursor = 0;
-    this.conversation = null; this.projectConfiguration = null; this.projectConfigurationTaskId = ""; this.notify();
+    this.conversation = null; this.projectConfiguration = null; this.projectConfigurationTaskId = ""; this.inputRequests = []; this.notify();
     this.creation = undefined; this.creating = undefined;
     try {
       const [c, brief] = await Promise.all([id ? this.io.request(s, chatBase(s) + "/conversations/" + id) : Promise.resolve(null), this.io.request(s, chatBase(s) + "/project-configuration")]);
@@ -289,7 +291,7 @@ export class ConversationState {
       if (this.current(g)) {
         this.unavailable = true; if (this.conversation) this.conversation = { ...this.conversation, messages: [] };
         this.projectConfiguration = null; this.projectConfigurationTaskId = "";
-        this.activeTask = null; this.events = []; this.cursor = 0; this.notify();
+        this.activeTask = null; this.events = []; this.cursor = 0; this.inputRequests = []; this.notify();
       }
       throw e;
     }).finally(() => { if (this.current(g) && this.poll === work) this.poll = undefined; });
@@ -306,7 +308,7 @@ export class ConversationState {
     const c = await this.io.request(s, chatBase(s) + "/conversations/" + id);
     if (!this.current(g) || this.conversation?.id !== id) return;
     const t = c.tasks?.slice().reverse().find((t: any) => unfinished.has(t.status)) ?? c.tasks?.at(-1);
-    let detail = null, events = this.events, cursor = this.cursor;
+    let detail = null, events = this.events, cursor = this.cursor, inputRequests: any[] = [];
     const brief = await this.io.request(s, chatBase(s) + (t ? `/tasks/${t.id}/project-configuration` : "/project-configuration"));
     if (!this.current(g) || this.conversation?.id !== id) return;
     if (t) {
@@ -319,13 +321,28 @@ export class ConversationState {
       if (d.source_unavailable || d.content_state !== "active" || c.messages?.some((m: any) => m.source_unavailable))
         throw new Error("Conversation sources are unavailable / 會話來源暫不可用");
       detail = d; events = same ? [...this.events] : []; cursor = same ? this.cursor : 0;
+      if (d.status === "needs_input") {
+        const requested = await this.io.request(s, chatBase(s) + "/tasks/" + t.id + "/dependencies");
+        if (!this.current(g) || this.conversation?.id !== id) return;
+        inputRequests = requested.items;
+      }
       for (const e of batch.items) {
         if (Number(e.id) > cursor) { events.push(e); cursor = Number(e.id); }
       }
       events = events.slice(-1000);
     }
     this.acceptBrief(brief, t?.id); this.conversation = c; this.activeTask = detail; this.events = events; this.cursor = cursor; this.unavailable = false;
-    this.notify();
+    this.inputRequests = inputRequests; this.notify();
+  }
+  async answerInput(id: string, expectedVersion: number, answer: string) {
+    const s = this.scope, g = this.generation, task = this.activeTask;
+    if (!s || this.unavailable || task?.status !== "needs_input" || !this.inputRequests.some(d => d.id === id && d.kind === "question" && d.state === "pending" && d.version === expectedVersion))
+      throw new Error("Refresh the current input request / 請重新整理目前的資料需求");
+    await this.io.request(s, `/v1/tenants/${s.tenant}/task-dependencies/${id}/resolutions`, "POST", { expected_version: expectedVersion, answer }, crypto.randomUUID());
+    if (!this.current(g) || this.activeTask?.id !== task.id) return;
+    // A poll already in flight may contain the pre-answer snapshot.
+    await this.poll;
+    if (this.current(g) && this.activeTask?.id === task.id) await this.refresh();
   }
   async stop() {
     const s = this.scope, g = this.generation;
