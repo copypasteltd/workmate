@@ -117,7 +117,7 @@ export async function renderProjectPoster(
       if (images[key]) continue;
       const v = (
         await tx.query(
-          "SELECT v.* FROM assets a JOIN asset_versions v ON v.asset_id=a.id WHERE a.id=$1 AND a.project_id=$2 AND a.state='active' AND v.version=$3 AND (a.private_owner IS NULL OR nullif(current_setting('app.task_id',true),'') IS NOT NULL)",
+          "SELECT v.* FROM assets a JOIN asset_versions v ON v.asset_id=a.id WHERE a.id=$1 AND a.project_id=$2 AND a.state='active' AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND analysis_asset_available(a.id) AND matrix_asset_available(a.id) AND video_asset_available(a.id) AND v.version=$3 AND (a.private_owner IS NULL OR nullif(current_setting('app.task_id',true),'') IS NOT NULL) FOR SHARE OF a",
           [layer.asset_id, project, layer.version],
         )
       ).rows[0];
@@ -128,6 +128,8 @@ export async function renderProjectPoster(
           "Choose an authorized project PNG up to 8 MB",
         );
       const bytes = await storage.get(v.storage_key);
+      if (bytes.length !== Number(v.bytes) || hash(bytes) !== v.sha256)
+        throw new Problem(422, "IMAGE_SOURCE_INVALID", "The selected PNG failed its integrity check");
       if (
         bytes.length < 24 ||
         bytes.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a" ||
@@ -220,7 +222,7 @@ export function registerBusiness(
       return {
         items: (
           await tx.query(
-            "SELECT * FROM creative_projects WHERE project_id=$1 AND kind='poster' ORDER BY created_at DESC LIMIT 100",
+            "SELECT * FROM creative_projects WHERE project_id=$1 AND kind='poster' AND content_state='active' AND retention_expires_at>clock_timestamp() ORDER BY created_at DESC LIMIT 100",
             [project],
           )
         ).rows,
@@ -255,7 +257,7 @@ export function registerBusiness(
         await projectAccess(tx, req.principal, tenant, project, "write");
         const r = (
           await tx.query(
-            "UPDATE creative_projects SET name=$3,body=$4,version=version+1 WHERE id=$1 AND project_id=$2 AND version=$5 AND kind='poster' RETURNING *",
+            "UPDATE creative_projects SET name=$3,body=$4,version=version+1 WHERE id=$1 AND project_id=$2 AND version=$5 AND kind='poster' AND content_state='active' AND retention_expires_at>clock_timestamp() RETURNING *",
             [id, project, b.name, b.body, b.version],
           )
         ).rows[0];
@@ -287,7 +289,7 @@ export function registerBusiness(
           async () => {
             const p = (
               await tx.query(
-                "SELECT * FROM creative_projects WHERE id=$1 AND project_id=$2 AND kind='poster'",
+                "SELECT * FROM creative_projects WHERE id=$1 AND project_id=$2 AND kind='poster' AND content_state='active' AND retention_expires_at>clock_timestamp()",
                 [id, project],
               )
             ).rows[0];
