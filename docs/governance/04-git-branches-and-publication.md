@@ -1,5 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- creative-packages-stage140-publication-v2 -->
+阶段140最终发布使用 `docs/tools/prepare_creative_packages_publication_140_v2.py` 和 `docs/tools/publish_creative_packages_publication_140_v2.py --push`，对应 `workmate-publication-140-v2.json`。推送前只读检查发现 V1 审计输出目录仍指向上一阶段；V2 将其改为本轮实际目录。V1 脚本、清单、证明分片及本地准备提交均保持原字节并明确为未发布准备记录。产品源码、三端验收、六组件提交和395418条历史证明身份保持不变；仍按实际阶段139远端基线普通原子更新八个引用。
+
+Final Stage140 publication uses the V2 preparer/publisher and manifest. Read-only review caught V1's old auditor output-directory guard before either auditing or pushing; V2 corrects that directory. Original V1 sources, manifest, proof shard and local preparation commit remain intact and explicitly unpublished. Qualified product sources, real client results, six component commits and all historical identities remain unchanged. Publication still performs an ordinary atomic eight-ref update against the actual Stage139 remote baseline.
+
 <!-- creative-packages-stage140 -->
 阶段140使用 `docs/tools/prepare_creative_packages_publication_140_v1.py` 和 `docs/tools/publish_creative_packages_publication_140_v1.py --push`。当前源码、实际三端工程恢复、双语指南与真实截图／录制由 `creative-packages-checkpoint-140.json` 绑定；原失败尝试和395418条历史证明身份保持原范围。普通原子更新六组件及 docs／main 八个引用，并读取远端提交核对。用户未跟踪文件与 Desktop 根属性保持原字节，不强推。画布和模板影片恢复的增量不代表完整产品验收。
 
