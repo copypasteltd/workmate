@@ -1,0 +1,73 @@
+{
+  "at": "2026-10-30T13:06:20.532Z",
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: backend bootstrap\n\n1 !== 0\n",
+  "commands": [
+    {
+      "name": "delivery compile",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "delivery native boundary cases",
+      "arguments": [
+        "--test",
+        "tests/native-surface-integrity.test.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "result_exit_code": null,
+  "journey": null,
+  "source_manifest": {
+    "path": "evidence/creative-packages-140/ui-03-sources.json",
+    "sha256": "536d0a18d0fa74a01df476184c1e0862991990b0a4368b449ae889cd5c1060d0"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": null,
+  "ports_closed": {
+    "4310": true,
+    "4317": true,
+    "6914": true
+  },
+  "package_directory": "../copypaste-desktop/release/creative-packages-140-03/win-unpacked",
+  "package_files": {},
+  "package_unchanged": false,
+  "fixture_cleanup": {
+    "exit_code": 0,
+    "sha256": "3d542d1a943db704f299b1dcf286790a555022cf87cafafbccc0f52460a3992d",
+    "at": "2026-10-30T13:06:19.445Z",
+    "status": "passed",
+    "scope": "Only this launcher's newly created deferred fixture IDs; historical retained fixtures are untouched",
+    "workers_exited": true,
+    "actual_filesystem_checked": true,
+    "interrupted_owner_recovery": false,
+    "results": []
+  },
+  "raw_log": {
+    "path": "evidence/creative-packages-140/ui-03.tap",
+    "sha256": "f7df5269847c9c0e80fce2811d5078029934e86d1df00bd25910a8dfbabcdc70"
+  },
+  "verifier": {
+    "path": "evidence/creative-packages-140/ui-03-verifier.mjs",
+    "sha256": "4ba6b97bbbdf17d9c7c90fd4adfd0dd57976a210119d2897da3d1053209fe73a"
+  },
+  "model_mode": "Synthetic campaign data; real Web, unsigned frameless packaged Desktop and actual Chrome native right SIDE_PANEL perform verified project restores and deterministic PNG/MP4 rendering. No model request is made."
+}

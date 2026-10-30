@@ -1,5 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- creative-packages-stage140 -->
+阶段140使用 `docs/tools/prepare_creative_packages_publication_140_v1.py` 和 `docs/tools/publish_creative_packages_publication_140_v1.py --push`。当前源码、实际三端工程恢复、双语指南与真实截图／录制由 `creative-packages-checkpoint-140.json` 绑定；原失败尝试和395418条历史证明身份保持原范围。普通原子更新六组件及 docs／main 八个引用，并读取远端提交核对。用户未跟踪文件与 Desktop 根属性保持原字节，不强推。画布和模板影片恢复的增量不代表完整产品验收。
+
+Stage140 binds portable canvas/video restoration, actual three-client journeys, bilingual guides and real captures to the current source checkpoint. Its V1 preparer/publisher retains original failed attempts and all395418 historical proof identities, audits new objects and current README destinations, then performs an ordinary atomic eight-ref push with remote SHA readback. User-owned files and Desktop root attributes remain intact. Full-product acceptance remains open.
+
 <!-- delivery-package-stage137 -->
 阶段137使用`docs/tools/prepare_delivery_package_publication_137_v1.py`及`docs/tools/publish_delivery_package_137_v1.py --push`，对应`docs/quality/workmate-publication-137.json`。绑定固定版本交付包及三端实际下载的当前源码、原失败、双语README、截图和实时GIF／MP4。保留389761条历史证明身份和阶段136实际发布回执；检查新增对象、全部当前／新增提交路径和当前README链接，普通原子更新六组件及docs／main八引用并读取远端SHA。12份用户未跟踪文件和Desktop根属性保持原字节，不强推。旧完整历史扫描保持历史范围，不将下载子流程等同完整产品验收。
 

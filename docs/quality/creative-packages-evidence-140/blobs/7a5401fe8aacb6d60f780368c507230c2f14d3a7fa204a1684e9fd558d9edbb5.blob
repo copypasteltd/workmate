@@ -1,0 +1,100 @@
+{
+  "at": "2026-10-30T13:11:07.772Z",
+  "status": "failed",
+  "error": null,
+  "commands": [
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "current test discovery",
+      "arguments": [
+        "scripts/run-current-tests-owned-v9.mjs",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "portable design/video restore integration",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/creative-packages-140-v5.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "existing video and layered design regressions",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/video-projects.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extension archive download boundary",
+      "arguments": [
+        "--import",
+        "tsx",
+        "--test",
+        "tests/creative-package-download-140-v1.test.ts"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-web renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copypaste-desktop renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/creative-packages-140/backend-05-sources.json",
+    "sha256": "536d0a18d0fa74a01df476184c1e0862991990b0a4368b449ae889cd5c1060d0"
+  },
+  "sources_unchanged": false,
+  "database_shutdown": 0,
+  "port_closed": true,
+  "owned_native_cluster": {
+    "path": ".data/native-qa/b2b4e7a2-6c9c-4e68-96d1-08b56c1af7da"
+  },
+  "raw_log": {
+    "path": "evidence/creative-packages-140/backend-05.tap",
+    "sha256": "909757f05b139a21eef4bfe0eb8b54f62d3d4a6caffbab2ac76c5acfcc9dd1a0"
+  },
+  "verifier": {
+    "path": "evidence/creative-packages-140/backend-05-verifier.mjs",
+    "sha256": "80bbe0126dde8536e870e9db1adeebe91d3dca25110cb13c8b0eb41b31c3a771"
+  },
+  "model_mode": "Synthetic campaign data; real OTP, native PostgreSQL, streaming ZIP verification, new target project imports, actual PNG/MP4 re-rendering and zero AI-call accounting. Actual clients qualified separately."
+}
