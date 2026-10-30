@@ -5,13 +5,16 @@ import { DateText, ErrorNotice, Loading, Modal, useI18n } from "./ui";
 import type { CapabilityAccess } from "./capability-model";
 import "./conversation-history.css";
 
-type HistoryKind = "conversations" | "agents" | "memories";
+export const adminHistoryKinds = ["conversations", "agents", "memories", "brand_profiles", "agent_groups", "project_configurations", "workflow_schedules", "creative_projects"] as const;
+type HistoryKind = typeof adminHistoryKinds[number];
+export const hasAdminHistory = (kind: string): kind is HistoryKind => (adminHistoryKinds as readonly string[]).includes(kind);
 type Message = { id?: string; role?: "user" | "assistant"; intent?: string; body: string | Record<string, any> | null;
   task_id?: string | null; created_at: string; source_unavailable?: boolean;
-  version?: number; origin?: "administrator" | "customer"; definition?: Record<string, any> | null };
+  version?: number; origin?: "administrator" | "customer" | "retained_current" | "system_snapshot";
+  definition?: Record<string, any> | null; series_id?: string; name?: string; sha256?: string };
 type Page = { id: string; name: string; history_revision: string; version: number;
   moderation_version: number; page_size: number; items: Message[];
-  previous_cursor: string | null; next_cursor: string | null };
+  previous_cursor: string | null; next_cursor: string | null; history_scope?: "retained_versions"; content_kind?: string };
 type Position = { edge: "first" | "last" } | { cursor: string };
 const allowed = (access: CapabilityAccess) =>
   ["admin.content.read", "admin.content.body.read"].every(p => access.has(p));
@@ -99,7 +102,10 @@ export function AdminConversationHistory({ id, kind, access, onClose }: {
         : t("從最新版本開始分頁閱讀。每頁最多 50 版，保留原始內容、來源與時間。",
           "Read from the newest version, up to 50 versions per page, with original content, provenance and time.")}</p>
       <ErrorNotice error={error}/>
-      <nav className="conversation-history-navigation" aria-label={t("對話翻頁", "Conversation pages")}>
+      {page?.history_scope === "retained_versions" && <p className="conversation-history-coverage" role="note">{t(
+        "此處顯示實際已保存的版本。早期未保存的內容不會重建；批量設計按作品分組，再按版本排列。",
+        "Only saved versions are shown. Earlier unsaved content is not reconstructed. Batch designs are grouped by work, then by version.")}</p>}
+      <nav className="conversation-history-navigation" aria-label={messages ? t("對話翻頁", "Conversation pages") : t("版本翻頁", "Version pages")}>
         <button className="button secondary" disabled={disabled} onClick={() => void load({edge: "first"})}>{messages ? t("最早訊息", "Earliest") : t("最新版本", "Newest")}</button>
         <button className="button secondary" disabled={disabled || !page?.previous_cursor} onClick={() => page?.previous_cursor && void load({cursor: page.previous_cursor})}><ArrowLeft size={15}/>{t("上一頁", "Previous")}</button>
         <button className="button secondary" disabled={disabled || !page?.next_cursor} onClick={() => page?.next_cursor && void load({cursor: page.next_cursor})}>{t("下一頁", "Next")}<ArrowRight size={15}/></button>
@@ -113,14 +119,19 @@ export function AdminConversationHistory({ id, kind, access, onClose }: {
           : t(`本頁 ${page.items.length} 個版本`, `${page.items.length} versions on this page`)}</p>
         {page.items.length === 0 && <p>{t("目前沒有記錄。", "No records yet.")}</p>}
         <ol className="conversation-history-messages">
-          {page.items.map(item => <li key={item.id ?? item.version} data-message-id={item.id} data-version={item.version}>
+          {page.items.map(item => <li key={item.id ?? `${item.series_id ?? ""}:${item.version}`} data-message-id={item.id} data-version={item.version} data-series-id={item.series_id}>
             <header><strong>{messages ? (item.role === "user" ? t("客戶", "Customer") : t("AI 助手", "AI assistant")) : `v${item.version}`}</strong>
               <span>{messages ? (item.intent === "note" ? t("補充資料", "Note") : item.intent === "delegate" ? t("工作要求", "Work request") : t("工作結果", "Result"))
-                : item.origin === "administrator" ? t("管理員修訂", "Administrator revision") : t("客戶版本", "Customer version")}</span>
+                : item.origin === "administrator" ? t("管理員修訂", "Administrator revision")
+                : item.origin === "retained_current" ? t("遷移時保留的現有版本", "Existing version retained at migration")
+                : item.origin === "system_snapshot" ? t("系統保存的版本", "System snapshot") : t("客戶版本", "Customer version")}</span>
               <DateText value={item.created_at}/></header>
+            {item.name && <p className="conversation-history-version-name">{item.name}</p>}
             <div className="conversation-history-text">{item.source_unavailable
-              ? t("原始來源已不可用，此訊息正文暫不提供。", "The original sources are unavailable; this message body is not available.")
-              : typeof item.body === "object" && item.body !== null ? (item.body.instructions ?? t("此版本未填寫工作說明。", "No instructions in this version.")) : item.body}</div>
+              ? t("原始來源已不可用，此版本正文暫不提供。", "The original sources are unavailable; this version body is not available.")
+              : typeof item.body === "object" && item.body !== null ? (item.body.instructions ?? item.body.title ?? item.body.name
+                ?? t("展開下方資料，閱讀此版本的完整內容。", "Expand the record below to read this saved version.")) : item.body}</div>
+            {item.sha256 && <p className="conversation-history-digest" title={item.sha256}>SHA-256 · {item.sha256}</p>}
             {!messages && (typeof item.body === "object" && item.body !== null || item.definition) && <details>
               <summary>{t("完整版本資料", "Complete version record")}</summary>
               <pre className="conversation-history-text">{JSON.stringify(item.definition ?? item.body, null, 2)}</pre>
