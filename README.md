@@ -1,5 +1,39 @@
 # Workmate · CopyPaste Enterprise Agent · extension
 
+<!-- creative-packages-stage140 -->
+## 工程打包与恢复 · 阶段140
+
+点击工具栏进入Chrome原生右侧栏，再打开「工作、通知与账户 → 工程打包与恢复」。支持100 MiB工程包分片校验上传、清单确认和新项目副本恢复；恢复结果在同一项目的Web/Desktop编辑器继续使用。Agent在云端运行。
+
+导出和恢复不请求AI。上传前先明确确认项目共用，恢复前再确认素材权利；原工程不覆写，中断后核对原请求。当前支持普通分层画布和campaign-cuts影片；画布系统字型差异、品牌重绑、全部格式及跨机器恢复仍待完整验收。
+
+```mermaid
+flowchart LR
+ A[Fixed canvas or video version] --> B[Source JSON and exact media ZIP]
+ B --> C[Explicit project sharing and verified upload]
+ C --> D[Review manifest and rights]
+ D --> E[Restore new project and media IDs]
+ E --> F[Edit layers or timeline]
+ F --> G[Render PNG or MP4 and export again]
+ D --> H[Lost response: check original receipt]
+ H --> E
+```
+
+- [Format, APIs & usage / 格式、接口及使用](https://github.com/copypasteltd/workmate/blob/docs/docs/development/140-creative-project-packages.md)
+- [Actual qualification / 实际验证](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/creative-packages-checkpoint-140.json)
+- [Open acceptance scopes / 未完成验收](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage140.md)
+
+![Actual extension project restoration · synthetic campaign content](https://github.com/copypasteltd/workmate/blob/extension/assets/screenshots/workmate-creative-packages-140-07-native-sidepanel-restore-review-en.png)
+
+- [Actual web interaction .MP4](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-creative-packages-140-07-project-restore.mp4)
+- [Actual web interaction .GIF](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-creative-packages-140-07-project-restore.gif)
+- [Actual desktop interaction .MP4](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-creative-packages-140-07-project-restore.mp4)
+- [Actual desktop interaction .GIF](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-creative-packages-140-07-project-restore.gif)
+- [Actual extension interaction .MP4](https://github.com/copypasteltd/workmate/blob/extension/assets/screenshots/workmate-creative-packages-140-07-project-restore.mp4)
+![Actual extension project restoration interaction](https://github.com/copypasteltd/workmate/blob/extension/assets/screenshots/workmate-creative-packages-140-07-project-restore.gif)
+
+- [Actual extension interaction .GIF](https://github.com/copypasteltd/workmate/blob/extension/assets/screenshots/workmate-creative-packages-140-07-project-restore.gif)
+
 <!-- native-teams-stage139 -->
 ## 本机专家团队 · 阶段139
 

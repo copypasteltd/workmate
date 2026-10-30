@@ -10,6 +10,7 @@ import { mountAudioProductions } from "./audio-production.js";
 import { mountCloudSchedules } from "./cloud-schedules.js";
 import { mountCloudEvents } from "./cloud-events.js";
 import { mountPublications } from "./publications.js";
+import { mountCreativePackages } from "./creative-packages.js";
 import {
   exactHKD,
   financialLabels,
@@ -99,6 +100,7 @@ let generatedVideos: { key: string; dispose: () => void } | undefined;
 let audioProductions: { key: string; dispose: () => void } | undefined;
 let cloudSchedules: { key: string; dispose: () => void } | undefined;
 let publicationWorkspace: { key: string; dispose: () => void } | undefined;
+let creativeWorkspace: { key: string; dispose: () => void } | undefined;
 let startFlow: Promise<void> | null = null;
 class WorkspaceChanged extends Error {}
 const base = () => `/v1/tenants/${tenant}/projects/${project}`;
@@ -1686,6 +1688,7 @@ async function refreshClientContent() {
   await clientContent.refresh({ actor, tenant, project });
 }
 function clearPublications() {
+  creativeWorkspace?.dispose(); creativeWorkspace = undefined;
   publicationWorkspace?.dispose();
   publicationWorkspace = undefined;
 }
@@ -1702,6 +1705,15 @@ function refreshPublications() {
     open: operation => send("OPEN_PUBLICATIONS", { tenant: scopedTenant, project: scopedProject, operation }),
   });
   publicationWorkspace = { key, dispose };
+  const creativeDispose = mountCreativePackages($<HTMLDetailsElement>("creative-package-workspace"), {
+    base: `/v1/tenants/${scopedTenant}/projects/${scopedProject}`, scopeKey: `${actor}:${scopedTenant}:${scopedProject}`, project: scopedProject, tr,
+    live: () => key === [workspaceRevision, actor, tenant, project, locale].join(":"),
+    request: (path, method = "GET", body, requestKey) => send("API", { path, method, body, idempotencyKey: requestKey, tenantId: scopedTenant }),
+    read: async key => (await chrome.storage.session.get(key))[key],
+    write: async (key, value) => { if (key && value === null) await chrome.storage.session.remove(key); else await chrome.storage.session.set({ [key]: value }); },
+    download: p => send("CREATIVE_PACKAGE_DOWNLOAD", { selection: { tenant: scopedTenant, project: scopedProject, ...p } }),
+  });
+  creativeWorkspace = { key, dispose: creativeDispose };
 }
 $("locale").addEventListener(
   "click",

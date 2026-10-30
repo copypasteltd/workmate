@@ -9,6 +9,7 @@ import { exchangeNativeCode } from "./native-code.js";
 import { openPublicationWorkspace } from "./publication-handoff.js";
 import { PrivateChatUploads } from "./chat-upload.js";
 import { startDeliveryDownload } from "./delivery-download.js";
+import { startCreativePackageDownload } from "./creative-package-download.js";
 const privateUploads = new PrivateChatUploads({
   request: (scope, path, method, body, key) => request(path, method, body, key, scope.tenant),
   read: async key => (await chrome.storage.session.get(key))[key],
@@ -252,6 +253,11 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     if (message.type === "LOGIN") return login();
     if (message.type === "LOGOUT") return nativeSession.signOut();
     if (message.type === "DELIVERY_DOWNLOAD") return startDeliveryDownload(message.selection, {
+      apiOrigin: settings.apiOrigin, tokens: getTokens,
+      check: (path, tenant) => request(path, "GET", undefined, undefined, tenant),
+      download: options => chrome.downloads.download(options),
+    });
+    if (message.type === "CREATIVE_PACKAGE_DOWNLOAD") return startCreativePackageDownload(message.selection, {
       apiOrigin: settings.apiOrigin, tokens: getTokens,
       check: (path, tenant) => request(path, "GET", undefined, undefined, tenant),
       download: options => chrome.downloads.download(options),
