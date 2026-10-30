@@ -1,5 +1,11 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- creative-brand-stage142 -->
+阶段142使用`prepare_creative_brand_publication_142_v1.py`和`publish_creative_brand_publication_142_v1.py --push`，以实际阶段141为基线。保留397403条历史证明身份与所有原失败；62项相关检查、真实Web／未签名无边框Desktop／Chrome原生右侧栏旅程、截图及实际录制绑定当前源码。核对增量对象及README链接后普通原子更新八引用并读取远端SHA。用户12份未跟踪文件及Desktop根属性保持原字节；完整验收不扩大结论。
+
+Stage142 preserves397403 historical proof identities and the actual Stage141 receipt. Source-bound brand restore and image-preserving rendering checks plus actual client captures retain original failures. Its ordinary atomic eight-ref publisher audits new objects/current paths/README links, verifies remote SHAs, preserves user files/Desktop attributes and leaves full-product acceptance open.
+
+
 <!-- current-test-entry-stage141 -->
 阶段141仅修正默认测试选择及其检查入口，产品运行时与阶段140真实三端结果保持不变。使用 `prepare_test_discovery_publication_141_v1.py` 和 `publish_test_discovery_publication_141_v1.py --push`，以实际阶段140发布为基线，保留397376条历史证明身份，核对增量对象及当前README链接后普通原子更新八引用。完整需求编号继续使用阶段140清单，不把六项入口检查计作整个平台回归。
 

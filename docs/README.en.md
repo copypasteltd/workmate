@@ -1,3 +1,7 @@
+<!-- brand-reuse-stage142 -->
+
+[品牌工程跨项目复用 / Reviewed destination-brand reuse](development/142-brand-project-reuse.md) · [更新 / Changes](changes/142-brand-project-reuse.md) · [当前完整待项 / Remaining scope](quality/remaining-work-stage142.md)
+
 # Workmate · CopyPaste Enterprise Agent
 
 <!-- current-test-entry-141 -->

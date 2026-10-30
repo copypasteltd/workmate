@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-30T14:43:04.812Z",
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: portable design/video restore integration\n\n1 !== 0\n",
+  "commands": [
+    {
+      "name": "backend build",
+      "arguments": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "backend cloud bootstrap",
+      "arguments": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "current test discovery",
+      "arguments": [
+        "scripts/run-current-tests-owned-v10.mjs",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "portable design/video restore integration",
+      "arguments": [
+        "scripts/run-tests-owned.mjs",
+        "tests/creative-brand-142-v1.test.ts"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "source_manifest": {
+    "path": "evidence/creative-brand-142/backend-02-sources.json",
+    "sha256": "f6973c7441624651298b3e176d0ccb542a9a2fb603a6684fb2f91a5005f0053b"
+  },
+  "sources_unchanged": true,
+  "database_shutdown": 0,
+  "port_closed": true,
+  "owned_native_cluster": {
+    "path": ".data/native-qa/b2b4e7a2-6c9c-4e68-96d1-08b56c1af7da"
+  },
+  "raw_log": {
+    "path": "evidence/creative-brand-142/backend-02.tap",
+    "sha256": "c9fbaf93f73eae5289b5ac489a6f1c13d7899a060c5ed03e79a41fdce7be4da3"
+  },
+  "verifier": {
+    "path": "evidence/creative-brand-142/backend-02-verifier.mjs",
+    "sha256": "62c176b85d09afe618aaa037d0329c541c9ca55903339f40eeb670874f7143e6"
+  },
+  "model_mode": "Synthetic campaign data; real OTP, native PostgreSQL, streaming ZIP verification, new target project imports, actual PNG/MP4 re-rendering and zero AI-call accounting. Actual clients qualified separately."
+}
