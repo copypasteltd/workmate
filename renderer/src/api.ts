@@ -1,11 +1,12 @@
 import { clientFetch, clientJson, connectionFailure } from "./client-failure";
 import { clearDeliveryRevisionDrafts } from "./delivery-revision-state";
+import { clearEditableProjectRequests } from "./editable-project-state";
 export let csrfToken = "";
 let sessionRevision = 0;
 export function endClientSession(broadcast = true) {
   ++sessionRevision;
   csrfToken = "";
-  if (broadcast) clearDeliveryRevisionDrafts();
+  if (broadcast) { clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); }
   window.dispatchEvent(new Event("copypaste:session-ended"));
   if (broadcast)
     localStorage.setItem(
