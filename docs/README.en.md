@@ -1,3 +1,11 @@
+## v0.1.0-rc.3 · 完整冻结交付 / Frozen handoff
+
+[使用与七类分发包 / Usage](releases/v0.1.0-rc.3.md) · [构建/复用核对 / Qualification](quality/release-freeze-checkpoint-161.json) · [方案 / Design](development/161-frozen-patch-release.md) · [完整原编号待验收](quality/remaining-work-stage160.md)
+
+包含160后台修复；外部依赖为获准假数据、Windows未签名，生产验收范围继续跟踪。Includes the Admin patch; synthetic candidate, unsigned Windows, separately tracked production acceptance.
+
+---
+
 ## 160 · Admin總覽數字與目前權限 / Accurate current Admin overview
 
 [需求](requirements/25-admin-overview-accuracy.md) · [方案 / Usage](development/160-admin-overview-accuracy.md) · [實際核對](quality/admin-overview-checkpoint-160.json) · [原編號範圍](quality/remaining-work-stage160.md)
