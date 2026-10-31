@@ -142,6 +142,7 @@ import {
 } from "./api";
 import { authReturnPath } from "./auth-return";
 import { Members } from "./members";
+import { OwnershipTransferNotice } from "./ownership-transfers";
 import { operationKey } from "./operation-key";
 import { useTaskEvents } from "./task-events";
 import {
@@ -876,6 +877,7 @@ function Shell() {
           key={w.me.user.id + ":" + w.tenant + ":" + (location.pathname.replace(/\/+$/, "") === "/app/projects" ? "project-management" : w.project)}
         >
           <ErrorNotice error={w.error} />
+          <OwnershipTransferNotice key={w.me.user.id+":"+w.tenant}/>
           {w.base || ["/app/projects", "/app/members", "/app/devices", "/app/usage", "/app/settings"].includes(location.pathname.replace(/\/+$/, "")) ? (
             <Routes>
               <Route index element={<Workbench />} />

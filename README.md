@@ -1,3 +1,33 @@
+<!-- ownership-transfer-151 -->
+
+**未凍結增量151：企業所有權交接**
+
+owner從「成員與權限」選擇同企業啟用的非owner成員，核對企業全名及責任，發起24小時交接。指定接收方由工作區提示進入收件區親自確認；完成時接收方成為owner、來源方成為admin，原子提交。拒絕/撤銷/過期或授權變更不會提升角色。私人資料、在途任務、付款主體與本機權限不移轉。後台在原成員管理中依當前範圍、MFA及明確拒絕查看/取消，不能代客戶接受；原特權審批繼續適用。
+
+9項定向後端、6組實際三端流程、8步構建及12項本機邊界檢查通過，保留6張真實截圖與3組GIF/MP4；按要求省略廣泛歷史/生產/OS回歸，沒有呼叫AI。完整導出、真實供應方/廣告帳戶、簽名及完整驗收仍待完成。首個凍結v0.1.0-rc.1標籤與五個ZIP保留。
+
+```mermaid
+flowchart LR
+ A[Current workspace owner] --> B[Exact recipient and workspace confirmation]
+ B --> C[Pending for 24 hours]
+ C --> D[Recipient personally accepts]
+ D --> E[Lock current users and memberships]
+ E --> F[Promote recipient and demote former owner atomically]
+ C --> G[Decline / cancel / expire / invalidate]
+ F --> H[Minimal auditable history]
+ G --> H
+```
+
+Actual component journey.
+
+![Actual screen](assets/screenshots/workmate-ownership-transfer-151-01-recipient-accepted-en.png.png)
+
+![Actual interaction](assets/screenshots/workmate-ownership-transfer-151-01-ownership-handover.gif)
+
+[Actual MP4](assets/screenshots/workmate-ownership-transfer-151-01-ownership-handover.mp4)
+
+---
+
 <!-- scope-erasure-150 -->
 
 **未冻结增量150：项目/企业永久清理闭环**

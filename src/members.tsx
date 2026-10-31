@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { OwnershipTransfersPanel } from "./ownership-transfers";
 import { Plus } from "lucide-react";
 import { api, patch, post } from "./api";
 import { completeOperation, operationKey } from "./operation-key";
@@ -20,6 +21,7 @@ import {
 export function Members() {
   const { t } = useI18n(),
     w = useWorkspace();
+  const [transferRecipient,setTransferRecipient]=useState<any>(null);
   const [refresh, setRefresh] = useState(0),
     [open, setOpen] = useState(false),
     [editing, setEditing] = useState<any>(null),
@@ -37,6 +39,7 @@ export function Members() {
     setEditing(null);
     setRemoving(null);
     setInviteAction(null);
+    setTransferRecipient(null);
     setOpen(false);
   }, [w.tenant]);
   const base = `/v1/tenants/${w.tenant}`;
@@ -78,6 +81,7 @@ export function Members() {
             "Contact your workspace owner or administrator to change member and project access.",
           )}
         />
+        <OwnershipTransfersPanel key={w.tenant}/>
         <p className="notice" role="status">
           {t(
             "只有企業所有者與管理員可以管理成員和邀請。",
@@ -103,6 +107,7 @@ export function Members() {
         }
       />
       <ResourceUsage key={w.tenant} tenant={w.tenant} revision={refresh} />
+      <OwnershipTransfersPanel key={w.tenant} recipient={transferRecipient} onClear={()=>setTransferRecipient(null)}/>
       <ErrorNotice error={members.error} />
       {members.loading && !members.data && <Loading />}
       <div className="card table-scroll">
@@ -135,6 +140,7 @@ export function Members() {
                 </td>
                 <td>
                   <div className="row-actions">
+                    {owner && m.user_id!==w.me.user.id && m.role!=="owner" && m.state==="active" && m.management_state!=="suspended" && <button className="text-button" onClick={()=>setTransferRecipient(m)}>{t("交接所有權","Transfer ownership")}</button>}
                     {owner && m.state === "active" && (
                       <button
                         className="text-button"
