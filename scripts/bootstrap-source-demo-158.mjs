@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import {sourceRoot,sourceDatabasePort,assertLocalSourceDemo,prepareSourceDemoRuntime} from "./source-demo-runtime-158.mjs";
+import {assertSourceDemoPortsAvailable} from "./source-demo-port-preflight-162.mjs";
 assert.equal(process.argv.length,2,"Use npm run bootstrap:demo");
 const root=sourceRoot();sourceDatabasePort();await assertLocalSourceDemo(root,{requireEnvironment:false});
+await assertSourceDemoPortsAvailable();
 const runtime=await prepareSourceDemoRuntime(root);
 console.log("Pinned demo runtime verified: Codex "+runtime.version+". Installing locked dependencies and building the six source repositories.");
 // setup-local writes a selected port only on its original exclusive first

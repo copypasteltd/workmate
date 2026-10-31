@@ -1,3 +1,17 @@
+## 162 · 冻结版源码启动补丁
+
+完整rc.3已发布。本轮新增安装前端口检查及有效入门链接；当前分支直接使用，已解压rc.3源码可应用约719KB的精确补丁。先选择数据库端口，再依次运行 `npm run demo:preflight`、`npm run bootstrap:demo`、`npm run demo:check`、`npm run demo`；结束执行 `npm run stop`。六文件补丁及CLI的9项检查通过；保留客户配置、数据和冻结包。
+
+[完整中英步骤](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/v0.1.0-rc.3-onboarding-162.md) · [源码补丁](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.3/workmate-v0.1.0-rc.3-onboarding-162.zip)
+
+下图及GIF沿用158实际首单流程，非本轮新增各原生端验收。
+
+![原有实际首单](assets/screenshots/workmate-source-handoff-158-04-first-task-delivered.png)
+
+![原有实际交互](assets/screenshots/workmate-source-handoff-158-04-first-source-task.gif)
+
+---
+
 ## rc.3 · 发布回执
 
 完整冻结版已上线；GitHub API公开读取及六附件摘要通过。本机访问GitHub网页/下载发生网络超时，原失败和已关闭浏览器的回执保持；本地完整包可用。[最终交付说明](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/v0.1.0-rc.3-publication.md)。本次只新增发布后下载检查工具，冻结标签及包不变。
