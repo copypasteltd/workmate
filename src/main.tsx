@@ -26,6 +26,8 @@ import { AdminSupport } from "./support";
 import { AdminVip, VipCommandModal } from "./vip";
 import {
   AdminDirectoryFilters,
+  readDirectoryFilters,
+  writeDirectoryFilters,
   useAdminTenantOptions,
   type DirectoryFilters,
 } from "./directory";
@@ -1032,7 +1034,8 @@ function Section({ section }: { section: string }) {
     navTo = useNavigate(),
     location = useLocation();
   const [cursors, setCursors] = useState<(string | null)[]>([null]);
-  const [filters, setFilters] = useState<DirectoryFilters>({});
+  const filters: DirectoryFilters =
+    section === "users" ? readDirectoryFilters(location.search) : {};
   const [refresh, setRefresh] = useState(0),
     [page, setPage] = useState(1),
     [search, setSearch] = useState(
@@ -1057,7 +1060,6 @@ function Section({ section }: { section: string }) {
   useEffect(() => {
     setPage(1);
     setCursors([null]);
-    setFilters({});
     const query = new URLSearchParams(location.search);
     setSearch(query.get("search") ?? "");
     setSub(
@@ -1330,6 +1332,12 @@ function Section({ section }: { section: string }) {
                 setSearch(e.target.value);
                 setPage(1);
                 setCursors([null]);
+                if (active === "users") {
+                  const query = new URLSearchParams(location.search);
+                  if (e.target.value) query.set("search", e.target.value);
+                  else query.delete("search");
+                  navTo({ search: query.toString() }, { replace: true });
+                }
               }}
             />
           </label>
@@ -1356,13 +1364,17 @@ function Section({ section }: { section: string }) {
       </div>
       {active === "users" && (
         <AdminDirectoryFilters
-          key={section}
+          key={location.search}
+          filters={filters}
           canUsage={a.has("admin.usage.read")}
           canVip={a.has("admin.entitlements.read")}
           onApply={(value) => {
-            setFilters(value);
             setPage(1);
             setCursors([null]);
+            navTo(
+              { search: writeDirectoryFilters(location.search, value) },
+              { replace: true },
+            );
           }}
         />
       )}
@@ -1387,7 +1399,10 @@ function Section({ section }: { section: string }) {
                     {columns[active].map((f, j) => (
                       <td key={f}>
                         {active === "users" && f === "display_name" ? (
-                          <Link className="table-link" to={"/users/" + r.id}>
+                          <Link
+                            className="table-link"
+                            to={"/users/" + r.id + location.search}
+                          >
                             {r.display_name}
                             <ArrowUpRight size={13} />
                           </Link>
@@ -1407,7 +1422,9 @@ function Section({ section }: { section: string }) {
                       <div className="table-actions">
                         {active === "users" ? (
                           <button
-                            onClick={() => navTo("/users/" + r.id)}
+                            onClick={() =>
+                              navTo("/users/" + r.id + location.search)
+                            }
                             aria-label="View user"
                           >
                             <ArrowUpRight size={16} />
@@ -1832,9 +1849,46 @@ function BillingPage() {
     </>
   );
 }
+type AdminDirectoryUser = {
+  id: string;
+  display_name: string;
+  masked_contact: string;
+  contact?: string;
+  state: "active" | "frozen" | "closed";
+  registered_at: string;
+  last_login_at: string | null;
+  confirmed_customer_charges?: unknown;
+};
+type AdminUserMembership = {
+  tenant_id: string;
+  role: string;
+  state: string;
+  tenant_name?: string;
+};
+type AdminUserDetailResponse = {
+  user: AdminDirectoryUser;
+  memberships: AdminUserMembership[];
+  billing_account_ids: string[];
+  effective_entitlements: string[];
+};
+type AdminUserManagementContext = {
+  memberships: {
+    tenant_id: string;
+    name: string;
+    task_count?: number;
+    confirmed_customer_charges?: unknown;
+  }[];
+  personal_entitlements:
+    | { id: string; plan: string; state: string; ends_at: string }[]
+    | null;
+};
+type BillingUserTarget = AdminDirectoryUser & {
+  memberships: AdminUserMembership[];
+};
+
 function BillingModal(props: {
   initial: string;
-  user?: any;
+  user?: BillingUserTarget;
   entitlement?: any;
   onClose: () => void;
   onDone: () => void;
@@ -1873,7 +1927,7 @@ function LegacyBillingModal({
   entitlement?: any;
   onClose: () => void;
   onDone: () => void;
-  user?: any;
+  user?: BillingUserTarget;
 }) {
   const { t } = useI18n(),
     a = useAdmin();
@@ -2106,7 +2160,7 @@ function LegacyBillingModal({
             <Field label="User ID">
               <input
                 name="user_id"
-                defaultValue={user?.user?.id ?? ""}
+                defaultValue={user?.id ?? ""}
                 required
               />
             </Field>
@@ -2205,22 +2259,31 @@ function LegacyBillingModal({
   );
 }
 function UserDetail() {
-  const { id } = useParams(),
-    { t } = useI18n(),
-    a = useAdmin();
+  const { id } = useParams();
+  if (!id) return <Navigate to="/users" replace />;
+  // Changing the user must also discard any open operation and its preview.
+  return <UserDetailContent key={id} id={id} />;
+}
+function UserDetailContent({ id }: { id: string }) {
+  const { t } = useI18n(),
+    a = useAdmin(),
+    location = useLocation();
   const [refresh, setRefresh] = useState(0),
     [edit, setEdit] = useState(false),
     [operation, setOperation] = useState<string | null>(null),
     [membership, setMembership] = useState<string | null>(null);
-  const { data, error, loading } = useData("/v1/admin/users/" + id, refresh);
-  const context = useData(
+  const { data, error, loading } = useData<AdminUserDetailResponse>(
+    "/v1/admin/users/" + id,
+    refresh,
+  );
+  const context = useData<AdminUserManagementContext>(
     "/v1/admin/users/" + id + "/management-context",
     refresh,
   );
   if (loading) return <Loading />;
   return (
     <>
-      <Link to="/users" className="text-link">
+      <Link to={"/users" + location.search} className="text-link">
         <ChevronLeft size={16} />
         {t("返回用戶列表", "Back to users")}
       </Link>
@@ -2315,9 +2378,9 @@ function UserDetail() {
           <section className="section-block">
             <h2>{t("企業歸屬與消耗", "Workspace membership & usage")}</h2>
             <div className="project-grid">
-              {data.memberships.map((m: any) => {
+              {data.memberships.map((m) => {
                 const u = context.data?.memberships.find(
-                  (r: any) => r.tenant_id === m.tenant_id,
+                  (r) => r.tenant_id === m.tenant_id,
                 );
                 return (
                   <article className="card" key={m.tenant_id}>
@@ -2352,7 +2415,7 @@ function UserDetail() {
           <section className="section-block">
             <h2>{t("個人權益", "Personal entitlements")}</h2>
             {context.data?.personal_entitlements?.length ? (
-              context.data.personal_entitlements.map((e: any) => (
+              context.data.personal_entitlements.map((e) => (
                 <div className="version-row" key={e.id}>
                   <Crown size={18} />
                   <strong>{e.plan}</strong>
@@ -2388,12 +2451,12 @@ function UserDetail() {
             <BillingModal
               initial={operation}
               user={{
-                ...data,
-                memberships: data.memberships.map((m: any) => ({
+                ...data.user,
+                memberships: data.memberships.map((m) => ({
                   ...m,
                   tenant_name:
                     context.data?.memberships.find(
-                      (v: any) => v.tenant_id === m.tenant_id,
+                      (v) => v.tenant_id === m.tenant_id,
                     )?.name ?? m.tenant_id,
                 })),
               }}

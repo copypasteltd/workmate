@@ -3,14 +3,52 @@ import { api } from "./api";
 import { ErrorNotice, Field, useI18n } from "./ui";
 
 export type DirectoryFilters = Record<string, string>;
+const directoryFilterKeys = [
+  "user_id",
+  "tenant_id",
+  "project_id",
+  "state",
+  "vip",
+  "limit",
+  "period_from",
+  "period_to",
+] as const;
+export function readDirectoryFilters(search: string): DirectoryFilters {
+  const query = new URLSearchParams(search),
+    filters: DirectoryFilters = {};
+  for (const key of directoryFilterKeys) {
+    const value = query.get(key)?.trim();
+    if (value) filters[key] = value;
+  }
+  return filters;
+}
+export function writeDirectoryFilters(search: string, filters: DirectoryFilters) {
+  const query = new URLSearchParams(search);
+  for (const key of directoryFilterKeys) {
+    query.delete(key);
+    if (filters[key]) query.set(key, filters[key]);
+  }
+  return query.size ? "?" + query.toString() : "";
+}
+function localDateTime(value?: string) {
+  if (!value) return "";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? ""
+    : new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
+        .toISOString()
+        .slice(0, 16);
+}
 export function AdminDirectoryFilters({
   onApply,
   canUsage,
   canVip,
+  filters = {},
 }: {
   onApply: (filters: DirectoryFilters) => void;
   canUsage: boolean;
   canVip: boolean;
+  filters?: DirectoryFilters;
 }) {
   const { t } = useI18n();
   const [error, setError] = useState<Error | null>(null);
@@ -57,13 +95,14 @@ export function AdminDirectoryFilters({
             <Field key={name} label={label}>
               <input
                 name={name}
+                defaultValue={filters[name] ?? ""}
                 pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
                 title="UUID"
               />
             </Field>
           ))}
           <Field label={t("帳戶狀態", "Account state")}>
-            <select name="state">
+            <select name="state" defaultValue={filters.state ?? ""}>
               <option value="">{t("全部狀態", "All states")}</option>
               <option value="active">{t("有效", "Active")}</option>
               <option value="frozen">{t("已凍結", "Frozen")}</option>
@@ -71,7 +110,7 @@ export function AdminDirectoryFilters({
             </select>
           </Field>
           <Field label="VIP">
-            <select name="vip" disabled={!canVip}>
+            <select name="vip" disabled={!canVip} defaultValue={filters.vip ?? ""}>
               <option value="">
                 {t("全部權益狀態", "All entitlement states")}
               </option>
@@ -82,7 +121,7 @@ export function AdminDirectoryFilters({
             </select>
           </Field>
           <Field label={t("每頁筆數", "Page size")}>
-            <select name="limit" defaultValue="50">
+            <select name="limit" defaultValue={filters.limit ?? "50"}>
               <option value="20">20</option>
               <option value="50">50</option>
               <option value="100">100</option>
@@ -92,6 +131,7 @@ export function AdminDirectoryFilters({
             <input
               type="datetime-local"
               name="period_from"
+              defaultValue={localDateTime(filters.period_from)}
               disabled={!canUsage}
             />
           </Field>
@@ -104,6 +144,7 @@ export function AdminDirectoryFilters({
             <input
               type="datetime-local"
               name="period_to"
+              defaultValue={localDateTime(filters.period_to)}
               disabled={!canUsage}
             />
           </Field>
