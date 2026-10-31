@@ -19,7 +19,7 @@ interface WorkspaceState {
   refresh: () => Promise<void>;
   setTenant: (id: string) => void;
   setProject: (id: string) => void;
-  reloadProjects: () => Promise<void>;
+  reloadProjects: (preferredProject?: string) => Promise<void>;
   base: string;
 }
 const Context = createContext<WorkspaceState>(null!);
@@ -32,10 +32,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     [project, setProjectState] = useState(""),
     [projects, setProjects] = useState<any[]>([]);
   const loadRevision = useRef(0);
+  const projectLoadRevision = useRef(0);
   const tenantRef = useRef(tenant);
   tenantRef.current = tenant;
   const clear = useCallback(() => {
     ++loadRevision.current;
+    ++projectLoadRevision.current;
     tenantRef.current = "";
     setMe(null);
     setTenantState("");
@@ -51,6 +53,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("cp_project", id);
   };
   const setTenant = (id: string) => {
+    ++projectLoadRevision.current;
     tenantRef.current = id;
     setProjects([]);
     setProjectState("");
@@ -87,22 +90,24 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       if (revision === loadRevision.current) setLoading(false);
     }
   }, [clear]);
-  const reloadProjects = useCallback(async () => {
+  const reloadProjects = useCallback(async (preferredProject?: string) => {
     if (!tenant) return;
-    const revision = loadRevision.current;
+    const revision = ++projectLoadRevision.current;
     const d = await api(`/v1/tenants/${tenant}/projects`);
-    if (tenantRef.current !== tenant || revision !== loadRevision.current)
+    if (tenantRef.current !== tenant || revision !== projectLoadRevision.current)
       return;
     setProjects(d.items);
+    const preferred = preferredProject && d.items.some((p: any) => p.id === preferredProject) ? preferredProject : "";
+    if (preferred) localStorage.setItem("cp_project", preferred);
     const saved = localStorage.getItem("cp_project"), resume = workSelection(String(me?.user?.id));
-    setProjectState((old) =>
+    setProjectState((old) => preferred || (
       d.items.some((p: any) => p.id === old)
         ? old
         : d.items.some((p: any) => p.id === saved)
           ? saved
           : resume?.tenant === tenant && d.items.some((p: any) => p.id === resume.project)
-            ? resume.project : (d.items[0]?.id ?? ""),
-    );
+            ? resume.project : (d.items[0]?.id ?? "")
+    ));
   }, [tenant, me?.user?.id]);
   useEffect(() => {
     window.addEventListener("copypaste:session-ended", clear);
@@ -137,12 +142,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }, [refresh, clear]);
   useEffect(() => {
     let live = true;
+    const revision = ++projectLoadRevision.current;
     setProjects([]);
     setProjectState("");
     if (!tenant) return;
     void api(`/v1/tenants/${tenant}/projects`)
       .then((d) => {
-        if (!live) return;
+        if (!live || revision !== projectLoadRevision.current || tenantRef.current !== tenant) return;
         setProjects(d.items);
         const saved = localStorage.getItem("cp_project"), resume = workSelection(String(me?.user?.id));
         setProjectState(
@@ -153,7 +159,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         );
       })
       .catch((e) => {
-        if (live) setError(e);
+        if (live && revision === projectLoadRevision.current && tenantRef.current === tenant) setError(e);
       });
     return () => {
       live = false;
