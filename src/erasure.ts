@@ -408,6 +408,7 @@ export class ErasureService {
         );
         await tx.query("DELETE FROM task_events WHERE task_id=$1", [id]);
         await tx.query("DELETE FROM task_plans WHERE task_id=$1", [id]);
+        await tx.query("DELETE FROM task_pause_checkpoints WHERE task_id=$1", [id]);
         await tx.query("DELETE FROM task_input_checkpoints WHERE task_id=$1", [
           id,
         ]);

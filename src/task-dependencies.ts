@@ -396,6 +396,11 @@ export async function resolveInputSelections(
   ).rowCount;
   if (!pending) {
     if (await checkInputDependencies(tx, t)) {
+      if(t.pause_requested) {
+        await tx.query("UPDATE tasks SET status='paused',version=version+1,updated_at=now() WHERE id=$1",[t.id]);
+        await event(tx,t.tenant_id,t.id,"task.paused",{previous:"needs_input",status:"paused",checkpoint:"completed_model_turn"});
+        return (await tx.query("SELECT * FROM tasks WHERE id=$1",[t.id])).rows[0];
+      }
       if (paid)
         await tx.query(
           "UPDATE task_input_checkpoints SET state='queued' WHERE id=$1",

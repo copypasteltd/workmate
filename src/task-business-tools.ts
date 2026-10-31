@@ -89,6 +89,7 @@ import {
 import { validateVerificationPNG } from "./png-validation.js";
 import path from "node:path";
 import { z } from "zod";
+import { assertTaskToolNotPausing } from "./task-pause.js";
 import type { Database, Tx } from "./db.js";
 import { saveAsset } from "./storage.js";
 import {
@@ -222,6 +223,7 @@ export class TaskBusinessTools {
       await lockTaskTools(tx, t.id);
       await this.authority.authorize(tx);
       await assertNoPendingInputRequest(tx, t, fencing);
+      await assertTaskToolNotPausing(tx,t.id);
     };
     const txTool =
       (
@@ -485,6 +487,7 @@ export class TaskBusinessTools {
             async (tx) => {
               await lockTaskTools(tx, t.id);
               await this.authority.authorize(tx);
+              await assertTaskToolNotPausing(tx,t.id);
               const body = paidInputRequest.parse(args);
               return replay(tx, actor.id, `tool:${t.id}`, callId, body, () =>
                 requestPaidInputs(tx, t, fencing, role, body, callId),

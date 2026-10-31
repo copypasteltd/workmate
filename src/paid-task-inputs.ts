@@ -107,7 +107,7 @@ export async function requestPaidInputs(
   }
   const counts = (
     await tx.query(
-      "SELECT (SELECT count(*) FROM task_input_checkpoints WHERE task_id=$1)::int AS rounds,(SELECT count(*) FROM task_dependencies WHERE task_id=$1)::int AS inputs",
+      "SELECT ((SELECT count(*) FROM task_input_checkpoints WHERE task_id=$1)+(SELECT count(*) FROM task_pause_checkpoints WHERE task_id=$1))::int AS rounds,(SELECT count(*) FROM task_dependencies WHERE task_id=$1)::int AS inputs",
       [t.id],
     )
   ).rows[0];
@@ -172,12 +172,13 @@ export async function paidInputCheckpoint(
   task: any,
   state?: "waiting" | "queued",
 ) {
-  const c = (
+  let c = (
     await tx.query(
-      "SELECT * FROM task_input_checkpoints WHERE task_id=$1 AND attempt=$2 ORDER BY created_at DESC LIMIT 1",
+      "SELECT *, 'input' AS checkpoint_kind FROM task_input_checkpoints WHERE task_id=$1 AND attempt=$2 ORDER BY created_at DESC LIMIT 1",
       [task.id, task.attempt],
     )
   ).rows[0];
+  if (!c) c=(await tx.query("SELECT *, 'pause' AS checkpoint_kind FROM task_pause_checkpoints WHERE task_id=$1 AND attempt=$2",[task.id,task.attempt])).rows[0];
   if (
     !c ||
     (state ? c.state !== state : !["waiting", "queued"].includes(c.state)) ||
@@ -236,10 +237,9 @@ export async function consumePaidContinuation(
   if (!checkpoint) return;
   if (claimed.attempt !== checkpoint.attempt + 1)
     throw new Error("Paid continuation attempt mismatch");
-  await tx.query(
-    "UPDATE task_input_checkpoints SET state='consumed',resumed_at=now() WHERE id=$1 AND state='queued'",
-    [checkpoint.id],
-  );
+  const table=checkpoint.checkpoint_kind === "pause" ? "task_pause_checkpoints" : "task_input_checkpoints";
+  const consumed=await tx.query(`UPDATE ${table} SET state='consumed',resumed_at=now() WHERE id=$1 AND state='queued'`,[checkpoint.id]);
+  if(consumed.rowCount!==1) throw new Error("Continuation checkpoint was already consumed");
 }
 
 export async function completePaidInputCheckpoint(

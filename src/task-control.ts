@@ -11,7 +11,7 @@ import { resolveWorkContext } from "./persistent-work.js";
 import { assertReportSources } from "./analysis-reports.js";
 import { checkInputDependencies } from "./task-dependencies.js";
 import { boundTaskAvailability } from "./capability-bindings.js";
-import { settleIdleTask } from "./paid-task-inputs.js";
+import { paidInputCheckpoint, settleIdleTask } from "./paid-task-inputs.js";
 
 /** Caller holds the task row lock. Cancellation is a request, never proof that
  * an accepted external operation was free or that its reservation can be freed. */
@@ -50,10 +50,28 @@ export async function requestTaskCancellation(tx: Tx, task: any) {
 }
 
 /** Caller holds the task row lock and has authorized the human/admin action.
- * Only the initial, unclaimed checkpoint is resumable here. Never requeue a
- * previously accepted model turn or uncertain external operation.
+ * Running cloud work records intent; resume requires its completed measured
+ * checkpoint or the original unclaimed state. Unknown operations cannot resume.
  */
 export async function controlUnclaimedTask(
+  tx: Tx,
+  db: Database,
+  catalog: Catalog,
+  task: any,
+  action: "pause" | "resume",
+) {
+  // The caller already authorizes the human/admin action on the locked task.
+  // Control-plane transactions have no tenant by default. Source and measured
+  // usage guards must still run against this task's exact tenant and scope.
+  const prior=(await tx.query("SELECT current_setting('app.tenant_id',true) tenant,current_setting('app.actor_id',true) actor,current_setting('app.task_id',true) task")).rows[0];
+  await tx.query("SELECT set_config('app.tenant_id',$1,true),set_config('app.task_id',$2,true)",[task.tenant_id,task.id]);
+  const result=await controlTaskWithinScope(tx,db,catalog,task,action);
+  await tx.query("SELECT set_config('app.tenant_id',$1,true),set_config('app.actor_id',$2,true),set_config('app.task_id',$3,true)",[prior.tenant??"",prior.actor??"",prior.task??""]);
+  return result;
+  // Rejected actions propagate to the caller's transaction rollback.
+}
+
+async function controlTaskWithinScope(
   tx: Tx,
   db: Database,
   catalog: Catalog,
@@ -95,17 +113,25 @@ export async function controlUnclaimedTask(
       "LOCAL_EXECUTION_CONTROL_REQUIRED",
       "Control this execution from its local desktop session",
     );
+  if (action === "pause" && task.status === "running" && !task.cancel_requested && task.content_state === "active") {
+    if(task.pause_requested) return task;
+    const count=(await tx.query("SELECT ((SELECT count(*) FROM task_input_checkpoints WHERE task_id=$1)+(SELECT count(*) FROM task_pause_checkpoints WHERE task_id=$1))::int AS n",[task.id])).rows[0].n;
+    if(count>=8) throw new Problem(409,"PAUSE_CHECKPOINT_LIMIT","This task has reached its continuation limit");
+    await tx.query("UPDATE tasks SET pause_requested=true,version=version+1,updated_at=now() WHERE id=$1",[task.id]);
+    await event(tx,task.tenant_id,task.id,"task.pause_requested",{boundary:"completed_measured_model_turn"});
+    return (await tx.query("SELECT * FROM tasks WHERE id=$1",[task.id])).rows[0];
+  }
+  const paid=task.attempt>0 ? await paidInputCheckpoint(tx,task,task.status === "queued" ? "queued" : undefined) : null;
   if (
     task.status !== expected ||
-    task.attempt !== 0 ||
-    task.runtime_thread ||
+    ((task.attempt !== 0 || task.runtime_thread) && !paid) ||
     task.cancel_requested ||
     task.content_state !== "active"
   )
     throw new Problem(
       409,
       action === "pause" ? "CANNOT_PAUSE" : "CANNOT_RESUME",
-      "Only an unclaimed task at its initial execution checkpoint can be paused or resumed",
+      "Pause a cloud task before execution or resume its measured completed checkpoint",
     );
   const reservation = (
     await tx.query("SELECT * FROM reservations WHERE task_id=$1 FOR UPDATE", [
@@ -115,11 +141,9 @@ export async function controlUnclaimedTask(
   if (
     reservation?.status !== "reserved" ||
     reservation.amount_micros !== task.budget_micros ||
-    (
-      await tx.query("SELECT 1 FROM tool_operations WHERE task_id=$1 LIMIT 1", [
-        task.id,
-      ])
-    ).rowCount
+    (!paid && (
+      await tx.query("SELECT 1 FROM tool_operations WHERE task_id=$1 LIMIT 1", [task.id])
+    ).rowCount)
   )
     throw new Problem(
       409,
@@ -128,13 +152,13 @@ export async function controlUnclaimedTask(
     );
   if (action === "pause") {
     await tx.query(
-      "UPDATE tasks SET status='paused',capacity_wait_reason=NULL,version=version+1,updated_at=now() WHERE id=$1",
+      "UPDATE tasks SET status='paused',pause_requested=true,capacity_wait_reason=NULL,version=version+1,updated_at=now() WHERE id=$1",
       [task.id],
     );
     await event(tx, task.tenant_id, task.id, "task.paused", {
       previous: "queued",
       status: "paused",
-      checkpoint: "before_first_model_turn",
+      checkpoint: paid ? "completed_model_turn" : "before_first_model_turn",
     });
   } else {
     // An administrator's permission to resume does not confer the beneficiary's
@@ -197,9 +221,15 @@ export async function controlUnclaimedTask(
       db.config.CODEX_VERSION,
       binding.versionIds,
     );
+    if(paid && Number(task.accrued_micros)>=Number(task.budget_micros))
+      throw new Problem(409,"RESUME_BUDGET_EXHAUSTED","The original task budget is exhausted; retain its results and close this task before approving new work");
     if (await checkInputDependencies(tx, task)) {
+      if(paid?.state === "waiting") {
+        const table=paid.checkpoint_kind === "pause" ? "task_pause_checkpoints" : "task_input_checkpoints";
+        await tx.query(`UPDATE ${table} SET state='queued' WHERE id=$1`,[paid.id]);
+      }
       await tx.query(
-        "UPDATE tasks SET status='queued',version=version+1,updated_at=now(),capacity_retry_at=now(),next_claim_retry_at=now()+interval '1 minute' WHERE id=$1",
+        "UPDATE tasks SET status='queued',pause_requested=false,version=version+1,updated_at=now(),capacity_retry_at=now(),next_claim_retry_at=now()+interval '1 minute' WHERE id=$1",
         [task.id],
       );
       await tx.query(
@@ -211,7 +241,7 @@ export async function controlUnclaimedTask(
       await event(tx, task.tenant_id, task.id, "task.resumed", {
         previous: "paused",
         status: "queued",
-        checkpoint: "before_first_model_turn",
+        checkpoint: paid ? "completed_model_turn" : "before_first_model_turn",
       });
     }
   }

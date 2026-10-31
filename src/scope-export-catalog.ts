@@ -10,7 +10,7 @@ export const scopeExportCatalog: Dataset[] = [
   { table: "projects", columns: "id tenant_id name description archived created_at", where: "r.id=ANY($2::uuid[])" },
   { table: "assets", columns: "id tenant_id project_id name kind current_version private_owner created_by created_at retention_expires_at", where: "r.id IN(SELECT id FROM export_assets)" },
   child("asset_versions", "id tenant_id asset_id version mime_type bytes sha256 metadata created_at", "export_assets", "asset_id", "r.erased_at IS NULL AND task_asset_version_sources_available(r.id)"),
-  { table: "tasks", columns: "id tenant_id project_id created_by private_owner conversation_id title prompt role_key role_hash kernel status mode acceptance output error_code budget_micros charged_micros input_tokens output_tokens version parent_id execution_location input_context created_at updated_at retention_expires_at", where: "r.id IN(SELECT id FROM export_tasks)" },
+  { table: "tasks", columns: "id tenant_id project_id created_by private_owner conversation_id title prompt role_key role_hash kernel status pause_requested mode acceptance output error_code budget_micros charged_micros input_tokens output_tokens version parent_id execution_location input_context created_at updated_at retention_expires_at", where: "r.id IN(SELECT id FROM export_tasks)" },
   child("task_plans", "task_id tenant_id project_id version input_hash body conversation_version approved_task_id approved_by approved_at", "export_tasks", "task_id"),
   child("task_events", "id tenant_id task_id kind body created_at", "export_tasks", "task_id"),
   child("delivery_reviews", "id task_id reviewer_id task_version decision comment delivery_snapshot artifact_ids created_at", "export_tasks", "task_id", "r.erased_at IS NULL"),

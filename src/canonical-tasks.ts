@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
+import { taskControlState } from "./task-pause.js";
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import { Ajv2020 } from "ajv/dist/2020.js";
@@ -295,6 +296,11 @@ export function registerCanonicalTasks(
   db: Database,
   catalog: Catalog,
 ) {
+  app.get("/v1/tasks/:task_id/control-state",{preHandler:requireUser(db)},async(req,reply)=>{
+    const tenant=tenantOf(req),id=taskOf(req);
+    const state=await db.tx(async tx=>taskControlState(await authorizedTask(tx,req.principal,tenant,id)),tenant,false,req.principal.id);
+    reply.header("Cache-Control","no-store");return state;
+  });
   app.get("/v1/tasks", { preHandler: requireUser(db) }, async (req) => {
     const tenant = tenantOf(req);
     const q = z

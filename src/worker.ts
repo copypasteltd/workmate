@@ -1,3 +1,4 @@
+import { completeTaskPause } from "./task-pause.js";
 import { assertLiveEnvironment } from "./recovery-fence.js";
 import { DedicatedCloud } from "./dedicated-cloud.js";
 import { assertDedicatedComputerExecution } from "./dedicated-cloud-task-authority.js";
@@ -682,7 +683,7 @@ export class Worker {
       };
       const result = await this.runtime.start({
         taskId: id,
-        prompt: `${context.instructions}\n\nWork mode: ${task.mode ?? "execute"}. ${task.mode === "execute" ? "Perform the authorized work. If essential business details, authorized files or connections are missing, use request_input and finish the turn. For business details use kind question, ask only what blocks delivery, offer optional suggested choices, and always allow the customer to answer freely. Do not infer missing requirements, collect credentials, or treat a business answer as access, approval or additional budget. Never invent missing data or perform more tool operations after requesting inputs." : "Read-only investigation. Return a written answer or plan; do not create assets or perform business writes."}${task.resume_thread ? "\nContinue the same authorized task after the user supplied the requested inputs. Reuse completed tool results and artifacts from this thread; do not repeat completed operations." : ""}\n\nCurrent user request:\n${task.prompt}${task.input_context?.analysis_report_id ? "\n\n" + analysisReportInstructions : ""}${task.input_context?.seo_audit_id ? "\n\n" + seoAuditInstructions : ""}${task.input_context?.seo_change_task_id ? "\n\n" + seoChangeInstructions : ""}`,
+        prompt: `${context.instructions}\n\nWork mode: ${task.mode ?? "execute"}. ${task.mode === "execute" ? "Perform the authorized work. If essential business details, authorized files or connections are missing, use request_input and finish the turn. For business details use kind question, ask only what blocks delivery, offer optional suggested choices, and always allow the customer to answer freely. Do not infer missing requirements, collect credentials, or treat a business answer as access, approval or additional budget. Never invent missing data or perform more tool operations after requesting inputs." : "Read-only investigation. Return a written answer or plan; do not create assets or perform business writes."}${task.resume_thread ? "\nContinue the same authorized task from its completed checkpoint and any newly supplied inputs. Reuse completed tool results and artifacts; do not repeat completed operations. If the work is already complete, report the retained result without repeating side effects." : ""}\n\nCurrent user request:\n${task.prompt}${task.input_context?.analysis_report_id ? "\n\n" + analysisReportInstructions : ""}${task.input_context?.seo_audit_id ? "\n\n" + seoAuditInstructions : ""}${task.input_context?.seo_change_task_id ? "\n\n" + seoChangeInstructions : ""}`,
         workspace: path.resolve(this.db.config.DATA_DIR, "runs", tenant, id),
         thread: task.resume_thread,
         skills: bound,
@@ -881,6 +882,7 @@ export class Worker {
             error = "AI_REQUEST_BUDGET_VIOLATION";
           }
         }
+        if(live.pause_requested) uncertain ||= !!(await tx.query("SELECT 1 FROM device_commands WHERE task_id=$1 AND state IN('pending','claimed') LIMIT 1",[t.id])).rowCount;
         const inputRequested = !!(
           await tx.query(
             "SELECT 1 FROM task_input_checkpoints WHERE task_id=$1 AND fencing_token=$2 AND state='requested'",
@@ -917,6 +919,8 @@ export class Worker {
             text = "";
           }
         }
+        if (status === "succeeded" && !uncertain && !ops.uncertain && live.pause_requested &&
+          await completeTaskPause(tx,live,text,input,output,cost,native)) return;
         if (
           status === "succeeded" &&
           !uncertain &&
