@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { api, ApiError } from "./api";
+import { api, ApiError, clientSessionGeneration, endClientSession } from "./api";
 
 export function useTaskEvents(
   base: string,
@@ -17,6 +17,8 @@ export function useTaskEvents(
     let after = 0,
       refreshTimer: ReturnType<typeof setTimeout> | undefined;
     const signal = abort.signal;
+    const generation = clientSessionGeneration();
+    const current = () => !signal.aborted && generation === clientSessionGeneration();
     const wait = (ms: number) =>
       new Promise<void>((resolve) => {
         const done = () => {
@@ -31,11 +33,11 @@ export function useTaskEvents(
     const invalidate = () => {
       refreshTimer ??= setTimeout(() => {
         refreshTimer = undefined;
-        if (!signal.aborted) changed.current();
+        if (current()) changed.current();
       }, 350);
     };
     const merge = (batch: any[]) => {
-      if (signal.aborted) return;
+      if (!current()) return;
       setItems((old) =>
         [
           ...new Map([...old, ...batch].map((e) => [String(e.id), e])).values(),
@@ -46,7 +48,7 @@ export function useTaskEvents(
     setError(null);
     setState("connecting");
     const run = async () => {
-      while (!signal.aborted && task) {
+      while (current() && task) {
         try {
           if (window.copyPasteBridge) {
             // Native IPC remains JSON-only. Drain every page with a cursor;
@@ -61,7 +63,7 @@ export function useTaskEvents(
               merge(batch);
               if (batch.length) after = Number(batch.at(-1).id);
             } while (batch.length === 200 && !signal.aborted);
-            if (!signal.aborted) {
+            if (current()) {
               setState("polling");
               invalidate();
               await wait(2500);
@@ -79,10 +81,14 @@ export function useTaskEvents(
               signal,
             },
           );
+          if (!current()) {
+            await r.body?.cancel().catch(() => {});
+            break;
+          }
           if (r.status === 410) {
             const snapshot = await api(`${base}/tasks/${task}`, { signal });
             after = Number(snapshot.last_event_seq ?? 0);
-            if (!signal.aborted) {
+            if (current()) {
               setItems([]);
               setState("snapshot");
               invalidate();
@@ -95,7 +101,7 @@ export function useTaskEvents(
               "Progress stream unavailable",
               r.status,
             );
-          if (!signal.aborted) {
+          if (current()) {
             setState("live");
             setError(null);
           }
@@ -105,7 +111,7 @@ export function useTaskEvents(
           try {
             while (!signal.aborted) {
               const chunk = await reader.read();
-              if (chunk.done) break;
+              if (!current() || chunk.done) break;
               pending += decoder.decode(chunk.value, { stream: true });
               if (pending.length > 2 * 1024 * 1024)
                 throw new Error("Progress event exceeds the display limit");
@@ -151,9 +157,14 @@ export function useTaskEvents(
             await reader.cancel().catch(() => {});
           }
         } catch (e) {
-          if (signal.aborted) break;
+          if (!current()) break;
+          if (e instanceof ApiError && e.status === 401) {
+            endClientSession(false, "expired");
+            return;
+          }
           if (e instanceof ApiError && e.status === 410) {
             const snapshot = await api(`${base}/tasks/${task}`, { signal });
+            if (!current()) break;
             after = Number(snapshot.last_event_seq ?? 0);
             setItems([]);
             invalidate();
@@ -167,11 +178,11 @@ export function useTaskEvents(
           }
           setState("reconnecting");
         }
-        if (!signal.aborted) await wait(1500);
+        if (current()) await wait(1500);
       }
     };
     void run().catch((e) => {
-      if (!signal.aborted) {
+      if (current()) {
         setError(e);
         setState("unavailable");
       }
