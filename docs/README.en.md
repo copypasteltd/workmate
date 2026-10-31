@@ -1,3 +1,11 @@
+## 162 · 源码启动补丁 / Source onboarding addon
+
+[完整发版](releases/v0.1.0-rc.3.md) · [补丁和使用步骤 / Guide](releases/v0.1.0-rc.3-onboarding-162.md) · [实际检查](quality/onboarding-checkpoint-162.json) · [原编号待项](quality/remaining-work-stage162.md)
+
+完整rc.3已发布；小补丁待本轮同步，原冻结包保持。The complete release is published; the source addon is being synchronized.
+
+---
+
 ## v0.1.0-rc.3 · 已发布 / Published
 
 [完整下载 / Complete ZIP](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.3/workmate-v0.1.0-rc.3-complete.zip) · [校验 / SHA256](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.3/workmate-v0.1.0-rc.3-complete.zip.sha256) · [Release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.3) · [交付回执 / Receipt](quality/release-publication-161.json)
