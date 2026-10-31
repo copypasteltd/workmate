@@ -1,3 +1,21 @@
+## v0.1.0-rc.2 · Published GitHub Release / 已发布
+
+[Complete download / 完整包](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.2/workmate-v0.1.0-rc.2-complete.zip) · [Release page / 发布页](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.2) · [Publication details](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/v0.1.0-rc.2-publication.md)
+
+The 850,454,316-byte complete ZIP contains seven distributions: Windows Desktop, Web, Admin, Chrome Side Panel, backend, buildable six-repository sources and pinned Codex runtime files. All six GitHub assets match the frozen sizes and SHA-256 values. The actual public page and checksum download passed. The archived HTTP403 entry is historical; an existing authorized credential published this release without changing frozen bytes or version tags.
+
+The full user/permission flow remains documented below. Start the source demo with `npm run bootstrap:demo` → `npm run demo:check` → `npm run demo`; stop with `npm run stop`. External dependencies are synthetic and Windows is unsigned. Complete production acceptance remains tracked under the original requirement IDs.
+
+**Actual public GitHub page and checksum download / 实际发布页与校验文件下载**
+
+![Published assets](assets/screenshots/workmate-release-publication-159-01-verified-assets.png)
+
+![Actual release interaction](assets/screenshots/workmate-release-publication-159-01-release-assets-download.gif)
+
+[Actual MP4 recording](assets/screenshots/workmate-release-publication-159-01-release-assets-download.mp4)
+
+---
+
 ## v0.1.0-rc.2 · Current complete release
 
 All six source trees and current distributions are frozen together at schema155. Product release identifiers are independent of component npm versions. Web/Extension execute cloud Codex; the frameless Desktop executes customer-local Codex with explicit customer permission. The administrator dashboard keeps its separate authentication and account/billing/VIP/content controls.
