@@ -1,4 +1,5 @@
 import { registerMemberships } from "./membership.js";
+import { registerProjectManagement } from "./project-management.js";
 import { effectivePlan } from "./plans.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
@@ -7,7 +8,6 @@ import { requireUser, audit } from "./auth.js";
 import {
   key,
   listProjects,
-  projectAccess,
   replay,
   tenantAccess,
   activePlans,
@@ -20,6 +20,7 @@ import { registerResourceQuotas } from "./resource-quota-routes.js";
 export function registerWorkspaces(app: FastifyInstance, db: Database) {
   registerResourceQuotas(app, db);
   registerMemberships(app, db);
+  registerProjectManagement(app, db);
   app.get(
     "/v1/tenants/:tenant/plan",
     { preHandler: requireUser(db) },
@@ -117,38 +118,6 @@ export function registerWorkspaces(app: FastifyInstance, db: Database) {
               )
             ).rows[0],
         );
-      }, tenant);
-    },
-  );
-  app.patch(
-    "/v1/tenants/:tenant/projects/:project",
-    { preHandler: requireUser(db) },
-    async (req) => {
-      const { tenant, project } = z
-        .object({ tenant: uuid, project: uuid })
-        .parse(req.params);
-      const b = z
-        .object({
-          name: name.optional(),
-          description: z.string().max(2000).optional(),
-          archived: z.boolean().optional(),
-        })
-        .strict()
-        .parse(req.body);
-      return db.tx(async (tx) => {
-        await projectAccess(tx, req.principal, tenant, project, "manage");
-        return (
-          await tx.query(
-            "UPDATE projects SET name=coalesce($3,name),description=coalesce($4,description),archived=coalesce($5,archived) WHERE tenant_id=$1 AND id=$2 RETURNING *",
-            [
-              tenant,
-              project,
-              b.name ?? null,
-              b.description ?? null,
-              b.archived ?? null,
-            ],
-          )
-        ).rows[0];
       }, tenant);
     },
   );
