@@ -1,3 +1,21 @@
+## v0.1.0-rc.2 · GitHub Release 已发布
+
+[完整下载 / Complete ZIP](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.2/workmate-v0.1.0-rc.2-complete.zip) · [发布页面 / Release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.2) · [发布记录 / Publication](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/v0.1.0-rc.2-publication.md)
+
+完整包850,454,316字节，内含七类分发包：Windows客户端、Web、Admin、Chrome右侧栏、后端、六仓可构建源码及固定Codex运行文件。GitHub六个附件的尺寸与SHA-256逐一匹配；实际公共页面和校验文件下载通过。旧冻结说明中的HTTP403是当时旧凭据的历史状态，本次已使用现有授权发布；冻结文件与全部版本标签保持不变。
+
+用户流程与权限沿用下方完整说明。源码运行从 `npm run bootstrap:demo` → `npm run demo:check` → `npm run demo` 开始，结束执行 `npm run stop`。当前为模拟外部依赖、Windows未签名候选版；完整生产验收仍见原编号清单。
+
+**实际GitHub发布页面和下载交互 / Actual public release and checksum download**
+
+![Published assets / 已发布附件](assets/screenshots/workmate-release-publication-159-01-verified-assets.png)
+
+![Actual release interaction / 实际发布交互](assets/screenshots/workmate-release-publication-159-01-release-assets-download.gif)
+
+[MP4 recording / 下载交互录像](assets/screenshots/workmate-release-publication-159-01-release-assets-download.mp4)
+
+---
+
 ## v0.1.0-rc.2 · 当前完整冻结发版
 
 六仓当前源码与分发构建共同冻结至数据库155版。产品发版号与各组件npm版本独立。Web/Extension使用云端Codex，无边框Desktop在客户本机执行Codex并由客户明确授予权限；Admin保留独立身份及用户、费用、VIP、消耗与内容控制。
