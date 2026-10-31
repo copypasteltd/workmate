@@ -1,3 +1,19 @@
+## 163 · 登录失效、旧响应与实时进度
+
+广告导入、报告、证据等业务接口失去登录时清除旧工作台；旧请求不能覆盖新登录。实时进度收到登录失效时返回登录；权限不足保留登录。28项定向请求检查、三端界面构建及3组实际Web/SQL旅程通过。当前为源码修复，尚未加入既有rc.3安装包；原冻结包保持。
+
+[方案、构建与使用](https://github.com/copypasteltd/workmate/blob/docs/docs/development/163-session-boundary.md) · [原编号待项](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage163.md)
+
+共享的实际Web画面及录制；非本轮新增原生端验收。
+
+![实际登录撤销](assets/screenshots/workmate-session-boundary-163-04-revoked-stream-signin.png)
+
+![实际进度流到登录](assets/screenshots/workmate-session-boundary-163-04-session-revocation-to-signin.gif)
+
+[MP4](assets/screenshots/workmate-session-boundary-163-04-session-revocation-to-signin.mp4)
+
+---
+
 ## 162 · 冻结版源码启动补丁
 
 完整rc.3已发布。本轮新增安装前端口检查及有效入门链接；当前分支直接使用，已解压rc.3源码可应用约719KB的精确补丁。先选择数据库端口，再依次运行 `npm run demo:preflight`、`npm run bootstrap:demo`、`npm run demo:check`、`npm run demo`；结束执行 `npm run stop`。六文件补丁及CLI的9项检查通过；保留客户配置、数据和冻结包。

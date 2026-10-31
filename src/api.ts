@@ -47,7 +47,7 @@ export async function api<T = any>(
   const revision = sessionRevision;
   const protectedRequest = path.startsWith("/v1/admin/") && (!path.startsWith("/v1/admin/auth/") || path === "/v1/admin/auth/logout");
   const current = () => {
-    if (protectedRequest && revision !== sessionRevision) throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
+    if (revision !== sessionRevision) throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
     if (options.signal?.aborted) throw options.signal.reason;
   };
   let status: number, data: any;
