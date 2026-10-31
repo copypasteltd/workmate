@@ -1,4 +1,26 @@
-# Workmate · admin · v0.1.0
+# Workmate · admin
+
+## Current source increment · stage172
+
+Admin supports creation and posting periods. Reports include old-work charges, Hong Kong posting days, refunds with an out-of-period original charge and negative net. Summary, projected detail and CSV share one immutable snapshot. Holds and lifetime operation units stay separate. Use matching backend/Admin sources with schema156. This increment is outside the frozen v0.1.1 ZIP; archives/tags remain unchanged.
+
+Eight fresh native SQL/API cases and one exact projection case passed; six actual successful legacy cases are inherited only from identical sources. Seven actual Admin journeys passed. The first historical fixture was rejected for missing funding-source entries; a new version records balanced sources and funding movements without disabling guards. Original failures and all whole-acceptance scopes remain.
+
+```mermaid
+flowchart LR
+ A[Admin MFA] --> B[Creation or posting period]
+ B --> C[Scoped fixed snapshot]
+ C --> D[Hong Kong day entries]
+ D --> E[Same summary and detail]
+ D --> F[Authorized CSV]
+```
+
+![Posting-period report](assets/screenshots/workmate-admin-posting-period-172-01-posting-01-period-summary.png)
+
+![Actual interaction](assets/screenshots/workmate-admin-posting-period-172-01-posting-period-workflow.gif)
+
+[MP4](assets/screenshots/workmate-admin-posting-period-172-01-posting-period-workflow.mp4) · [方案 / Behavior](https://github.com/copypasteltd/workmate/blob/docs/docs/development/172-admin-posting-period.md)
+
 ## Frozen delivery v0.1.1
 
 The complete bundle includes local-Codex frameless Windows Desktop, Web, independent Admin, native Chrome Side Panel, backend, six buildable source trees and pinned runtime. Authorized synthetic services, unsigned Windows and schema156.
