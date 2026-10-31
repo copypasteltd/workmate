@@ -1,0 +1,52 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Workmate cloud control-state supplement",
+    "version": "154"
+  },
+  "paths": {
+    "/v1/tasks/{task_id}/control-state": {
+      "get": {
+        "summary": "Read current pause metadata without native identifiers",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No-store current task/version/phase/intent/action hints and decimal budget/accrued values"
+          },
+          "401": {
+            "description": "Current user session required"
+          },
+          "403": {
+            "description": "Current scope denied"
+          },
+          "404": {
+            "description": "Task or scope unavailable"
+          }
+        }
+      }
+    }
+  },
+  "x-control": "Original canonical/legacy control schemas, idempotency and version rules are unchanged. Metadata hints grant no execution authority.",
+  "x-boundary": "completed_measured_model_turn; known native completion, original hold, no pending or unknown effects",
+  "x-authority": "Submit rechecks the original user's current identity, permissions, fixed sources, role/skill/plan and remaining budget. Existing scoped admin.execution.pause/resume and audited reason.",
+  "x-limits": "Input and pause checkpoints combined <=8. Unknown usage requires reconciliation. Desktop local controls remain independent."
+}

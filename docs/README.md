@@ -1,3 +1,11 @@
+<!-- runtime-pause-154 -->
+
+[运行中暂停 / Running pause](development/154-runtime-pause.md) · [API](contracts/runtime-pause-openapi.json) · [限定证据 / Evidence](quality/runtime-pause-checkpoint-154.md) · [当前编号 / Ledger](quality/remaining-work-stage154.md) · [更新 / Changes](changes/154-runtime-pause.md)
+
+Unreleased154; first frozen v0.1.0-rc.1 preserved.6 focused backend cases /5 actual Web/Admin groups.
+
+---
+
 <!-- workflow-content-history-153 -->
 
 [工作流完整阅读 / Workflow readers](development/153-workflow-content-history.md) · [API](contracts/workflow-content-history-openapi.json) · [完整待项 / Ledger](quality/remaining-work-stage153.md) · [更新 / Changes](changes/153-workflow-content-history.md)
