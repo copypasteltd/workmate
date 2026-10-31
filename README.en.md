@@ -1,5 +1,23 @@
 # Workmate · web · v0.1.0
 
+<!-- lan-deployment-176 -->
+## LAN HTTP deployment · stage176
+
+Web: http://192.168.31.20:63070 · Admin: http://192.168.31.20:63071 · API: http://192.168.31.20:63072
+
+LAN HTTP supports login, workspace creation, secure digests, tasks and uploads; 19 role templates are available.
+
+Server plaintext credentials: `/root/cfg/workmate/credentials.txt` (root `0600`). Email OTP is retrieved through the protected test mailbox; Admin additionally requires TOTP. Synthetic services remain explicitly labeled.
+
+[部署、登录与运维 / Deployment and login guide](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/lan-176.md)
+
+![Actual LAN HTTP page](assets/screenshots/176e-lan-task-result.png)
+
+![Actual post-login interaction](assets/demos/176-lan-http.gif)
+
+[实际操作录像 / Actual recording](assets/demos/176-lan-http.mp4)
+
+
 ## v0.1.3 · 当前完整交付 / Current complete delivery
 
 [Release / 下载](https://github.com/copypasteltd/workmate/releases/tag/v0.1.3) · [中英使用手册 / Bilingual guide](https://github.com/copypasteltd/workmate/blob/v0.1.3/docs/releases/v0.1.3.md)

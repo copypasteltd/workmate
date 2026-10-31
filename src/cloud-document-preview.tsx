@@ -1,3 +1,4 @@
+import { writeClipboardText } from "./browser-crypto";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Download, Link2, RefreshCw } from "lucide-react";
 import { api, download } from "./api";
@@ -44,7 +45,7 @@ export function CloudFilePreview({node,onClose}:{node:{id:string;name:string;ass
       {result?.text&&<details className="cloud-document-text"><summary>{t("此頁文字","Page text")}</summary><pre>{result.text}</pre></details>}
       {previewError&&<button type="button" className="text-button" onClick={()=>setRefresh(n=>n+1)}><RefreshCw size={14}/>{t("重試預覽","Retry preview")}</button>}
       <div className="row-actions"><button className="button primary" onClick={()=>void download(`${w.base}/assets/${reference.asset_id}/download?version=${reference.source_version}`,node.name).catch(setError)}><Download size={16}/>{t("下載這一版","Download this version")}</button>
-        <button className="button secondary" onClick={()=>void navigator.clipboard.writeText(JSON.stringify({workspace_node_id:node.id,asset_version_id:reference.asset_version_id})).then(()=>setCopied(true)).catch(setError)}><Link2 size={16}/>{copied?t("已複製引用","Reference copied"):t("複製工作引用","Copy work reference")}</button></div>
+        <button className="button secondary" onClick={()=>void writeClipboardText(JSON.stringify({workspace_node_id:node.id,asset_version_id:reference.asset_version_id})).then(()=>setCopied(true)).catch(setError)}><Link2 size={16}/>{copied?t("已複製引用","Reference copied"):t("複製工作引用","Copy work reference")}</button></div>
       <p className="muted small-text">{t("預覽與翻頁會核對目前權限，下載保留原格式與固定版本。移除目錄項目不會刪除素材本體。","Previews and page turns check current access. Downloads preserve the original format and pinned version. Removing an entry preserves its source asset.")}</p>
     </>}{error&&!reference&&<button type="button" className="button secondary" onClick={()=>{setLoading(true);setRefresh(n=>n+1);}}><RefreshCw size={16}/>{t("重新檢查","Check again")}</button>}</Modal>;
 }

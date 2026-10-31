@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 import { useEffect, useState } from "react";
 import { FolderOpen, Upload, FileText, RefreshCw } from "lucide-react";
 import { useWorkspace } from "./context";

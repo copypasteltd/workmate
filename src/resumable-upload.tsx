@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 import { useEffect, useRef, useState } from "react";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { api } from "./api";

@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Download, FileText, Plus } from "lucide-react";
 import { Link } from "react-router-dom";

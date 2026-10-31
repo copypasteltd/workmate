@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 import { redactWorkspaceAttempts } from "./workspace-creation";
 import { saveScopeArchive } from "./scope-export-download";
 import { clientFetch, clientJson, connectionFailure } from "./client-failure";
@@ -94,12 +95,15 @@ export async function api<T = any>(
 ): Promise<T> {
   const revision = sessionRevision;
   const protectedRequest = sessionProtectedRequest(path, options.method);
+  // Public deployment settings do not belong to a signed-in identity. An
+  // initial unauthenticated session check must not discard this parallel read.
+  const sessionIndependent = path === "/v1/public/config" && (!options.method || options.method === "GET");
   const headers = new Headers(options.headers);
   const pathTenant = /^\/v1\/tenants\/([a-f0-9-]{36})(?:\/|$)/i.exec(path)?.[1];
   if (pathTenant && !headers.has("X-Tenant-ID"))
     headers.set("X-Tenant-ID", pathTenant);
   const current = () => {
-    if (revision !== sessionRevision)
+    if (revision !== sessionRevision && !sessionIndependent)
       throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
     if (options.signal?.aborted) throw options.signal.reason;
   };

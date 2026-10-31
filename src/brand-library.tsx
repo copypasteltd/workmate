@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 import { useRef, useState } from "react";
 import {
   BookOpen,

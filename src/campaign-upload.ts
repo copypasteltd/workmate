@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { api } from "./api";
 const hex = (v: Uint8Array) =>

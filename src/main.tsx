@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 import { WorkspaceCreationForm } from "./workspace-creation-form";
 import { ScopeCleanupPage } from "./scope-cleanup";
 import { ProjectManagement } from "./project-management";

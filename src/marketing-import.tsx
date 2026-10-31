@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { api, post } from "./api";
 import { ErrorNotice, Field, useI18n } from "./ui";

@@ -1,3 +1,4 @@
+import { writeClipboardText } from "./browser-crypto";
 import { useEffect, useRef, useState } from "react";
 import { ShieldCheck, Copy, RefreshCw } from "lucide-react";
 import { api } from "./api";
@@ -299,7 +300,7 @@ function SupportGrantForm() {
                 onClick={async () => {
                   const scope = identity;
                   try {
-                    await navigator.clipboard.writeText(row.id);
+                    await writeClipboardText(row.id);
                     if (current.current === scope) setNotice(t("已複製授權 ID。", "Grant ID copied."));
                   } catch {
                     if (current.current === scope) setError(

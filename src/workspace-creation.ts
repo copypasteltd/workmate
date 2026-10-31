@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 // An unresolved creation never expires into a second request key.
 export type WorkspaceBody = { name: string; project_name: string };
 export type WorkspaceResult = { tenant: { id: string; name: string }; project: { id: string; name: string } | null };

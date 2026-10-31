@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 import { useEffect, useRef, useState } from "react";
 import { Download, FileAudio, Mic2, Play, RefreshCw, Save, Square, X } from "lucide-react";
 import { api, download, post } from "./api";

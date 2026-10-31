@@ -1,3 +1,4 @@
+import { browserCrypto as crypto, writeClipboardText } from "./browser-crypto";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -185,7 +186,7 @@ function IssuedKey({ result, onClose }: { result: any; onClose: () => void }) {
                 className="button secondary"
                 onClick={async () => {
                   try {
-                    await navigator.clipboard.writeText(result.signing_secret);
+                    await writeClipboardText(result.signing_secret);
                     setCopied(true);
                   } catch (e) {
                     setError(e);

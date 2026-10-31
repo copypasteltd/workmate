@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 /** Tab-local customer drafts. Storage never supplies identity or authority. */
 export type WorkScope = { user: string; tenant: string; project: string };
 export type WorkValues = {

@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 // Keep only an opaque attempt key, intent digest and fixed deadline. Customer
 // reasons, project identifiers, credentials and task bodies never enter storage.
 export type SupportGrantAttempt = {
