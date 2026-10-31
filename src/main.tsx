@@ -1,4 +1,5 @@
 import { AdminCloudComputers } from "./cloud-computers";
+import { AdminUsageReports } from "./usage-reports";
 import { resourceUser, userResourceLink, userResourceReturn } from "./user-resources";
 import { QualitySummary } from "./quality-summary";
 import "./support.css";
@@ -572,6 +573,8 @@ function AdminShell() {
                     element={
                       n[0] === "quality" ? (
                         <QualitySummary url="/v1/admin/quality" />
+                      ) : n[0] === "usage" ? (
+                        <AdminUsageReports access={a} />
                       ) : n[0] === "jobs" ? (
                         <JobsPage />
                       ) : n[0] === "billing" ? (
@@ -2408,6 +2411,7 @@ function UserDetailContent({ id }: { id: string }) {
             <h2>{t("用戶工作與內容", "User tasks & content")}</h2>
             <div className="row-actions">
               {a.has("admin.execution.read") && <Link className="button secondary" to={userResourceLink("execution", id, location.search)}><Workflow size={17} />{t("查看用戶任務", "View user tasks")}</Link>}
+              {a.has("admin.usage.read") && <Link className="button secondary" to={userResourceLink("usage", id, location.search)}><ChartNoAxesCombined size={17} />{t("查看用戶消耗", "View user usage")}</Link>}
               {a.has("admin.content.read") && <Link className="button secondary" to={userResourceLink("content", id, location.search)}><Files size={17} />{t("查看用戶內容", "View user content")}</Link>}
             </div>
           </section>

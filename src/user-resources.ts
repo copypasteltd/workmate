@@ -1,6 +1,6 @@
 import { readDirectoryFilters, writeDirectoryFilters } from "./directory";
 
-export type UserResourceSection = "execution" | "content";
+export type UserResourceSection = "execution" | "content" | "usage";
 export function resourceUser(section: string, search: string) {
   const query = new URLSearchParams(search);
   return ["execution", "content"].includes(section) && query.has("user_id")
