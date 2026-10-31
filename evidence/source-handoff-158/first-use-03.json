@@ -1,0 +1,94 @@
+{
+  "started_at": "2026-10-31T08:00:44.282650+00:00",
+  "status": "failed",
+  "owned_directory": "dev\\.rc158-b51a6ee5",
+  "package_receipt_sha256": "04689d5d9b27072f5f9722f4603968fab62a81453ba2124fcd7b0dae34dbf943",
+  "checks": [
+    "Source and matching four-file runtime companion extracted; every source byte matches its manifest",
+    "All six locked dependency trees installed from scratch and five product source builds completed",
+    "Pinned runtime version and all four native hashes validated; intentionally stale PATH-style runtime settings are overridden for demo only",
+    "Production mode and remote database overrides fail before any service starts",
+    "Fresh native database migrates through schema155 on explicitly selected port55439; generic demo entry starts API, Web and Admin; unrelated55432 remains untouched",
+    "A second launcher for the same live data directory refuses startup and its exit cleanup leaves the original owned database running"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "node",
+        "scripts/bootstrap-source-demo-158.mjs"
+      ],
+      "cwd": "workmate-source-158-03\\dev\\copypaste-delivery",
+      "exit_code": 0,
+      "expected_exit": 0
+    },
+    {
+      "argv": [
+        "node",
+        "scripts/start-source-demo-158.mjs",
+        "--check"
+      ],
+      "cwd": "workmate-source-158-03\\dev\\copypaste-delivery",
+      "exit_code": 0,
+      "expected_exit": 0
+    },
+    {
+      "argv": [
+        "node",
+        "scripts/start-source-demo-158.mjs",
+        "--check"
+      ],
+      "cwd": "workmate-source-158-03\\dev\\copypaste-delivery",
+      "exit_code": 1,
+      "expected_exit": 1
+    },
+    {
+      "argv": [
+        "node",
+        "scripts/start-source-demo-158.mjs",
+        "--check"
+      ],
+      "cwd": "workmate-source-158-03\\dev\\copypaste-delivery",
+      "exit_code": 1,
+      "expected_exit": 1
+    },
+    {
+      "argv": [
+        "node",
+        "scripts/native-db-launch.mjs"
+      ],
+      "cwd": "workmate-source-158-03\\dev\\copypaste-platform",
+      "exit_code": 1,
+      "expected_exit": 1
+    },
+    {
+      "argv": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/qa-source-handoff-158-v1.ts",
+        "D:\\dev\\copypasted\\自有agent\\dev\\.rc158-b51a6ee5\\workmate-source-158-03",
+        "03"
+      ],
+      "cwd": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery",
+      "exit_code": 1,
+      "expected_exit": 0
+    },
+    {
+      "argv": [
+        "node",
+        "scripts/stop.mjs"
+      ],
+      "cwd": "workmate-source-158-03\\dev\\copypaste-delivery",
+      "exit_code": 0,
+      "expected_exit": 0
+    }
+  ],
+  "browser": null,
+  "error": "AssertionError: Command failed; inspect the owned commands.log",
+  "owned_services_closed": true,
+  "source_unchanged": true,
+  "finished_at": "2026-10-31T08:09:57.198762+00:00",
+  "verifier_sha256": "71e657ff703b6ee9c30feef8bd621ee32d0d0399716b4ab0fc22122795dff838",
+  "log_sha256": "4be53a3fd91f78a8f819a67fc404a5314c2bb7e3a2f3c9be897cd6d13a7882e3",
+  "scope": "One fresh-source Windows first-use loop; native PG and actual pinned Codex, synthetic external dependencies. No VM. No production/live-provider acceptance or newly packaged native-client acceptance. Original frozen148 artifacts remain untouched."
+}

@@ -1,0 +1,61 @@
+{
+  "started_at": "2026-10-31T07:48:58.239252+00:00",
+  "status": "failed",
+  "owned_directory": ".data\\source-handoff-158\\rehearsal-8b70c1cb-fcd9-4b22-8f4b-09a540bf5815",
+  "package_receipt_sha256": "eebfe3876540783c3a41bc644efa4b4c0e81482b2ab8453ef371f3f14d19ef90",
+  "checks": [
+    "Source and matching four-file runtime companion extracted; every source byte matches its manifest",
+    "All six locked dependency trees installed from scratch and five product source builds completed",
+    "Pinned runtime version and all four native hashes validated; intentionally stale PATH-style runtime settings are overridden for demo only",
+    "Production mode and remote database overrides fail before any service starts"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "node",
+        "scripts/bootstrap-source-demo-158.mjs"
+      ],
+      "cwd": "workmate-source-158-02\\dev\\copypaste-delivery",
+      "exit_code": 0,
+      "expected_exit": 0
+    },
+    {
+      "argv": [
+        "node",
+        "scripts/start-source-demo-158.mjs",
+        "--check"
+      ],
+      "cwd": "workmate-source-158-02\\dev\\copypaste-delivery",
+      "exit_code": 0,
+      "expected_exit": 0
+    },
+    {
+      "argv": [
+        "node",
+        "scripts/start-source-demo-158.mjs",
+        "--check"
+      ],
+      "cwd": "workmate-source-158-02\\dev\\copypaste-delivery",
+      "exit_code": 1,
+      "expected_exit": 1
+    },
+    {
+      "argv": [
+        "node",
+        "scripts/start-source-demo-158.mjs",
+        "--check"
+      ],
+      "cwd": "workmate-source-158-02\\dev\\copypaste-delivery",
+      "exit_code": 1,
+      "expected_exit": 1
+    }
+  ],
+  "browser": null,
+  "error": "AssertionError: Fresh source startup exited; inspect owned controller logs",
+  "owned_services_closed": true,
+  "source_unchanged": true,
+  "finished_at": "2026-10-31T07:59:34.134000+00:00",
+  "verifier_sha256": "1ab31210f06614ae58d1913941210e9f7762674257348d98601bd3e8a79d27fc",
+  "log_sha256": "5f163d91f5e5a3f601da60c484dab3a0b4a4cee4e4b450b794997ee4e019d539",
+  "scope": "One fresh-source Windows first-use loop; native PG and actual pinned Codex, synthetic external dependencies. No VM. No production/live-provider acceptance or newly packaged native-client acceptance. Original frozen148 artifacts remain untouched."
+}
