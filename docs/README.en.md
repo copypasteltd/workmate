@@ -1,3 +1,13 @@
+<!-- project-lifecycle-149 -->
+
+[项目管理与最后项目恢复 / Project archive and restore](development/149-project-management.md) · [完整编号 / Full ledger](quality/remaining-work-stage149.md) · [更新 / Changes](changes/149-project-management.md)
+
+首个冻结版保留；149为其后的未冻结修复。10项后端检查、5组实际Web/Desktop旅程及6步构建通过；广泛回归按要求省略，102项原需求及88项必需完整验收范围保留。
+
+First frozen release retained;149 is an unreleased follow-up. Ten backend cases, five actual client groups and six build steps passed. Broad regression was deliberately omitted; all102 original records and88 required whole acceptance scopes remain.
+
+---
+
 <!-- frozen-release-148 -->
 
 [Workmate v0.1.0-rc.1 / 首个冻结候选版](releases/v0.1.0-rc.1.md) · [完整编号 / Ledger](quality/remaining-work-stage148.md) · [构建及发布方案 / Freeze plan](development/148-first-frozen-release.md)
