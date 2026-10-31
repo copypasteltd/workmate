@@ -1,10 +1,11 @@
 import { build } from "esbuild";
 import { mkdir, cp, writeFile, readFile } from "node:fs/promises";
 import { generateKeyPairSync, createHash } from "node:crypto";
+const deployment = JSON.parse(await readFile(new URL("../deployment.json", import.meta.url), "utf8"));
 const api = new URL(
-    process.env.COPYPASTE_API_ORIGIN ?? "http://localhost:4310",
+    process.env.COPYPASTE_API_ORIGIN ?? deployment.api,
   ),
-  web = new URL(process.env.COPYPASTE_WEB_ORIGIN ?? "http://localhost:4317");
+  web = new URL(process.env.COPYPASTE_WEB_ORIGIN ?? deployment.web);
 for (const u of [api, web])
   if (
     u.username ||

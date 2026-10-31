@@ -1,5 +1,40 @@
 # Workmate · extension · v0.1.0
 
+<!-- public-domains-177 -->
+## 正式域名试用部署 · 阶段177
+
+[Web](https://agent.copypaste.hk) · [Admin](https://agent-dashboard.copypaste.hk) · [API readiness](https://ai-api.copypaste.hk/health/ready)
+
+Extension 0.5.3 点击工具栏打开原生右侧 Side Panel；浏览器授权后主动选文件上传，由云端 Codex 执行。
+
+Extension 0.5.3 opens a native right Side Panel from the toolbar. Browser authorization and approved file uploads feed cloud Codex work.
+
+[Current deployment, login and operations / 当前部署、登录与运维](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/domains-177.md)
+
+Credentials are unchanged: server `/root/cfg/workmate/credentials.txt`, root `0600`. Admin: `admin@workmate.local` + email OTP + TOTP. Test mailbox: [protected operator inbox](https://agent-dashboard.copypaste.hk/ops/mailbox/). AI/media/ads/payment remain synthetic; records/files persist. 凭据保留，测试收件箱使用独立操作口令，外部服务仍为假数据。
+
+[Desktop 0.7.2 Setup](https://agent.copypaste.hk/downloads/CopyPaste-0.7.2-x64-Setup.exe) · [Portable](https://agent.copypaste.hk/downloads/CopyPaste-0.7.2-x64-Portable.exe) · [Extension 0.5.3 ZIP](https://agent.copypaste.hk/downloads/CopyPaste-Extension-0.5.3.zip) · [Source increment / 源码增量](https://agent.copypaste.hk/downloads/workmate-domains-177.zip)
+
+Windows installers are unsigned. Extract the Extension ZIP and load it unpacked in Chrome developer mode; the extension ID stays `fffkcnmfdhahlnifgdilabheppkgnlok`. Desktop AI access uses company services; supplier keys are not embedded. Windows 未签名，扩展采用已解压加载，固定 ID 不变。
+
+```mermaid
+flowchart LR
+ W[Web HTTPS] --> P[Same-origin API proxy]
+ A[Admin HTTPS and MFA] --> P
+ N[Desktop / Extension] --> I[Company API HTTPS]
+ P --> B[Isolated backend and database]
+ I --> B
+ N --> L[Local Codex / approved file upload]
+```
+
+![Actual native Side Panel](assets/screenshots/177-domain-sidepanel.png)
+
+[Actual public Web and Admin recordings](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/domains-177.md#实际页面与核查--actual-pages-and-validation)
+
+---
+
+Earlier releases and deployment history / 以下为历史版本及部署记录。
+
 <!-- lan-deployment-176 -->
 ## 内网 HTTP 部署 · 阶段176
 
