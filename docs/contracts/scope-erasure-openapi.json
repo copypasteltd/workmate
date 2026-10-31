@@ -1,0 +1,128 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Workmate scope erasure",
+    "version": "unreleased-stage150"
+  },
+  "paths": {
+    "/v1/tenants/{tenant}/erasure-preview": {
+      "get": {
+        "summary": "Review current authorized deletion scope and retention limits",
+        "responses": {
+          "200": {
+            "description": "No-store preview"
+          },
+          "401": {
+            "description": "Exact session invalid"
+          },
+          "403": {
+            "description": "Current role/scope or recent administrator MFA required"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/erasure": {
+      "post": {
+        "summary": "Accept an irreversible durable scope fence",
+        "description": "Exact current name, reason_code customer_request/workspace_closure/privacy_request, acknowledge_irreversible=true and acknowledge_retention=true are required. Requires Idempotency-Key; replays reauthorize and return current state. Owner deletes tenants; owner/admin deletes projects. Admin needs admin.content.delete, exact scope and recent MFA, including every child scope for tenant deletion.",
+        "responses": {
+          "202": {
+            "description": "Durable job accepted; no immediate financial hold release"
+          },
+          "401": {
+            "description": "Session no longer valid"
+          },
+          "403": {
+            "description": "Current authority insufficient"
+          },
+          "409": {
+            "description": "Exact name changed or idempotency conflict"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/erasure-preview": {
+      "get": {
+        "summary": "Review current authorized deletion scope and retention limits",
+        "responses": {
+          "200": {
+            "description": "No-store preview"
+          },
+          "401": {
+            "description": "Exact session invalid"
+          },
+          "403": {
+            "description": "Current role/scope or recent administrator MFA required"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/erasure": {
+      "post": {
+        "summary": "Accept an irreversible durable scope fence",
+        "description": "Exact current name, reason_code customer_request/workspace_closure/privacy_request, acknowledge_irreversible=true and acknowledge_retention=true are required. Requires Idempotency-Key; replays reauthorize and return current state. Owner deletes tenants; owner/admin deletes projects. Admin needs admin.content.delete, exact scope and recent MFA, including every child scope for tenant deletion.",
+        "responses": {
+          "202": {
+            "description": "Durable job accepted; no immediate financial hold release"
+          },
+          "401": {
+            "description": "Session no longer valid"
+          },
+          "403": {
+            "description": "Current authority insufficient"
+          },
+          "409": {
+            "description": "Exact name changed or idempotency conflict"
+          }
+        }
+      }
+    },
+    "/v1/admin/scopes/{kind}/{id}/erasure-preview": {
+      "get": {
+        "summary": "Review current authorized deletion scope and retention limits",
+        "responses": {
+          "200": {
+            "description": "No-store preview"
+          },
+          "401": {
+            "description": "Exact session invalid"
+          },
+          "403": {
+            "description": "Current role/scope or recent administrator MFA required"
+          }
+        }
+      }
+    },
+    "/v1/admin/scopes/{kind}/{id}/erasure": {
+      "post": {
+        "summary": "Accept an irreversible durable scope fence",
+        "description": "Exact current name, reason_code customer_request/workspace_closure/privacy_request, acknowledge_irreversible=true and acknowledge_retention=true are required. Requires Idempotency-Key; replays reauthorize and return current state. Owner deletes tenants; owner/admin deletes projects. Admin needs admin.content.delete, exact scope and recent MFA, including every child scope for tenant deletion.",
+        "responses": {
+          "202": {
+            "description": "Durable job accepted; no immediate financial hold release"
+          },
+          "401": {
+            "description": "Session no longer valid"
+          },
+          "403": {
+            "description": "Current authority insufficient"
+          },
+          "409": {
+            "description": "Exact name changed or idempotency conflict"
+          }
+        }
+      }
+    },
+    "/v1/scope-deletions": {
+      "get": {
+        "summary": "Current owner's/admin's account-level paginated scope cleanup records",
+        "description": "Available after the last tenant is deleted. Current active, non-suspended membership is required. page<=10000, page_size<=100. Safe IDs, states, counts and retention categories; no private bodies, locators or credentials.",
+        "responses": {
+          "200": {
+            "description": "No-store current cleanup history"
+          }
+        }
+      }
+    }
+  }
+}

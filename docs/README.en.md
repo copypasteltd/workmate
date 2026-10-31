@@ -1,3 +1,11 @@
+<!-- scope-erasure-150 -->
+
+[聚合永久清理 / Permanent scope cleanup](development/150-scope-erasure.md) · [完整待项 / Full ledger](quality/remaining-work-stage150.md) · [更新 / Changes](changes/150-scope-erasure.md)
+
+First frozen release retained. Increment150 is unreleased; focused checks only. 102 original records and88 required whole acceptance scopes remain.
+
+---
+
 <!-- project-lifecycle-149 -->
 
 [项目管理与最后项目恢复 / Project archive and restore](development/149-project-management.md) · [完整编号 / Full ledger](quality/remaining-work-stage149.md) · [更新 / Changes](changes/149-project-management.md)
