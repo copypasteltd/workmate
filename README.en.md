@@ -1,3 +1,19 @@
+## rc.4 · Complete frozen handoff
+
+This release integrates startup/session corrections into six fresh builds, with Windows unpacked, Portable and Setup distributions. Packaged ASAR files match the current native-main and renderer output. The full bundle includes seven distributions, complete current sources, pinned Codex, bilingual guides and actual media.
+
+[Release and bundle](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.4) · [Full bilingual guide](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.4/docs/releases/v0.1.0-rc.4.md) · [Build evidence and scope](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.4/docs/quality/release-freeze-checkpoint-164.json)
+
+Choose a free database port first, then run Delivery `demo:preflight`, `bootstrap:demo`, `demo:check` and `demo`. Fixes are included in this new bundle. External dependencies remain authorized synthetic data; Windows is unsigned. The original102 IDs and88 mandatory whole-acceptance scopes remain tracked. Media below retains its earlier actual Web scope, without a new installed-client claim.
+
+![Actual revoked session](assets/screenshots/workmate-session-boundary-163-04-revoked-stream-signin.png)
+
+![Actual session interaction](assets/screenshots/workmate-session-boundary-163-04-session-revocation-to-signin.gif)
+
+[Actual MP4](assets/screenshots/workmate-session-boundary-163-04-session-revocation-to-signin.mp4)
+
+---
+
 ## 163 · Current sign-in, old responses and live progress
 
 Business401 responses now clear the old workspace; stale responses cannot overwrite a newer sign-in. Progress-session withdrawal returns to sign-in while permission403 retains it.28 focused results, three client-interface builds and three actual Web/SQL journeys pass. This source correction is not inside the sealed rc.3 installers; frozen bytes stay unchanged.
