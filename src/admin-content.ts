@@ -80,12 +80,25 @@ async function find(tx: Tx, id: string) {
   }
   throw new Problem(404, "NOT_FOUND", "Content not found");
 }
-export const contentUnion = tables
-  .map(
-    (t) =>
-      `SELECT id,tenant_id,project_id,${t === "tasks" ? "title" : t === "workflow_runs" ? "'Workflow run'" : "name"} AS name,'${t}' AS kind,${t === "assets" ? "state" : "content_state"} AS state,moderation_version AS version,created_at FROM ${t}`,
-  )
-  .join(" UNION ALL ");
+function contentSelect(t: (typeof tables)[number]) {
+  return `SELECT id,tenant_id,project_id,${t === "tasks" ? "title" : t === "workflow_runs" ? "'Workflow run'" : "name"} AS name,'${t}' AS kind,${t === "assets" ? "state" : "content_state"} AS state,moderation_version AS version,created_at FROM ${t}`;
+}
+export const contentUnion = tables.map(contentSelect).join(" UNION ALL ");
+
+/** Filter inside every branch without adding author/private-body fields to the DTO.
+ * A brand's original author is version 1, never its latest editor. Legacy brands
+ * without that fact and system-created nodes have no inferred customer owner.
+ */
+export function contentUnionForUser(parameter: number) {
+  if (!Number.isSafeInteger(parameter) || parameter < 1)
+    throw new Error("Invalid content owner parameter");
+  return tables.map((table) => {
+    const author = table === "brand_profiles"
+      ? "(SELECT v.created_by FROM brand_profile_versions v WHERE v.brand_id=brand_profiles.id AND v.version=1)"
+      : "created_by";
+    return `${contentSelect(table)} WHERE ${author}=$${parameter}::uuid`;
+  }).join(" UNION ALL ");
+}
 export function registerAdminContent(
   app: FastifyInstance,
   db: Database,

@@ -424,6 +424,6 @@ export function registerAssets(
           [tenant, project, b.name, b],
         )
       ).rows[0];
-    }, tenant);
+    }, tenant, false, req.principal.id);
   });
 }

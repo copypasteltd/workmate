@@ -7,9 +7,9 @@ import {
 } from "./capability-bindings.js";
 import { stageInputDependencies } from "./task-dependencies.js";
 import { resolveWorkContext } from "./persistent-work.js";
-import { registerAdminContent, contentUnion } from "./admin-content.js";
+import { registerAdminContent, contentUnion, contentUnionForUser } from "./admin-content.js";
 import { registerAdminContentRevisions } from "./admin-content-revisions.js";
-import { registerAdminDirectory, readScope } from "./admin-directory.js";
+import { registerAdminDirectory, readScope, ReadScope } from "./admin-directory.js";
 import { registerAdminOverview } from "./admin-overview.js";
 import { registerAdminJobs } from "./admin-jobs.js";
 import { registerAdminDataJobs } from "./admin-data-jobs.js";
@@ -49,6 +49,7 @@ const pagination = z.object({
   page_size: z.coerce.number().int().min(1).max(100).default(50),
   search: z.string().max(160).default(""),
   tenant_id: uuid.optional(),
+  user_id: uuid.optional(),
 });
 const reason = z.string().trim().min(3).max(2000);
 export function registerAdmin(
@@ -100,7 +101,7 @@ export function registerAdmin(
     app.get(
       "/v1/admin/" + section,
       { preHandler: requireAdmin(db) },
-      async (req) => {
+      async (req, reply) => {
         if (section === "support")
           throw new Problem(
             410,
@@ -108,6 +109,9 @@ export function registerAdmin(
             "Use the scoped support sessions directory",
           );
         const q = pagination.parse(req.query);
+        if (q.user_id && !["content", "execution"].includes(section))
+          throw new Problem(400, "USER_FILTER_UNSUPPORTED", "This directory does not support user attribution");
+        reply.header("Cache-Control", "no-store");
         return db.tx(
           async (tx) => {
             const perm =
@@ -194,6 +198,18 @@ export function registerAdmin(
               ["catalog", "plans", "policy", "access"].includes(section)
             ) {
               await permit(tx, req.principal, perm);
+            } else if (q.user_id) {
+              const users = await readScope(tx, req.principal, "admin.users.read");
+              const selected = (await tx.query(
+                `SELECT u.id,u.name FROM users u WHERE u.id=${users.arg(q.user_id)}::uuid AND ${users.user("admin.users.read")}`,
+                users.values,
+              )).rows[0];
+              if (!selected) throw new Problem(404, "NOT_FOUND", "User not found");
+              if (!users.has(perm)) throw new Problem(403, "ADMIN_FORBIDDEN", "No authorized resource scope");
+              const resources = new ReadScope(users.bs);
+              filter = `(${resources.scope(perm, "r.tenant_id", "r.project_id")}) AND (${resources.scope("admin.users.read", "r.tenant_id", "r.project_id")})`;
+              args = resources.values;
+              extra.subject = { id: selected.id, display_name: selected.name || "User", attribution: "created_by" };
             } else {
               const scoped = await scopePredicate(
                 tx,
@@ -206,6 +222,11 @@ export function registerAdmin(
               );
               args = scoped.values;
               filter = scoped.sql;
+            }
+            if (q.user_id) {
+              args.push(q.user_id);
+              if (section === "content") source = contentUnionForUser(args.length);
+              else filter += ` AND r.created_by=$${args.length}::uuid`;
             }
             if (
               q.tenant_id &&
@@ -225,7 +246,7 @@ export function registerAdmin(
             const order =
               section === "usage"
                 ? "charged_micros::numeric DESC"
-                : "created_at DESC";
+                : "created_at DESC,id DESC";
             const items = (
               await tx.query(
                 `SELECT * ${baseQuery} ORDER BY ${order} LIMIT $${args.length + 1} OFFSET $${args.length + 2}`,
@@ -244,8 +265,9 @@ export function registerAdmin(
                 ).rows,
                 permission_catalog: catalog.admin.permissions,
               };
-            await audit(tx, req.principal, perm, undefined, "succeeded", {
+            await audit(tx, req.principal, perm, q.user_id, "succeeded", {
               tenant_id: q.tenant_id,
+              ...(q.user_id ? { user_id: q.user_id, attribution: "created_by" } : {}),
             });
             return {
               items,
