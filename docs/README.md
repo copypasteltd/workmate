@@ -1,3 +1,11 @@
+## v0.1.0-rc.2 · 已发布 / Published
+
+[GitHub Release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.2) · [完整包 / Complete ZIP](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.2/workmate-v0.1.0-rc.2-complete.zip) · [交付 / Handoff](releases/v0.1.0-rc.2-publication.md) · [实际核对 / Evidence](quality/release-publication-159.json) · [原编号验收 / Ledger](quality/remaining-work-stage159.md)
+
+七类分发包已在完整ZIP中交付；六项线上附件SHA-256核对及实际公共下载通过。原冻结文件/标签保持，产品运行逻辑未变。Seven distributions are delivered inside the complete ZIP; all six online assets match frozen hashes and an actual public download passed. Frozen bytes/tags are preserved.
+
+---
+
 ## v0.1.0-rc.2 · 当前完整冻结发版 / Current complete freeze
 
 [发版 / Release](releases/v0.1.0-rc.2.md) · [启动 / Startup](development/158-current-source-startup.md) · [证据 / Evidence](quality/release-freeze-checkpoint-158.json) · [原编号待验收 / Full-scope ledger](quality/remaining-work-stage158.md)
