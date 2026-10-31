@@ -1,3 +1,35 @@
+## 157 · 云端会话独立多工作
+
+同一私有云端会话可在套餐额度内提交独立新工作。先选择具体任务，再查看进度、补充资料或停止；各项预算和结果独立。Web保留相同输入的原请求键/版本以恢复丢失回复；Extension保留已保存的完整回执并抛弃旧目标的迟到进度。
+
+```mermaid
+flowchart TD
+ A[Private cloud conversation] --> B[New independent work / separate request key]
+ B --> C[Current authority, frozen available history, quota and budget]
+ C --> D[Separate task, reservation and output]
+ A --> E[Select task explicitly]
+ E --> F[Progress / pending input / exact task controls]
+ F --> D
+ D --> G[Short result commit and independent settlement]
+ G --> A
+ H[Lost acceptance response] --> I[Same key, original body and original version]
+ I --> C
+```
+
+使用：从会话交付输入选择“开始独立新工作”；资料需求在所选任务卡中完成；控制链接打开该任务详情。升级先停止旧API/worker、备份并应用完整001–155前向迁移，再启动对应源码服务。旧冻结schema145二进制不兼容schema155。
+
+7项实际SQL/HTTP/Worker（合成runtime）与Extension控制器检查、5组实际Web旅程；4PNG、1GIF/MP4。按快速发版约束跳过全量历史及跨系统回归。生产模型、媒体、真实外部平台及完整业务矩阵仍待验收。
+
+本轮为stage157/schema155未冻结源码增量。v0.1.0-rc.1仍为stage148/schema145，不包含本轮内容。Desktop实际本机线程仍单轮运行，独立会话/团队可并行；本轮仅同步共享云端renderer。Admin本轮为方案/交付说明更新。截图和GIF均为真实Web界面，不表示安装版Desktop或真实Side Panel。
+
+![Actual Web independent tasks](assets/screenshots/workmate-conversation-work-157-04-two-independent-tasks.png)
+
+![Actual Web interaction](assets/screenshots/workmate-conversation-work-157-04-independent-cloud-work.gif)
+
+[MP4](assets/screenshots/workmate-conversation-work-157-04-independent-cloud-work.mp4)
+
+---
+
 <!-- conversation-directory-156 -->
 
 我的会话 → 搜索或已封存 → 下一页/上一页 → 打开原会话继续。同名及封存记录超过200条也可完整浏览。Web/Desktop每页40条；扩展保留原生右侧栏及原首批200条，增加搜索、封存与翻页，浏览不切换当前聊天或清空草稿、附件和待确认消息。每页重新检查当前权限。
