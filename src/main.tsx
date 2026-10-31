@@ -1,3 +1,4 @@
+import { ScopeCleanupPage } from "./scope-cleanup";
 import { ProjectManagement } from "./project-management";
 import { CloudComputers } from "./cloud-computers";
 import { NewWorkTask as NewTask } from "./new-work-task";
@@ -196,6 +197,7 @@ function AppRoutes() {
       <Route path="/sso" element={<CompanySignIn />} />
       <Route path="/sso/confirm" element={<ConfirmCompanyIdentity />} />
       <Route path="/welcome" element={<Onboarding />} />
+      <Route path="/cleanup" element={<ScopeCleanupPage />} />
       <Route path="/invite" element={<Invite />} />
       <Route path="/authorize" element={<NativeAuthorize />} />
       <Route path="/connect-provider" element={<ConnectorLaunch />} />
@@ -567,6 +569,7 @@ function Onboarding() {
             />
           </Field>
         </AsyncForm>
+        <Link className="text-link" to="/cleanup">{t("查看清理記錄", "View cleanup records")}</Link>
       </div>
     </div>
   );
@@ -809,6 +812,7 @@ function Shell() {
             ))}
         </nav>
         <div className="sidebar-bottom">
+          <NavLink to="/cleanup">{t("清理記錄", "Cleanup records")}</NavLink>
           <NavLink to="/app/devices">
             <Monitor size={17} />
             {t("裝置與檔案", "Devices & files")}

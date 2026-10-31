@@ -1,3 +1,6 @@
+import { useNavigate, Link } from "react-router-dom";
+import { ScopeErasureDialog, type ErasureTarget } from "./scope-erasure-dialog";
+import "./scope-erasure.css";
 import { useEffect, useRef, useState } from "react";
 import { Archive, ArrowUpRight, Check, FolderOpen, Pencil, Plus, RotateCcw } from "lucide-react";
 import { api, post, clientSessionGeneration } from "./api";
@@ -11,7 +14,9 @@ type Project = { id: string; name: string; description: string; archived: boolea
 type Action = { kind: "create" } | { kind: "edit" | "archive" | "restore"; project: Project };
 
 export function ProjectManagement() {
-  const { t } = useI18n(), w = useWorkspace();
+  const { t } = useI18n(), w = useWorkspace(), navigate = useNavigate();
+  const [erasure, setErasure] = useState<ErasureTarget | null>(null);
+  const owner = w.me?.memberships.find((m:any) => m.id === w.tenant)?.role === "owner";
   const manager = ["owner", "admin"].includes(w.me?.memberships.find((m: any) => m.id === w.tenant)?.role);
   const [state, setState] = useState("active"), [search, setSearch] = useState(""), [page, setPage] = useState(1);
   const [revision, setRevision] = useState(0), [action, setAction] = useState<Action | null>(null), [notice, setNotice] = useState("");
@@ -68,7 +73,7 @@ export function ProjectManagement() {
           {manager && <><button className="text-button" onClick={() => setAction({ kind: "edit", project: p })}><Pencil size={15} />{t("編輯", "Edit")}</button>
             <button className="text-button" onClick={() => setAction({ kind: p.archived ? "restore" : "archive", project: p })}>
               {p.archived ? <RotateCcw size={15} /> : <Archive size={15} />}{p.archived ? t("恢復", "Restore") : t("封存", "Archive")}
-            </button></>}
+            </button><button className="text-button" onClick={() => setErasure({kind:"projects", id:p.id, endpoint:root+"/projects/"+p.id+"/erasure"})}>{t("永久刪除", "Permanently delete")}</button></>}
         </div></footer>
       </article>)}
     </div>
@@ -80,6 +85,8 @@ export function ProjectManagement() {
       <button className="button secondary" disabled={page * 12 >= directory.data.total || directory.loading} onClick={() => setPage(v => v + 1)}>{t("下一頁", "Next")}</button>
     </nav>}
     {w.base && <ProjectConfigurationPanel key={w.base} />}
+    <section className="card scope-danger-zone"><p>{t("永久清理整個範圍的內容與歷史版本，確認前可查看影響範圍。", "Permanently remove content and historical versions across a scope. Review its impact before confirming.")}</p><Link className="button secondary" to="/cleanup">{t("清理記錄", "Cleanup records")}</Link>{owner && <button className="button secondary" onClick={() => setErasure({kind:"tenants",id:w.tenant,endpoint:root+"/erasure"})}>{t("永久刪除工作空間", "Permanently delete workspace")}</button>}</section>
+    {erasure && <ScopeErasureDialog key={erasure.endpoint} target={erasure} account={w.me.user.id} onClose={() => setErasure(null)} onAccepted={() => {setErasure(null); navigate("/cleanup"); void w.refresh();}} />}
     {action && <Modal title={action.kind === "create" ? t("建立新專案", "Create a project") : action.kind === "edit" ? t("編輯專案", "Edit project") : action.kind === "archive" ? t("封存專案", "Archive project") : t("恢復專案", "Restore project")} onClose={() => setAction(null)}>
       <AsyncForm key={action.kind + ("project" in action ? action.project.id : "")} submitLabel={action.kind === "create" ? t("建立專案", "Create project") : action.kind === "edit" ? t("儲存變更", "Save changes") : action.kind === "archive" ? t("確認封存", "Confirm archive") : t("確認恢復", "Confirm restore")}
         onSubmit={form => submit(form, action)}>
