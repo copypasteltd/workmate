@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { OwnershipTransferAdmin } from "./ownership-transfers";
 import { Link } from "react-router-dom";
 import { api } from "./api";
 import { completeOperation, operationKey } from "./operation-key";
@@ -116,6 +117,7 @@ export function AdminMembershipManager({
           "Suspension blocks workspace access immediately. Review role and projects when restoring access. Global account status is managed separately.",
         )}
       </p>
+      {options.data&&<OwnershipTransferAdmin key={loadedTenant} tenant={loadedTenant} account={account}/>}
       {result ? (
         <>
           <Badge value={result.state} />
