@@ -10,7 +10,7 @@ import {canonical,hash,hmac,name,Problem,uuid} from "./lib.js";
 import {getAgentVersion,persistSpecialist,retainTemplateProvenance} from "./persistent-work.js";
 import {provisionRoleSkills,skillVersionId} from "./skill-lifecycle.js";
 import {fixedBrandVersion} from "./brand-bindings.js";
-import {authority} from "./agent-adoption.js";
+import {projectAuthority as authority} from "./project-authority.js";
 import {confirmedAgentCapabilities} from "./capability-bindings.js";
 
 const version=z.number().int().positive().safe(),digest=z.string().regex(/^[a-f0-9]{64}$/);

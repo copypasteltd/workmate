@@ -1,3 +1,4 @@
+import {conversationDirectory} from "./conversation-directory.js";
 import { assertTaskContentSources } from "./task-content-sources.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
@@ -983,30 +984,11 @@ export function registerPersistentWork(
       }, tenant);
     },
   );
-  app.get(
-    base + "/conversations",
-    { preHandler: requireUser(db) },
-    async (req) => {
-      const { tenant, project } = params.parse(req.params);
-      const q = z
-        .object({
-          q: z.string().trim().max(160).default(""),
-          archived: z.enum(["true", "false"]).default("false"),
-        })
-        .parse(req.query);
-      return db.tx(async (tx) => {
-        await projectAccess(tx, req.principal, tenant, project);
-        return {
-          items: (
-            await tx.query(
-              "SELECT c.*,a.name AS agent_name FROM conversations c JOIN agents a ON a.id=c.agent_id WHERE c.project_id=$1 AND c.created_by=$2 AND c.archived=$3 AND ($4='' OR position(lower($4) in lower(c.name))>0) ORDER BY c.pinned DESC,c.updated_at DESC LIMIT 200",
-              [project, req.principal.id, q.archived === "true", q.q],
-            )
-          ).rows,
-        };
-      }, tenant);
-    },
-  );
+  app.get(base+"/conversations",{preHandler:requireUser(db)},async(req,reply)=>{
+    const {tenant,project}=params.parse(req.params);
+    const result=await db.tx(tx=>conversationDirectory(tx,db,req.principal,tenant,project,req.query),tenant,false,req.principal.id);
+    reply.header("Cache-Control","no-store");return result;
+  });
   app.post(
     base + "/conversations",
     { preHandler: requireUser(db) },

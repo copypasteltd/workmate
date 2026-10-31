@@ -7,7 +7,7 @@ import type { Principal } from "./auth.js";
 import { audit, requireUser } from "./auth.js";
 import { key, projectAccess, replay } from "./access.js";
 import { canonical, hash, hmac, Problem, uuid } from "./lib.js";
-import { validFederation } from "./federation-session.js";
+import {projectAuthority as authority} from "./project-authority.js";
 import {
   capabilityDefinition,
   confirmedAgentCapabilities,
@@ -154,63 +154,6 @@ const sealedHash = (db: Database, domain: string, data: unknown) =>
   hmac(db.config.MASTER_KEY!, `agent-adoption:${domain}:${canonical(data)}`);
 
 /** Hold current user/session and project authority until the short commit ends. */
-export async function authority(
-  tx: Tx,
-  p: Principal,
-  scope: Scope,
-  minimum: "write" | "manage",
-) {
-  await tx.query("SELECT set_config('app.actor_id',$1,true)", [p.id]);
-  const user = (
-    await tx.query(
-      "SELECT status,auth_version FROM users WHERE id=$1 FOR SHARE",
-      [p.id],
-    )
-  ).rows[0];
-  const session = (
-    await tx.query(
-      "SELECT *,expires_at>now() AS valid FROM sessions WHERE id=$1 AND user_id=$2 FOR SHARE",
-      [p.sessionId, p.id],
-    )
-  ).rows[0];
-  if (
-    !user ||
-    user.status !== "active" ||
-    user.auth_version !== p.authVersion ||
-    !session ||
-    !session.valid ||
-    session.revoked_at ||
-    session.auth_version !== p.authVersion ||
-    session.audience !== p.audience ||
-    !(await validFederation(tx, session))
-  )
-    throw new Problem(401, "SESSION_EXPIRED", "Please sign in again");
-  await tx.query("SELECT id FROM tenants WHERE id=$1 FOR SHARE", [
-    scope.tenant,
-  ]);
-  const membership = (
-    await tx.query(
-      "SELECT version,role,status FROM memberships WHERE tenant_id=$1 AND user_id=$2 FOR SHARE",
-      [scope.tenant, p.id],
-    )
-  ).rows[0];
-  await tx.query(
-    "SELECT id FROM projects WHERE id=$1 AND tenant_id=$2 FOR SHARE",
-    [scope.project, scope.tenant],
-  );
-  const binding = (
-    await tx.query(
-      "SELECT * FROM project_members WHERE project_id=$1 AND user_id=$2 FOR SHARE",
-      [scope.project, p.id],
-    )
-  ).rows[0];
-  await projectAccess(tx, p, scope.tenant, scope.project, minimum);
-  return {
-    membership,
-    binding: binding ? { role: binding.role } : null,
-    auth_version: p.authVersion,
-  };
-}
 
 async function describe(
   tx: Tx,

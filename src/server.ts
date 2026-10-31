@@ -81,6 +81,7 @@ import { registerAudioProduction } from "./audio-production-routes.js";
 import { registerPersistentWork } from "./persistent-work.js";
 import { registerProjectConfiguration } from "./project-configuration.js";
 import { registerAgentAdoption } from "./agent-adoption.js";
+import {registerConversationDirectory} from "./conversation-directory.js";
 import { registerAgentCopy } from "./agent-copy.js";
 import { registerAdminIdentities } from "./admin-identities.js";
 import { registerSchedules } from "./schedules.js";
@@ -473,6 +474,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerPersistentWork(app, db, catalog);
   registerProjectConfiguration(app, db, catalog);
   registerAgentAdoption(app, db, catalog);
+  registerConversationDirectory(app,db);
   registerAgentCopy(app, db, catalog);
   registerAgentTemplates(app, db, catalog);
   registerSolutions(app, db, catalog);
