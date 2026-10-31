@@ -48,6 +48,7 @@ export class ChatPanel {
     el("chat-history-search-form").addEventListener("submit",e=>{e.preventDefault();void this.run(()=>this.state.browseHistory({q:el<HTMLInputElement>("chat-history-search").value,archived:el<HTMLInputElement>("chat-history-archived").checked}));});
     el("chat-history-previous").addEventListener("click",()=>void this.run(()=>this.state.browseHistory({direction:"previous"})));
     el("chat-history-next").addEventListener("click",()=>void this.run(()=>this.state.browseHistory({direction:"next"})));
+    el<HTMLSelectElement>("chat-task-select").addEventListener("change",e=>void this.run(()=>this.state.selectTask((e.target as HTMLSelectElement).value)));
     el("chat-stop").addEventListener("click", () => void this.run(() => this.state.stop()));
     el("chat-agent").addEventListener("change", () => { this.state.agentId = el<HTMLSelectElement>("chat-agent").value; });
     el("chat-history").addEventListener("change", () => { this.followLatest = true; void this.run(() => this.state.select(el<HTMLSelectElement>("chat-history").value)); });
@@ -168,7 +169,7 @@ export class ChatPanel {
     el<HTMLInputElement>("chat-budget").disabled = locked;
     const send = el<HTMLButtonElement>("chat-send");
     send.textContent = s.pending && !s.sending ? t("重試同一訊息", "Retry same message") : s.sending ? t("傳送中…", "Sending…") : t("傳送 ↑", "Send ↑");
-    send.disabled = s.loading || s.sending || s.importing || s.unavailable || (!s.pending && (s.busy || s.attachments.some(a => a.state !== "ready")));
+    send.disabled = s.loading || s.sending || s.importing || s.unavailable || (!s.pending && s.attachments.some(a => a.state !== "ready"));
     el("chat-pending").hidden = !s.pending || s.sending;
     el("chat-pending").textContent = t("正在確認這條訊息是否已接收。重試會沿用同一內容與預算。", "Acceptance needs confirmation. Retrying keeps the same message and budget.");
     el("chat-unavailable").hidden = !s.unavailable;
@@ -247,9 +248,15 @@ export class ChatPanel {
       }
       if (atEnd) feed.scrollTop = feed.scrollHeight;
     }
-    const active = c?.tasks?.find((task: any) => unfinished.has(task.status));
-    el("chat-stop").hidden = !active; el<HTMLButtonElement>("chat-stop").disabled = s.sending;
-    const task = s.progress.task;
+    const task=s.progress.task,select=el<HTMLSelectElement>("chat-task-select");
+    el("chat-task-label").textContent=t("查看／補充資料／停止的目標工作","Task to view, provide inputs or stop");
+    const taskOptions=(c?.tasks??[]).map((item:any)=>[item.id,item.title+" · "+item.status+" · "+item.id.slice(0,8)]);
+    const signatureTasks=JSON.stringify([taskOptions,s.selectedTaskId,this.language()]);
+    if(select.dataset.signature!==signatureTasks){select.replaceChildren(...taskOptions.map(([id,text]:string[])=>new Option(text,id)));select.value=s.selectedTaskId;select.dataset.signature=signatureTasks;}
+    el("chat-task-picker").hidden=taskOptions.length===0;select.disabled=s.loading;
+    el("chat-stop").hidden=!task||task.id!==s.selectedTaskId||!unfinished.has(task.status);
+    el<HTMLButtonElement>("chat-stop").disabled=s.sending||s.unavailable;
+    el("chat-new-work-hint").textContent=t("傳送訊息會開始獨立新工作，各自預留預算。補充資料與停止只作用於選中的工作。","Sending starts independent work with its own budget. Inputs and Stop apply to the selected task.");
     const charged = BigInt(task?.charged_micros ?? 0), accrued = BigInt(task?.accrued_micros ?? 0);
     el("chat-cost").textContent = task ? t("已確認用量 ", "Recorded cost ") + exactHKD(String(charged > accrued ? charged : accrued)) + (task.status === "reconciling" ? t(" · 核對中", " · reconciling") : "") : t("每條訊息上限 HKD ", "Per-message limit HKD ") + el<HTMLInputElement>("chat-budget").value;
     this.drawFolder();

@@ -54,6 +54,8 @@ export class ConversationState {
   private fileImport?: { token: string; generation: number; scope: ChatScope; count: number };
   private generation = 0;
   private poll?: Promise<void>;
+  selectedTaskId = "";
+  private taskRevision = 0;
   private activeTask: any = null;
   private events: any[] = [];
   private cursor = 0;
@@ -64,7 +66,7 @@ export class ConversationState {
   private notify() { this.io.changed(); }
   private persist(s: ChatScope) {
     // Serialize writes so a slow earlier response cannot restore a cleared receipt.
-    const value = structuredClone({ conversationId: this.conversation?.id ?? null, pending: this.pending ?? null, creation: this.creation ?? null });
+    const value = structuredClone({ conversationId: this.conversation?.id ?? null, pending: this.pending ?? null, creation: this.creation ?? null, selectedTaskId:this.selectedTaskId });
     const work = this.storageTail.catch(() => {}).then(() => this.io.write(this.storageKey(s), value));
     this.storageTail = work;
     return work;
@@ -72,10 +74,11 @@ export class ConversationState {
   reset() {
     ++this.generation; this.scope = undefined; this.agents = []; this.history = [];
     this.historyNext = null; this.historyPages = [""]; this.historyQuery = ""; this.historyArchived = false; this.historyLoading = false; ++this.historyRevision;
-    this.conversation = null; this.attachments = []; this.draft = ""; this.agentId = "";
+    this.conversation = null; this.attachments = []; this.draft = ""; this.agentId = "";this.selectedTaskId="";
     this.projectConfiguration = null; this.projectConfigurationTaskId = "";
     this.loading = false; this.sending = false; this.unavailable = false; this.pending = undefined;
     this.creation = undefined; this.creating = undefined; this.fileImport = undefined;
+    ++this.taskRevision;this.selectedTaskId="";
     this.activeTask = null; this.events = []; this.cursor = 0; this.poll = undefined;
     this.inputRequests = [];
     this.notify();
@@ -108,6 +111,7 @@ export class ConversationState {
         const c = await this.io.request(s, chatBase(s) + "/conversations/" + id);
         if (!this.current(g)) return;
         this.conversation = c;
+        if(uuid.test(saved?.selectedTaskId)&&c.tasks?.some((t:any)=>t.id===saved.selectedTaskId))this.selectedTaskId=saved.selectedTaskId;
       }
     } catch (e) { if (this.current(g)) { this.unavailable = true; this.projectConfiguration = null; } throw e;
     } finally { if (this.current(g)) { this.loading = false; this.notify(); } }
@@ -205,7 +209,7 @@ export class ConversationState {
     if (id && !uuid.test(id)) throw new Error("Invalid conversation identity");
     if (!this.scope || this.sending || this.pending || this.importing) throw new Error("Resolve the pending message or folder first / 請先確認待發送訊息或資料夾");
     const s = this.scope, g = ++this.generation;
-    this.loading = true; this.unavailable = false; this.poll = undefined; this.attachments = []; this.draft = ""; this.activeTask = null; this.events = []; this.cursor = 0;
+    this.loading = true; this.unavailable = false; this.poll = undefined; this.attachments = []; this.draft = "";this.selectedTaskId="";++this.taskRevision; this.activeTask = null; this.events = []; this.cursor = 0;
     this.conversation = null; this.projectConfiguration = null; this.projectConfigurationTaskId = ""; this.inputRequests = []; this.notify();
     this.creation = undefined; this.creating = undefined;
     try {
@@ -265,7 +269,6 @@ export class ConversationState {
     if (this.unavailable) throw new Error("Refresh this conversation before sending / 請先重新整理會話");
     if (this.projectConfiguration && (!this.projectConfiguration.available || !this.projectConfiguration.body))
       throw new Error("Ask an administrator to review the shared project references / 請管理員重新確認專案共享資料");
-    if (!this.pending && this.busy) throw new Error("Finish or stop the current work before sending / 請先完成或停止目前工作");
     if (!this.pending && this.attachments.some(a => a.state !== "ready")) throw new Error("Wait for uploads, or remove failed attachments / 請等待上傳完成或移除失敗附件");
     const s = this.scope, g = this.generation;
     if (!this.pending) {
@@ -298,7 +301,9 @@ export class ConversationState {
       if (!this.current(g)) return;
       if (!uuid.test(accepted?.task_id)) throw new Error("Task acceptance was not confirmed / 未確認工作是否已接收");
       this.pending = undefined; this.draft = ""; this.attachments = [];
+      this.selectedTaskId=accepted.task_id;++this.taskRevision;this.clearTask();
       await this.persist(s); if (!this.current(g)) return;
+      await this.poll; if(!this.current(g))return;
       await this.refresh();
     } catch (e: any) {
       if (this.current(g) && !this.pending) { this.pending = p; this.draft = p.prompt; }
@@ -312,9 +317,9 @@ export class ConversationState {
   }
   refresh() {
     if (this.poll) return this.poll;
-    const g = this.generation;
+    const g = this.generation,revision=this.taskRevision;
     const work = this.load(g).catch(e => {
-      if (this.current(g)) {
+      if (this.current(g)&&revision===this.taskRevision) {
         this.unavailable = true; if (this.conversation) this.conversation = { ...this.conversation, messages: [] };
         this.projectConfiguration = null; this.projectConfigurationTaskId = "";
         this.activeTask = null; this.events = []; this.cursor = 0; this.inputRequests = []; this.notify();
@@ -324,7 +329,8 @@ export class ConversationState {
     this.poll = work; return work;
   }
   private async load(g: number) {
-    const s = this.scope, id = this.conversation?.id;
+    const s = this.scope, id = this.conversation?.id,revision=this.taskRevision;
+    const valid=()=>this.current(g)&&this.conversation?.id===id&&revision===this.taskRevision;
     if (!s || this.loading) return;
     if (!id) {
       const brief = await this.io.request(s, chatBase(s) + "/project-configuration");
@@ -332,24 +338,24 @@ export class ConversationState {
       return;
     }
     const c = await this.io.request(s, chatBase(s) + "/conversations/" + id);
-    if (!this.current(g) || this.conversation?.id !== id) return;
-    const t = c.tasks?.slice().reverse().find((t: any) => unfinished.has(t.status)) ?? c.tasks?.at(-1);
+    if (!valid()) return;
+    const t=c.tasks?.find((t:any)=>t.id===this.selectedTaskId) ?? c.tasks?.slice().reverse().find((t:any)=>unfinished.has(t.status)) ?? c.tasks?.at(-1);
     let detail = null, events = this.events, cursor = this.cursor, inputRequests: any[] = [];
     const brief = await this.io.request(s, chatBase(s) + (t ? `/tasks/${t.id}/project-configuration` : "/project-configuration"));
-    if (!this.current(g) || this.conversation?.id !== id) return;
+    if (!valid()) return;
     if (t) {
       const same = t.id === this.activeTask?.id;
       const [d, batch] = await Promise.all([
         this.io.request(s, chatBase(s) + "/tasks/" + t.id),
         this.io.request(s, chatBase(s) + "/tasks/" + t.id + "/events?after=" + (same ? this.cursor : 0)),
       ]);
-      if (!this.current(g) || this.conversation?.id !== id) return;
+      if (!valid()) return;
       if (d.source_unavailable || d.content_state !== "active" || c.messages?.some((m: any) => m.source_unavailable))
         throw new Error("Conversation sources are unavailable / 會話來源暫不可用");
       detail = d; events = same ? [...this.events] : []; cursor = same ? this.cursor : 0;
       if (d.status === "needs_input") {
         const requested = await this.io.request(s, chatBase(s) + "/tasks/" + t.id + "/dependencies");
-        if (!this.current(g) || this.conversation?.id !== id) return;
+        if (!valid()) return;
         inputRequests = requested.items;
       }
       for (const e of batch.items) {
@@ -357,8 +363,16 @@ export class ConversationState {
       }
       events = events.slice(-1000);
     }
-    this.acceptBrief(brief, t?.id); this.conversation = c; this.activeTask = detail; this.events = events; this.cursor = cursor; this.unavailable = false;
+    this.selectedTaskId=t?.id??"";this.acceptBrief(brief, t?.id); this.conversation = c; this.activeTask = detail; this.events = events; this.cursor = cursor; this.unavailable = false;
     this.inputRequests = inputRequests; this.notify();
+  }
+  private clearTask(){this.activeTask=null;this.events=[];this.cursor=0;this.inputRequests=[];this.projectConfiguration=null;this.projectConfigurationTaskId="";}
+  async selectTask(id:string){
+    const s=this.scope,g=this.generation;
+    if(!s||!this.conversation?.tasks?.some((t:any)=>t.id===id)||id===this.selectedTaskId)return;
+    this.selectedTaskId=id;const revision=++this.taskRevision;this.clearTask();this.notify();
+    await this.persist(s);await this.poll?.catch(()=>{});
+    if(this.current(g)&&revision===this.taskRevision)await this.refresh();
   }
   async answerInput(id: string, expectedVersion: number, answer: string) {
     const s = this.scope, g = this.generation, task = this.activeTask;
@@ -372,8 +386,8 @@ export class ConversationState {
   }
   async stop() {
     const s = this.scope, g = this.generation;
-    const t = this.conversation?.tasks?.find((t: any) => unfinished.has(t.status));
-    if (!s || !t) return;
+    const t=this.activeTask;
+    if(!s||this.unavailable||!t||t.id!==this.selectedTaskId||!unfinished.has(t.status))return;
     await this.io.request(s, chatBase(s) + "/tasks/" + t.id + "/cancel", "POST", {}, crypto.randomUUID());
     if (this.current(g)) await this.refresh();
   }
