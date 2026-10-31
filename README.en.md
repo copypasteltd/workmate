@@ -1,14 +1,14 @@
-# Workmate · backend · v0.1.0-rc.5
+# Workmate · backend · v0.1.0
 
-[中文](README.md) · [Complete release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.5) · [Bilingual setup guide](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.5/docs/releases/v0.1.0-rc.5.md)
+[中文](README.md) · [Complete release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0) · [Bilingual setup guide](https://github.com/copypasteltd/workmate/blob/v0.1.0/docs/releases/v0.1.0.md)
 
 Workmate serves Hong Kong enterprises, beginning with existing marketing teams. This independent **backend** component uses **Fastify / PostgreSQL / cloud Codex**. Business areas include design/media, advertising and website/SEO/GEO analytics, repeatable workflows and software development. CopyPaste's warm background, dark text, brand accents and editorial typography guide the interface.
 
-## Current branch increment · stage166
+## Included user tasks/content · stage166
 
 User detail opens creator-filtered tasks and content. Search, pagination and reload retain the user; return navigation restores directory conditions. Changing users discards previous bodies/operations. Current user scope intersects resource scope; body/download authority and recent MFA remain separate. Twenty content kinds use their actual creator; brands retain the original version-1 author. Unknown legacy authors remain unattributed in the full directory. Counts represent resource records; an asset and its cloud node have independent identities.
 
-This source increment follows rc.5 and is not inside its frozen ZIP. Frozen tags/downloads stay unchanged. Current backend/Admin builds, eight native SQL/API cases and eight actual browser checks passed. The original locator failure and its media remain preserved. Authorized synthetic dependencies and all whole-acceptance scopes remain.
+This functionality is included in v0.1.0 sources/distributions. Previous rc.5 tags/downloads stay unchanged. Current backend/Admin builds, eight native SQL/API cases and eight actual browser checks passed. The original locator failure and its media remain preserved. Authorized synthetic dependencies and all whole-acceptance scopes remain.
 
 ```mermaid
 flowchart LR
@@ -28,6 +28,12 @@ flowchart LR
 ![Actual interaction](assets/screenshots/workmate-admin-user-resources-166-02-user-task-content-scope.gif)
 
 [MP4](assets/screenshots/workmate-admin-user-resources-166-02-user-task-content-scope.mp4) · [Logic / 逻辑](https://github.com/copypasteltd/workmate/blob/docs/docs/development/166-admin-user-resource-context.md) · [Evidence / 回执](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/admin-user-resources-166.json)
+
+## Current frozen release · v0.1.0
+
+All clients, backend and six source trees are delivered together, including the latest creator-filtered Admin tasks/content. Six components are rebuilt. Rebuilt Desktop outputs match the qualified Windows app/Portable/Setup byte for byte, so those verified binaries are reused. Stage166's eight SQL/API cases and eight actual UI checks retain their source-bound original evidence; broad historical regression is not rerun.
+
+Branch`backend`, frozen tag`v0.1.0-backend`. [Source and installers](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0) · [Freeze record](https://github.com/copypasteltd/workmate/blob/v0.1.0/docs/quality/release-freeze-checkpoint-167.json) · [Open work](https://github.com/copypasteltd/workmate/blob/v0.1.0/docs/quality/remaining-work-stage167.md). AI/media/ads/payments use the authorized synthetic mode; Windows is unsigned. Existing screenshots/GIF/MP4 retain their actual capture scope and do not imply new full installation/professional qualification.
 
 ## Architecture and responsibilities
 
@@ -118,7 +124,7 @@ The shared media shows this release's actual Web/SQL recovery and Admin MFA/targ
 
 ## rc.5 frozen baseline qualification and publication
 
-Seven focused SQL cases, four draft-state cases and actual Web/Admin interactions accompany six builds and Windows unpacked/Portable/Setup packaging. Current ASAR bytes and pinned Codex hashes are checked. Repeated broad regression is omitted as requested; the release checkpoint records actual results.
+Historical rc.5 record: seven focused SQL cases, four draft-state cases and actual Web/Admin interactions accompanied six builds and Windows unpacked/Portable/Setup packaging. Current ASAR bytes and pinned Codex hashes are checked. Repeated broad regression is omitted as requested; the release checkpoint records actual results.
 
 Branch `backend`, frozen tag `v0.1.0-rc.5-backend`. Later changes advance branches and notes while frozen bytes/tags remain. AI/media/ads/payments use the authorized synthetic mode. Windows is unsigned. All102 IDs and88 required whole-acceptance scopes remain;88 is not a count of missing modules. Production providers, signed updates, other OSes and full professional acceptance remain tracked.
 
