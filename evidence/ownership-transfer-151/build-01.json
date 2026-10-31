@@ -1,0 +1,97 @@
+{
+  "at": "2026-10-31T03:43:05.685Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "native surface boundaries",
+      "arguments": [
+        "--test",
+        "tests/native-surface-integrity.test.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web build",
+      "arguments": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Admin compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Admin build",
+      "arguments": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop build",
+      "arguments": [
+        "D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "unsigned Windows package",
+      "arguments": [
+        "node_modules/electron-builder/out/cli/cli.js",
+        "--win",
+        "--dir",
+        "--config.directories.output=release/ownership-transfer-151-01"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_unchanged": true,
+  "package_root": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\release\\ownership-transfer-151-01\\win-unpacked",
+  "package_files": {
+    "CopyPaste.exe": "95420b1a2fbb33c77cb8c3117f91e8c88c49b8ad9314b2bb03fa76dc5014ae86",
+    "resources/app.asar": "7dc3aaba9ab634a9f67c87e5ef3c6fe8abe86c8399ba89e5cebb4fe7d1b288e0",
+    "resources/local-codex/codex.exe": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+    "resources/local-codex/runtime-manifest.json": "13490b9b1b9822967b8cea7134c2ba306671e58050a0897545184a7af6f34605"
+  },
+  "source_manifest": {
+    "path": "evidence/ownership-transfer-151/build-01-sources.json",
+    "sha256": "43cc274e5f97265d08b9f08f1d9f19426c2674f25af6df4c4115796868877e93"
+  },
+  "raw_report": {
+    "path": "evidence/ownership-transfer-151/build-01.tap",
+    "sha256": "2caddb678817d473a4310d699fe8312a87c8bb132a39555b1878450d5442cbd7"
+  },
+  "verifier": {
+    "path": "evidence/ownership-transfer-151/build-01-verifier.mjs",
+    "sha256": "6bca398f1aaa39696ded44ec9fb18a9783e62e07b96dfb69e99a1313339732d6"
+  },
+  "scope": "Current Web, Admin and unsigned frameless Windows Desktop ownership handover build. Native surface boundary checks preserve Desktop-local/Extension-cloud execution. Unchanged Extension evidence remains historical; no broad regression suite. Actual project interactions are qualified separately; frozen release artifacts remain unchanged."
+}

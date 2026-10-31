@@ -1,0 +1,151 @@
+TAP version 13
+# warning: LF will be replaced by CRLF in .gitignore.
+# The file will have its original line endings in your working directory
+# warning: LF will be replaced by CRLF in .gitignore.
+# The file will have its original line endings in your working directory
+# Subtest: native preview admission binds a green report to the actual runtime, installers and extension bytes
+    # Subtest: reject a legacy green report without a byte binding
+    ok 1 - reject a legacy green report without a byte binding
+      ---
+      duration_ms: 4.0584
+      ...
+    # Subtest: bind new source bytes before staging and keep the same manifest after staging
+    ok 2 - bind new source bytes before staging and keep the same manifest after staging
+      ---
+      duration_ms: 784.8884
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/resources/app.asar
+    ok 3 - reject changed bytes: release/frameless/win-unpacked/resources/app.asar
+      ---
+      duration_ms: 133.5433
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/resources/native-host.cjs
+    ok 4 - reject changed bytes: release/frameless/win-unpacked/resources/native-host.cjs
+      ---
+      duration_ms: 128.0339
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/CopyPaste.exe
+    ok 5 - reject changed bytes: release/frameless/win-unpacked/CopyPaste.exe
+      ---
+      duration_ms: 131.2389
+      ...
+    # Subtest: reject changed bytes: release/frameless/CopyPaste-0.5.0-x64-Setup.exe
+    ok 6 - reject changed bytes: release/frameless/CopyPaste-0.5.0-x64-Setup.exe
+      ---
+      duration_ms: 122.3996
+      ...
+    # Subtest: reject changed bytes: dist/background.js
+    ok 7 - reject changed bytes: dist/background.js
+      ---
+      duration_ms: 117.8118
+      ...
+    # Subtest: reject changed bytes: src/main.ts
+    ok 8 - reject changed bytes: src/main.ts
+      ---
+      duration_ms: 137.1006
+      ...
+    # Subtest: reject added or missing extension files
+    ok 9 - reject added or missing extension files
+      ---
+      duration_ms: 314.6701
+      ...
+    # Subtest: reject incomplete cleanup and failures
+    ok 10 - reject incomplete cleanup and failures
+      ---
+      duration_ms: 1.4425
+      ...
+    # Subtest: allow documentation changes when all runtime bytes remain identical
+    ok 11 - allow documentation changes when all runtime bytes remain identical
+      ---
+      duration_ms: 222.1163
+      ...
+    1..11
+ok 1 - native preview admission binds a green report to the actual runtime, installers and extension bytes
+  ---
+  duration_ms: 3128.8329
+  ...
+1..1
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3256.9583
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 2050 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     0.56 kB │ gzip:   0.34 kB
+dist/assets/index-CzyjkK01.css    163.79 kB │ gzip:  28.94 kB
+dist/assets/index-Bnz0rIUU.js   1,138.44 kB │ gzip: 344.21 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.88s
+[33m[PLUGIN_TIMINGS] [0mJavaScript callbacks ran for 11.2s of this 11.9s build (94%).
+The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - plugin vite:css-post renderChunk (75%, 8.9s, 1 call)
+  - plugin vite:prepare-out-dir renderStart (12%, 1.4s, 1 call)
+Additional callback time came from callbacks under 1s.
+See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 1994 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.55 kB │ gzip:   0.34 kB
+dist/assets/index-354hQXh7.css  107.81 kB │ gzip:  19.89 kB
+dist/assets/index-B9W_3qIv.js   809.99 kB │ gzip: 235.35 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 12.22s
+[33m[PLUGIN_TIMINGS] [0mJavaScript callbacks ran for 4.5s of this 12.2s build (37%).
+The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - plugin vite:css-post renderChunk (26%, 3.2s, 1 call)
+  - plugin vite:css transform (8%, 1.0s, 20 calls)
+Additional callback time came from callbacks under 1s.
+See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+
+
+> @copypaste/desktop@0.7.1 build
+> node scripts/configure-deployment.mjs && node scripts/configure-update-trust.mjs && node scripts/build-update-host.mjs && node scripts/build-program-host.mjs && tsc && node scripts/build-native-host.mjs && vite build --config vite.config.ts
+
+Deployment origins compiled; no AI credentials are embedded.
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 2048 modules transformed.
+rendering chunks...
+computing gzip size...
+renderer-dist/index.html                     0.95 kB │ gzip:   0.47 kB
+renderer-dist/assets/index-BnUmtZ9q.css    167.89 kB │ gzip:  29.35 kB
+renderer-dist/assets/index-CUnRadf4.js   1,093.07 kB │ gzip: 335.50 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 754ms
+  • electron-builder  version=26.15.3 os=10.0.26200
+  • loaded configuration  file=package.json ("build" field)
+  • executing @electron/rebuild  electronVersion=44.5.1 arch=x64 buildFromSource=false workspaceRoot=D:\dev\copypasted\自有agent\dev\copypaste-desktop projectDir=./ appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=win32 arch=x64 electron=44.5.1 appOutDir=release\ownership-transfer-151-01\win-unpacked
+  • using custom unpacked Electron distribution  electronDist=node_modules\electron\dist
+  • copying unpacked Electron  source=D:\dev\copypasted\自有agent\dev\copypaste-desktop\node_modules\electron\dist destination=D:\dev\copypasted\自有agent\dev\copypaste-desktop\release\ownership-transfer-151-01\win-unpacked
+  • searching for node modules  pm=npm searchDir=D:\dev\copypasted\自有agent\dev\copypaste-desktop
+  • duplicate dependency references  dependencies=["react-dom@19.3.1","react-dom@19.3.1"]
+  • updating asar integrity executable resource  executablePath=release\ownership-transfer-151-01\win-unpacked\CopyPaste.exe
+  • file signing skipped via signExecutable configuration  file=release\ownership-transfer-151-01\win-unpacked\CopyPaste.exe
