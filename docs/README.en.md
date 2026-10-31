@@ -2,7 +2,7 @@
 
 用户任务与内容入口、真实作者归属、权限交集和导航恢复已完成。Creator-filtered user tasks/content and scoped navigation are implemented. 八项原生SQL/API和八组实际Admin页面检查通过；不变的其他端沿用冻结基线。
 
-[本轮更新 / Changes](changes/166-admin-user-resources.md) · [当前源码逻辑 / Behavior](development/166-admin-user-resource-context.md) · [检查及媒体 / Evidence](quality/admin-user-resources-166.json) · [完整待办 / Ledger](quality/remaining-work-stage166.md)
+[Git发布回执 / Publication](quality/admin-user-resources-publication-166.json) · [本轮更新 / Changes](changes/166-admin-user-resources.md) · [当前源码逻辑 / Behavior](development/166-admin-user-resource-context.md) · [检查及媒体 / Evidence](quality/admin-user-resources-166.json) · [完整待办 / Ledger](quality/remaining-work-stage166.md)
 
 下方 rc.5 下载为保留的冻结基线，不包含本次源码增量。The frozen rc.5 download below remains unchanged and excludes this source increment.
 
