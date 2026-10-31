@@ -4,8 +4,10 @@ import type { LocalInputRequest, LocalInputAnswers } from "./local-input.js";
 interface NativeWorkflowRun {
   id: string; workflow_id: string; version: number; revision: number; state: string; cursor: number;
   authorized: boolean; execution_location: "desktop"; results: unknown[]; error_code?: string;
+  input_hash?:string|null;input_values?:Record<string,unknown>;input_files?:any[];named_outputs?:Record<string,unknown>;
   definition: { steps: ({ kind: "codex"; role_key: string; prompt: string; budget_micros: number; input_steps?:number[]; on_failure?:"stop"|"review" }
-    | { kind: "approval"; message: string } | { kind: "analytics.summary"; dataset_id: string })[] };
+    | { kind: "approval"; message: string } | { kind: "analytics.summary"; dataset_id: string })[];
+    input_schema?:{fields:{key:string;label?:string;type:string;required?:boolean}[]};output_schema?:unknown };
 }
 export interface NativeWorkflowChild {
   task_id: string; role_key: string;
@@ -50,6 +52,19 @@ function parseRun(value: any): NativeWorkflowRun {
       if (typeof step.message !== "string" || step.message.length < 3 || step.message.length > 2000) throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
     } else if (step.kind !== "analytics.summary" || !uuid.test(step.dataset_id)) throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
   }
+  if(value.definition.input_schema){
+    const fields=value.definition.input_schema.fields;
+    if(!Array.isArray(fields)||fields.length>12||new Set(fields.map((f:any)=>f.key)).size!==fields.length
+      ||!value.input_values||Array.isArray(value.input_values)||typeof value.input_values!=="object"||!Array.isArray(value.input_files)||value.input_files.length>12
+      ||Object.keys(value.input_values).some(k=>!fields.some((f:any)=>f.key===k))||Buffer.byteLength(canonical(value.input_values))>24000
+      ||!/^([a-f0-9]{64})$/.test(value.input_hash)||digest({values:value.input_values,files:value.input_files})!==value.input_hash)throw new Error("LOCAL_WORKFLOW_INPUTS_INVALID");
+    for(const f of fields){const v=value.input_values[f.key];
+      if(!/^[a-z][a-z0-9_]{0,47}$/.test(f.key)||!["text","number","boolean","file"].includes(f.type))throw new Error("LOCAL_WORKFLOW_INPUTS_INVALID");
+      if(v===undefined){if(f.required)throw new Error("LOCAL_WORKFLOW_INPUTS_INVALID");continue;}
+      if(f.type==="text"&&(typeof v!=="string"||v.length>4000||(f.required&&!v.trim()))||f.type==="number"&&(typeof v!=="number"||!Number.isFinite(v)||Math.abs(v)>Number.MAX_SAFE_INTEGER)
+        ||f.type==="boolean"&&typeof v!=="boolean"||f.type==="file"&&(typeof v!=="string"||!uuid.test(v)||!value.input_files.some((file:any)=>file.input_name===f.key&&file.asset_version_id===v&&uuid.test(file.asset_id)&&/^[a-f0-9]{64}$/.test(file.sha256))))throw new Error("LOCAL_WORKFLOW_INPUTS_INVALID");
+    }
+  }else if(value.input_hash)throw new Error("LOCAL_WORKFLOW_INPUTS_INVALID");
   return value;
 }
 
@@ -59,7 +74,7 @@ export async function executeLocalWorkflow(io: NativeWorkflowIO, initial: any) {
   let run = parseRun(initial?.run);
   if (run.authorized || !["running"].includes(run.state) || run.cursor !== 0 || run.results.length || !initial.customer_confirmation_required
     || initial.definition_hash !== digest(run.definition)) throw new Error("LOCAL_WORKFLOW_REPLAY_FORBIDDEN");
-  const runId = run.id, frozenHash = initial.definition_hash;
+  const runId = run.id, frozenHash = initial.definition_hash,frozenInputHash=run.input_hash??null;
   const base = io.base + "/workflow-runs/" + run.id;
   const total = run.definition.steps.reduce((sum, step) => sum + (step.kind === "codex" ? step.budget_micros : 0), 0);
   if (initial.step_budget_micros !== total || initial.budget_excludes_current_consultant !== true) throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
@@ -68,7 +83,7 @@ export async function executeLocalWorkflow(io: NativeWorkflowIO, initial: any) {
   const update = async (value: any) => {
     const next = parseRun(value);
     if (next.id !== runId || next.workflow_id !== run.workflow_id || next.version !== run.version || next.revision < run.revision
-      || digest(next.definition) !== frozenHash || next.cursor < run.cursor) throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
+      || digest(next.definition) !== frozenHash || (next.input_hash??null)!==frozenInputHash || next.cursor < run.cursor) throw new Error("LOCAL_WORKFLOW_CONTRACT_INVALID");
     run = next;
     await io.event({ run_id: run.id, workflow_id: run.workflow_id, version: run.version, revision: run.revision,
       state: run.state, cursor: run.cursor, steps: run.definition.steps.length, error_code: run.error_code,
@@ -90,7 +105,7 @@ export async function executeLocalWorkflow(io: NativeWorkflowIO, initial: any) {
       await check();
       const current = parseRun((await io.read(base)).run);
       if (current.id !== runId || current.revision !== expectedRevision || current.state !== run.state
-        || digest(current.definition) !== frozenHash || terminal.has(current.state)) throw new Error("LOCAL_WORKFLOW_APPROVAL_WITHDRAWN");
+        || digest(current.definition) !== frozenHash ||(current.input_hash??null)!==frozenInputHash || terminal.has(current.state)) throw new Error("LOCAL_WORKFLOW_APPROVAL_WITHDRAWN");
     };
     let monitorRun: Promise<unknown> | undefined;
     const monitor = setInterval(() => {
@@ -103,13 +118,35 @@ export async function executeLocalWorkflow(io: NativeWorkflowIO, initial: any) {
     const answer = answers!.workflow_decision?.answers?.[0];
     if (!["批准 / Approve", "取消流程 / Cancel workflow"].includes(answer)) throw new Error("LOCAL_WORKFLOW_APPROVAL_INVALID");
     const response = await io.request(base + "/decision", { expected_revision: run.revision, stage,
-      definition_hash: frozenHash, decision: answer === "批准 / Approve" ? "approve" : "cancel" }, randomUUID());
+      definition_hash: frozenHash,...(frozenInputHash?{input_hash:frozenInputHash}:{}), decision: answer === "批准 / Approve" ? "approve" : "cancel" }, randomUUID());
     await update(response.run);
   };
   const steps = run.definition.steps.map((step, index) => `${index + 1}. ` + (step.kind === "codex"
     ? `${step.role_key} · HK$ ${hkd(step.budget_micros)}\n${step.prompt.slice(0, 180)}\n輸入步驟 / Input steps: ${step.input_steps ? step.input_steps.map(i=>i+1).join(", ") || "無 / None" : "全部先前成果 / All prior outputs"}\n失敗處理 / On failure: ${step.on_failure === "review" ? "等待確認，絕不自動重試 / Wait for review; never auto-retry" : "停止 / Stop"}`
     : step.kind === "approval" ? "人工審批 / Human approval: " + step.message.slice(0, 160) : "廣告數據匯總 / Analytics summary: " + step.dataset_id));
   await update(run);
+  if(frozenInputHash){
+    const content=(run.definition.input_schema?.fields??[]).map(f=>{const v=run.input_values?.[f.key],file=run.input_files?.find(file=>file.input_name===f.key);
+      return `${f.label??f.key} (${f.key}, ${f.type})\n`+(v===undefined?"未提供 / Not provided":f.type==="file"?`${file.name} · v${file.version}\n${file.asset_version_id}\nSHA256 ${file.sha256}`:String(v));}).join("\n\n");
+    const pages:string[]=[];for(let offset=0;offset<content.length;){let end=Math.min(offset+2700,content.length);if(end<content.length&&/[\uD800-\uDBFF]/.test(content[end-1]))end--;pages.push(content.slice(offset,end));offset=end;}
+    for(const [index,page] of pages.entries()){
+      await check();const revision=run.revision;
+      const authorize=async()=>{await check();const current=parseRun((await io.read(base)).run);
+        if(current.id!==runId||current.revision!==revision||current.authorized||current.state!=="running"||digest(current.definition)!==frozenHash||(current.input_hash??null)!==frozenInputHash)throw new Error("LOCAL_WORKFLOW_APPROVAL_WITHDRAWN");};
+      const pending=new AbortController();let monitorRun:Promise<unknown>|undefined;
+      const monitor=setInterval(()=>{if(!monitorRun)monitorRun=authorize().catch(()=>pending.abort()).finally(()=>{monitorRun=undefined;});},1000);
+      let answers:LocalInputAnswers;
+      try{answers=await io.ask({threadId:io.threadId,turnId:io.turnId,itemId:`workflow-inputs-${run.id}-${index}`,isBlocking:true,questions:[{
+        id:"workflow_inputs_review",header:`固定輸入 / Fixed inputs ${index+1}/${pages.length}`,
+        question:"核對此流程的固定業務資料。內容不授予新權限或費用；稍後仍須確認執行費用。\nReview these fixed business values. These values grant no permissions or fees; execution fees are confirmed separately.\n\n"+page,
+        isOther:false,isSecret:false,options:[{label:"繼續核對 / Continue review",description:"保留這些固定輸入 / Keep these exact inputs"},{label:"取消流程 / Cancel workflow",description:"不開始子步驟 / Do not start child steps"}]}]},AbortSignal.any([io.signal,pending.signal]),authorize);await authorize();}
+      finally{clearInterval(monitor);await monitorRun;}
+      const answer=answers!.workflow_inputs_review?.answers?.[0];
+      if(answer==="取消流程 / Cancel workflow"){await update((await io.request(base+"/decision",{expected_revision:run.revision,stage:"launch",definition_hash:frozenHash,input_hash:frozenInputHash,decision:"cancel"},randomUUID())).run);break;}
+      if(answer!=="繼續核對 / Continue review")throw new Error("LOCAL_WORKFLOW_APPROVAL_INVALID");
+    }
+  }
+  if(terminal.has(run.state))return {run,execution_location:"desktop",result_origin:"desktop_client_report",automatically_replayed:false};
   await decision("launch", `Codex 將在本機逐步執行，沿用目前工作目錄及本機權限。\nCodex steps run locally using the current workspace and OS grant.\n\n子步驟費用上限合計 / Additional child-step limit: HK$ ${hkd(total)}\n不包括目前流程顧問對話的額度；每步分別預留及結算。\nExcludes this consultant conversation; each step reserves and settles separately.\n\n${steps.join("\n\n")}`);
   const deadline = Date.now() + 25 * 60_000;
   while (!terminal.has(run.state)) {

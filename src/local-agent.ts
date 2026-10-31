@@ -52,6 +52,7 @@ interface Operation {
   dispatchId?: string;
   prompt: string;
   deliveryRevision?: NativeDeliveryRevision;
+  localHandoff?: { id: string; expected_revision: number; definition_hash: string };
   budget: number;
   taskId?: string;
   solution?: {
@@ -95,6 +96,7 @@ interface LocalRecord extends LocalAgentScope {
   workspaceHash: string;
   role: string;
   specialist?: { id: string; version: number; name: string };
+  handoff?: { id: string; sourceTaskId: string; sourceTitle: string; definitionHash: string; revision: number; prompt: string; budget: number };
   geo?: { experimentId: string; experimentSha256: string; questionKey: string; runId?: string };
   grant?: LocalPermissionGrant;
   revoked: boolean;
@@ -192,6 +194,7 @@ export class LocalAgentController {
   private running = new Map<string, ActiveLocalOperation>();
   private teamRuns = new Map<string, { abort: AbortController; done: Promise<void> }>();
   private teamAdmissions = new Set<string>();
+  private handoffAdmissions = new Set<string>();
   // Questions and answers are live process state, never journal entries. A
   // renderer refresh can redisplay a question; an app restart cannot replay it.
   private inputs = new Map<
@@ -360,6 +363,8 @@ export class LocalAgentController {
       workspace: r.workspace,
       role: r.role,
       specialist: r.specialist,
+      handoff: r.handoff ? { id:r.handoff.id, sourceTaskId:r.handoff.sourceTaskId, sourceTitle:r.handoff.sourceTitle,
+        definitionHash:r.handoff.definitionHash, budget:r.handoff.budget } : undefined,
       team: r.team ? { group: r.team.group, runId: r.team.run?.id, phase: r.team.phase, state: r.team.run?.state,
         error: r.team.error, rootId: r.id } : r.teamMember ? { rootId:r.teamMember.rootId, runId:r.teamMember.runId, stepKey:r.teamMember.stepKey } : undefined,
       geo: r.geo,
@@ -604,6 +609,56 @@ export class LocalAgentController {
     await this.persist();
     return this.view(r);
   }
+  async prepareHandoff(input: LocalAgentScope & { handoff: string; mode: LocalPermissionMode }) {
+    if (!uuid.test(input.tenant) || !uuid.test(input.project) || !uuid.test(input.handoff) || !modes.has(input.mode))
+      throw new LocalAgentError("LOCAL_REQUEST_INVALID");
+    const admissionKey=input.tenant+":"+input.project+":"+input.handoff;
+    if(this.handoffAdmissions.has(admissionKey)) throw new LocalAgentError("LOCAL_OPERATION_PENDING");
+    this.handoffAdmissions.add(admissionKey);
+    try {
+      const actor=await this.identity(), generation=this.generation;
+      const response=await this.io.request(`/v1/tenants/${input.tenant}/projects/${input.project}/local-handoffs/${input.handoff}`);
+      if(response.status!==200) throw new LocalAgentError(response.body?.error?.code ?? response.body?.code ?? "LOCAL_HANDOFF_CHANGED");
+      const h=response.body;
+      if(h.id!==input.handoff || !uuid.test(h.source_task_id) || !/^[a-f0-9]{64}$/.test(h.definition_hash)
+        || !Number.isSafeInteger(h.revision) || h.revision<1 || typeof h.prompt!=="string" || !h.prompt.trim() || h.prompt.length>30000
+        || typeof h.source_title!=="string" || !Number.isSafeInteger(Number(h.budget_micros)) || Number(h.budget_micros)<10000 || Number(h.budget_micros)>1e10)
+        throw new LocalAgentError("LOCAL_HANDOFF_CHANGED");
+      await this.identity();
+      if(generation!==this.generation) throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
+      const existing=(await this.state()).sessions.find(r=>r.actorId===actor.actorId&&r.epoch===actor.epoch&&r.tenant===input.tenant&&r.project===input.project&&r.handoff?.id===h.id&&!r.revoked);
+      if(existing) return this.view(existing);
+      if(h.state!=="waiting") throw new LocalAgentError("LOCAL_HANDOFF_CHANGED");
+      const made=await this.create(input,h.role_key);
+      if(!made) return null;
+      const r=await this.record(made.id);
+      r.handoff={id:h.id,sourceTaskId:h.source_task_id,sourceTitle:h.source_title,definitionHash:h.definition_hash,revision:h.revision,prompt:h.prompt,budget:Number(h.budget_micros)};
+      await this.persist();
+      // Real native consent, separate from the subsequent fee/start action.
+      return this.permission(r.id,input.mode);
+    } finally { this.handoffAdmissions.delete(admissionKey); }
+  }
+  async startHandoff(id: string, definitionHash: string) {
+    const r=await this.record(id),h=r.handoff;
+    if(!h||h.definitionHash!==definitionHash) throw new LocalAgentError("LOCAL_HANDOFF_CHANGED");
+    this.grant(r);
+    if(this.busy.has(id)||this.handoffAdmissions.has(id)||this.permissions.has(id)||r.operation||r.lastTask||r.uncertain)
+      throw new LocalAgentError("LOCAL_OPERATION_PENDING");
+    this.handoffAdmissions.add(id);
+    try {
+      const current=await this.api(r,`/v1/tenants/${r.tenant}/projects/${r.project}/local-handoffs/${h.id}`);
+      if(current.state!=="waiting"||current.revision!==h.revision||current.definition_hash!==h.definitionHash
+        ||current.prompt!==h.prompt||current.role_key!==r.role||Number(current.budget_micros)!==h.budget)
+        throw new LocalAgentError("LOCAL_HANDOFF_CHANGED");
+      await this.record(id);this.grant(r);
+      if(r.operation||r.lastTask||r.uncertain) throw new LocalAgentError("LOCAL_OPERATION_PENDING");
+      r.operation={createKey:randomUUID(),startKey:randomUUID(),finishKey:randomUUID(),cancelKey:randomUUID(),
+        prompt:h.prompt,budget:h.budget,phase:"accepting",localHandoff:{id:h.id,expected_revision:h.revision,definition_hash:h.definitionHash}};
+      r.messages.push({role:"user",text:h.prompt});r.error=undefined;
+      await this.persist();
+      return this.execute(r);
+    } finally { this.handoffAdmissions.delete(id); }
+  }
   async permission(id: string, mode: LocalPermissionMode) {
     if (!modes.has(mode)) throw new LocalAgentError("LOCAL_PERMISSION_INVALID");
     const r = await this.record(id),
@@ -633,6 +688,7 @@ export class LocalAgentController {
   }
   async send(id: string, prompt: string, budget: number) {
     const r = await this.record(id);
+    if (r.handoff) throw new LocalAgentError("LOCAL_HANDOFF_APPROVED_INPUT_REQUIRED");
     if (r.team || r.teamMember) throw new LocalAgentError("LOCAL_TEAM_APPROVED_PLAN_REQUIRED");
     if (r.geo) throw new LocalAgentError("GEO_NEW_RUN_REQUIRED");
     this.grant(r);
@@ -963,6 +1019,7 @@ export class LocalAgentController {
   }
   async schedulingContext(id: string) {
     const r = await this.record(id);
+    if (r.handoff) throw new LocalAgentError("LOCAL_HANDOFF_APPROVED_INPUT_REQUIRED");
     if (r.team || r.teamMember) throw new LocalAgentError("LOCAL_TEAM_APPROVED_PLAN_REQUIRED");
     await this.api(r, this.base(r) + "/runtime");
     if ((await this.record(id)) !== r)
@@ -1015,6 +1072,7 @@ export class LocalAgentController {
       throw new LocalAgentError("LOCAL_REQUEST_INVALID");
     const r = await this.record(id),
       digest = hash(JSON.stringify(deliveryRevision ? [prompt.trim(), budget, deliveryRevision] : [prompt.trim(), budget]));
+    if (r.handoff) throw new LocalAgentError("LOCAL_HANDOFF_APPROVED_INPUT_REQUIRED");
     if (r.team || r.teamMember) throw new LocalAgentError("LOCAL_TEAM_APPROVED_PLAN_REQUIRED");
     if (r.geo) throw new LocalAgentError("GEO_NEW_RUN_REQUIRED");
     r.dispatches ??= [];
@@ -1246,6 +1304,7 @@ export class LocalAgentController {
               title: op.prompt.slice(0, 100),
               prompt: op.prompt,
               ...(op.deliveryRevision ? { delivery_revision: op.deliveryRevision } : {}),
+              ...(op.localHandoff ? { local_handoff: op.localHandoff } : {}),
               role_key: r.role,
               ...(r.specialist ? { agent_id: r.specialist.id, agent_version: r.specialist.version } : {}),
               budget_micros: op.budget,

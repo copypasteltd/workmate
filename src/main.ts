@@ -730,6 +730,8 @@ async function createWindow() {
       keys["team.cancel"] = ["id"];
       keys["team.list"] = ["tenant", "project"];
       keys["team.cancel-run"] = ["tenant", "project", "group", "run", "expectedRevision", "requestId"];
+      keys["handoff.prepare"] = ["tenant", "project", "handoff", "mode"];
+      keys["handoff.start"] = ["id", "definitionHash"];
       const allowed = keys[action];
       if (!allowed || Object.keys(payload).length !== allowed.length || allowed.some(k => !(k in payload))) throw new Error("LOCAL_REQUEST_INVALID");
       let value;
@@ -741,6 +743,8 @@ async function createWindow() {
         case "team.cancel": value = await localAgent.cancelTeam(payload.id); break;
         case "team.list": value = await localAgent.listTeams(payload); break;
         case "team.cancel-run": value = await localAgent.cancelTeamRun(payload); break;
+        case "handoff.prepare": value = await localAgent.prepareHandoff(payload); break;
+        case "handoff.start": value = await localAgent.startHandoff(payload.id, payload.definitionHash); break;
         case "geo.list": value = await localAgent.list(payload, true); break;
         case "geo.prepare": value = await localAgent.prepareGeo(payload); break;
         case "solution.prepare": value = await localAgent.prepareSolution(payload); break;

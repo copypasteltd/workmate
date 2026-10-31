@@ -14,11 +14,13 @@ import type { LocalPendingInput, LocalInputAnswers } from "../../src/local-input
 import { LocalVideoJobs, type LocalVideoJob } from "./local-video";
 import { LocalFolderSchedules } from "./local-schedules";
 import { LocalPrograms } from "./local-programs";
+import { TaskLocalHandoffs } from "./task-local-handoffs";
 
 type Permission = "read-only" | "workspace-write" | "full-access";
 interface LocalSession {
   id: string; workspace: string; role: string; permission: Permission | null;
   specialist?: { id: string; version: number; name: string };
+  handoff?: {id:string;sourceTaskId:string;sourceTitle:string;definitionHash:string;budget:number};
   team?: {rootId:string;runId?:string;stepKey?:string;phase?:string;state?:string;error?:string};
   revoked: boolean; busy: boolean; phase: string; uncertain: boolean; receiptPending: boolean; retryable: boolean; error?: string;
   task?: { task_id: string; status: string; charged_micros: string; accrued_micros: string };
@@ -212,6 +214,11 @@ export function LocalAgentWorkspace() {
     <header className="local-agent-heading"><div><div className="eyebrow">COPYPASTE · ON YOUR COMPUTER</div>
       <h1>{t("你的本機工作夥伴", "Your local workmate")}</h1><p>{t("從一個目錄、一個想法開始。讓工作在你的電腦上完成。", "Start with a folder and an idea. Get the work done on your computer.")}</p></div>
       <span className="local-agent-chip"><Monitor size={16}/>{t("在此電腦執行", "Runs on this computer")}</span></header>
+    <TaskLocalHandoffs sessions={sessions} onOpen={setSelected} onPrepare={async handoff=>{
+      const scope=workspaceKey;
+      const prepared=await native("handoff.prepare",{tenant:w.tenant,project:w.project,handoff,mode});
+      if(activeWorkspace.current===scope&&prepared?.id){await refresh.current();setSelected(prepared.id);}
+    }}/>
     <ErrorNotice error={installedMethod.error || pinnedMethod.error}/>
     {installedMethod.data?.solution && pinnedMethod.data && (!methodRole || !roles.includes(methodRole)) && <p role="status" className="notice">{t("此方法所選的角色尚未支援本機工作。請選擇方法內另一個已支援的專業角色，或到 Web 執行；預設雲端助手不會替代本機 Codex。", "This method's selected role is not available for local work. Choose another supported pinned specialist or run it on Web. The cloud default assistant does not replace local Codex.")}</p>}
     {methodInstallation && installedMethod.data?.solution && <section className="local-agent-method" aria-label={t("已選方法", "Selected method")}><BookOpen size={20}/><div><strong>{installedMethod.data.name} · v{installedMethod.data.solution.version}</strong><p>{t("套用方法後，請選取相同角色的本機會話，核對目錄、權限與預算後再發送。", "Apply this method, select a local session with the same role, then review its folder, permissions and budget before sending.")}</p></div><button className="button secondary" disabled={!roles.includes(methodRole) || pending || (!!session && session.role !== methodRole)} onClick={()=>{
@@ -250,7 +257,7 @@ export function LocalAgentWorkspace() {
           <option value="read-only">{t("唯讀", "Read only")}</option><option value="workspace-write">{t("目錄內讀寫", "Workspace write")}</option><option value="full-access">{t("完整本機權限", "Full local access")}</option></select>
           <button className="button" disabled={!!session.team || pending || session.busy || session.revoked} onClick={() => void act("permission", { id: session.id, mode })}>{t("設定授權", "Set permission")}</button>
           <button className="icon-button" aria-label={t("撤銷本機權限", "Revoke local permission")} disabled={session.revoked} onClick={() => void native("revoke", { id: session.id }).then(() => refresh.current()).catch(e => setError(e.message))}><X size={17}/></button></div></div>
-        <div className="local-agent-navigation"><nav className="local-agent-tabs" aria-label={t("本機工作檢視", "Local work views")}><button aria-label={t("對話", "Conversation")} aria-pressed={panel === "chat"} onClick={() => setPanel("chat")}>{t("對話", "Conversation")}{!!session.inputs?.length && <span className="local-agent-question-count" aria-hidden="true">{session.inputs.length}</span>}</button><button aria-pressed={panel === "folders"} disabled={!!session.team} onClick={() => setPanel("folders")}><FolderOpen size={14}/>{t("目錄工作", "Folder work")}</button><button aria-pressed={panel === "programs"} onClick={() => setPanel("programs")}><Terminal size={14}/>{t("本機程式", "Local programs")}</button></nav>
+        <div className="local-agent-navigation"><nav className="local-agent-tabs" aria-label={t("本機工作檢視", "Local work views")}><button aria-label={t("對話", "Conversation")} aria-pressed={panel === "chat"} onClick={() => setPanel("chat")}>{t("對話", "Conversation")}{!!session.inputs?.length && <span className="local-agent-question-count" aria-hidden="true">{session.inputs.length}</span>}</button><button aria-pressed={panel === "folders"} disabled={!!session.team || !!session.handoff} onClick={() => setPanel("folders")}><FolderOpen size={14}/>{t("目錄工作", "Folder work")}</button><button aria-pressed={panel === "programs"} disabled={!!session.handoff} onClick={() => setPanel("programs")}><Terminal size={14}/>{t("本機程式", "Local programs")}</button></nav>
           <div className="local-agent-safety">{session.permission ? <>{t("已授權：", "Granted: ")}{t(...({ "read-only": ["唯讀", "Read only"], "workspace-write": ["目錄內讀寫", "Workspace write"], "full-access": ["完整本機權限", "Full local access"] } as Record<Permission, [string, string]>)[session.permission])}</> : t("尚未授權", "Not granted")}
             <span className="local-agent-service">{t("模型服務經公司伺服器", "Model service via company server")}</span></div></div>
         <div className="local-agent-chat" hidden={panel !== "chat"}><div ref={messages} className="local-agent-messages" tabIndex={0} role="log" aria-label={t("本機工作記錄", "Local work history")} aria-live="polite">
@@ -277,7 +284,7 @@ export function LocalAgentWorkspace() {
             <small>{t("顧問對話及未完成步驟的費用，請到用量記錄查看。", "See usage records for this conversation and any unfinished steps.")}</small>
             {flow.error_code && <p role="status">{flow.error_code}</p>}
           </article>)}
-        {session.task && ["succeeded", "failed", "cancelled"].includes(session.task.status) && <details className="local-agent-activity"><summary>{t("審閱本次交付", "Review this delivery")}</summary><DeliveryQuality key={w.base + session.task.task_id} base={w.base} taskId={session.task.task_id} nativeRevision={async (selection, instructions, budget, requestId) => {
+        {!session.handoff && session.task && ["succeeded", "failed", "cancelled"].includes(session.task.status) && <details className="local-agent-activity"><summary>{t("審閱本次交付", "Review this delivery")}</summary><DeliveryQuality key={w.base + session.task.task_id} base={w.base} taskId={session.task.task_id} nativeRevision={async (selection, instructions, budget, requestId) => {
           if (activeWorkspace.current !== workspaceKey) throw new Error(t("工作區已變更，請重新選擇成果。", "The workspace changed. Select the delivery again."));
           try { return await native("revision", { id: session.id, requestId, prompt: instructions, budget, selection }); }
           finally { await refresh.current(); }
@@ -288,8 +295,16 @@ export function LocalAgentWorkspace() {
         {session.events.length > 0 && <details className="local-agent-activity"><summary><Terminal size={14}/>{t("本機與公司工具記錄", "Local and company tool activity")}</summary><pre>{session.events.slice(-40).filter(e => !e.kind.includes("agentMessage/delta")).map(e => `${e.kind}\n${JSON.stringify(e.value, null, 2)}`).join("\n\n")}</pre></details>}
         {session.receiptPending && !session.busy && <div role="status" className="local-agent-alert">{t("本機工作已停止，已儲存的結果與費用記錄等待同步。恢復連線後可同步回執，無需重新授予本機權限。", "Local work has stopped. Saved results and billing records are awaiting synchronization. Reconnect to sync receipts without granting local access again.")}</div>}
         {session.uncertain && <div role="status" className="local-agent-alert">{t("上次本機操作的結果需要核對，系統不會重新執行。請檢查本機檔案與費用記錄。", "The last local outcome needs review and will not be replayed. Check local files and the billing record.")}</div>}
+         {session.handoff && <section className="local-handoff-review" aria-label={t("核對本機準備步驟", "Review local preparation")}>
+           <strong>{session.handoff.sourceTitle}</strong><p>{t("此步驟為原雲端工作準備檔案；交回前由你選擇及上傳。", "This step prepares files for the original cloud task. You choose and upload the files before returning them.")}</p>
+           <p>{t("本機步驟費用上限：", "Local-step budget: ")}<Money value={session.handoff.budget}/></p>
+           {!session.task && !session.retryable && <button className="button primary" disabled={pending || session.busy || !session.permission || session.revoked || session.uncertain} onClick={() => void act("handoff.start", {id:session.id,definitionHash:session.handoff!.definitionHash})}>{t("確認費用並開始本機步驟", "Confirm fees and start local step")}</button>}
+           {session.busy && <button className="button" onClick={() => void act("stop",{id:session.id})}>{t("停止本機步驟", "Stop local step")}</button>}
+           {session.retryable && !session.busy && <button className="button" disabled={pending} onClick={() => void act("retry",{id:session.id})}>{session.phase === "settling" ? t("同步執行結果", "Sync result") : t("重試原工作連線", "Retry original connection")}</button>}
+           {session.task?.status === "succeeded" && <p role="status">{t("本機完成資訊已回報。請在上方請求中選擇「選擇交回檔案」，審閱檔案並繼續原工作。", "Local completion has been reported. Choose Files to return in the request above, review the files, then continue the original task.")}</p>}
+         </section>}
         {session.team && <div className="local-agent-alert" role="status">{t("此會話按已批准的團隊分工執行。新增工作請回到團隊審閱；你可在此回答問題或停止整個團隊。", "This session follows its approved team assignment. Review new work in Teams; answer questions here or stop the whole team.")} <Link to="/app/teams">{t("返回本機團隊","Back to local teams")}</Link></div>}
-        {!session.team && <form className="local-agent-composer" onSubmit={e => { e.preventDefault(); send(new FormData(e.currentTarget)); }}><textarea aria-label={t("本機工作要求", "Local task")} placeholder={t("描述你想完成的工作…", "What would you like to get done?")} maxLength={30000} value={prompt} onChange={e => setPrompt(e.target.value)} disabled={session.revoked || session.uncertain || session.busy || pending}/>
+        {!session.team && !session.handoff && <form className="local-agent-composer" onSubmit={e => { e.preventDefault(); send(new FormData(e.currentTarget)); }}><textarea aria-label={t("本機工作要求", "Local task")} placeholder={t("描述你想完成的工作…", "What would you like to get done?")} maxLength={30000} value={prompt} onChange={e => setPrompt(e.target.value)} disabled={session.revoked || session.uncertain || session.busy || pending}/>
           {session.role === "video-motion" && <VideoBriefFields compact disabled={session.revoked || session.uncertain || session.busy || pending} />}
           <div><label>{t("本次預算上限 HK$", "Turn budget HK$")}<input type="number" aria-label="Turn budget HK$" min="0.01" max="10000" step="0.01" value={budget} onChange={e => setBudget(e.target.value)}/></label>
             {session.busy ? <button type="button" className="button" onClick={() => void native("stop", { id: session.id }).then(() => refresh.current()).catch(e => setError(e.message))}><Square size={14}/>{t("停止", "Stop")}</button>
