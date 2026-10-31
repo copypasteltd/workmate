@@ -1,3 +1,11 @@
+## v0.1.0-rc.3 · 已发布 / Published
+
+[完整下载 / Complete ZIP](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.3/workmate-v0.1.0-rc.3-complete.zip) · [校验 / SHA256](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.3/workmate-v0.1.0-rc.3-complete.zip.sha256) · [Release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.3) · [交付回执 / Receipt](quality/release-publication-161.json)
+
+七类分发包、当前六仓源码、固定Codex及双语说明/媒体已上线。Includes the seven distributions, current sources and pinned runtime. 获准假数据候选版；Windows未签名。Synthetic candidate; unsigned Windows.
+
+---
+
 ## v0.1.0-rc.3 · 完整冻结交付 / Frozen handoff
 
 [使用与七类分发包 / Usage](releases/v0.1.0-rc.3.md) · [构建/复用核对 / Qualification](quality/release-freeze-checkpoint-161.json) · [方案 / Design](development/161-frozen-patch-release.md) · [完整原编号待验收](quality/remaining-work-stage160.md)
