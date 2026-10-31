@@ -1,8 +1,14 @@
-# Workmate · desktop · v0.1.0-rc.5
+# Workmate · desktop · v0.1.0
 
-[English](README.en.md) · [完整Release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.5) · [中英安装使用](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.5/docs/releases/v0.1.0-rc.5.md)
+[English](README.en.md) · [完整Release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0) · [中英安装使用](https://github.com/copypasteltd/workmate/blob/v0.1.0/docs/releases/v0.1.0.md)
 
 面向香港企业的 Codex Agent 平台，首批服务既有 marketing 团队，覆盖设计/媒体、广告与网站/SEO/GEO分析、重复流程和软件开发。本仓库为独立 **desktop** 端，使用 **Electron / customer-local Codex**。视觉遵循 CopyPaste 的暖白底、深色文字、品牌色和编辑式排版。
+
+## 当前冻结版 · v0.1.0
+
+本版统一交付所有端、后端和六仓源码，包含最新用户任务/内容入口。六仓重新构建；当前Desktop输出与已验收Windows完整目录/Portable/Setup逐文件一致，核对后复用。近期阶段166八项SQL/API与八组实际页面检查保留其源码及原始证据；本轮不重跑全部历史用例。
+
+分支`desktop`，本版固定标签`v0.1.0-desktop`。[完整源码与安装包](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0) · [冻结记录](https://github.com/copypasteltd/workmate/blob/v0.1.0/docs/quality/release-freeze-checkpoint-167.json) · [待办](https://github.com/copypasteltd/workmate/blob/v0.1.0/docs/quality/remaining-work-stage167.md)。AI/媒体/广告/支付为已授权假数据；Windows未签名。截图/GIF/MP4保留其原实际采集范围，不宣称新增全端安装或专业质量验收。
 
 ## 方案与结构
 
@@ -45,7 +51,7 @@ API为localhost4310，Web4317，Admin4318。开发验证码位于platform `.data
 1. 邮箱登录，接受邀请或创建企业及首项目。创建结果未确认时保留原请求；断线/刷新后点“确认并继续”恢复原结果。失效/删除回执不会悄悄新建企业。
 2. 选择项目和角色，填写brief、文件/品牌/账户、预算和授权。必要资料在原任务补齐；执行固定当时接受的配置与Skill版本。
 3. 查看持久进度、审批、成果版本、费用和用量，审阅后下载原文件或继续修改。未知费用保持待核对，不按免费处理或盲目重跑。
-4. Admin从用户详情开费用/VIP，核对主体和预览后按策略确认。目录筛选支持刷新/返回恢复。用户专属任务/内容的统一筛选入口仍待补齐。
+4. Admin从用户详情开费用/VIP，核对主体和预览后按策略确认。目录筛选支持刷新/返回恢复。用户详情可进入创建者限定的任务/内容；搜索、分页、刷新和返回保留目标与目录条件，正文权限独立。
 
 ## 配置与权限
 
@@ -90,9 +96,9 @@ Web/Admin使用 `VITE_API_BASE` 或同源代理；原生端构建时固定允许
 
 [实际MP4](assets/screenshots/workmate-functional-closure-165-01-recover-original-workspace.mp4)
 
-## 验证与发布
+## 历史rc.5验证与发布
 
-本次运行七项定向SQL、四项创建草稿检查和实际Web/Admin操作，重建六仓与Windows unpacked/Portable/Setup，核对ASAR和固定Codex。按要求跳过完整重复回归，实际结果以冻结检查点为准。
+以下为历史rc.5记录：当时运行七项定向SQL、四项创建草稿检查和实际Web/Admin操作，重建六仓与Windows unpacked/Portable/Setup，核对ASAR和固定Codex。按要求跳过完整重复回归，实际结果以冻结检查点为准。
 
 分支 `desktop`，固定标签 `v0.1.0-rc.5-desktop`。后续更新同步分支和更新说明，冻结包及标签保持。外部AI/媒体/广告/支付使用已授权假数据，Windows未签名。102个原编号及88项必选完整验收范围保留，88不是未实现模块数。真实服务、签名更新、多平台与完整专业验收继续跟踪。
 
