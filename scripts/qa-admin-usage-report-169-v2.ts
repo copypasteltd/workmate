@@ -1,0 +1,45 @@
+import assert from "node:assert/strict";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import path from "node:path";
+import { chromium, type Browser, type BrowserContext, type Page, type Response } from "playwright";
+import { verifyAdmin } from "./qa-auth.js";
+import { WorkmateRecording, saveWorkmateScreenshot } from "./record-workmate-media.js";
+const fixture = JSON.parse(await readFile(process.argv[2], "utf8")), origin = "http://localhost:4318", root = process.cwd();
+const receipt = "evidence/admin-usage-report-169/admin-ui-02.json", attempt = "admin-usage-report-169-02";
+const scope = "Actual independent Admin OTP/TOTP, native SQL-backed immutable consumption reports, exact payer drilldown, operation detail, same-snapshot CSV/reload and validation. Authorized synthetic services; no production cost or full acceptance claim.";
+const checks: any[] = [], screenshots: any[] = [], recordings: any[] = [], errors: string[] = [];
+const sources = ["copypaste-admin/src/main.tsx", "copypaste-admin/src/usage-reports.tsx", "copypaste-admin/src/usage-reports.css", "copypaste-admin/src/user-resources.ts", "copypaste-platform/src/admin.ts", "copypaste-platform/src/admin-usage-reports.ts", "copypaste-platform/src/admin-usage-report-model.ts", "copypaste-platform/src/admin-usage-report-query.ts"];
+const sha = (b: Buffer | string) => createHash("sha256").update(b).digest("hex");
+const hashes = async () => Object.fromEntries(await Promise.all(sources.map(async n => [n, sha(await readFile(path.resolve("..", n)))])));
+const before = await hashes(); let browser: Browser | undefined, context: BrowserContext | undefined, recording: WorkmateRecording | undefined, browserClosed = false, stage = "initializing";
+const match = (r: Response, p: string) => new URL(r.url()).pathname === p;
+async function checked(r: Response) { const b = await r.json(); assert.equal(r.status(), 200, b.error?.message ?? String(r.status())); return b; }
+const pass = (name: string, facts: unknown) => checks.push({ name, status: "passed", facts });
+async function shot(page: Page, name: string) { await page.evaluate(async () => { await document.fonts.ready; }); screenshots.push(await saveWorkmateScreenshot("admin", attempt, name, await page.screenshot(), scope, root)); }
+async function stopRecording() { if (!recording) return; const current = recording; recording = undefined; recordings.push(await current.stop()); }
+const deadline = setTimeout(() => { errors.push("Owned browser deadline"); void browser?.close(); }, 180000);
+try {
+  browser = await chromium.launch({ executablePath: path.resolve(".data/browsers/chromium-1248/chrome-win64/chrome.exe"), headless: true });
+  context = await browser.newContext({ viewport: { width: 1440, height: 1080 }, timezoneId: "Asia/Hong_Kong", acceptDownloads: true }); context.setDefaultTimeout(16000);
+  await context.addInitScript(() => { localStorage.setItem("cp_locale", "en"); localStorage.setItem("cp_theme", "light"); }); const page = await context.newPage(); page.on("pageerror", e => errors.push(String(e)));
+  stage = "sign-in"; await page.goto(origin, { waitUntil: "domcontentloaded" }); await page.locator('input[name="email"]').fill(fixture.admin.email);
+  const [challengeResponse] = await Promise.all([page.waitForResponse(r => match(r, "/v1/admin/auth/challenge") && r.request().method() === "POST"), page.getByRole("button", { name: "Send admin sign-in code", exact: true }).click()]); const challenge = await checked(challengeResponse);
+  let code: string | undefined; for (let n = 0; n < 100 && !code; n++) { try { const mail = JSON.parse(await readFile(path.join(fixture.mailbox, challenge.challenge_id + ".json"), "utf8")); assert.equal(mail.to, fixture.admin.email); code = mail.text.match(/\b\d{6}\b/)?.[0]; } catch (e: any) { if (e.code !== "ENOENT") throw e; } if (!code) await new Promise(r => setTimeout(r, 100)); }
+  assert.ok(code); await page.locator('input[name="code"]').fill(code); await verifyAdmin(page, fixture.admin.secret); await page.waitForURL(u => !["/", "/login"].includes(u.pathname)); pass("Actual Admin OTP and TOTP", { authenticated: true });
+  stage = "create report"; await page.goto(origin + "/usage?user_id=" + fixture.user, { waitUntil: "domcontentloaded" });
+  recording = new WorkmateRecording("admin", "consumption-report-workflow", attempt, () => page.screenshot({ type: "jpeg", quality: 72 }), scope, root); await recording.start();
+  const [response] = await Promise.all([page.waitForResponse(r => /\/v1\/admin\/usage-reports\/[0-9a-f-]+$/.test(new URL(r.url()).pathname) && r.request().method() === "GET"), page.getByRole("button", { name: "Create fresh report", exact: true }).click()]); const report = await checked(response); assert.equal(report.total, 4); assert.equal(report.summary.confirmed_micros, "1000001");
+  await page.getByRole("heading", { name: "Work details 4" }).waitFor(); await page.getByText("Unknown", { exact: true }).waitFor(); await shot(page, "usage-01-snapshot-summary"); pass("Exact charges, separate reserves and unknown internal cost", { report_id: report.id, watermark: report.watermark, works: 4 });
+  stage = "payer drilldown"; await page.locator('[name="usage_group"]').selectOption("payer");
+  const [groupResponse] = await Promise.all([page.waitForResponse(r => match(r, "/v1/admin/usage-reports/" + report.id) && new URL(r.url()).searchParams.get("group_key") === fixture.personalWallet), page.locator("button.usage-group").filter({ hasText: fixture.personalWallet }).click()]); const group = await checked(groupResponse); assert.equal(group.total, 1); assert.equal(group.summary.confirmed_micros, "125001"); assert.equal(group.watermark, report.watermark); await shot(page, "usage-02-personal-payer"); pass("Payer drilldown retains the exact same financial snapshot", { payer: fixture.personalWallet, confirmed_micros: "125001" });
+  stage = "detail"; await page.getByRole("button", { name: "View details", exact: true }).click(); const dialog = page.getByRole("dialog"); await dialog.getByText("Pinned execution", { exact: true }).waitFor(); assert.ok((await dialog.innerText()).includes(fixture.personal)); await shot(page, "usage-03-ledger-detail"); await dialog.getByRole("button", { name: "Close", exact: true }).click(); pass("Task detail exposes pinned configuration and original charge facts", { task_id: fixture.personal });
+  stage = "actual export and reload"; const [downloaded] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Export selection", exact: true }).click()]); const csv = await readFile((await downloaded.path())!, "utf8"); assert.ok(csv.includes("125001") && csv.includes(report.watermark)); assert.equal(csv.trim().split("\n").length, 2);
+  const retained = page.url(); const [reloaded] = await Promise.all([page.waitForResponse(r => match(r, "/v1/admin/usage-reports/" + report.id)), page.reload()]); const re = await checked(reloaded); assert.equal(re.watermark, report.watermark); assert.equal(re.total, 1); assert.equal(page.url(), retained); await shot(page, "usage-04-reloaded-same-selection"); pass("Actual CSV download and reload use the retained selection and watermark", { rows: 1, csv_sha256: sha(csv) });
+  stage = "invalid dates"; await page.locator('[name="period_from"]').fill("2030-01-02T00:00"); await page.locator('[name="period_to"]').fill("2030-01-01T00:00"); await page.getByRole("button", { name: "Create fresh report", exact: true }).click(); await page.getByRole("alert").filter({ hasText: "The end must follow the start" }).waitFor(); assert.equal(page.url(), retained); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false); await shot(page, "usage-05-invalid-period-refused"); pass("Invalid period stays local and the report has no horizontal overflow", { retained_selection: true }); await stopRecording();
+} catch (e) { errors.push(stage + ": " + String(e).replaceAll(fixture.admin.secret, "[redacted]")); }
+finally {
+  clearTimeout(deadline); try { await stopRecording(); } catch (e) { errors.push(String(e)); } try { await context?.close(); } catch (e) { errors.push(String(e)); } try { await browser?.close(); browserClosed = !!browser; } catch (e) { errors.push(String(e)); }
+  const after = await hashes(); if (JSON.stringify(before) !== JSON.stringify(after)) errors.push("Product source changed during actual UI qualification"); const status = errors.length === 0 && checks.length === 6 && browserClosed && recordings.length === 1 ? "passed" : "failed";
+  await mkdir(path.dirname(receipt), { recursive: true }); await writeFile(receipt, JSON.stringify({ at: new Date().toISOString(), status, stage, checks, errors, screenshots, recordings, browser_closed: browserClosed, scope, sources_before: before, sources_after: after, verifier_sha256: sha(await readFile(import.meta.filename)) }, null, 2) + "\n", { flag: "wx" }); console.log(JSON.stringify({ status, checks: checks.length, errors, receipt })); assert.equal(status, "passed");
+}
