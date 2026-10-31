@@ -15,10 +15,46 @@ const dir = path.resolve(custom ?? ".data/postgres");
 // The pinned embedded-postgres package force-kills the Windows cluster in its
 // default stop(). Use PostgreSQL's own checkpointing shutdown, including when
 // the library invokes stop() from its exit hook.
+async function rejectRunningCluster() {
+  let stamp: string;
+  try { stamp = await readFile(path.join(dir, "postmaster.pid"), "utf8"); }
+  catch (e) { if ((e as NodeJS.ErrnoException).code === "ENOENT") return; throw e; }
+  const pid = Number(stamp.split(/\r?\n/)[0]);
+  if (!Number.isSafeInteger(pid) || pid <= 0)
+    throw new Error("Existing database ownership record is invalid; preserved for explicit recovery");
+  try { process.kill(pid, 0); }
+  catch (e) { if ((e as NodeJS.ErrnoException).code === "ESRCH") return; throw new Error("Existing database process cannot be inspected; preserved"); }
+  throw new Error("This data directory already has a live database; existing process preserved");
+}
+// Check before the dependency registers its exit hook. A stale, dead PID can
+// still follow PostgreSQL's own recovery path; no existing PID file is removed.
+await rejectRunningCluster();
 class NativePostgres extends EmbeddedPostgres {
   private shutdown?: Promise<void>;
+  private ownedStamp?: string;
+  override async start(): Promise<void> {
+    await rejectRunningCluster();
+    await super.start();
+    const stamp = await readFile(path.join(dir, "postmaster.pid"), "utf8");
+    // embedded-postgres18.4's private runtime field identifies the child it
+    // actually spawned. Matching only a directory/port would not prove ownership.
+    const child = (this as unknown as { process?: { pid?: number } }).process;
+    if (!child?.pid || Number(stamp.split(/\r?\n/)[0]) !== child.pid)
+      throw new Error("New database child ownership could not be established; no other instance will be stopped");
+    this.ownedStamp = stamp;
+  }
   override stop(): Promise<void> {
-    this.shutdown ??=
+    if (!this.ownedStamp) return Promise.resolve();
+    this.shutdown ??= this.stopOwned();
+    return this.shutdown;
+  }
+  private async stopOwned(): Promise<void> {
+    let stamp: string;
+    try { stamp = await readFile(path.join(dir, "postmaster.pid"), "utf8"); }
+    catch (e) { if ((e as NodeJS.ErrnoException).code === "ENOENT") return; throw e; }
+    if (stamp !== this.ownedStamp)
+      throw new Error("Database ownership changed; existing process preserved");
+    await (
       process.platform === "win32"
         ? promisify(execFile)(
             path.resolve(
@@ -27,8 +63,7 @@ class NativePostgres extends EmbeddedPostgres {
             ["stop", "-D", dir, "-m", "fast", "-w", "-t", "180"],
             { windowsHide: true, timeout: 190000 },
           ).then(() => undefined)
-        : super.stop();
-    return this.shutdown;
+        : super.stop());
   }
 }
 const server = new NativePostgres({
