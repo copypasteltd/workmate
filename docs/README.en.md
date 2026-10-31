@@ -1,3 +1,9 @@
+## v0.1.0-rc.2 · 当前完整冻结发版 / Current complete freeze
+
+[发版 / Release](releases/v0.1.0-rc.2.md) · [启动 / Startup](development/158-current-source-startup.md) · [证据 / Evidence](quality/release-freeze-checkpoint-158.json) · [原编号待验收 / Full-scope ledger](quality/remaining-work-stage158.md)
+
+---
+
 ## 157 · Independent cloud work / 云端会话独立多工作
 
 [需求 / Requirement](requirements/23-independent-cloud-work.md) · [设计 / Design](development/157-independent-cloud-work.md) · [变更 / Change](changes/157-independent-cloud-work.md) · [编号待项 / Remaining](quality/remaining-work-stage157.md)
