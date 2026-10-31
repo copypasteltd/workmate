@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Download, RefreshCw, ArrowUpRight } from "lucide-react";

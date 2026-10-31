@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 import { saveScopeArchive } from "./scope-export-download";
 import { clientFetch, clientJson, connectionFailure } from "./client-failure";
 export let csrfToken = "";
@@ -46,8 +47,10 @@ export async function api<T = any>(
 ): Promise<T> {
   const revision = sessionRevision;
   const protectedRequest = path.startsWith("/v1/admin/") && (!path.startsWith("/v1/admin/auth/") || path === "/v1/admin/auth/logout");
+  // Deployment settings are public and survive an unrelated session transition.
+  const sessionIndependent = path === "/v1/public/config" && (!options.method || options.method === "GET");
   const current = () => {
-    if (revision !== sessionRevision) throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
+    if (revision !== sessionRevision && !sessionIndependent) throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
     if (options.signal?.aborted) throw options.signal.reason;
   };
   let status: number, data: any;

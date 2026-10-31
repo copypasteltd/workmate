@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 import { useEffect, useRef, useState } from "react";
 import { Eye, RefreshCw, ShieldCheck } from "lucide-react";
 import { api, ApiError, post } from "./api";

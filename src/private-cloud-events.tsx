@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 import { useEffect, useState } from "react";
 import { Radio, Pause, RefreshCw } from "lucide-react";
 import { post } from "./api";

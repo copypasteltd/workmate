@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Check, FilePenLine, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { api, ApiError, post } from "./api";

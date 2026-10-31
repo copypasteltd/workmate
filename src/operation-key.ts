@@ -1,3 +1,4 @@
+import { browserCrypto as crypto } from "./browser-crypto";
 const fallback = new Map<string, string>();
 /** Persist only a digest, never invite tokens or email addresses. The same
  * logical attempt can recover a committed operation after a lost response.

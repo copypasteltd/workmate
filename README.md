@@ -1,5 +1,23 @@
 # Workmate · admin
 
+<!-- lan-deployment-176 -->
+## 内网 HTTP 部署 · 阶段176
+
+Web: http://192.168.31.20:63070 · Admin: http://192.168.31.20:63071 · API: http://192.168.31.20:63072
+
+独立邮箱验证码及 TOTP；用户、用量、费用、VIP 和内容管理页面已在内网检查。
+
+服务器明文凭据：`/root/cfg/workmate/credentials.txt`（root `0600`）。邮箱验证码通过受独立口令保护的测试收件箱读取；Admin 另需验证器 TOTP。外部服务继续使用已授权假数据。
+
+[部署、登录与运维 / Deployment and login guide](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/lan-176.md)
+
+![Actual LAN HTTP page](assets/screenshots/176e-lan-users.png)
+
+![Actual post-login interaction](assets/demos/176-lan-http.gif)
+
+[实际操作录像 / Actual recording](assets/demos/176-lan-http.mp4)
+
+
 ## v0.1.3 · 当前完整交付 / Current complete delivery
 
 [Release / 下载](https://github.com/copypasteltd/workmate/releases/tag/v0.1.3) · [中英使用手册 / Bilingual guide](https://github.com/copypasteltd/workmate/blob/v0.1.3/docs/releases/v0.1.3.md)
