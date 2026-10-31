@@ -1,3 +1,11 @@
+<!-- ownership-transfer-151 -->
+
+[企業所有權交接 / Ownership handover](development/151-ownership-transfer.md) · [完整待項 / Ledger](quality/remaining-work-stage151.md) · [更新 / Changes](changes/151-ownership-transfer.md)
+
+Unreleased increment151; frozen v0.1.0-rc.1 preserved. Focused checks only; original full acceptance stays open.
+
+---
+
 <!-- scope-erasure-150 -->
 
 [聚合永久清理 / Permanent scope cleanup](development/150-scope-erasure.md) · [完整待项 / Full ledger](quality/remaining-work-stage150.md) · [更新 / Changes](changes/150-scope-erasure.md)
