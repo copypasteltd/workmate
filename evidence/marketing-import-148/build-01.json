@@ -1,0 +1,81 @@
+{
+  "at": "2026-10-31T01:02:40.388Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "native surface boundaries",
+      "arguments": [
+        "--test",
+        "tests/native-surface-integrity.test.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web build",
+      "arguments": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop build",
+      "arguments": [
+        "D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "unsigned Windows package",
+      "arguments": [
+        "node_modules/electron-builder/out/cli/cli.js",
+        "--win",
+        "--dir",
+        "--config.directories.output=release/marketing-import-148-01"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_unchanged": true,
+  "package_root": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\release\\marketing-import-148-01\\win-unpacked",
+  "package_files": {
+    "CopyPaste.exe": "9e8403412691eaadb72feeaf2cebfa4b39d96b11317944aca3ffb61440f57198",
+    "resources/app.asar": "182196d3fab9382eb8ad7520f471e62287fae71e746887177798a2c3d173364f",
+    "resources/local-codex/codex.exe": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+    "resources/local-codex/runtime-manifest.json": "13490b9b1b9822967b8cea7134c2ba306671e58050a0897545184a7af6f34605"
+  },
+  "source_manifest": {
+    "path": "evidence/marketing-import-148/build-01-sources.json",
+    "sha256": "5a369bd0ec7651340d917c150ec73c59f45f3ddd58774ba394a63c8cb697fe79"
+  },
+  "raw_report": {
+    "path": "evidence/marketing-import-148/build-01.tap",
+    "sha256": "e09e29260ee18158d0dd435963d4f12fc9e2f55c454dc5de6d84bd8a61fe894b"
+  },
+  "verifier": {
+    "path": "evidence/marketing-import-148/build-01-verifier.mjs",
+    "sha256": "086058a82067765df4a5f6511ed79fbddd40d6aedbe344ee0f27d5cf32a90526"
+  },
+  "scope": "Current Web and unsigned frameless Windows Desktop marketing import build; unchanged Extension runtime retains its separately labelled Stage147 build evidence. Actual interaction qualification is recorded separately."
+}

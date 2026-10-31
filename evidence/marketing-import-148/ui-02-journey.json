@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-31T01:08:54.010Z",
+  "status": "failed",
+  "checks": [
+    "Actual Web email OTP and active workspace"
+  ],
+  "errors": [
+    "Web OTP and reviewed campaign import: TimeoutError: locator.waitFor: Timeout 25000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('dialog').locator('select[name=\"csv_delimiter\"]:enabled') to be visible\u001b[22m\n"
+  ],
+  "diagnostics": [
+    {
+      "url": "/v1/tenants/908379e9-8414-402d-8e76-858a7a20a14a/projects/0c479956-ea3d-47e5-9439-231bd43ba177/uploads/0e49c6b8-9b46-4e59-b276-5f9f33b4755b/complete",
+      "status": 422,
+      "body": "{\"error\":{\"code\":\"UPLOAD_TYPE_MISMATCH\",\"message\":\"File bytes do not match the declared supported type\",\"request_id\":\"bf97c8e9-25b2-42fd-8aa1-47012a54c50e\"}}"
+    },
+    {
+      "client": "web",
+      "modal": "Import campaign data\nFile bytes do not match the declared supported type\nCheck your input or try again shortly.\nCSV / XLSX file\nUp to 5 MB and 10,000 rows. The original is saved to project files, including failed previews. For XLSX, paste values first; formulas, macros and external links are rejected.\nRetry file upload\nNumber format\n1,234.56\n1.234,56\n1 234.56\n1 234,56\nCheck the export. XLSX numeric cells retain their stored values; this format applies to text cells.\nDate order\nYYYY-MM-DD\nDD/MM/YYYY\nMM/DD/YYYY\nYYYY/MM/DD · 年月日\nDay/month order is explicit. Check the parsed dates before confirming.\nCorrect an earlier snapshot\nNew independent snapshot\nOptional. Create a correction while preserving prior snapshots and reports. Keep the same source, account, currency, timezone and definitions.\nReport name\nData source\nGeneric table\nGoogle Ads\nMeta Ads\nCurrency\nReport timezone\nAccount ID\nEntity level\nGeneric dataset\nCampaign\nAd set\nAd\nAttribution definition\nFor example: 7-day click / 1-day view; match the actual export settings.\nConversion definition\nPreview & validate"
+    },
+    {
+      "url": "/v1/session/context",
+      "status": 401,
+      "body": "unreadable"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "copypaste-web/assets/screenshots/workmate-marketing-release-148-02-upload-recovery-diagnostic-en.png",
+      "sha256": "e3d88be319680f30d7dec802e7d667770d4f9d1239f8d0f280a28f1bcdc8c020",
+      "source": "Actual frozen-candidate application, real OTP/PKCE, original synthetic campaign file and deterministic exact analysis; no model call",
+      "edited": false
+    }
+  ],
+  "recordings": [],
+  "layouts": [],
+  "browser_closed": true,
+  "desktop_closed": false,
+  "api_closed": true,
+  "fixture_closed": true,
+  "scope": "User-authorized focused first-release smoke. Actual Web and packaged Desktop OTP/PKCE and marketing file-to-analysis flow. Explicit synthetic data; broad native/model/extension regression retained as historical Stage147 evidence, not rerun."
+}
