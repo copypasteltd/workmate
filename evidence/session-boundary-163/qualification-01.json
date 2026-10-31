@@ -1,0 +1,78 @@
+{
+  "at": "2026-10-31T10:44:34.892Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "Actual HTTP request and sign-in races",
+      "args": [
+        "--test",
+        "tests/session-boundary-163-v1.test.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "web typecheck",
+      "args": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "web production build",
+      "args": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "admin typecheck",
+      "args": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "admin production build",
+      "args": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop renderer typecheck",
+      "args": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop renderer production build",
+      "args": [
+        "node_modules/vite/bin/vite.js",
+        "build",
+        "--config",
+        "vite.config.ts"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_unchanged": true,
+  "source_manifest": {
+    "path": "evidence/session-boundary-163/qualification-01-sources.json",
+    "sha256": "085437544a2566ceb4670a4b89ed52cfdd2b3117eb3d643beddecdf9df5743f1"
+  },
+  "raw_log": {
+    "path": "evidence/session-boundary-163/qualification-01.log",
+    "sha256": "ae3316a98cc60f302f88745ddf689adf899ee5ea92146b8603b0bfa2d6716b42"
+  },
+  "verifier_sha256": "f2848fd95801985983622af3652c016c878e6eebb981b12b08ab2be50390855a",
+  "scope": "Real loopback HTTP responses and controlled sign-in payloads; actual Web, Admin and Desktop renderer sources. Synthetic identity fixtures, no database/model/provider or installed Desktop qualification. All owned HTTP listeners are closed by the tests. Broad regression omitted by user request."
+}
