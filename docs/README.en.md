@@ -1,6 +1,6 @@
 ## v0.1.1 · 已发布 / Published
 
-[完整ZIP / Complete ZIP](https://github.com/copypasteltd/workmate/releases/download/v0.1.1/workmate-v0.1.1-complete.zip) · [SHA256](https://github.com/copypasteltd/workmate/releases/download/v0.1.1/workmate-v0.1.1-complete.zip.sha256) · [使用 / Guide](releases/v0.1.1.md) · [发布回执 / Receipt](quality/release-publication-170.json)
+[完整ZIP / Complete ZIP](https://github.com/copypasteltd/workmate/releases/download/v0.1.1/workmate-v0.1.1-complete.zip) · [SHA256](https://github.com/copypasteltd/workmate/releases/download/v0.1.1/workmate-v0.1.1-complete.zip.sha256) · [交付入口 / Handoff](releases/v0.1.1-handoff.md) · [使用 / Guide](releases/v0.1.1.md) · [发布回执 / Receipt](quality/release-publication-170.json)
 
 全部端与源码统一冻结，六个线上资产摘要吻合。All clients and source are frozen; all six uploaded asset digests match. 外部假数据；Windows未签名。Synthetic dependencies; unsigned Windows.
 
@@ -16,23 +16,23 @@
 
 ---
 
-# 当前源码增量 / Current source increment · 169
+# 已纳入 v0.1.1 的源码增量 / Included source increment · 169
 
 用戶消耗固定報表已完成；Scoped consumption reports implemented.
 
 [Git发布回执 / Publication](quality/admin-usage-report-publication-169.json) · [本轮更新 / Changes](changes/169-admin-usage-reports.md) · [方案 / Behavior](development/169-admin-usage-reports.md) · [证据 / Evidence](quality/admin-usage-report-169.json) · [完整台账 / Ledger](quality/remaining-work-stage169.md)
 
-当前转入下一完整冻结包；旧v0.1.0包保持不变。Preparing the next complete freeze; existing v0.1.0 is preserved.
+阶段169已纳入当前v0.1.1完整冻结包；旧v0.1.0包保持不变。Stage169 is included in the published v0.1.1 complete bundle; existing v0.1.0 is preserved.
 
 ---
 
-# 当前源码增量 / Current source increment · 168
+# 已纳入 v0.1.1 的源码增量 / Included source increment · 168
 
 用户运营组合筛选与真实账户访问记录已收口；精确费用、独立账户和当前权限约束不变。Scoped operational filters and truthful access metadata are implemented. Backend/Admin builds,8 native SQL/API cases and6 actual Admin UI checks passed.
 
 [Git发布回执 / Publication](quality/admin-directory-filters-publication-168.json) · [本轮更新 / Changes](changes/168-admin-directory-operational-filters.md) · [方案 / Behavior](development/168-admin-directory-operational-filters.md) · [检查与媒体 / Evidence](quality/admin-directory-filters-168.json) · [完整待办 / Ledger](quality/remaining-work-stage168.md)
 
-这是v0.1.0之后的源码增量，不在下方原冻结ZIP内；数据库156需匹配的新服务。This increment is excluded from the frozen v0.1.0 ZIP below; schema156 requires matching services.
+阶段168已纳入当前v0.1.1完整冻结包，未写入旧v0.1.0包；数据库156需使用本版配套服务。Stage168 is included in v0.1.1, while the old v0.1.0 bundle remains unchanged; schema156 requires matching services.
 
 ---
 
