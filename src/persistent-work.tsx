@@ -2,6 +2,7 @@ import { ProjectConfigurationSummary } from "./project-configuration";
 import { ConversationDeliveryDownload } from "./delivery-quality";
 import { useRef, useState } from "react";
 import { AdoptionReview } from "./agent-adoption";
+import { CopyReview } from "./agent-copy-review";
 import { TaskInputRequests } from "./task-dependencies";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
@@ -201,6 +202,8 @@ export function Specialists() {
                       id: undefined,
                       name: a.name + t(" 副本", " copy"),
                       copy: true,
+                      copy_source_id: a.id,
+                      copy_source_version: a.version,
                     })
                   }
                 >
@@ -331,7 +334,10 @@ function SpecialistEditor({
       }
       onClose={onClose}
     >
-      {reviewing ? (
+      {reviewing && initial.copy_source_id ? (
+        <CopyReview sourceId={initial.copy_source_id} proposal={draft} onSaved={onSaved}
+          onBack={(stale)=>{if(stale)onClose();else setReviewing(false);}} />
+      ) : reviewing ? (
         <AdoptionReview
           endpoint={`${w.base}/agents/${initial.id}/version-previews`}
           proposal={draft}
@@ -346,7 +352,7 @@ function SpecialistEditor({
           submitLabel={
             initial.id
               ? t("比較變更", "Compare changes")
-              : t("儲存專家", "Save specialist")
+              : initial.copy_source_id ? t("核對副本", "Review copy") : t("儲存專家", "Save specialist")
           }
           onSubmit={async (f) => {
             const body = {
@@ -362,6 +368,8 @@ function SpecialistEditor({
                 definition: { ...body, enabled: f.get("enabled") === "on" },
               });
               setReviewing(true);
+            } else if(initial.copy_source_id) {
+              setDraft({source_version:initial.copy_source_version,name:body.name,instructions:body.instructions,tool_ids:body.tool_ids??initial.body.tool_ids});setReviewing(true);
             } else {
               await post(w.base + "/agents", body);
               onSaved();
@@ -372,7 +380,7 @@ function SpecialistEditor({
           <Field label={t("專家名稱", "Specialist name")}>
             <input
               name="name"
-              defaultValue={draft?.definition.name ?? initial.name ?? ""}
+              defaultValue={draft?.definition?.name ?? draft?.name ?? initial.name ?? ""}
               maxLength={160}
               required
             />
@@ -380,7 +388,7 @@ function SpecialistEditor({
           <Field label={t("預設專業角色", "Role preset")}>
             <select
               value={role}
-              disabled={!!initial.id}
+              disabled={!!initial.id || !!initial.copy_source_id}
               onChange={(e) => {
                 setRole(e.target.value);
                 setTools(undefined);
@@ -396,6 +404,7 @@ function SpecialistEditor({
               ))}
             </select>
           </Field>
+          {initial.copy_source_id ? <p className="notice">{t("副本保留原品牌和方法版本；需要變更時，請在建立後比較並採用。", "The copy retains the original brand and method versions. Compare and adopt any changes after creating it.")} · {initial.body?.brand ? "v"+initial.body.brand.version : t("無品牌", "No brand")}</p> : <>
           <Field label={t("品牌", "Brand")}>
             <select
               name="brand"
@@ -413,6 +422,7 @@ function SpecialistEditor({
               ))}
             </select>
           </Field>
+          </>}
           <Field
             label={t("工作要求", "Working instructions")}
             hint={t(
@@ -425,7 +435,7 @@ function SpecialistEditor({
               rows={5}
               maxLength={8000}
               defaultValue={
-                draft?.definition.instructions ??
+                draft?.definition?.instructions ?? draft?.instructions ??
                 initial.body?.instructions ??
                 ""
               }
@@ -442,7 +452,7 @@ function SpecialistEditor({
                 "You can narrow the tools available to this role.",
               )}
             </p>
-            {selected?.tool_ids.map((id: string) => (
+            {(initial.copy_source_id ? initial.body.tool_ids : selected?.tool_ids)?.map((id: string) => (
               <label className="check-line" key={id}>
                 <input
                   type="checkbox"
