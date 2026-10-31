@@ -1,3 +1,5 @@
+阶段169原范围记录；当前可选入账期间见 [阶段172补充](30-admin-posting-period.md)。Historical stage169 scope; see the additive posting-period requirement.
+
 # 用戶消耗報表 / User consumption report
 
 管理員從「用戶消耗」建立固定快照，也可從用戶詳情進入。香港今日／近七日／本月預設可調整；按發起人、付款帳戶、企業、項目、任務、角色、執行來源、能力版本及模型篩選。頁面分列確認扣費、退回消耗、淨消耗、預留及待對賬。個人和企業帳戶不合併，團隊子任務只歸實際發起人一次。

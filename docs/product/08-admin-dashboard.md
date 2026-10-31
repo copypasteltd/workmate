@@ -227,7 +227,7 @@ M1 试点即包含可运营后台：独立登录/MFA、细动作/字段/范围�
 
 当前成员控制增量见 [Admin 成员控制与策略快照](../technical/36-admin-membership-control-and-policy-snapshots.md)：用户详情提供角色、项目范围、active/suspended/removed、原因及变更预览，按实际策略直接执行或交独立审批。管理暂停必须由当前获授 Admin 解除，企业 owner 及旧邀请不能绕过。策略、原权限及目标变化均在实际执行前重查，用户全局状态与企业关系保持独立。数据库和 HTTP 证据已记录；本轮页面交互/截图、历史客户端重打包和完整后台验收继续待完成，本段不改变以上完整产品要求。
 
-开发工作包 AD01–AD10、数据/事务/API 和发布门槛 G10 见 [后台技术设计](../technical/11-admin-control-plane.md)。UC19–UC24 覆盖用户治理、消费复核、费用/VIP开通、内容控制、权限审批与批量运营。全部 TC-083–102 当前为 not_run，后台开发未实现。
+开发工作包 AD01–AD10、数据/事务/API 和发布门槛 G10 见 [后台技术设计](../technical/11-admin-control-plane.md)。UC19–UC24 覆盖用户治理、消费复核、费用/VIP开通、内容控制、权限审批与批量运营。TC-083–102是原始完整验收编号；后台已有独立登录、用户／内容、费用／VIP、权限及报表实现，当前完整验收状态以最新原编号台账为准。
 
 ## 0.5.0 实施补充：企业身份
 
@@ -241,3 +241,10 @@ M1 试点即包含可运营后台：独立登录/MFA、细动作/字段/范围�
 
 
 2026-10-20 组合开通增量见 [VIP 与显式赠额的原子命令](../technical/49-atomic-vip-and-explicit-credit.md)：既有 VIP 表单可明确选用独立 HKD 金额/到期/原因，经同一冻结预览、一次确认和必要的双领域独立审批后，在单库事务内提交父操作与两个规范子操作。双方版本、当前权限/MFA/限额、来源和唯一赠额参考由服务端及提交约束校验。19 组专项与九组实际页面为有界证据；全部产品要求、完整通知/金融 outbox、生产和综合验收不缩减。
+
+
+## 2026-11-01 · 入账期间补充 / Posting-period increment
+
+Admin可选工作建立或实际费用入账期间；旧任务当期扣费和退款、香港日账目投影、同选择明细及CSV见 [需求30](../requirements/30-admin-posting-period.md)。预留和累积操作用量分开，退款原扣费只作来源追溯。原完整专业／成本／规模验收保留；增量在v0.1.1冻结包之外。
+
+Admin now offers posting-period accounting alongside creation cohorts, with projected day detail/CSV and original-charge provenance. Holds and lifetime units remain separate. Original full acceptance remains; this increment is outside frozen v0.1.1.

@@ -1,3 +1,13 @@
+# 当前源码增量 / Current source increment · 172
+
+已补齐按费用实际入账期间报表、香港日期投影及同选择明细／CSV。Posting-period reports, daily entry projection and same-selection detail/CSV are implemented.
+
+[更新 / Changes](changes/172-admin-posting-period.md) · [方案 / Behavior](development/172-admin-posting-period.md) · [证据 / Evidence](quality/admin-posting-period-172.json) · [原编号台账 / Original ledger](quality/remaining-work-stage172.md)
+
+此为v0.1.1之后的源码增量，不在下方冻结ZIP中；原包与标签保持不变。This increment is outside the frozen v0.1.1 bundle below; published archives and tags remain unchanged.
+
+---
+
 ## v0.1.1 · 已发布 / Published
 
 [完整ZIP / Complete ZIP](https://github.com/copypasteltd/workmate/releases/download/v0.1.1/workmate-v0.1.1-complete.zip) · [SHA256](https://github.com/copypasteltd/workmate/releases/download/v0.1.1/workmate-v0.1.1-complete.zip.sha256) · [交付入口 / Handoff](releases/v0.1.1-handoff.md) · [使用 / Guide](releases/v0.1.1.md) · [发布回执 / Receipt](quality/release-publication-170.json)
