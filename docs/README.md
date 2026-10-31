@@ -1,3 +1,11 @@
+## 160 · Admin總覽數字與目前權限 / Accurate current Admin overview
+
+[需求](requirements/25-admin-overview-accuracy.md) · [方案 / Usage](development/160-admin-overview-accuracy.md) · [實際核對](quality/admin-overview-checkpoint-160.json) · [原編號範圍](quality/remaining-work-stage160.md)
+
+未凍結後端/Admin原始碼修復；v0.1.0-rc.2包與標籤保持。Unfrozen backend/Admin source correction; sealed release artifacts and tags are unchanged.
+
+---
+
 ## v0.1.0-rc.2 · 已发布 / Published
 
 [GitHub Release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.2) · [完整包 / Complete ZIP](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.2/workmate-v0.1.0-rc.2-complete.zip) · [交付 / Handoff](releases/v0.1.0-rc.2-publication.md) · [实际核对 / Evidence](quality/release-publication-159.json) · [原编号验收 / Ledger](quality/remaining-work-stage159.md)
