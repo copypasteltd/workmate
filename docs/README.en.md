@@ -2,7 +2,7 @@
 
 用戶消耗固定報表已完成；Scoped consumption reports implemented.
 
-[本轮更新 / Changes](changes/169-admin-usage-reports.md) · [方案 / Behavior](development/169-admin-usage-reports.md) · [证据 / Evidence](quality/admin-usage-report-169.json) · [完整台账 / Ledger](quality/remaining-work-stage169.md)
+[Git发布回执 / Publication](quality/admin-usage-report-publication-169.json) · [本轮更新 / Changes](changes/169-admin-usage-reports.md) · [方案 / Behavior](development/169-admin-usage-reports.md) · [证据 / Evidence](quality/admin-usage-report-169.json) · [完整台账 / Ledger](quality/remaining-work-stage169.md)
 
 当前转入下一完整冻结包；旧v0.1.0包保持不变。Preparing the next complete freeze; existing v0.1.0 is preserved.
 
