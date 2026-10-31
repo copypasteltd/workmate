@@ -1,3 +1,37 @@
+<!-- runtime-pause-154 -->
+
+Running cloud work supports safe pause and same-task/thread/budget resume. Task details → Pause task → wait for the measured current turn → Resume task. Answers keep a paused task paused. Unknown effects require reconciliation; cancellation settles known cumulative usage once.
+
+```mermaid
+flowchart TD
+ A[Running cloud task] --> B[Customer or scoped admin requests pause]
+ B --> C[Block new tools / finish accepted operations]
+ C --> D{Completed native turn and all costs known?}
+ D -->|No| E[Reconciliation / no automatic replay]
+ D -->|Yes| F{Outstanding requested input?}
+ F -->|Yes| G[Answer / remain paused]
+ F -->|No| H[Immutable measured checkpoint]
+ G --> H
+ H --> I[Explicit resume / current original identity and sources]
+ I --> J[Same task + thread + reservation + fixed versions]
+ J --> K[Claim capacity / consume checkpoint once]
+ K --> L[Reuse completed results / settle cumulative usage]
+```
+
+Media below show actual Web controls; this is not native UI acceptance for this component. Native right Side Panel and authorized local-file upload remain; panel compile/build only in154.
+
+6 focused backend cases /5 actual Web/Admin groups;7 PNGs and2 GIF/MP4 pairs. All changed clients built. Explicit synthetic model adapter; no real provider request. Broad/installed-client/cross-OS regression omitted. Apply forward SQL153/154 using the backend migration procedure before updating. Unreleased after v0.1.0-rc.1; all five frozen ZIPs unchanged.
+
+[方案 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/154-runtime-pause.md) · [API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/runtime-pause-openapi.json) · [完整待项 / Ledger](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage154.md)
+
+![Actual control](assets/screenshots/workmate-runtime-pause-154-01-paused.png)
+
+![Actual interaction](assets/screenshots/workmate-runtime-pause-154-01-running-pause-resume.gif)
+
+[Actual MP4](assets/screenshots/workmate-runtime-pause-154-01-running-pause-resume.mp4)
+
+---
+
 <!-- workflow-content-history-153 -->
 
 Admin reads every retained workflow definition and source-controlled current execution snapshots. Open Content → Read content → expand the exact version and navigate pages. Current scopes, both content permissions, recent MFA and source rechecks apply together; access/source changes clear bodies. Only precise quarantined investigation roots are excepted. Shared history joins erasure and authorized exports.

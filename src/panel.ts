@@ -833,15 +833,19 @@ async function drawTask(t: any) {
   if (recentStatus) recentStatus.textContent = t.status;
   const control = $<HTMLButtonElement>("control-task");
   control.hidden = !(
-    t.attempt === 0 && ["queued", "paused"].includes(t.status)
+    t.execution_location !== "desktop" && ["queued", "running", "paused"].includes(t.status)
   );
   control.dataset.action = t.status === "paused" ? "resume" : "pause";
+  control.disabled=t.status === "running" && !!t.pause_requested;
   control.textContent =
     t.status === "paused"
       ? tr("繼續工作", "Resume task")
+      : t.status === "running" ? t.pause_requested ? tr("正在安全暫停", "Pausing safely") : tr("暫停工作", "Pause task")
       : tr("暫停排隊", "Pause queued task");
   $("task-status").textContent =
-    t.status === "needs_input"
+    t.status === "running" && t.pause_requested
+      ? tr("正在等待目前輪次安全結束；用量保留", "Waiting for the current turn to finish safely; usage retained")
+      : t.status === "needs_input"
       ? tr("需要補充資料", "Needs input")
       : t.status === "paused"
         ? tr("已暫停", "Paused")
@@ -850,8 +854,8 @@ async function drawTask(t: any) {
     t.status === "needs_input"
       ? Number(t.attempt) > 0
         ? tr(
-            "上一輪處理已完成，原預算保持預留。補齊資料後，沿用原工作和會話繼續；已記錄用量會納入最後結算。",
-            "The previous turn is complete. The original budget remains reserved. Providing all inputs continues this same task and conversation; recorded usage is included in the final settlement.",
+            t.pause_requested ? "上一輪已完成，補齊資料後仍保持暫停，請再按繼續。用量及原預算預留保留。" : "上一輪處理已完成，原預算保持預留。補齊資料後，沿用原工作和會話繼續；已記錄用量會納入最後結算。",
+            t.pause_requested ? "The previous turn is complete. Providing inputs keeps this task paused until you choose Resume. Recorded usage and the original budget hold are retained." : "The previous turn is complete. The original budget remains reserved. Providing all inputs continues this same task and conversation; recorded usage is included in the final settlement.",
           ) + ` HKD ${(Number(t.accrued_micros ?? 0) / 1e6).toFixed(6)}`
         : tr(
             "尚未呼叫模型，原預算保持預留。補齊資料後繼續同一項工作。",
