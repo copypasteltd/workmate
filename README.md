@@ -1,4 +1,22 @@
 # Workmate · backend · v0.1.0
+## 当前源码增量 · 阶段169
+
+用户消耗报表支持付款方／项目／时间等筛选、八类分组、任务账务明细和同快照CSV。金额、预留、退款、待对账和未知内部成本分开；当前范围、MFA、导出权限逐次复查。当前库版本156。旧v0.1.0包未改；本增量纳入下一完整冻结包。
+
+```mermaid
+flowchart LR
+ A[Admin MFA] --> S[Scoped filters]
+ S --> R[Encrypted fixed snapshot]
+ R --> D[Groups / work / ledger]
+ R --> E[Authorized CSV]
+```
+
+![Consumption report](assets/screenshots/workmate-admin-usage-report-169-02-usage-01-snapshot-summary.png)
+
+![Actual interaction](assets/screenshots/workmate-admin-usage-report-169-02-consumption-report-workflow.gif)
+
+[MP4](assets/screenshots/workmate-admin-usage-report-169-02-consumption-report-workflow.mp4) · [方案 / Behavior](https://github.com/copypasteltd/workmate/blob/docs/docs/development/169-admin-usage-reports.md)
+
 
 [English](README.en.md) · [完整Release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0) · [中英安装使用](https://github.com/copypasteltd/workmate/blob/v0.1.0/docs/releases/v0.1.0.md)
 

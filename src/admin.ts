@@ -43,6 +43,7 @@ import {
   requestTaskCancellation,
 } from "./task-control.js";
 import { event } from "./tasks.js";
+import { registerAdminUsageReports } from "./admin-usage-reports.js";
 
 const pagination = z.object({
   page: z.coerce.number().int().min(1).max(100000).default(1),
@@ -84,6 +85,7 @@ export function registerAdmin(
     ),
   );
   registerAdminOverview(app, db);
+  registerAdminUsageReports(app, db);
   for (const section of [
     "usage",
     "billing",
