@@ -1,0 +1,169 @@
+import { useEffect, useRef, useState } from "react";
+import { Clock, FileText, Monitor, Plus, RefreshCw, ShieldCheck, Square, Terminal, Wallet, X } from "lucide-react";
+import { api } from "./api";
+import { useWorkspace } from "./context";
+import { completeOperation, operationKey } from "./operation-key";
+import { DateText, Empty, ErrorNotice, Field, Modal, Money, PageHeader, useData, useI18n } from "./ui";
+import "./cloud-computers.css";
+import { useCloudComputerView } from "./cloud-computer-view";
+import { cloudAgentBudget } from "./cloud-agent-budget";
+import { Link } from "react-router-dom";
+
+type Plan = {key:string;version:number;available_computers:number;body:{name:string;region:string;cpu_cores:number;memory_mib:number;disk_mib:number;max_minutes:number;per_minute_micros:number;terminal:boolean;visual:boolean}};
+type Source = {id:string;asset_id:string;version:number;name:string;bytes:string;sha256:string};
+type Session = {id:string;state:string;version:number;generation:number;specification_hash:string;expires_at:string;maximum_cost_micros:string;charged_micros:string;cleanup_verified:boolean;specification?:any;specification_unavailable?:boolean};
+type Quote = {id:string;specification:any;specification_hash:string;maximum_cost_micros:string;expires_at:string};
+
+export function CloudComputers() {
+  const w=useWorkspace(),{t}=useI18n();
+  if(window.copyPasteBridge) return <Empty icon={Monitor} title={t("Desktop 在本機執行工作","Desktop runs on your computer")} body={t("請在 Desktop 選取本機工作目錄並授予所需權限。專屬雲端電腦由 Web 工作台開啟。","Choose your local working folder and permissions in Desktop. Open dedicated cloud computers from the web workspace.")}/>;
+  return <CloudComputerPage key={w.me.user.id+":"+w.base}/>;
+}
+function CloudComputerPage() {
+  const w=useWorkspace(),{t}=useI18n(),base=w.base+"/cloud-computers";
+  const [refresh,setRefresh]=useState(0),[cursor,setCursor]=useState<string|null>(null),[creating,setCreating]=useState(false),[selected,setSelected]=useState<string|null>(null);
+  const data=useData<{items:Session[];next_cursor:string|null}>(`${base}/sessions?limit=8${cursor?"&cursor="+cursor:""}`,refresh,7000),plans=useData<{items:Plan[]}>(base+"/plans",refresh,15000);
+  const active=data.data?.items.filter(s=>["starting","running","stop_requested","reconciling"].includes(s.state))??[];
+  return <>
+    <PageHeader eyebrow="ROOM FOR THE WORK AHEAD." title={t("專屬雲端電腦","Your cloud computers")}
+      description={t("為需要持續運行和可視操作的工作留一個專屬空間。先核對費用、時長與可用檔案，再由你確認開啟。","A dedicated space for work that needs a running computer and visual control. Review cost, duration and selected files before you start.")}
+      action={<button className="button primary" disabled={!plans.data?.items.length} onClick={()=>setCreating(true)}><Plus size={17}/>{t("開啟雲端電腦","New cloud computer")}</button>}/>
+    <div className="cloud-computers" data-testid="cloud-computers">
+      <ErrorNotice error={data.error??plans.error}/>
+      <section className="cloud-computer-intro"><div className="cloud-computer-mark"><Monitor size={34} strokeWidth={1.3}/></div>
+        <div><span className="eyebrow">A LITTLE MORE ROOM.</span><h2>{t("離開頁面，工作仍有自己的空間。","A place for work to keep going.")}</h2><p>{t("會話、時間和費用記錄保存在帳戶中。重新開啟時核對目前權限；到期不會自動續租。","Sessions, time and financial records stay in your account. Access is checked again when you return. Leases do not renew automatically.")}</p></div>
+        <div className="cloud-computer-intro-notes"><span><ShieldCheck size={16}/>{t("費用由你確認","You approve the ceiling")}</span><span><Clock size={16}/>{t("固定時長・隨時要求停止","Fixed duration · request stop anytime")}</span><span><FileText size={16}/>{t("只使用你選取的檔案","Only your selected files")}</span></div></section>
+      <section className="cloud-computer-section"><header><div><h2>{t("我的會話","Your sessions")}</h2><p>{active.length?t(`本頁 ${active.length} 個會話正在運行或等待核對。`,`${active.length} sessions on this page are active or awaiting reconciliation.`):t("每個會話都有獨立的運行和費用記錄。","Each session has its own runtime and financial record.")}</p></div>
+        <button className="button quiet" onClick={()=>{setCursor(null);setRefresh(v=>v+1);}}><RefreshCw size={16}/>{t("重新整理","Refresh")}</button></header>
+        {data.loading&&!data.data?<p role="status">{t("正在載入你的會話…","Loading your sessions…")}</p>:!data.data?.items.length?<div className="cloud-computer-empty"><Monitor size={38} strokeWidth={1.1}/><h3>{t("準備好，再開啟。","Start when you are ready.")}</h3><p>{plans.data?.items.length?t("選擇一個資源方案，核對範圍與費用後即可開啟。","Choose a resource plan, then review scope and cost to begin."):t("目前沒有開放的資源方案。可先繼續使用會話與雲端檔案；管理員準備好資源後，方案會顯示在這裡。","No resource plans are available yet. Continue with conversations and cloud files; prepared capacity will appear here when your administrator makes it available.")}</p></div>:
+          <div className="cloud-computer-grid">{data.data.items.map(s=><button key={s.id} className="cloud-computer-card" onClick={()=>setSelected(s.id)}><div><Monitor size={22}/><span className={"cloud-session-state "+s.state}>{sessionLabel(s.state,t)}</span></div>
+            <h3>{s.specification?.plan?.name??t("雲端會話","Cloud session")}</h3><p>{s.specification?.scope?.purpose??t("原工作範圍已不可用。費用記錄仍保留。","The original working scope is unavailable. Financial records remain.")}</p>
+            <dl><div><dt>{t("確認上限","Approved ceiling")}</dt><dd><Money value={s.maximum_cost_micros}/></dd></div><div><dt>{t("已結算","Charged")}</dt><dd><Money value={s.charged_micros}/></dd></div><div><dt>{t("到期時間","Expires")}</dt><dd><DateText value={s.expires_at}/></dd></div></dl>
+          </button>)}</div>}
+        <footer>{cursor&&<button className="button quiet" onClick={()=>setCursor(null)}>{t("回到最新","Latest sessions")}</button>}{data.data?.next_cursor&&<button className="button secondary" onClick={()=>setCursor(data.data!.next_cursor)}>{t("較早會話","Older sessions")}</button>}</footer>
+      </section>
+    </div>
+    {creating&&<NewCloudComputer base={base} plans={plans.data?.items??[]} onClose={()=>setCreating(false)} onStarted={id=>{setCreating(false);setSelected(id);setCursor(null);setRefresh(v=>v+1);}}/>}
+    {selected&&<CloudComputerSession key={selected} base={base} id={selected} onClose={()=>{setSelected(null);setRefresh(v=>v+1);}}/>}
+  </>;
+}
+function sessionLabel(state:string,t:(a:string,b:string)=>string){return ({starting:t("正在啟動","Starting"),running:t("運行中","Running"),stop_requested:t("等待停機確認","Awaiting stop confirmation"),reconciling:t("待核對","Awaiting reconciliation"),stopped:t("已停止","Stopped"),failed:t("未能啟動","Failed")}[state]??state);}
+
+function NewCloudComputer({base,plans,onClose,onStarted}:{base:string;plans:Plan[];onClose:()=>void;onStarted:(id:string)=>void}) {
+  const w=useWorkspace(),{t}=useI18n(),[planKey,setPlan]=useState(plans[0]?.key??""),[minutes,setMinutes]=useState(Math.min(30,plans[0]?.body.max_minutes??30)),[purpose,setPurpose]=useState(""),
+    [terminal,setTerminal]=useState(false),[visual,setVisual]=useState(true),[agentControl,setAgentControl]=useState(false),[payer,setPayer]=useState(""),[files,setFiles]=useState<Source[]>([]),[choosing,setChoosing]=useState(false),
+    [quote,setQuote]=useState<Quote|null>(null),[consent,setConsent]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState<Error|null>(null);
+  const live=useRef(true),lock=useRef(false),plan=plans.find(p=>p.key===planKey);
+  useEffect(()=>{live.current=true;return()=>{live.current=false;};},[]);
+  const personal=useData("/v1/me/billing-accounts"),manage=["owner","admin"].includes(w.me.memberships.find((m:any)=>m.id===w.tenant)?.role),enterprise=useData(manage?`/v1/tenants/${w.tenant}/billing`:null);
+  const accounts=[...(personal.data?.items??[]).map((a:any)=>({id:a.id,label:t("個人帳戶","Personal account")})),...(enterprise.data?.wallet?[{id:enterprise.data.wallet.id,label:t("企業帳戶","Workspace account")}]:[])];
+  const selectedPayer=payer||accounts[0]?.id||"";
+  async function submit(confirm:boolean){
+    if(lock.current)return;lock.current=true;setBusy(true);setError(null);
+    const payload=confirm&&quote?{quote_id:quote.id,specification_hash:quote.specification_hash,maximum_cost_micros:quote.maximum_cost_micros,confirm_cost_and_scope:true}:
+      {plan_key:planKey,minutes,billing_account_id:selectedPayer,scope:{terminal:terminal&&!!plan?.body.terminal,visual:visual&&!!plan?.body.visual,agent_control:agentControl,selected_asset_versions:files.map(f=>f.id),purpose:purpose.trim()}};
+    const url=base+(confirm?"/sessions":"/quotes");
+    try{
+      if(confirm&&!consent)return;
+      const key=await operationKey(w.me.user.id,url,payload);if(!live.current)return;
+      const result=await api(url,{method:"POST",body:JSON.stringify(payload),headers:{"Idempotency-Key":key}});
+      await completeOperation(w.me.user.id,url,payload);
+      if(live.current){if(confirm)onStarted(result.id);else{setQuote(result);setConsent(false);}}
+    }catch(e){if(live.current)setError(e as Error);}finally{lock.current=false;if(live.current)setBusy(false);}
+  }
+  if(choosing)return <CloudSourcePicker base={base} selected={files} onClose={()=>setChoosing(false)} onSelect={rows=>{setFiles(rows);setChoosing(false);}}/>;
+  return <Modal title={quote?t("核對費用與工作範圍","Review cost and working scope"):t("準備你的雲端電腦","Prepare your cloud computer")} onClose={()=>{if(!busy)onClose();}}>
+    <div className="cloud-computer-create"><ErrorNotice error={error??personal.error??enterprise.error}/>
+      {quote?<><div className="cloud-quote-price"><Wallet size={22}/><span>{t("本次最高預留","Maximum reservation")}</span><strong><Money value={quote.maximum_cost_micros}/></strong><small>{t("按已核實運行時間結算；未使用部分在清理核實後釋放。","Settled against verified running time. Unused funds are released after verified cleanup.")}</small></div>
+        <dl className="cloud-quote-details"><div><dt>{t("資源方案","Resource plan")}</dt><dd>{quote.specification.plan.name} · {quote.specification.plan.region}</dd></div><div><dt>{t("資源","Resources")}</dt><dd>{quote.specification.plan.cpu_cores} CPU · {quote.specification.plan.memory_mib/1024} GiB · {quote.specification.plan.disk_mib/1024} GiB</dd></div><div><dt>{t("時長","Duration")}</dt><dd>{quote.specification.minutes} {t("分鐘，從確認起計","minutes from confirmation")}</dd></div><div><dt>{t("費率","Rate")}</dt><dd><Money value={quote.specification.plan.per_minute_micros}/> / {t("分鐘","minute")}</dd></div><div><dt>{t("工作內容","Purpose")}</dt><dd>{quote.specification.scope.purpose}</dd></div><div><dt>{t("操作權限","Controls")}</dt><dd>{[quote.specification.scope.visual?t("可視操作","Visual control"):"",quote.specification.scope.terminal?t("終端命令","Terminal commands"):""].filter(Boolean).join(" · ")||t("背景運行","Background only")}</dd></div><div><dt>{t("選取檔案","Selected files")}</dt><dd>{quote.specification.selected_files.map((f:any)=>f.name).join("、")||t("沒有選取檔案","No files selected")}</dd></div><div><dt>{t("報價有效至","Quote expires")}</dt><dd><DateText value={quote.expires_at}/></dd></div></dl>
+        <label className="cloud-explicit-consent"><input type="checkbox" checked={consent} disabled={busy} onChange={e=>setConsent(e.target.checked)}/><span>{t("我確認以上時長、資源、檔案範圍和費用上限，並要求現在開啟。到期不自動續租。","I approve this duration, capacity, selected files and spending ceiling, and request activation now. The lease will not renew automatically.")}</span></label>
+        <p className="notice">{quote.specification.scope.agent_control?t("你已允許 Codex 在以上範圍內操作。開啟電腦不會自動建立 AI 任務；每次任務須另行確認指令與 AI 預算。","You allow Codex to operate within this scope. Starting the computer does not create an AI task; each task requires its own instruction and AI budget confirmation."):t("此會話僅供你手動操作，未授權 Codex 控制。","This session allows your manual controls; Codex control is not authorized.")}</p>
+        <p>{t("工作空間最多容納 ","The workspace allows up to ")}{Number(quote.specification.workspace_file_limit).toLocaleString()}{t(" 個檔案。"," files.")}</p>
+        <div className="row-actions"><button className="button secondary" disabled={busy} onClick={()=>{setQuote(null);setConsent(false);setError(null);}}>{t("返回修改","Edit choices")}</button><button className="button primary" disabled={busy||!consent||Date.parse(quote.expires_at)<=Date.now()} onClick={()=>void submit(true)}>{busy?t("正在確認…","Confirming…"):t("確認費用並開啟","Approve cost and start")}</button></div>
+      </>:<form onSubmit={e=>{e.preventDefault();void submit(false);}}><fieldset className="cloud-create-fields" disabled={busy}><Field label={t("資源方案","Resource plan")}><select value={planKey} onChange={e=>{setPlan(e.target.value);const p=plans.find(p=>p.key===e.target.value);if(p)setMinutes(v=>Math.min(v,p.body.max_minutes));}} required>{plans.map(p=><option key={p.key} value={p.key}>{p.body.name} · {p.body.region}</option>)}</select></Field>
+        {plan&&<p className="cloud-plan-summary">{plan.body.cpu_cores} CPU · {plan.body.memory_mib/1024} GiB RAM · {plan.body.disk_mib/1024} GiB · <Money value={plan.body.per_minute_micros}/> / {t("分鐘","min")}<span>{t(`目前 ${plan.available_computers} 台可分配`,`${plan.available_computers} computers currently available`)}</span></p>}
+        <div className="cloud-computer-form-grid"><Field label={t("時長（分鐘）","Duration (minutes)")}><input type="number" min={5} max={plan?.body.max_minutes??1440} step={1} value={minutes} onChange={e=>setMinutes(Number(e.target.value))} required/></Field><Field label={t("付款帳戶","Paying account")}><select value={selectedPayer} onChange={e=>setPayer(e.target.value)} required><option value="">{t("選擇帳戶","Choose an account")}</option>{accounts.map(a=><option key={a.id} value={a.id}>{a.label}</option>)}</select></Field></div>
+        <Field label={t("這次要完成什麼？","What will you work on?")}><textarea minLength={8} maxLength={500} rows={3} required value={purpose} onChange={e=>setPurpose(e.target.value)}/></Field>
+        <div className="cloud-control-choices"><label><input type="checkbox" checked={visual} disabled={!plan?.body.visual} onChange={e=>setVisual(e.target.checked)}/><Monitor size={17}/>{t("可視操作","Visual control")}</label><label><input type="checkbox" checked={terminal} disabled={!plan?.body.terminal} onChange={e=>setTerminal(e.target.checked)}/><Terminal size={17}/>{t("允許終端命令","Allow terminal commands")}</label></div>
+        <label className="check-line"><input type="checkbox" checked={agentControl} onChange={e=>setAgentControl(e.target.checked)}/>{t("允許 Codex 在已選操作權限內使用此電腦","Allow Codex to operate this computer within the selected controls")}</label>
+        <div className="cloud-selected-files"><div><b>{t("可使用的檔案","Available working files")}</b><button type="button" className="button quiet" onClick={()=>setChoosing(true)}><Plus size={15}/>{t("選取檔案","Choose files")}</button></div>{files.length?files.map(f=><div key={f.id}><FileText size={15}/><span>{f.name}<small>v{f.version} · {Number(f.bytes).toLocaleString()} B</small></span><button type="button" className="icon-button" aria-label={t("移除 ","Remove ")+f.name} onClick={()=>setFiles(rows=>rows.filter(row=>row.id!==f.id))}><X size={15}/></button></div>):<p>{t("沒有預設授權全部檔案。你可選取最多 20 個已上傳檔案，每個不超過 5 MiB。","No files are granted by default. Choose up to 20 uploaded files, each no larger than 5 MiB.")}</p>}</div>
+        <button className="button primary" disabled={busy||!plan||!selectedPayer||plan.available_computers===0}>{busy?t("正在核對…","Reviewing…"):t("核對費用與範圍","Review cost and scope")}</button>
+      </fieldset></form>}
+    </div>
+  </Modal>;
+}
+
+function CloudSourcePicker({base,selected,onClose,onSelect}:{base:string;selected:Source[];onClose:()=>void;onSelect:(rows:Source[])=>void}) {
+  const {t}=useI18n(),[cursor,setCursor]=useState<string|null>(null),[chosen,setChosen]=useState<Source[]>(selected),data=useData<{items:Source[];next_cursor:string|null}>(base+"/source-files?limit=12"+(cursor?"&cursor="+cursor:""));
+  return <Modal title={t("選取確切檔案版本","Choose exact file versions")} onClose={onClose}><ErrorNotice error={data.error}/><p>{t(`已選 ${chosen.length} / 20 個檔案。確認開啟前不會向雲端電腦傳送內容。`,`${chosen.length} / 20 files selected. Contents reach the computer only after you approve activation.`)}</p>
+    <div className="cloud-source-list">{data.data?.items.map(row=><label key={row.id}><input type="checkbox" checked={chosen.some(f=>f.id===row.id)} disabled={!chosen.some(f=>f.id===row.id)&&chosen.length>=20} onChange={e=>{const checked=e.target.checked;setChosen(rows=>checked?(rows.length<20&&!rows.some(f=>f.id===row.id)?[...rows,row]:rows):rows.filter(f=>f.id!==row.id));}}/><FileText size={17}/><span>{row.name}<small>v{row.version} · {Number(row.bytes).toLocaleString()} B</small></span></label>)}</div>
+    {data.loading&&<p role="status">{t("正在載入…","Loading…")}</p>}{!data.loading&&data.data?.items.length===0&&<p>{t("目前沒有可選檔案。先到雲端檔案上傳工作材料。","No eligible files yet. Upload working materials under Cloud files first.")}</p>}
+    <div className="row-actions">{cursor&&<button className="button quiet" onClick={()=>setCursor(null)}>{t("回到最新","Latest")}</button>}{data.data?.next_cursor&&<button className="button secondary" onClick={()=>setCursor(data.data!.next_cursor)}>{t("下一頁","Next")}</button>}<button className="button primary" onClick={()=>onSelect(chosen)}>{t("使用選取檔案","Use selected files")}</button></div>
+  </Modal>;
+}
+
+function CloudComputerSession({base,id,onClose}:{base:string;id:string;onClose:()=>void}) {
+  const {t}=useI18n(),w=useWorkspace(),[refresh,setRefresh]=useState(0),[error,setError]=useState<Error|null>(null),[busy,setBusy]=useState(false),[command,setCommand]=useState(""),[removing,setRemoving]=useState(false),[confirmedRemoval,setConfirmedRemoval]=useState(false),[agentTask,setAgentTask]=useState(false);
+  const lock=useRef(false),live=useRef(true),data=useData<Session>(base+"/sessions/"+id,refresh,3000),s=data.data,
+    view=useCloudComputerView(s?.state==="running"?base+"/sessions/"+id+"/view":null,refresh);
+  useEffect(()=>{live.current=true;return()=>{live.current=false;};},[]);
+  async function control(body:unknown){
+    if(lock.current)return;lock.current=true;setBusy(true);setError(null);
+    const url=base+"/sessions/"+id+"/inputs";
+    try{const key=await operationKey(w.me.user.id,url,body);if(!live.current)return;await api(url,{method:"POST",body:JSON.stringify(body),headers:{"Idempotency-Key":key}});await completeOperation(w.me.user.id,url,body);if(live.current){setCommand("");setRefresh(v=>v+1);}}
+    catch(e){if(live.current)setError(e as Error);}finally{lock.current=false;if(live.current)setBusy(false);}
+  }
+  async function stop(){if(lock.current)return;lock.current=true;setBusy(true);setError(null);try{await api(base+"/sessions/"+id+"/stop",{method:"POST",body:"{}"});if(live.current)setRefresh(v=>v+1);}catch(e){if(live.current)setError(e as Error);}finally{lock.current=false;if(live.current)setBusy(false);}}
+  async function remove(){if(lock.current||!confirmedRemoval)return;lock.current=true;setBusy(true);setError(null);try{await api(base+"/sessions/"+id,{method:"DELETE"});if(live.current)onClose();}catch(e){if(live.current)setError(e as Error);}finally{lock.current=false;if(live.current)setBusy(false);}}
+  const frame=s?.state==="running"?view.data?.frame:null;
+  if(agentTask&&s)return <CloudComputerAgentTask base={base} session={s} onClose={()=>setAgentTask(false)}/>;
+  if(removing)return <Modal title={t("移除此會話的私人內容？","Remove private session content?")} onClose={()=>{if(!busy)setRemoving(false);}}>
+    <ErrorNotice error={error}/><p>{t("這會移除工作目的、所選檔案資訊、畫面與命令記錄，並要求停止仍在運行的電腦。原付款方、費用及清理狀態仍會保留。","This removes purpose, selected-file information, screens and command history, and requests any running computer to stop. Original payer, financial and cleanup records remain.")}</p>
+    <p className="notice">{t("移除內容不會代替實際停機或釋放未知費用。電腦和預留費用仍須等待清理回執核實。","Removing content does not attest to shutdown or release uncertain funds. The computer and reserved funds await verified cleanup.")}</p>
+    <label className="check-line"><input type="checkbox" checked={confirmedRemoval} disabled={busy} onChange={e=>setConfirmedRemoval(e.target.checked)}/>{t("我確認永久移除此會話的私人內容。","I confirm permanent removal of this session's private content.")}</label>
+    <div className="row-actions"><button className="button quiet" disabled={busy} onClick={()=>setRemoving(false)}>{t("返回","Back")}</button><button className="button secondary" disabled={busy||!confirmedRemoval} onClick={()=>void remove()}>{busy?t("正在移除…","Removing…"):t("永久移除私人內容","Permanently remove private content")}</button></div>
+  </Modal>;
+  return <Modal title={s?.specification?.plan?.name??t("雲端會話","Cloud session")} onClose={onClose}>
+    <div className="cloud-live-session" data-testid="cloud-live-session"><ErrorNotice error={error??data.error??view.error}/>
+      {s&&<><div className="cloud-live-status"><span className={"cloud-session-state "+s.state}>{sessionLabel(s.state,t)}</span><span>{t("到期","Expires")} <DateText value={s.expires_at}/></span></div>
+        {s.specification_unavailable&&<p className="notice">{t("工作範圍或來源權限已變更。私人內容和操作已停止提供；費用記錄仍保留。","Working scope or source permission has changed. Private content and controls are no longer available; financial records remain.")}</p>}
+        {s.state==="running"&&s.specification?.scope.visual&&<div className="cloud-live-screen">{frame?<img alt={t("目前雲端電腦畫面。點擊以操作。","Current cloud computer screen. Click to interact.")} draggable={false} src={"data:image/png;base64,"+frame.png_base64} width={1280} height={720} tabIndex={0}
+          onClick={e=>{if(busy)return;const r=e.currentTarget.getBoundingClientRect();void control({kind:"pointer",x:Math.max(0,Math.min(1279,Math.floor((e.clientX-r.left)*1280/r.width))),y:Math.max(0,Math.min(719,Math.floor((e.clientY-r.top)*720/r.height))),button:"left"});}}
+          onKeyDown={e=>{if(["Enter","Backspace","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)&&!busy){e.preventDefault();void control({kind:"key",key:e.key});}}}/>:<div role="status"><Monitor size={34}/><span>{t("等待節點提供新畫面…","Waiting for a fresh screen…")}</span></div>}</div>}
+        {s.state==="running"&&s.specification?.scope.visual&&<div className="row-actions" aria-label={t("遠端按鍵","Remote keys")}>{["Enter","Tab","Escape","Backspace"].map(key=><button className="button quiet" key={key} disabled={busy||!frame} onClick={()=>void control({kind:"key",key})}>{key}</button>)}</div>}
+        {s.state==="running"&&s.specification?.scope.terminal&&<form className="cloud-terminal" onSubmit={e=>{e.preventDefault();if(command.trim())void control({kind:"terminal",command});}}><Field label={t("在雲端電腦執行命令","Run a command on this cloud computer")}><textarea value={command} onChange={e=>setCommand(e.target.value)} maxLength={4096} rows={3} required disabled={busy}/></Field><button className="button secondary" disabled={busy||!command.trim()}><Terminal size={15}/>{t("執行命令","Run command")}</button></form>}
+        {(view.data?.commands??[]).map((c:any)=><div className="cloud-command-result" key={c.id}><small>{c.state==="completed"?t("已完成","Completed"):c.state==="failed"?t("執行失敗","Failed"):t("處理中","In progress")}</small>{c.result&&<pre>{c.result}</pre>}</div>)}
+        <div className="cloud-live-cost"><span>{t("本次費用上限","Spending ceiling")} <Money value={s.maximum_cost_micros}/></span><span>{t("已結算","Charged")} <Money value={s.charged_micros}/></span></div>
+        {s.state==="running"&&s.specification?.scope.agent_control&&<button className="button primary" disabled={busy} onClick={()=>setAgentTask(true)}>{t("交給 Codex 處理","Create a Codex task")}</button>}
+        {!s.cleanup_verified&&["stop_requested","reconciling"].includes(s.state)&&<p className="notice">{t("已要求結束，正在核對實際用量與清理。確認完成前保留原預留費用，電腦也不會交給其他用戶。","The session is ending while usage and cleanup are checked. Original funds and the computer remain reserved until verification.")}</p>}
+        {["starting","running"].includes(s.state)&&<button className="button secondary cloud-stop" disabled={busy} onClick={()=>void stop()}><Square size={15}/>{t("停止並清理","Stop and clean up")}</button>}
+        <button className="button quiet" disabled={busy} onClick={()=>{setConfirmedRemoval(false);setError(null);setRemoving(true);}}>{t("移除私人內容","Remove private content")}</button>
+      </>}
+    </div>
+  </Modal>;
+}
+
+function CloudComputerAgentTask({base,session,onClose}:{base:string;session:Session;onClose:()=>void}) {
+  const w=useWorkspace(),{t}=useI18n(),[prompt,setPrompt]=useState(""),[budget,setBudget]=useState("1.00"),[confirmed,setConfirmed]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState<Error|null>(null),[created,setCreated]=useState<string|null>(null);
+  const lock=useRef(false),live=useRef(true);useEffect(()=>{live.current=true;return()=>{live.current=false;};},[]);
+  async function submit(){
+    if(lock.current||!confirmed)return;lock.current=true;setBusy(true);setError(null);
+    try {
+      const payload={prompt:prompt.trim(),budget_micros:cloudAgentBudget(budget),generation:session.generation,specification_hash:session.specification_hash,confirm_agent_task:true},url=base+"/sessions/"+session.id+"/agent-tasks";
+      const key=await operationKey(w.me.user.id,url,payload);if(!live.current)return;
+      const result=await api(url,{method:"POST",body:JSON.stringify(payload),headers:{"Idempotency-Key":key}});await completeOperation(w.me.user.id,url,payload);
+      if(live.current)setCreated(result.task_id);
+    }catch(e){if(live.current)setError(e as Error);}finally{lock.current=false;if(live.current)setBusy(false);}
+  }
+  return <Modal title={t("讓 Codex 在這台電腦工作","Let Codex work on this computer")} onClose={()=>{if(!busy)onClose();}}><ErrorNotice error={error}/>
+    {created?<><p role="status">{t("已建立私人任務。你可查看執行狀態與實際操作回執。","Your private task is ready. Follow its execution state and actual command receipts.")}</p><Link className="button primary" to={"/app/tasks/"+created}>{t("查看任務","Open task")}</Link></>:
+    <form onSubmit={e=>{e.preventDefault();void submit();}}><fieldset className="cloud-create-fields" disabled={busy}>
+      <p>{t("任務只能操作目前已授權的這台電腦；不會延長租期或變更檔案與操作範圍。","This task can operate only this currently approved computer. It cannot extend the lease or change files and control permissions.")}</p>
+      <Field label={t("希望完成的工作","What should Codex do?")}><textarea value={prompt} onChange={e=>setPrompt(e.target.value)} minLength={5} maxLength={30000} rows={4} required/></Field>
+      <Field label={t("本次 AI 費用上限（HK$）","AI spending ceiling (HK$)")}><input value={budget} onChange={e=>setBudget(e.target.value)} inputMode="decimal" pattern="(0|[1-9][0-9]{0,6})(\.[0-9]{1,6})?" required/></Field>
+      <p className="notice">{t("AI 任務費用與電腦租用費分開結算，使用原電腦付款帳戶。AI 請求只經公司內部服務；電腦到期後不再接受操作。","AI work and computer resources are billed separately to the original computer payer. AI requests use company services only. Controls stop when the computer lease expires.")}</p>
+      <label className="cloud-explicit-consent"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/><span>{t("我確認以上任務、AI 預算及原有電腦操作範圍。","I approve this task, AI budget and the computer's original control scope.")}</span></label>
+      <button className="button primary" disabled={!confirmed||busy}>{busy?t("正在建立…","Creating…"):t("確認並建立任務","Approve and create task")}</button>
+    </fieldset></form>}
+  </Modal>;
+}

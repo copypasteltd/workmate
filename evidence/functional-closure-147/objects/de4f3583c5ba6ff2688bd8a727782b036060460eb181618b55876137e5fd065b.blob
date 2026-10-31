@@ -1,0 +1,369 @@
+import type { Database, Tx } from "./db.js";
+import type { Principal } from "./auth.js";
+import { audit } from "./auth.js";
+import type { Catalog } from "./catalog.js";
+import { projectAccess } from "./access.js";
+import { authorizeTaskPlan } from "./plans.js";
+import { reserve } from "./billing.js";
+import { Problem } from "./lib.js";
+import type { WorkContext } from "./persistent-work.js";
+import type { RevisionBinding } from "./delivery-revision-model.js";
+import { freezeTaskSkills } from "./skill-lifecycle.js";
+import { freezeProjectConfiguration } from "./project-configuration.js";
+import {
+  freezeTaskCapabilities,
+  boundTaskAvailability,
+} from "./capability-bindings.js";
+import {
+  stageInputDependencies,
+  type InputDependency,
+} from "./task-dependencies.js";
+
+export interface TaskInput {
+  title: string;
+  prompt: string;
+  role_key: string;
+  budget_micros: number;
+  parent_id?: string;
+  mode?: "execute" | "ask" | "plan";
+  dependencies?: InputDependency[];
+}
+export async function enqueueTask(
+  tx: Tx,
+  db: Database,
+  catalog: Catalog,
+  actor: Principal,
+  tenant: string,
+  project: string,
+  b: TaskInput,
+  requestKey: string,
+  options: {
+    /** Internal reserved identity for a transactionally admitted local handoff. */
+    task_id?: string;
+    local_handoff_id?: string;
+    context?: WorkContext;
+    conversation?: any;
+    billing_account_id?: string;
+    content_source_task_id?: string;
+    /** Server-validated fixed delivery and feedback anchor; never generic task input. */
+    delivery_revision?: RevisionBinding;
+    execution_location?: "cloud" | "desktop";
+    role_hash?: string;
+    /** Internal, independently customer-confirmed dedicated computer binding. */
+    dedicated_computer?: { session_id: string; generation: number; specification_hash: string };
+    /** Internal binding, set only by the authorized cloud workflow runner. */
+    cloud_workflow?: { run_id: string; cursor: number };
+    /** Exact predecessor versions selected by the frozen, customer-approved workflow. */
+    workflow_inputs?: import("zod").infer<typeof import("./workflow-handoffs.js").workflowInputs>;
+    workflow_binding?: {run_id:string;input_hash:string;values:Record<string,unknown>;files:any[]};
+    /** Internal, exact reviewed team step. Never accepted from task API input. */
+    agent_group?: { run_id: string; node_key: string; deferred?: boolean };
+    /** Validated server-owned media parameters; never accepted by the generic task API. */
+    media_effect?: {
+      request: unknown;
+      request_sha256: string;
+      catalog_sha256: string;
+      renderer_profile: unknown;
+    };
+    /** A customer-reviewed method trial and its exact target inputs. */
+    solution_trial?: {
+      trial_id: string;
+      solution_version_id: string;
+      definition_hash: string;
+      template_version_id: string;
+      bindings: unknown;
+      resolved_sources: unknown;
+    };
+  } = {},
+) {
+  if (b.prompt.length > 60000)
+    throw new Problem(
+      409,
+      "CONTEXT_LIMIT",
+      "The approved request and plan are too large; revise the plan before execution",
+    );
+  await projectAccess(tx, actor, tenant, project, "write");
+  if (
+    options.conversation &&
+    !options.agent_group &&
+    (
+      await tx.query(
+        "SELECT 1 FROM agent_group_runs WHERE conversation_id=$1",
+        [options.conversation.id],
+      )
+    ).rowCount
+  )
+    throw new Problem(
+      409,
+      "GROUP_CONVERSATION_READ_ONLY",
+      "Start or repeat team work from its reviewed team plan",
+    );
+  if (
+    (options.execution_location ?? "cloud") === "cloud" &&
+    actor.audience === "native" &&
+    actor.sessionId &&
+    (
+      await tx.query(
+        "SELECT 1 FROM refresh_tokens WHERE session_id=$1 AND client_id='desktop'",
+        [actor.sessionId],
+      )
+    ).rowCount
+  )
+    throw new Problem(
+      409,
+      "DESKTOP_LOCAL_EXECUTION_REQUIRED",
+      "Start this work through the local Desktop Agent, or open the Web application for cloud work",
+    );
+  const dataMode = (
+    await tx.query("SELECT data_mode FROM tenants WHERE id=$1", [tenant])
+  ).rows[0]?.data_mode;
+  if ((dataMode === "simulated") !== db.config.DEMO_MODE)
+    throw new Problem(
+      409,
+      "DATA_MODE_MISMATCH",
+      "Simulated workspaces and configured-service workspaces use separate execution modes. Create a workspace in the current mode.",
+    );
+  let parent: any;
+  if (b.parent_id) {
+    parent = (
+      await tx.query("SELECT * FROM tasks WHERE id=$1 AND project_id=$2", [
+        b.parent_id,
+        project,
+      ])
+    ).rows[0];
+    if (!parent) throw new Problem(404, "NOT_FOUND", "Original task not found");
+    if (parent.agent_group_run_id && !options.agent_group)
+      throw new Problem(
+        409,
+        "GROUP_NEW_RUN_REQUIRED",
+        "Review a new team run to repeat this work under a new approved allocation",
+      );
+    if (parent.execution_location !== (options.execution_location ?? "cloud"))
+      throw new Problem(
+        409,
+        "EXECUTION_LOCATION_CHANGED",
+        "Continue the task in its original execution location",
+      );
+    if (parent.private_owner && parent.private_owner !== actor.id)
+      throw new Problem(404, "NOT_FOUND", "Original task not found");
+    if (parent.input_context?.geo_sample_id)
+      throw new Problem(
+        409,
+        "GEO_NEW_RUN_REQUIRED",
+        "Repeat an observation through a new GEO run with the reviewed fixed configuration",
+      );
+    if (parent.input_context?.seo_change_task_id)
+      throw new Problem(
+        409,
+        "SEO_CHANGE_NEW_TASK_REQUIRED",
+        "Save a new change task from the retained audit so evidence and budget remain bound",
+      );
+    if (parent.input_context?.media_effect)
+      throw new Problem(
+        409,
+        "EFFECT_NEW_REVIEW_REQUIRED",
+        "Review exact parameters and sources in a new effect request before repeating this work",
+      );
+    if (parent.input_context?.solution_trial)
+      throw new Problem(
+        409,
+        "SOLUTION_NEW_REVIEW_REQUIRED",
+        "Review a new method trial and its target inputs before repeating this work",
+      );
+    if (
+      parent.conversation_id &&
+      options.conversation?.id !== parent.conversation_id
+    )
+      throw new Problem(
+        409,
+        "CONVERSATION_CONTEXT_REQUIRED",
+        "Continue this private task from its original conversation",
+      );
+  }
+  if (
+    parent?.role_key === b.role_key &&
+    options.context &&
+    options.context.role_hash !== parent.role_hash
+  )
+    throw new Problem(
+      409,
+      "ROLE_ADOPTION_NEW_TASK_REQUIRED",
+      "Start a new task to adopt a different role/tool version",
+    );
+  const role = catalog.role(
+    b.role_key,
+    options.context?.role_hash ??
+      options.role_hash ??
+      (parent?.role_key === b.role_key ? parent.role_hash : undefined),
+  );
+  if (b.role_key === "computer-operator" && !options.dedicated_computer)
+    throw new Problem(409, "CLOUD_RUNTIME_AGENT_CONSENT_REQUIRED", "Create this task from a confirmed running computer and approve its separate AI budget");
+  if (options.dedicated_computer && b.role_key !== "computer-operator")
+    throw new Problem(409, "CLOUD_RUNTIME_AGENT_CONSENT_REQUIRED", "The confirmed computer requires its dedicated operator role");
+  await catalog.boundSkills(role);
+  await catalog.ensureEnabled(tx, b.role_key, catalog.digest(role));
+  // Team members have their own frozen roles and capability bindings; the
+  // coordinator is a dependency parent, not a substitute runtime profile.
+  const ready = parent && !options.agent_group
+    ? (
+        await boundTaskAvailability(tx, db.config, catalog, {
+          ...parent,
+          role_key: b.role_key,
+          mode: b.mode ?? "execute",
+        })
+      ).availability
+    : await catalog.availableFor(tx, db.config, role, b.mode);
+  if (!ready.available)
+    throw new Problem(
+      503,
+      ready.reason!,
+      "此服務正在準備，請聯絡工作區管理員 / This service requires workspace setup",
+    );
+  if (options.billing_account_id) {
+    const payer = (
+      await tx.query(
+        "SELECT id,user_id,tenant_id,data_mode FROM wallets WHERE id=$1",
+        [options.billing_account_id],
+      )
+    ).rows[0];
+    if (
+      !payer ||
+      (payer.user_id
+        ? payer.user_id !== actor.id
+        : payer.tenant_id !== tenant) ||
+      payer.data_mode !== dataMode
+    )
+      throw new Problem(
+        404,
+        "BILLING_ACCOUNT_NOT_FOUND",
+        "An authorized billing account in this execution mode is required",
+      );
+  }
+  const plan = await authorizeTaskPlan(
+    tx,
+    tenant,
+    actor.id,
+    role,
+    b.budget_micros,
+    b.mode,
+  );
+  const reviewedProjectConfiguration = await freezeProjectConfiguration(
+    tx,
+    tenant,
+    project,
+    b.budget_micros,
+    options.agent_group
+      ? (options.context?.project_configuration ?? null)
+      : parent
+        ? (parent.input_context?.project_configuration ?? null)
+        : undefined,
+  );
+  const projectConfiguration = options.execution_location === "desktop" && options.context?.geo_sample_id
+    ? undefined : reviewedProjectConfiguration;
+  const task = (
+    await tx.query(
+      `INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status,id)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,coalesce($24::uuid,gen_random_uuid())) RETURNING *`,
+      [
+        tenant,
+        project,
+        actor.id,
+        b.title,
+        b.prompt,
+        b.role_key,
+        catalog.digest(role),
+        b.budget_micros,
+        requestKey,
+        actor.authVersion,
+        b.parent_id ?? null,
+        b.mode ?? "execute",
+        options.conversation?.id ?? null,
+        options.context ||
+        options.execution_location === "desktop" ||
+        options.cloud_workflow ||
+        options.media_effect ||
+        options.dedicated_computer ||
+        options.solution_trial
+          ? actor.id
+          : (parent?.private_owner ?? null),
+        {
+          ...(options.context ?? {}),
+          ...(options.local_handoff_id ? { local_handoff_id: options.local_handoff_id } : {}),
+          ...(options.workflow_inputs ? { workflow_inputs: options.workflow_inputs } : {}),
+          ...(options.workflow_binding ? { workflow_binding: options.workflow_binding } : {}),
+          ...((options.delivery_revision ?? parent?.input_context?.delivery_revision)
+            ? { delivery_revision: options.delivery_revision ?? parent.input_context.delivery_revision } : {}),
+          ...(options.dedicated_computer ? { dedicated_computer: options.dedicated_computer } : {}),
+          ...(options.media_effect
+            ? { media_effect: options.media_effect }
+            : {}),
+          ...(options.solution_trial
+            ? { solution_trial: options.solution_trial }
+            : {}),
+          ...(projectConfiguration
+            ? { project_configuration: projectConfiguration }
+            : {}),
+          ...((options.content_source_task_id ?? parent?.input_context?.delivery_revision?.source_task_id)
+            ? { plan_source_task_id: options.content_source_task_id ?? parent.input_context.delivery_revision.source_task_id }
+            : {}),
+        },
+        plan,
+        options.billing_account_id ?? null,
+        options.execution_location ?? "cloud",
+        options.cloud_workflow?.run_id ?? null,
+        options.cloud_workflow?.cursor ?? null,
+        options.agent_group?.run_id ?? null,
+        options.agent_group?.node_key ?? null,
+        options.agent_group?.deferred ? "paused" : "queued",
+        options.task_id ?? null,
+      ],
+    )
+  ).rows[0];
+  if (options.dedicated_computer) {
+    const binding = options.dedicated_computer;
+    await tx.query(`INSERT INTO cloud_runtime_task_bindings(task_id,tenant_id,project_id,private_owner,session_id,generation,specification_hash)
+      VALUES($1,$2,$3,$4,$5,$6,$7)`, [task.id,tenant,project,actor.id,binding.session_id,binding.generation,binding.specification_hash]);
+  }
+  await freezeTaskCapabilities(tx, db.config, catalog, task);
+  await freezeTaskSkills(tx, catalog, task);
+  const waiting = await stageInputDependencies(
+    tx,
+    task,
+    role,
+    b.dependencies,
+    b.parent_id,
+  );
+  await reserve(tx, tenant, task.id, b.budget_micros);
+  await tx.query(
+    "INSERT INTO task_events(tenant_id,task_id,kind,body) VALUES($1,$2,$3,$4)",
+    [
+      tenant,
+      task.id,
+      waiting
+        ? "task.needs_input"
+        : options.agent_group?.deferred
+          ? "task.waiting_for_team"
+          : "task.queued",
+      { role_key: b.role_key, mode: task.mode },
+    ],
+  );
+  if (
+    !waiting &&
+    !options.agent_group?.deferred &&
+    task.execution_location === "cloud"
+  )
+    await tx.query(
+      "INSERT INTO outbox(tenant_id,topic,payload) VALUES($1,'task.run',$2)",
+      [tenant, { task_id: task.id }],
+    );
+  await audit(
+    tx,
+    actor,
+    "task.create",
+    task.id,
+    "succeeded",
+    { mode: task.mode, conversation_id: task.conversation_id },
+    tenant,
+  );
+  return task;
+}

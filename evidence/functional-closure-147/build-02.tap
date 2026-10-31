@@ -1,0 +1,123 @@
+TAP version 13
+# warning: LF will be replaced by CRLF in .gitignore.
+# The file will have its original line endings in your working directory
+# warning: LF will be replaced by CRLF in .gitignore.
+# The file will have its original line endings in your working directory
+# Subtest: native preview admission binds a green report to the actual runtime, installers and extension bytes
+    # Subtest: reject a legacy green report without a byte binding
+    ok 1 - reject a legacy green report without a byte binding
+      ---
+      duration_ms: 4.059
+      ...
+    # Subtest: bind new source bytes before staging and keep the same manifest after staging
+    ok 2 - bind new source bytes before staging and keep the same manifest after staging
+      ---
+      duration_ms: 1439.4959
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/resources/app.asar
+    ok 3 - reject changed bytes: release/frameless/win-unpacked/resources/app.asar
+      ---
+      duration_ms: 222.5444
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/resources/native-host.cjs
+    ok 4 - reject changed bytes: release/frameless/win-unpacked/resources/native-host.cjs
+      ---
+      duration_ms: 159.3962
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/CopyPaste.exe
+    ok 5 - reject changed bytes: release/frameless/win-unpacked/CopyPaste.exe
+      ---
+      duration_ms: 206.1809
+      ...
+    # Subtest: reject changed bytes: release/frameless/CopyPaste-0.5.0-x64-Setup.exe
+    ok 6 - reject changed bytes: release/frameless/CopyPaste-0.5.0-x64-Setup.exe
+      ---
+      duration_ms: 171.0643
+      ...
+    # Subtest: reject changed bytes: dist/background.js
+    ok 7 - reject changed bytes: dist/background.js
+      ---
+      duration_ms: 137.3291
+      ...
+    # Subtest: reject changed bytes: src/main.ts
+    ok 8 - reject changed bytes: src/main.ts
+      ---
+      duration_ms: 136.1737
+      ...
+    # Subtest: reject added or missing extension files
+    ok 9 - reject added or missing extension files
+      ---
+      duration_ms: 433.1841
+      ...
+    # Subtest: reject incomplete cleanup and failures
+    ok 10 - reject incomplete cleanup and failures
+      ---
+      duration_ms: 0.7861
+      ...
+    # Subtest: allow documentation changes when all runtime bytes remain identical
+    ok 11 - allow documentation changes when all runtime bytes remain identical
+      ---
+      duration_ms: 132.0207
+      ...
+    1..11
+ok 1 - native preview admission binds a green report to the actual runtime, installers and extension bytes
+  ---
+  duration_ms: 6882.9028
+  ...
+1..1
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7004.8001
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 2042 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     0.56 kB │ gzip:   0.34 kB
+dist/assets/index-BkaUe3GX.css    161.48 kB │ gzip:  28.53 kB
+dist/assets/index-DVNSzoIv.js   1,112.37 kB │ gzip: 336.66 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.38s
+Built Chrome MV3 extension. Registered ID: fffkcnmfdhahlnifgdilabheppkgnlok
+
+> @copypaste/desktop@0.7.1 build
+> node scripts/configure-deployment.mjs && node scripts/configure-update-trust.mjs && node scripts/build-update-host.mjs && node scripts/build-program-host.mjs && tsc && node scripts/build-native-host.mjs && vite build --config vite.config.ts
+
+Deployment origins compiled; no AI credentials are embedded.
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 2040 modules transformed.
+rendering chunks...
+computing gzip size...
+renderer-dist/index.html                     0.95 kB │ gzip:   0.47 kB
+renderer-dist/assets/index-B5D86NFO.css    165.57 kB │ gzip:  28.95 kB
+renderer-dist/assets/index-Xgu38ZyO.js   1,067.10 kB │ gzip: 328.25 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.35s
+  • electron-builder  version=26.15.3 os=10.0.26200
+  • loaded configuration  file=package.json ("build" field)
+  • executing @electron/rebuild  electronVersion=44.5.1 arch=x64 buildFromSource=false workspaceRoot=D:\dev\copypasted\自有agent\dev\copypaste-desktop projectDir=./ appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=win32 arch=x64 electron=44.5.1 appOutDir=release\functional-closure-147-02\win-unpacked
+  • using custom unpacked Electron distribution  electronDist=node_modules\electron\dist
+  • copying unpacked Electron  source=D:\dev\copypasted\自有agent\dev\copypaste-desktop\node_modules\electron\dist destination=D:\dev\copypasted\自有agent\dev\copypaste-desktop\release\functional-closure-147-02\win-unpacked
+  • searching for node modules  pm=npm searchDir=D:\dev\copypasted\自有agent\dev\copypaste-desktop
+  • duplicate dependency references  dependencies=["react-dom@19.3.1","react-dom@19.3.1"]
+  • updating asar integrity executable resource  executablePath=release\functional-closure-147-02\win-unpacked\CopyPaste.exe
+  • file signing skipped via signExecutable configuration  file=release\functional-closure-147-02\win-unpacked\CopyPaste.exe
