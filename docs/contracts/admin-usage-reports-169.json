@@ -1,0 +1,59 @@
+{
+  "version": 169,
+  "routes": {
+    "POST /v1/admin/usage-reports": "Strict filters; current MFA; idempotent snapshot creation. Returns id/expires_at only.",
+    "GET /v1/admin/usage-reports/:id": "Same-session snapshot summary, eight groupings and stable 1–100 row pages.",
+    "GET /v1/admin/usage-reports/:id/works/:kind/:work": "Snapshot-bound safe operation/ledger/refund/pinned-runtime detail.",
+    "GET /v1/admin/usage-reports/:id/export": "Whole selected CSV; both scoped export permissions must cover every row."
+  },
+  "filters": {
+    "required": [
+      "period_from",
+      "period_to"
+    ],
+    "optional": [
+      "user_id",
+      "tenant_id",
+      "project_id",
+      "billing_account_id",
+      "task_id",
+      "capability_version_id",
+      "payer_kind",
+      "source",
+      "role_key",
+      "model_alias"
+    ],
+    "period": "UTC half-open work-creation cohort; UI defaults Hong Kong last seven days. Financial facts cumulative as of snapshot, not posting-period accounting."
+  },
+  "groups": [
+    "user",
+    "payer",
+    "tenant",
+    "project",
+    "role",
+    "source",
+    "day",
+    "capability"
+  ],
+  "financial_fields": {
+    "confirmed_micros": "Exact negative charge-ledger sum inverted; work counted once, attributed to initiator and original wallet.",
+    "refunded_micros": "Only credit compensation from billing.refund operations linked to the original consume journal/raw charge.",
+    "reserved_micros": "Active task/resource holds.",
+    "reconciliation_hold_micros": "Unsettled uncertain holds; separate from actual charges.",
+    "internal_cost": "Only scoped internal_cost.read; null/not_recorded because supplier bills are not connected; selling rates never stand in for internal costs."
+  },
+  "constraints": {
+    "snapshot_ttl_seconds": 300,
+    "maximum_works": 5000,
+    "maximum_operations": 20000,
+    "maximum_payload_bytes": 16777216,
+    "oversize": "413, never truncated totals",
+    "capability_group": "Counts only; whole-work charges never reallocated per capability. Capability filter selects works having a matching operation.",
+    "units": "Independent exact decimal-string totals per unit; unknown observations counted separately.",
+    "identity": "Current Admin session/auth version/access hash/recent MFA and environment mode on every access; binding change invalidates report.",
+    "export": "Same stored financial snapshot, CSV formula protection, exact money strings and watermark/as_of on each row. No prompt/output/email/provider payload."
+  },
+  "schema_version": 156,
+  "schema_change_in_this_increment": false,
+  "legacy_usage_route_unchanged": true
+}

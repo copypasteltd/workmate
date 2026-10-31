@@ -1,3 +1,13 @@
+# 当前源码增量 / Current source increment · 169
+
+用戶消耗固定報表已完成；Scoped consumption reports implemented.
+
+[本轮更新 / Changes](changes/169-admin-usage-reports.md) · [方案 / Behavior](development/169-admin-usage-reports.md) · [证据 / Evidence](quality/admin-usage-report-169.json) · [完整台账 / Ledger](quality/remaining-work-stage169.md)
+
+当前转入下一完整冻结包；旧v0.1.0包保持不变。Preparing the next complete freeze; existing v0.1.0 is preserved.
+
+---
+
 # 当前源码增量 / Current source increment · 168
 
 用户运营组合筛选与真实账户访问记录已收口；精确费用、独立账户和当前权限约束不变。Scoped operational filters and truthful access metadata are implemented. Backend/Admin builds,8 native SQL/API cases and6 actual Admin UI checks passed.
