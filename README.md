@@ -1,3 +1,30 @@
+<!-- workflow-content-history-153 -->
+
+后台工作流支持全部已保存定义与受控执行快照。进入内容目录 → 读取内容 → 展开精确版本并翻页。近期MFA、双内容权限、当前范围与来源复查同时生效，来源或权限变化清除正文。精确调查根隔离后仍可审阅；真实依赖撤回继续隐藏。共享历史连接永久擦除与完整授权导出。
+
+```mermaid
+flowchart LR
+ A[Admin + scopes + MFA] --> B[Saved definitions / current run]
+ B --> C[Exact sources + locks + recheck]
+ C --> D[Full retained pages / explicit snapshot]
+ D --> E[Focus or15s recheck]
+ E --> F[Access or source changes clear body]
+```
+
+Media show the actual Admin journey; this component has no new client UI acceptance in153. Desktop executes Codex locally with customer-granted permissions and no Electron frame/menu.
+
+9 focused backend cases /7 actual browser groups passed with synthetic business/model data; no real provider request. Broad regression and unchanged client builds omitted. SQL150v2/151/152 are forward migrations. Unreleased increment; frozen v0.1.0-rc.1 and its five ZIPs unchanged.
+
+[方案 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/153-workflow-content-history.md) · [API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/workflow-content-history-openapi.json) · [完整待项 / Ledger](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage153.md)
+
+![Actual Admin history](assets/screenshots/workmate-workflow-content-history-153-01-shared-newest-en.png)
+
+![Actual interaction](assets/screenshots/workmate-workflow-content-history-153-01-saved-workflow-history.gif)
+
+[Actual MP4](assets/screenshots/workmate-workflow-content-history-153-01-saved-workflow-history.mp4)
+
+---
+
 <!-- scope-data-export-152 -->
 
 **未凍結增量152：完整授權資料匯出**
