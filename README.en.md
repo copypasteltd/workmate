@@ -1,3 +1,35 @@
+<!-- project-lifecycle-149 -->
+
+**Current development increment149 — project management after frozen `v0.1.0-rc.1`**
+
+Workspace owners/admins open Projects, filter Active/Archived/All, search and page, edit details, or explicitly confirm archive/restore. Archiving the last active project keeps the management page reachable. Restore reuses its identity, materials and existing grants; revoked access remains revoked. Ordinary members see only authorized active projects. Archive controls availability while archived; cancel work separately when termination is intended.
+
+The management API checks current authority after lock waits, rejects stale expected state and makes lost-response retries return current state without reapplying obsolete changes. Web/Desktop reject stale list results and validate restored selections against the latest active list. Desktop continues running Codex locally with customer-controlled full permission; Extension remains a cloud agent client using Chrome's native right Side Panel for consented file upload.
+
+Ten current backend cases, five actual client journey groups and six build steps passed. Four actual screenshots and two wall-clock GIF/MP4 pairs were recorded; owned resources closed. No AI request or broad historical regression was run. The original failed verification attempt is retained. Aggregate erasure, production integrations and full acceptance remain open. The original seven frozen tags and five release archives are unchanged;149 is an unreleased branch increment.
+
+```mermaid
+flowchart LR
+  A[Owner / administrator] --> B[Managed project directory]
+  B --> C[Edit / archive / restore]
+  C --> D[Current authority and exact-state check]
+  D --> E[Existing project identity and materials]
+  C --> F[Latest active list]
+  F --> G[Web / local Desktop selection]
+```
+
+Actual Web journey shown as a shared illustration; no new UI acceptance is claimed for this component.
+
+![Project restored](assets/screenshots/workmate-project-lifecycle-149-01-same-project-restored-en.png)
+
+![Actual archive and restore](assets/screenshots/workmate-project-lifecycle-149-01-project-archive-restore.gif)
+
+[Actual MP4](assets/screenshots/workmate-project-lifecycle-149-01-project-archive-restore.mp4)
+
+Selected evidence: `evidence/project-lifecycle-149/backend-02.json`, `build-01.json`, `ui-01.json`. Use a new two-digit attempt ID when running the149 qualification scripts; executed attempts are immutable.
+
+---
+
 <!-- frozen-release-148 -->
 
 **固定运行时准备 / Pinned runtime preparation**：`runtime:prepare` 不下载或查找 PATH。先解压本版 Windows 便携 ZIP，在 PowerShell 设置 `$env:COPYPASTE_LOCAL_CODEX_BIN` 为解压目录中的 `resources/local-codex/codex.exe` 绝对路径（保留旁边全部 helper 文件），再在 desktop 执行 `npm run runtime:prepare`。源码单独交付时，需自行提供与 `contracts/local-codex-runtime.json` 相符的同一组原生文件。首次启动会自动执行原生 PostgreSQL 迁移到145，无需容器。
