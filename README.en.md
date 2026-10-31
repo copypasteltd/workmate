@@ -1,3 +1,35 @@
+## 157 · Independent cloud work in one conversation
+
+Delegate independent cloud work within the plan quota. Select a task for progress, inputs or Stop; each task owns its budget and output. Web retains the original request key/version for same-input retry after a lost reply; Extension keeps its saved receipt and discards stale target responses.
+
+```mermaid
+flowchart TD
+ A[Private cloud conversation] --> B[New independent work / separate request key]
+ B --> C[Current authority, frozen available history, quota and budget]
+ C --> D[Separate task, reservation and output]
+ A --> E[Select task explicitly]
+ E --> F[Progress / pending input / exact task controls]
+ F --> D
+ D --> G[Short result commit and independent settlement]
+ G --> A
+ H[Lost acceptance response] --> I[Same key, original body and original version]
+ I --> C
+```
+
+Usage: choose Start independent new work in the conversation composer. Answer inputs on the selected task; its control link opens the exact task. Upgrade by stopping old API/workers, taking a backup, applying the complete001–155 forward history and starting matching source services. Do not run frozen schema145 services on schema155.
+
+Validation: seven SQL/HTTP/Worker cases with a synthetic runtime and actual Extension controller, plus five real Web browser journey groups; four PNGs and one GIF/MP4. Historical and cross-OS regression were omitted under the fast-release request. Production model/media/provider acceptance and complete business matrices remain open.
+
+This is an unreleased stage157/schema155 source increment. Frozen v0.1.0-rc.1 remains stage148/schema145. The actual native Desktop thread keeps one turn at a time; independent local sessions/teams can run concurrently. Only the shared cloud renderer is synchronized here. Admin changes are documentation/delivery only. Captures show the actual Web UI, not an installed native Desktop or Side Panel run.
+
+![Actual Web independent tasks](assets/screenshots/workmate-conversation-work-157-04-two-independent-tasks.png)
+
+![Actual Web interaction](assets/screenshots/workmate-conversation-work-157-04-independent-cloud-work.gif)
+
+[MP4](assets/screenshots/workmate-conversation-work-157-04-independent-cloud-work.mp4)
+
+---
+
 <!-- conversation-directory-156 -->
 
 Your conversations → search or Archived → next/previous page → open the original conversation. Same-name and archived records beyond200 are now browsable. Web/Desktop use40-row pages. The native Side Panel preserves its200-row initial compatibility and adds search/archive/page controls without replacing the open chat, draft, attachments or pending receipt. Every page rechecks current authority.

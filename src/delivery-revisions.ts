@@ -9,7 +9,7 @@ import { key, projectAccess, replay } from "./access.js";
 import { uuid, hash, canonical, Problem } from "./lib.js";
 import { deliveryTaskAccess, deliverySnapshot } from "./business-quality.js";
 import { enqueueTask } from "./task-service.js";
-import { freezeWorkContext, getAgentVersion, ownConversation, activeTaskStates, type WorkContext } from "./persistent-work.js";
+import { freezeWorkContext, getAgentVersion, ownConversation, type WorkContext } from "./persistent-work.js";
 import { revisionSelection, revisionRequest, revisionInstructions, sameRevisionDelivery, verifyTextAnchor,
   type RevisionSelection, type RevisionBinding } from "./delivery-revision-model.js";
 
@@ -183,8 +183,6 @@ export function registerDeliveryRevisions(app: FastifyInstance, db: Database, ca
       return replay(tx, req.principal.id, "delivery.revision:" + t.id, requestKey, input, async () => {
         if (c && (c.archived || c.version !== input.expected_conversation_version))
           throw new Problem(409, "VERSION_CONFLICT", "Reload the original conversation before submitting changes");
-        if (c && (await tx.query("SELECT 1 FROM tasks WHERE conversation_id=$1 AND status=ANY($2::text[])", [c.id, activeTaskStates])).rowCount)
-          throw new Problem(409, "CONVERSATION_BUSY", "Finish the current work before requesting another change");
         const prepared = await prepareDeliveryRevision(tx, storage, req.principal, t, revisionReference(input), input.instructions);
         let context: WorkContext | undefined;
         if (t.input_context?.agent_id) { const a = await getAgentVersion(tx, p.project, t.input_context.agent_id, t.input_context.agent_version, true);

@@ -1,3 +1,4 @@
+import {conversationMutation} from "./conversation-mutation.js";
 import {conversationDirectory} from "./conversation-directory.js";
 import { assertTaskContentSources } from "./task-content-sources.js";
 import type { FastifyInstance } from "fastify";
@@ -371,6 +372,7 @@ export async function ownConversation(
   id: string,
   lock = false,
 ) {
+  if(lock) await conversationMutation(tx,id);
   const c = (
     await tx.query(
       "SELECT * FROM conversations WHERE id=$1 AND project_id=$2 AND created_by=$3 AND content_state='active'" +
@@ -407,7 +409,7 @@ export async function freezeWorkContext(
   const history = conversation
     ? (
         await tx.query(
-          "SELECT id FROM conversation_messages WHERE conversation_id=$1 ORDER BY created_at,id LIMIT 81",
+          "SELECT m.id FROM conversation_messages m LEFT JOIN tasks t ON t.id=m.task_id WHERE m.conversation_id=$1 AND (m.role<>'assistant' OR m.task_id IS NULL OR t.status IN ('succeeded','failed','cancelled')) ORDER BY m.created_at,m.id LIMIT 81",
           [conversation.id],
         )
       ).rows
@@ -1230,19 +1232,6 @@ export function registerPersistentWork(
                   "TASK_INPUT_REQUIRED",
                   "Delegation needs a description and explicit task budget",
                 );
-              if (
-                (
-                  await tx.query(
-                    "SELECT 1 FROM tasks WHERE conversation_id=$1 AND status=ANY($2::text[])",
-                    [id, activeTaskStates],
-                  )
-                ).rowCount
-              )
-                throw new Problem(
-                  409,
-                  "CONVERSATION_BUSY",
-                  "Finish or reconcile the current work before another delegation",
-                );
               const a = await getAgentVersion(
                 tx,
                 project,
@@ -1267,7 +1256,7 @@ export function registerPersistentWork(
                 tenant,
                 project,
                 {
-                  title: c.name,
+                  title: b.body.replace(/\s+/g, " ").slice(0,160),
                   prompt: b.body,
                   role_key: a.role_key,
                   budget_micros: b.budget_micros,
@@ -1489,18 +1478,12 @@ export function registerPersistentWork(
               );
               if (
                 conversation.archived ||
-                conversation.version !== plan.conversation_version ||
-                (
-                  await tx.query(
-                    "SELECT 1 FROM tasks WHERE conversation_id=$1 AND status=ANY($2::text[])",
-                    [conversation.id, activeTaskStates],
-                  )
-                ).rowCount
+conversation.version !== plan.conversation_version
               )
                 throw new Problem(
                   409,
                   "PLAN_STALE",
-                  "The conversation changed or has unfinished work",
+                  "The conversation changed; review a new plan before execution",
                 );
             }
             const result = await enqueueTask(

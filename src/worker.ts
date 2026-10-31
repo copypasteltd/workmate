@@ -1,3 +1,4 @@
+import {conversationMutation} from "./conversation-mutation.js";
 import { completeTaskPause } from "./task-pause.js";
 import { assertLiveEnvironment } from "./recovery-fence.js";
 import { DedicatedCloud } from "./dedicated-cloud.js";
@@ -764,6 +765,7 @@ export class Worker {
   ) {
     await this.db.tx(
       async (tx) => {
+        if(t.conversation_id) await conversationMutation(tx,t.conversation_id,true);
         const live = (
           await tx.query(
             "SELECT * FROM tasks WHERE id=$1 AND fencing_token=$2 FOR UPDATE",

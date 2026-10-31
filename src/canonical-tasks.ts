@@ -14,7 +14,6 @@ import { canonical, equal, hmac, Problem, uuid } from "./lib.js";
 import { enqueueTask } from "./task-service.js";
 import { inputAnswer } from "./task-input-contracts.js";
 import {
-  activeTaskStates,
   freezeWorkContext,
   getAgentVersion,
   ownConversation,
@@ -456,19 +455,6 @@ export function registerCanonicalTasks(
                 "CONVERSATION_AGENT_MISMATCH",
                 "Use the conversation's specialist",
               );
-            if (
-              (
-                await tx.query(
-                  "SELECT 1 FROM tasks WHERE conversation_id=$1 AND status=ANY($2::text[]) LIMIT 1",
-                  [conversation.id, activeTaskStates],
-                )
-              ).rowCount
-            )
-              throw new Problem(
-                409,
-                "CONVERSATION_BUSY",
-                "Finish or reconcile the current work before another delegation",
-              );
           }
           const agent = await getAgentVersion(
             tx,
@@ -498,7 +484,7 @@ export function registerCanonicalTasks(
             b.project_id,
             {
               title:
-                conversation?.name ?? prompt.replace(/\s+/g, " ").slice(0, 160),
+                prompt.replace(/\s+/g, " ").slice(0, 160),
               prompt,
               role_key: agent.role_key,
               budget_micros: Number(budget),
