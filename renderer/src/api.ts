@@ -1,3 +1,4 @@
+import { redactWorkspaceAttempts } from "./workspace-creation";
 import { saveScopeArchive } from "./scope-export-download";
 import { clientFetch, clientJson, connectionFailure } from "./client-failure";
 import { clearDeliveryRevisionDrafts } from "./delivery-revision-state";
@@ -9,6 +10,7 @@ export const clientSessionGeneration = () => sessionRevision;
 export function endClientSession(broadcast = true) {
   ++sessionRevision;
   csrfToken = "";
+  redactWorkspaceAttempts();
   if (broadcast) { clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); }
   window.dispatchEvent(new Event("copypaste:session-ended"));
   if (broadcast)

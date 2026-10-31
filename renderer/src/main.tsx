@@ -1,3 +1,4 @@
+import { WorkspaceCreationForm } from "./workspace-creation-form";
 import { ScopeCleanupPage } from "./scope-cleanup";
 import { ProjectManagement } from "./project-management";
 import { ProjectConfigurationSummary } from "./project-configuration";
@@ -500,8 +501,7 @@ function Login() {
 }
 function Onboarding() {
   const { t } = useI18n();
-  const w = useWorkspace(),
-    nav = useNavigate();
+  const w = useWorkspace();
   if (w.loading) return <Loading />;
   if (!w.me) return <Navigate to="/login" replace />;
   return (
@@ -520,39 +520,7 @@ function Onboarding() {
             "Just a workspace and your first project. You can add brand materials later.",
           )}
         </p>
-        <AsyncForm
-          submitLabel={t("建立並進入工作台", "Create workspace & continue")}
-          onSubmit={async (f) => {
-            const r = await post("/v1/tenants", {
-              name: String(f.get("name")),
-              project_name: String(f.get("project_name")),
-            });
-            localStorage.setItem("cp_tenant", r.tenant.id);
-            localStorage.setItem("cp_project", r.project.id);
-            await w.refresh();
-            nav("/app", { replace: true });
-          }}
-        >
-          <Field label={t("企業 / 團隊名稱", "Company / team name")}>
-            <input
-              name="name"
-              placeholder={t("例如：Harbour Studio", "e.g. Harbour Studio")}
-              maxLength={160}
-              required
-            />
-          </Field>
-          <Field label={t("首個專案", "First project")}>
-            <input
-              name="project_name"
-              placeholder={t(
-                "例如：秋季品牌企劃",
-                "e.g. Autumn brand campaign",
-              )}
-              maxLength={160}
-              required
-            />
-          </Field>
-        </AsyncForm>
+        <WorkspaceCreationForm key={w.me.user.id} owner={String(w.me.user.id)} />
         <Link className="text-link" to="/cleanup">{t("查看清理記錄", "View cleanup records")}</Link>
       </div>
     </div>

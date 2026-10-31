@@ -133,6 +133,7 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
   if (/^\/v1\/support-grants\/[a-f0-9-]{36}\/revoke$/i.test(pathname))
     return method === "POST";
   if (pathname === "/v1/tenants") return method === "GET" || method === "POST";
+  if (/^\/v1\/workspace-creation-requests\/[a-f0-9-]{36}$/i.test(pathname)) return method === "GET";
   if (pathname === "/v1/connector-providers") return method === "GET";
   if (pathname === "/v1/seo/audits")
     return method === "GET" || method === "POST";
