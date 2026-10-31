@@ -1,8 +1,14 @@
-# Workmate · extension · v0.1.0-rc.5
+# Workmate · extension · v0.1.0
 
-[中文](README.md) · [Complete release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.5) · [Bilingual setup guide](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.5/docs/releases/v0.1.0-rc.5.md)
+[中文](README.md) · [Complete release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0) · [Bilingual setup guide](https://github.com/copypasteltd/workmate/blob/v0.1.0/docs/releases/v0.1.0.md)
 
 Workmate serves Hong Kong enterprises, beginning with existing marketing teams. This independent **extension** component uses **Chrome MV3 / native right Side Panel**. Business areas include design/media, advertising and website/SEO/GEO analytics, repeatable workflows and software development. CopyPaste's warm background, dark text, brand accents and editorial typography guide the interface.
+
+## Current frozen release · v0.1.0
+
+All clients, backend and six source trees are delivered together, including the latest creator-filtered Admin tasks/content. Six components are rebuilt. Rebuilt Desktop outputs match the qualified Windows app/Portable/Setup byte for byte, so those verified binaries are reused. Stage166's eight SQL/API cases and eight actual UI checks retain their source-bound original evidence; broad historical regression is not rerun.
+
+Branch`extension`, frozen tag`v0.1.0-extension`. [Source and installers](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0) · [Freeze record](https://github.com/copypasteltd/workmate/blob/v0.1.0/docs/quality/release-freeze-checkpoint-167.json) · [Open work](https://github.com/copypasteltd/workmate/blob/v0.1.0/docs/quality/remaining-work-stage167.md). AI/media/ads/payments use the authorized synthetic mode; Windows is unsigned. Existing screenshots/GIF/MP4 retain their actual capture scope and do not imply new full installation/professional qualification.
 
 ## Architecture and responsibilities
 
@@ -44,7 +50,7 @@ API uses localhost4310, Web4317 and Admin4318. Development OTP messages are in p
 1. Sign in and accept an invitation or create a workspace/initial project. An uncertain creation keeps its original request. Check & continue after reload reconciles that operation; unavailable/removed receipts never silently create a replacement company.
 2. Select a project/preset, provide the brief, approved files/brand/accounts, budget and permission. Supply missing inputs within the original task. Execution pins accepted configuration and Skill versions.
 3. Review durable progress, approvals, delivery versions, costs and consumption. Download original files or request revisions. Unknown costs stay under reconciliation instead of being treated as free or blindly repeated.
-4. From Admin user detail, verify the billing/VIP subject, inspect its preview and confirm under current policy. Directory filters survive refresh/return. A unified user-filtered task/content entry remains pending.
+4. From Admin user detail, verify the billing/VIP subject, inspect its preview and confirm under current policy. Directory filters survive refresh/return. User detail opens creator-filtered tasks/content with separate body authority and preserved navigation.
 
 ## Configuration and authority
 
@@ -90,9 +96,9 @@ The shared media shows this release's actual Web/SQL recovery and Admin MFA/targ
 
 [Actual MP4](assets/screenshots/workmate-functional-closure-165-01-recover-original-workspace.mp4)
 
-## Qualification and publication
+## Historical rc.5 qualification and publication
 
-Seven focused SQL cases, four draft-state cases and actual Web/Admin interactions accompany six builds and Windows unpacked/Portable/Setup packaging. Current ASAR bytes and pinned Codex hashes are checked. Repeated broad regression is omitted as requested; the release checkpoint records actual results.
+Historical rc.5 record: seven focused SQL cases, four draft-state cases and actual Web/Admin interactions accompanied six builds and Windows unpacked/Portable/Setup packaging. Current ASAR bytes and pinned Codex hashes are checked. Repeated broad regression is omitted as requested; the release checkpoint records actual results.
 
 Branch `extension`, frozen tag `v0.1.0-rc.5-extension`. Later changes advance branches and notes while frozen bytes/tags remain. AI/media/ads/payments use the authorized synthetic mode. Windows is unsigned. All102 IDs and88 required whole-acceptance scopes remain;88 is not a count of missing modules. Production providers, signed updates, other OSes and full professional acceptance remain tracked.
 
