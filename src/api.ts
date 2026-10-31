@@ -1,3 +1,4 @@
+import { saveScopeArchive } from "./scope-export-download";
 import { clientFetch, clientJson, connectionFailure } from "./client-failure";
 import { clearWorkDrafts } from "./work-draft";
 import { clearDeliveryRevisionDrafts } from "./delivery-revision-state";
@@ -215,4 +216,14 @@ export async function download(
   a.click();
   URL.revokeObjectURL(url);
   return { saved: true };
+}
+
+export async function downloadScopeArchive(path: string, filename: string, tenantId?: string, signal?: AbortSignal) {
+  const generation = clientSessionGeneration();
+  return saveScopeArchive({ path, filename, signal,
+    current: () => { if (generation !== clientSessionGeneration()) throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409); },
+    native: window.copyPasteBridge ? () => window.copyPasteBridge!.download(path, filename, tenantId) : undefined,
+    fetch: signal => clientFetch(base + path, { credentials: "include", signal, ...(tenantId ? { headers: { "X-Tenant-ID": tenantId } } : {}) }),
+    unauthorized: () => endClientSession(false, "expired"),
+  });
 }
