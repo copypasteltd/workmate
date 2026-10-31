@@ -1,6 +1,6 @@
 import { ProjectConfigurationSummary } from "./project-configuration";
 import { ConversationDeliveryDownload } from "./delivery-quality";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AdoptionReview } from "./agent-adoption";
 import { CopyReview } from "./agent-copy-review";
 import { TaskInputRequests } from "./task-dependencies";
@@ -570,10 +570,14 @@ export function Conversations() {
     nav = useNavigate();
   const [query, setQuery] = useState(""),
     [archived, setArchived] = useState(false),
-    [open, setOpen] = useState(false);
+    [open, setOpen] = useState(false),[refresh,setRefresh]=useState(0),
+    [pages,setPages]=useState<string[]>([""]),[pagingScope,setPagingScope]=useState("");
+  const identity=String(w.me?.user?.id??"")+":"+w.base+":"+archived+":"+query;
+  useEffect(()=>{setPages([""]);setPagingScope(identity);},[identity]);
+  const stack=pagingScope===identity?pages:[""],cursor=stack.at(-1)!;
   const data = useData(
-    `${w.base}/conversations?archived=${archived}&q=${encodeURIComponent(query)}`,
-    0,
+    `${w.base}/conversations?archived=${archived}&q=${encodeURIComponent(query)}&limit=40${cursor?"&cursor="+encodeURIComponent(cursor):""}`,
+    refresh,
     10000,
   );
   return (
@@ -667,6 +671,12 @@ export function Conversations() {
           }
         />
       )}
+      <nav className="row-actions" aria-label={t("會話分頁", "Conversation pages")}>
+        <button className="button secondary" disabled={data.loading||stack.length===1} onClick={()=>setPages(stack.slice(0,-1))}>{t("上一頁會話", "Previous conversations")}</button>
+        <span role="status">{t("第 ", "Page ")}{stack.length}{t(" 頁", "")}</span>
+        <button className="button secondary" disabled={data.loading||!!data.error||!data.data?.next_cursor} onClick={()=>{if(data.data?.next_cursor)setPages([...stack,data.data.next_cursor]);}}>{t("下一頁會話", "Next conversations")}</button>
+        <button className="button quiet" disabled={data.loading} onClick={()=>{setPages([""]);setRefresh(n=>n+1);}}>{t("重新整理會話", "Refresh conversations")}</button>
+      </nav>
       {open && (
         <NewConversation
           onClose={() => setOpen(false)}
