@@ -1,3 +1,13 @@
+## 当前完整冻结交付 / Current complete freeze · v0.1.2
+
+最新完整包纳入全部端及费用入账期间报表。All clients and posting-period reports are included.
+
+[下载 / Release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.2) · [使用 / Guide](releases/v0.1.2.md) · [冻结 / Freeze](quality/release-freeze-checkpoint-173.json)
+
+假数据模式；Windows未签名；数据库156。Synthetic services; unsigned Windows; schema156. Earlier sections below retain their historical scope.
+
+---
+
 # 当前源码增量 / Current source increment · 172
 
 已补齐按费用实际入账期间报表、香港日期投影及同选择明细／CSV。Posting-period reports, daily entry projection and same-selection detail/CSV are implemented.
