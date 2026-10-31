@@ -1,0 +1,126 @@
+{
+  "at": "2026-10-31T14:53:38.580Z",
+  "status": "failed",
+  "stage": "invalid range remains local",
+  "checks": [
+    {
+      "name": "Independent Admin OTP and current TOTP",
+      "status": "passed",
+      "facts": {
+        "actual_authentication": true
+      }
+    },
+    {
+      "name": "Combined time/VIP/role/cost/account filters and exact HKD conversion",
+      "status": "passed",
+      "facts": {
+        "user_id": "676e0b78-383b-4a18-835f-e4e9cc464977",
+        "charge_micros": "875000",
+        "current_url": "?state=active&limit=50&registered_from=2026-10-21T14%3A53%3A00.000Z&registered_to=2026-10-22T14%3A53%3A00.000Z&activity=known&vip_plan=pro&vip_status=effective&charge_min_micros=875000&charge_max_micros=875000&balance_state=sufficient&balance_required_micros=1000000&billing_subject=personal&cost_exception=pending_reconciliation&role_key=assistant&role_usage=started"
+      }
+    },
+    {
+      "name": "Reload restores the full filter URL and exact money inputs",
+      "status": "passed",
+      "facts": {
+        "retained_filters": true
+      }
+    },
+    {
+      "name": "Operational profile separates login/access and restores directory context",
+      "status": "passed",
+      "facts": {
+        "user_id": "676e0b78-383b-4a18-835f-e4e9cc464977"
+      }
+    },
+    {
+      "name": "Historical origin and unrecorded account access remain explicitly unknown",
+      "status": "passed",
+      "facts": {
+        "user_id": "bc1f14b0-ab33-43ac-964e-02927c6579e7",
+        "activity": null,
+        "source": null
+      }
+    }
+  ],
+  "errors": [
+    "invalid range remains local: TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('Maximum charges must not be below minimum charges.', { exact: true }) to be visible\u001b[22m\n"
+  ],
+  "screenshots": [
+    {
+      "path": "copypaste-admin/assets/screenshots/workmate-admin-directory-filters-168-02-filters-01-combined-controls.png",
+      "sha256": "292d672e16387001ab9a28ac3ba4d65c3f8c8feacb5998e682434b2a9df2af27",
+      "source": "Actual Admin OTP/TOTP and native SQL-backed combined directory filters, exact money, reload/detail return, unknown origin/activity and invalid-range prevention. Synthetic business records; no provider acceptance or new frozen release.",
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/workmate-admin-directory-filters-168-02-filters-02-confirmed-result.png",
+      "sha256": "f294379b47e4e789b36fc5f7caf99f11c0d1e05aa7c2f50caf858a3a947cb973",
+      "source": "Actual Admin OTP/TOTP and native SQL-backed combined directory filters, exact money, reload/detail return, unknown origin/activity and invalid-range prevention. Synthetic business records; no provider acceptance or new frozen release.",
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/workmate-admin-directory-filters-168-02-filters-03-distinct-access-and-login.png",
+      "sha256": "08befd3ad247c65690c2c87b8a110f764a39ad20c0144d36a7339a2da651c736",
+      "source": "Actual Admin OTP/TOTP and native SQL-backed combined directory filters, exact money, reload/detail return, unknown origin/activity and invalid-range prevention. Synthetic business records; no provider acceptance or new frozen release.",
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/workmate-admin-directory-filters-168-02-filters-04-unknown-is-explicit.png",
+      "sha256": "63e22cd818e82127c1aa04780eb2c52adbca7ccd750fa33a3bd805b8476bd9f1",
+      "source": "Actual Admin OTP/TOTP and native SQL-backed combined directory filters, exact money, reload/detail return, unknown origin/activity and invalid-range prevention. Synthetic business records; no provider acceptance or new frozen release.",
+      "edited": false
+    }
+  ],
+  "recordings": [
+    {
+      "component": "admin",
+      "name": "directory-filter-workflow",
+      "source": "Actual Admin OTP/TOTP and native SQL-backed combined directory filters, exact money, reload/detail return, unknown origin/activity and invalid-range prevention. Synthetic business records; no provider acceptance or new frozen release.",
+      "started_at": "2026-10-31T14:53:11.561Z",
+      "finished_at": "2026-10-31T14:53:34.921Z",
+      "capture_timing": "Actual wall-clock capture intervals; no accelerated or invented response frames",
+      "observed_frames": 136,
+      "distinct_frames": 12,
+      "skipped_capture_errors": 0,
+      "seconds": 23.4,
+      "width": 1280,
+      "height": 960,
+      "files": [
+        {
+          "path": "copypaste-admin/assets/screenshots/workmate-admin-directory-filters-168-02-directory-filter-workflow.mp4",
+          "bytes": 238790,
+          "sha256": "c0c2df18d0c60fe33ee9825f629dcbdda4c942ef7979cd727927079872871d07"
+        },
+        {
+          "path": "copypaste-admin/assets/screenshots/workmate-admin-directory-filters-168-02-directory-filter-workflow.gif",
+          "bytes": 631401,
+          "sha256": "ba63fa80d6c0a450151e8a6cb79357bce917752df9c2e5b31cc15f30a2abf490"
+        }
+      ],
+      "frame_manifest_sha256": "97f96114500c4c25b6ab2dd1d1aff71e7239b5b21e3d6e32a3199de57528f60e",
+      "raw_capture_directory": "copypaste-delivery/.data/workmate-media/93044a6d-0b6f-42ad-852b-04616007f175"
+    }
+  ],
+  "browser_closed": true,
+  "scope": "Actual Admin OTP/TOTP and native SQL-backed combined directory filters, exact money, reload/detail return, unknown origin/activity and invalid-range prevention. Synthetic business records; no provider acceptance or new frozen release.",
+  "sources_before": {
+    "copypaste-admin/src/main.tsx": "7ae043b5590b0e3f3d85ff197f2368c7d21d473a8c026f456545494d488b0ef3",
+    "copypaste-admin/src/directory.tsx": "de6f2f4e749f15b4d7e1329293999e95550213c16a15052a156b0e371b0a3230",
+    "copypaste-admin/src/admin.css": "3672212f6b8a05e594f02b7fc412c155707b82f99089545cfedd78347330347b",
+    "copypaste-platform/src/admin-directory.ts": "bc9d5c6bbce7f302a86f13cfd686855a6e64c665ae44dd65625903672cd70570",
+    "copypaste-platform/src/admin-directory-operational.ts": "60ecfad6dcdbe47bf71b08c069b1fcb62a6d3ffbdc2f339903aa38099aa9c776",
+    "copypaste-platform/src/auth.ts": "60baf22876e34fcd37edc4fd62db38ed35dc6d227e56501fc7ad10be4bdc6779",
+    "copypaste-platform/src/federation.ts": "f886bda391d4903c32030db84a8c0d124a90df818869d8c002ca362a24868d7e"
+  },
+  "sources_after": {
+    "copypaste-admin/src/main.tsx": "7ae043b5590b0e3f3d85ff197f2368c7d21d473a8c026f456545494d488b0ef3",
+    "copypaste-admin/src/directory.tsx": "de6f2f4e749f15b4d7e1329293999e95550213c16a15052a156b0e371b0a3230",
+    "copypaste-admin/src/admin.css": "3672212f6b8a05e594f02b7fc412c155707b82f99089545cfedd78347330347b",
+    "copypaste-platform/src/admin-directory.ts": "bc9d5c6bbce7f302a86f13cfd686855a6e64c665ae44dd65625903672cd70570",
+    "copypaste-platform/src/admin-directory-operational.ts": "60ecfad6dcdbe47bf71b08c069b1fcb62a6d3ffbdc2f339903aa38099aa9c776",
+    "copypaste-platform/src/auth.ts": "60baf22876e34fcd37edc4fd62db38ed35dc6d227e56501fc7ad10be4bdc6779",
+    "copypaste-platform/src/federation.ts": "f886bda391d4903c32030db84a8c0d124a90df818869d8c002ca362a24868d7e"
+  },
+  "verifier_sha256": "47cbe893178660290085cbf7b295a3df3ec382107aacef5bae1f292173a53525"
+}

@@ -1,0 +1,87 @@
+{
+  "at": "2026-10-31T14:54:22.362Z",
+  "status": "passed",
+  "error": null,
+  "build_commands": [
+    {
+      "component": "copypaste-platform",
+      "args": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "component": "copypaste-platform",
+      "args": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "component": "copypaste-admin",
+      "args": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "component": "copypaste-admin",
+      "args": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_before": {
+    "copypaste-platform/src/auth.ts": "60baf22876e34fcd37edc4fd62db38ed35dc6d227e56501fc7ad10be4bdc6779",
+    "copypaste-platform/src/federation.ts": "f886bda391d4903c32030db84a8c0d124a90df818869d8c002ca362a24868d7e",
+    "copypaste-platform/src/schema-compatibility.ts": "d868764c2103dbab5f8b19a24300ee32410ef86f9d8079d50ab4d4f7b8bfb876",
+    "copypaste-platform/src/admin-directory-operational.ts": "60ecfad6dcdbe47bf71b08c069b1fcb62a6d3ffbdc2f339903aa38099aa9c776",
+    "copypaste-platform/migrations/156-user-operational-directory.sql": "3d019bc6c4f13d1f173176d9e9f6d746a113cb75a49765f73a01a0f74b97be4c",
+    "copypaste-platform/src/admin-directory.ts": "bc9d5c6bbce7f302a86f13cfd686855a6e64c665ae44dd65625903672cd70570",
+    "copypaste-platform/tests/admin-directory-filters-168-v2.test.ts": "98c93c0b44f8f553781b1be60ed6ac0f8dd22a303f7e72789d5ce66a96b73290",
+    "copypaste-platform/tests/admin-directory-filters-fixture-168-v1.ts": "3882153a586ace1c0a524dc80ffd4ee164198058ffd27dde4b7c269e643a2122",
+    "copypaste-platform/scripts/serve-admin-directory-filters-168-v1.ts": "df122968ac226c1003969a5410e830cafac3054c740352a827411a29058d56bc",
+    "copypaste-admin/src/main.tsx": "7ae043b5590b0e3f3d85ff197f2368c7d21d473a8c026f456545494d488b0ef3",
+    "copypaste-admin/src/directory.tsx": "de6f2f4e749f15b4d7e1329293999e95550213c16a15052a156b0e371b0a3230",
+    "copypaste-admin/src/admin.css": "3672212f6b8a05e594f02b7fc412c155707b82f99089545cfedd78347330347b",
+    "copypaste-delivery/scripts/qa-admin-directory-filters-168-v3.ts": "ac3d14354aa20f3e6cebcc314257cd8706e25c666443a3d5de1f8e6757c375d9",
+    "copypaste-delivery/scripts/qualify-admin-directory-filters-168-v4.mjs": "1664b627f1519b5775839cc0425726a11b722665754857eb6aa427d01ff6fed9"
+  },
+  "owned_services_closed": true,
+  "inherited_checks": {
+    "path": "evidence/admin-directory-filters-168/qualification-02.json",
+    "sha256": "c15843363f9a5446ec81d63be06a12e51cb69ff664045103a4eb5155d8cfcf70",
+    "status": "failed",
+    "scope": "Exact unchanged Backend/Admin production builds and eight native SQL/API cases; current actual UI is qualified separately"
+  },
+  "database_tests": 8,
+  "ui": {
+    "path": "evidence/admin-directory-filters-168/admin-ui-03.json",
+    "sha256": "76dabf79468c880eb6501793c8c93c02b28d5151632a00e4cbdf97f80a70c910",
+    "checks": 6
+  },
+  "source_after": {
+    "copypaste-platform/src/auth.ts": "60baf22876e34fcd37edc4fd62db38ed35dc6d227e56501fc7ad10be4bdc6779",
+    "copypaste-platform/src/federation.ts": "f886bda391d4903c32030db84a8c0d124a90df818869d8c002ca362a24868d7e",
+    "copypaste-platform/src/schema-compatibility.ts": "d868764c2103dbab5f8b19a24300ee32410ef86f9d8079d50ab4d4f7b8bfb876",
+    "copypaste-platform/src/admin-directory-operational.ts": "60ecfad6dcdbe47bf71b08c069b1fcb62a6d3ffbdc2f339903aa38099aa9c776",
+    "copypaste-platform/migrations/156-user-operational-directory.sql": "3d019bc6c4f13d1f173176d9e9f6d746a113cb75a49765f73a01a0f74b97be4c",
+    "copypaste-platform/src/admin-directory.ts": "bc9d5c6bbce7f302a86f13cfd686855a6e64c665ae44dd65625903672cd70570",
+    "copypaste-platform/tests/admin-directory-filters-168-v2.test.ts": "98c93c0b44f8f553781b1be60ed6ac0f8dd22a303f7e72789d5ce66a96b73290",
+    "copypaste-platform/tests/admin-directory-filters-fixture-168-v1.ts": "3882153a586ace1c0a524dc80ffd4ee164198058ffd27dde4b7c269e643a2122",
+    "copypaste-platform/scripts/serve-admin-directory-filters-168-v1.ts": "df122968ac226c1003969a5410e830cafac3054c740352a827411a29058d56bc",
+    "copypaste-admin/src/main.tsx": "7ae043b5590b0e3f3d85ff197f2368c7d21d473a8c026f456545494d488b0ef3",
+    "copypaste-admin/src/directory.tsx": "de6f2f4e749f15b4d7e1329293999e95550213c16a15052a156b0e371b0a3230",
+    "copypaste-admin/src/admin.css": "3672212f6b8a05e594f02b7fc412c155707b82f99089545cfedd78347330347b",
+    "copypaste-delivery/scripts/qa-admin-directory-filters-168-v3.ts": "ac3d14354aa20f3e6cebcc314257cd8706e25c666443a3d5de1f8e6757c375d9",
+    "copypaste-delivery/scripts/qualify-admin-directory-filters-168-v4.mjs": "1664b627f1519b5775839cc0425726a11b722665754857eb6aa427d01ff6fed9"
+  },
+  "source_unchanged": true,
+  "finished_at": "2026-10-31T14:55:42.369Z",
+  "verifier_sha256": "1664b627f1519b5775839cc0425726a11b722665754857eb6aa427d01ff6fed9",
+  "private_log": ".data/admin-directory-filters-168/run-b9e74e4a-4705-45a4-89b5-bc914f6e5f02/commands.log",
+  "private_log_sha256": "93204cd9b507fae50b33bbd0dbd093bf5ee6bdaf6618cb1da80fcf5f9436d3cb"
+}
