@@ -1,3 +1,35 @@
+<!-- project-lifecycle-149 -->
+
+**当前开发增量149：首个冻结版 `v0.1.0-rc.1` 后的项目管理修复**
+
+企业 owner/admin 从「项目」筛选使用中/已封存/全部、搜索分页、编辑名称简介，并明确确认归档/恢复。归档最后一个项目后管理页仍可访问，可恢复原项目身份、资料与现有成员权限；已撤销授权不复建。普通成员仅见获准的活动项目。归档控制封存期间可用性，需要结束的任务请先明确取消。
+
+后端在权限锁等待后重新鉴权，支持预期状态冲突与幂等重试；重放返回当前状态，避免恢复后再次封存。两端阻止旧列表覆盖新状态，恢复选中仅采用最新活动项目列表。Desktop仍在客户本机运行Codex并支持客户主动授予完整权限；Extension仍采用原生右侧栏及云端Agent，负责获准文件读取上传。
+
+10项当前后端检查、5组真实界面旅程和6步构建通过，保留4张截图、2组真实GIF/MP4，资源均已关闭。未发起模型请求，按快速冻结要求省略广泛历史回归；原始失败验证及后继修正版均保留。聚合整删、生产联调及完整验收继续开放。原7个冻结标签和5个发行ZIP保持原样，149属于未冻结后续代码。
+
+```mermaid
+flowchart LR
+  A[Owner / administrator] --> B[Managed project directory]
+  B --> C[Edit / archive / restore]
+  C --> D[Current authority and exact-state check]
+  D --> E[Existing project identity and materials]
+  C --> F[Latest active list]
+  F --> G[Web / local Desktop selection]
+```
+
+本组件当前真实界面旅程。
+
+![Project restored](assets/screenshots/workmate-project-lifecycle-149-01-same-project-restored-en.png)
+
+![Actual archive and restore](assets/screenshots/workmate-project-lifecycle-149-01-project-archive-restore.gif)
+
+[Actual MP4](assets/screenshots/workmate-project-lifecycle-149-01-project-archive-restore.mp4)
+
+当前未签名候选程序：`release/project-lifecycle-149-01/win-unpacked/CopyPaste.exe`，与首个冻结便携ZIP分开保留。
+
+---
+
 <!-- frozen-release-148 -->
 
 **固定运行时准备 / Pinned runtime preparation**：`runtime:prepare` 不下载或查找 PATH。先解压本版 Windows 便携 ZIP，在 PowerShell 设置 `$env:COPYPASTE_LOCAL_CODEX_BIN` 为解压目录中的 `resources/local-codex/codex.exe` 绝对路径（保留旁边全部 helper 文件），再在 desktop 执行 `npm run runtime:prepare`。源码单独交付时，需自行提供与 `contracts/local-codex-runtime.json` 相符的同一组原生文件。首次启动会自动执行原生 PostgreSQL 迁移到145，无需容器。

@@ -3,6 +3,7 @@ import { clearDeliveryRevisionDrafts } from "./delivery-revision-state";
 import { clearEditableProjectRequests } from "./editable-project-state";
 export let csrfToken = "";
 let sessionRevision = 0;
+export const clientSessionGeneration = () => sessionRevision;
 export function endClientSession(broadcast = true) {
   ++sessionRevision;
   csrfToken = "";

@@ -1,4 +1,5 @@
-import { ProjectConfigurationPanel, ProjectConfigurationSummary } from "./project-configuration";
+import { ProjectManagement } from "./project-management";
+import { ProjectConfigurationSummary } from "./project-configuration";
 import { BrandLibrary } from "./brand-library";
 import { DeliveryQuality } from "./delivery-quality";
 import { SoftwareChecks } from "./software-checks";
@@ -839,11 +840,11 @@ function Shell() {
         <main
           id="main"
           className="main-content"
-          key={w.tenant + ":" + w.project}
+          key={w.tenant + ":" + (location.pathname.replace(/\/+$/, "") === "/app/projects" ? "project-management" : w.project)}
         >
           <ErrorNotice error={w.error} />
           <PublishedContent />
-          {w.base ? (
+          {w.base || ["/app/projects", "/app/members", "/app/devices", "/app/usage", "/app/settings"].includes(location.pathname.replace(/\/+$/, "")) ? (
             <Routes>
               <Route index element={<LocalAgentWorkspace />} />
               <Route path="solutions" element={<Solutions />} />
@@ -1383,83 +1384,10 @@ function TaskTable({ items }: { items: any[] }) {
   );
 }
 function Projects() {
-  const { t } = useI18n(),
-    w = useWorkspace(),
-    [open, setOpen] = useState(false);
-  return (
-    <>
-      <PageHeader
-        eyebrow="SPACE FOR THE WORK."
-        title={t("專案", "Projects")}
-        description={t(
-          "每個專案有自己的工作、素材、品牌和成員權限。",
-          "A considered home for each project’s work, materials, brand and access.",
-        )}
-        action={
-          <button className="button primary" onClick={() => setOpen(true)}>
-            <Plus size={17} />
-            {t("新增專案", "New project")}
-          </button>
-        }
-      />
-      <div className="project-grid">
-        {w.projects.map((p) => (
-          <article className="card project-card" key={p.id}>
-            <FolderOpen size={25} strokeWidth={1.5} />
-            <h2>{p.name}</h2>
-            <p className="muted">
-              {p.description ||
-                t(
-                  "讓下一個想法在這裡成形。",
-                  "A space for your next idea to take shape.",
-                )}
-            </p>
-            <footer>
-              <DateText value={p.created_at} />
-              <button
-                className="text-button"
-                onClick={() => w.setProject(p.id)}
-              >
-                {p.id === w.project ? (
-                  <Check size={18} />
-                ) : (
-                  <ArrowUpRight size={18} />
-                )}
-              </button>
-            </footer>
-          </article>
-        ))}
-      </div>
-      <ProjectConfigurationPanel key={w.base} />
-      {open && (
-        <Modal
-          title={t("建立新專案", "Create a project")}
-          onClose={() => setOpen(false)}
-        >
-          <AsyncForm
-            submitLabel={t("建立專案", "Create project")}
-            onSubmit={async (f) => {
-              const p = await post(`/v1/tenants/${w.tenant}/projects`, {
-                name: String(f.get("name")),
-                description: String(f.get("description")),
-              });
-              await w.reloadProjects();
-              w.setProject(p.id);
-              setOpen(false);
-            }}
-          >
-            <Field label={t("專案名稱", "Project name")}>
-              <input name="name" maxLength={160} required />
-            </Field>
-            <Field label={t("簡介", "Description")}>
-              <textarea name="description" maxLength={2000} rows={3} />
-            </Field>
-          </AsyncForm>
-        </Modal>
-      )}
-    </>
-  );
+  const w = useWorkspace();
+  return <ProjectManagement key={w.me.user.id + ":" + w.tenant} />;
 }
+
 function TaskDetail() {
   const { t } = useI18n(),
     w = useWorkspace(),
