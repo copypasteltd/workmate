@@ -3,6 +3,7 @@ import { api, post } from "./api";
 import { ErrorNotice, Field, useI18n } from "./ui";
 import { MarketingWarnings } from "./marketing-warnings";
 import { useWorkspace } from "./context";
+import { MarketingImportPreview } from "./marketing-import-preview";
 import { uploadCampaignFile } from "./campaign-upload";
 
 export function MarketingImport({
@@ -25,6 +26,8 @@ export function MarketingImport({
     entity_level: "dataset",
     attribution_definition: "",
     conversion_definition: "",
+    number_format: "",
+    date_format: "",
   });
   const [file, setFile] = useState<{
       asset_version_id: string;
@@ -39,7 +42,19 @@ export function MarketingImport({
     [error, setError] = useState<unknown>(null),
     [busy, setBusy] = useState(false),
     [confirmed, setConfirmed] = useState(false);
-  const [selection, setSelection] = useState({ sheet_name: "", header_row: 1 });
+  type Selection = {
+    sheet_name: string;
+    header_row: number;
+    csv_delimiter: string;
+    csv_encoding: string;
+  };
+  const initialSelection: Selection = {
+    sheet_name: "",
+    header_row: 1,
+    csv_delimiter: "",
+    csv_encoding: "",
+  };
+  const [selection, setSelection] = useState<Selection>(initialSelection);
   const [headerInput, setHeaderInput] = useState("1");
   const [supersedes, setSupersedes] = useState("");
   const [chosenFile, setChosenFile] = useState<File | null>(null);
@@ -72,18 +87,18 @@ export function MarketingImport({
     }));
     resetPreview();
   }
-  async function inspect(
-    version: string,
-    next: { sheet_name: string; header_row: number },
-  ) {
+  async function inspect(version: string, next: Selection) {
     const info = await post(base + "/analytics/file-inspect", {
       asset_version_id: version,
       sheet_name: next.sheet_name || undefined,
       header_row: next.header_row,
+      csv_delimiter: next.csv_delimiter || undefined,
+      csv_encoding: next.csv_encoding || undefined,
     });
     if (live.current) {
       setFile(info);
       setSelection({
+        ...next,
         sheet_name: info.selected_sheet || next.sheet_name,
         header_row: next.header_row,
       });
@@ -98,7 +113,7 @@ export function MarketingImport({
     setChosenFile(chosen ?? null);
     resetPreview();
     setMapping({});
-    setSelection({ sheet_name: "", header_row: 1 });
+    setSelection(initialSelection);
     setHeaderInput("1");
     if (!chosen) {
       setBusy(false);
@@ -128,10 +143,7 @@ export function MarketingImport({
         ...f,
         name: f.name || chosen.name.replace(/\.(csv|xlsx)$/i, ""),
       }));
-      await inspect(uploaded.asset_version_id, {
-        sheet_name: "",
-        header_row: 1,
-      });
+      await inspect(uploaded.asset_version_id, initialSelection);
     } catch (e) {
       if (
         live.current &&
@@ -143,7 +155,7 @@ export function MarketingImport({
       if (live.current && sequence === readSequence.current) setBusy(false);
     }
   }
-  async function selectTable(next: { sheet_name: string; header_row: number }) {
+  async function selectTable(next: Selection) {
     if (!file || busy) return;
     if (
       !Number.isInteger(next.header_row) ||
@@ -179,6 +191,16 @@ export function MarketingImport({
           ? selection.sheet_name || undefined
           : undefined,
       header_row: selection.header_row,
+      csv_delimiter:
+        file.file_type === "csv"
+          ? selection.csv_delimiter || undefined
+          : undefined,
+      csv_encoding:
+        file.file_type === "csv"
+          ? selection.csv_encoding || undefined
+          : undefined,
+      number_format: form.number_format || undefined,
+      date_format: form.date_format || undefined,
       supersedes_id: supersedes || undefined,
       mapping,
       account_id: form.account_id || undefined,
@@ -254,33 +276,80 @@ export function MarketingImport({
             {t("重試檔案上傳", "Retry file upload")}
           </button>
         )}
-        {file?.file_type === "xlsx" && (
+        {file && (
           <div className="marketing-field-grid">
-            <Field label={t("工作表", "Worksheet")}>
-              <select
-                name="sheet_name"
-                value={selection.sheet_name}
-                required
-                onChange={(e) =>
-                  void selectTable({
-                    ...selection,
-                    sheet_name: e.target.value,
-                    header_row: Number(headerInput),
-                  })
-                }
-              >
-                <option value="" disabled>
-                  {t("選擇工作表", "Choose a worksheet")}
-                </option>
-                {file.sheets
-                  .filter((s) => !s.hidden)
-                  .map((s) => (
-                    <option key={s.name} value={s.name}>
-                      {s.name}
+            {file.file_type === "xlsx" && (
+              <Field label={t("工作表", "Worksheet")}>
+                <select
+                  name="sheet_name"
+                  value={selection.sheet_name}
+                  required
+                  onChange={(e) =>
+                    void selectTable({
+                      ...selection,
+                      sheet_name: e.target.value,
+                      header_row: Number(headerInput),
+                    })
+                  }
+                >
+                  <option value="" disabled>
+                    {t("選擇工作表", "Choose a worksheet")}
+                  </option>
+                  {file.sheets
+                    .filter((s) => !s.hidden)
+                    .map((s) => (
+                      <option key={s.name} value={s.name}>
+                        {s.name}
+                      </option>
+                    ))}
+                </select>
+              </Field>
+            )}
+            {file.file_type === "csv" && (
+              <>
+                <Field label={t("CSV 分隔符", "CSV delimiter")}>
+                  <select
+                    name="csv_delimiter"
+                    value={selection.csv_delimiter}
+                    onChange={(e) => {
+                      setSelection((v) => ({
+                        ...v,
+                        csv_delimiter: e.target.value,
+                      }));
+                      resetPreview();
+                      setFile((v) => (v ? { ...v, headers: null } : v));
+                    }}
+                  >
+                    <option value="">{t("逗號 ,", "Comma ,")}</option>
+                    <option value="semicolon">
+                      {t("分號 ;", "Semicolon ;")}
                     </option>
-                  ))}
-              </select>
-            </Field>
+                    <option value="tab">{t("製表符 Tab", "Tab")}</option>
+                  </select>
+                </Field>
+                <Field label={t("CSV 文字編碼", "CSV text encoding")}>
+                  <select
+                    name="csv_encoding"
+                    value={selection.csv_encoding}
+                    onChange={(e) => {
+                      setSelection((v) => ({
+                        ...v,
+                        csv_encoding: e.target.value,
+                      }));
+                      resetPreview();
+                      setFile((v) => (v ? { ...v, headers: null } : v));
+                    }}
+                  >
+                    <option value="">
+                      {t("依 BOM；否則 UTF-8", "Use BOM; otherwise UTF-8")}
+                    </option>
+                    <option value="utf8">UTF-8</option>
+                    <option value="utf16le">UTF-16 LE</option>
+                    <option value="utf16be">UTF-16 BE</option>
+                  </select>
+                </Field>
+              </>
+            )}
             <Field
               label={t("標題列", "Header row")}
               hint={t(
@@ -319,7 +388,7 @@ export function MarketingImport({
             >
               {t("套用標題列", "Apply header row")}
             </button>
-            {!file.headers && (
+            {!file.headers && file.file_type === "xlsx" && (
               <button
                 type="button"
                 className="button secondary"
@@ -335,6 +404,44 @@ export function MarketingImport({
             )}
           </div>
         )}
+        <div className="marketing-field-grid">
+          <Field
+            label={t("數字格式", "Number format")}
+            hint={t(
+              "依匯出檔確認；XLSX 數值格保持原數值，僅文字格使用此格式。",
+              "Check the export. XLSX numeric cells retain their stored values; this format applies to text cells.",
+            )}
+          >
+            <select
+              name="number_format"
+              value={form.number_format}
+              onChange={(e) => change("number_format", e.target.value)}
+            >
+              <option value="">1,234.56</option>
+              <option value="comma_decimal">1.234,56</option>
+              <option value="space_dot">1 234.56</option>
+              <option value="space_comma">1 234,56</option>
+            </select>
+          </Field>
+          <Field
+            label={t("日期順序", "Date order")}
+            hint={t(
+              "不猜測日／月；確認前核對下方的實際日期。",
+              "Day/month order is explicit. Check the parsed dates before confirming.",
+            )}
+          >
+            <select
+              name="date_format"
+              value={form.date_format}
+              onChange={(e) => change("date_format", e.target.value)}
+            >
+              <option value="">YYYY-MM-DD</option>
+              <option value="day_first">DD/MM/YYYY</option>
+              <option value="month_first">MM/DD/YYYY</option>
+              <option value="year_first">YYYY/MM/DD · 年月日</option>
+            </select>
+          </Field>
+        </div>
         <Field
           label={t("更正先前快照", "Correct an earlier snapshot")}
           hint={t(
@@ -544,6 +651,7 @@ export function MarketingImport({
             </div>
           )}
           <MarketingWarnings data={preview} />
+          <MarketingImportPreview preview={preview} />
           <dl className="marketing-mapping-result">
             {Object.entries(preview.mapping).map(([key, value]) => (
               <div key={key}>
@@ -562,8 +670,8 @@ export function MarketingImport({
               onChange={(e) => setConfirmed(e.target.checked)}
             />
             {t(
-              "我已確認幣種、時區、帳戶、粒度與欄位口徑。",
-              "I have checked the currency, timezone, account, grain and column definitions.",
+              "我已確認解析後的日期、金額、幣種、時區、帳戶、粒度與欄位口徑。",
+              "I have checked the parsed dates, amounts, currency, timezone, account, grain and column definitions.",
             )}
           </label>
         </section>
