@@ -1,3 +1,37 @@
+<!-- runtime-pause-154 -->
+
+运行中云任务支持安全暂停和同任务、线程、预算继续。工作详情 → 暂停工作 → 等待当前轮次计量完成 → 继续工作。补充资料后仍保持暂停；未知副作用继续核对，取消按累计明确用量只结算一次。
+
+```mermaid
+flowchart TD
+ A[Running cloud task] --> B[Customer or scoped admin requests pause]
+ B --> C[Block new tools / finish accepted operations]
+ C --> D{Completed native turn and all costs known?}
+ D -->|No| E[Reconciliation / no automatic replay]
+ D -->|Yes| F{Outstanding requested input?}
+ F -->|Yes| G[Answer / remain paused]
+ F -->|No| H[Immutable measured checkpoint]
+ G --> H
+ H --> I[Explicit resume / current original identity and sources]
+ I --> J[Same task + thread + reservation + fixed versions]
+ J --> K[Claim capacity / consume checkpoint once]
+ K --> L[Reuse completed results / settle cumulative usage]
+```
+
+Media below show actual Web controls; this is not native UI acceptance for this component. Desktop Codex still runs on the customer's computer with explicit full permissions and no Electron frame/menu; this round rebuilds the cloud-task detail renderer, without new installed-binary acceptance.
+
+6 focused backend cases /5 actual Web/Admin groups;7 PNGs and2 GIF/MP4 pairs. All changed clients built. Explicit synthetic model adapter; no real provider request. Broad/installed-client/cross-OS regression omitted. Apply forward SQL153/154 using the backend migration procedure before updating. Unreleased after v0.1.0-rc.1; all five frozen ZIPs unchanged.
+
+[方案 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/154-runtime-pause.md) · [API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/runtime-pause-openapi.json) · [完整待项 / Ledger](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage154.md)
+
+![Actual control](assets/screenshots/workmate-runtime-pause-154-01-paused.png)
+
+![Actual interaction](assets/screenshots/workmate-runtime-pause-154-01-running-pause-resume.gif)
+
+[Actual MP4](assets/screenshots/workmate-runtime-pause-154-01-running-pause-resume.mp4)
+
+---
+
 <!-- workflow-content-history-153 -->
 
 后台工作流支持全部已保存定义与受控执行快照。进入内容目录 → 读取内容 → 展开精确版本并翻页。近期MFA、双内容权限、当前范围与来源复查同时生效，来源或权限变化清除正文。精确调查根隔离后仍可审阅；真实依赖撤回继续隐藏。共享历史连接永久擦除与完整授权导出。

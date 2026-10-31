@@ -1504,11 +1504,11 @@ function TaskDetail() {
                 data.status,
               ) ? (
                 <div className="row-actions">
-                  {data.attempt === 0 &&
-                    ["queued", "paused"].includes(data.status) && (
+                  {data.execution_location !== "desktop" &&
+                    ["queued", "running", "paused"].includes(data.status) && (
                       <button
                         className="button secondary"
-                        disabled={actionPending}
+                        disabled={actionPending || (data.status === "running" && data.pause_requested)}
                         onClick={() =>
                           void act(() =>
                             post(w.base + "/tasks/" + id + "/controls", {
@@ -1521,7 +1521,9 @@ function TaskDetail() {
                       >
                         {data.status === "paused"
                           ? t("繼續工作", "Resume task")
-                          : t("暫停排隊", "Pause queued task")}
+                          : data.status === "running"
+                            ? data.pause_requested ? t("正在安全暫停", "Pausing safely") : t("暫停工作", "Pause task")
+                            : t("暫停排隊", "Pause queued task")}
                       </button>
                     )}
                   <button
@@ -1540,6 +1542,11 @@ function TaskDetail() {
             }
           />
           <ErrorNotice error={actionError} />
+          {data.pause_requested && ["running","needs_input","paused"].includes(data.status) && <p className="notice" role="status">
+            {data.status === "running" ? t("已收到暫停要求，正在等待目前輪次安全結束。已發生用量保留，原預算仍預留。", "Pause requested. Waiting for the current turn to finish safely. Recorded usage and the original budget hold are retained.")
+              : data.status === "needs_input" ? t("補充資料後仍會保持暫停，請再按繼續。", "Providing inputs will keep this task paused. Choose Resume when you are ready.")
+              : t("目前進度及費用已保留。繼續時會沿用同一工作和原預算，並重新檢查目前權限。", "Progress and recorded usage are retained. Resume keeps this same task and budget and checks current permissions again.")}
+          </p>}
           <TaskInputRequests
             task={data}
             onChange={() => setVersion((v) => v + 1)}
@@ -1603,7 +1610,10 @@ function TaskDetail() {
                             "Your task is queued for your specialist.",
                           )
                       : data.status === "paused"
-                        ? t(
+                        ? Number(data.attempt) > 0 ? t(
+                            "工作已暫停，已完成的處理及費用已保留。繼續時沿用本工作和原預留預算。",
+                            "This task is paused with completed work and recorded usage retained. Resume keeps this task and its original budget reservation.",
+                          ) : t(
                             "工作已暫停，尚未呼叫模型。繼續時沿用本工作和原預留預算。",
                             "This task is paused before model execution. Resuming keeps this task and its original budget reservation.",
                           )
