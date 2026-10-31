@@ -1,3 +1,13 @@
+# 当前源码增量 / Current source increment · 166
+
+用户任务与内容入口、真实作者归属、权限交集和导航恢复已完成。Creator-filtered user tasks/content and scoped navigation are implemented. 八项原生SQL/API和八组实际Admin页面检查通过；不变的其他端沿用冻结基线。
+
+[本轮更新 / Changes](changes/166-admin-user-resources.md) · [当前源码逻辑 / Behavior](development/166-admin-user-resource-context.md) · [检查及媒体 / Evidence](quality/admin-user-resources-166.json) · [完整待办 / Ledger](quality/remaining-work-stage166.md)
+
+下方 rc.5 下载为保留的冻结基线，不包含本次源码增量。The frozen rc.5 download below remains unchanged and excludes this source increment.
+
+---
+
 ## v0.1.0-rc.5 · 已发布 / Published
 
 [完整ZIP / Complete ZIP](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.5/workmate-v0.1.0-rc.5-complete.zip) · [SHA256](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.5/workmate-v0.1.0-rc.5-complete.zip.sha256) · [使用 / Guide](releases/v0.1.0-rc.5.md) · [发布回执 / Receipt](quality/release-publication-165.json)
@@ -33,12 +43,12 @@
 |架构技术 / Architecture|[technical/01-architecture-and-stack.md](technical/01-architecture-and-stack.md)|
 |Codex与内部API / Runtime|[technical/02-runtime-and-ai-gateway.md](technical/02-runtime-and-ai-gateway.md)|
 |本机/云端职责 / Client execution|[requirements/03-client-execution-amendment.md](requirements/03-client-execution-amendment.md)|
-|本轮需求补充 / Current requirements|[requirements/26-workspace-recovery-and-admin-target.md](requirements/26-workspace-recovery-and-admin-target.md)|
-|本轮开发 / Current implementation|[development/165-functional-closure-and-freeze.md](development/165-functional-closure-and-freeze.md)|
-|本轮更新 / Changes|[changes/165-rc5-freeze.md](changes/165-rc5-freeze.md)|
-|必要检查 / Focused checks|[quality/functional-closure-165.json](quality/functional-closure-165.json)|
+|本轮需求补充 / Current requirements|[requirements/27-admin-user-resource-context.md](requirements/27-admin-user-resource-context.md)|
+|本轮开发 / Current implementation|[development/166-admin-user-resource-context.md](development/166-admin-user-resource-context.md)|
+|本轮更新 / Changes|[changes/166-admin-user-resources.md](changes/166-admin-user-resources.md)|
+|必要检查 / Focused checks|[quality/admin-user-resources-166.json](quality/admin-user-resources-166.json)|
 |构建冻结 / Freeze checkpoint|[quality/release-freeze-checkpoint-165.json](quality/release-freeze-checkpoint-165.json)|
-|全部原编号 / Original acceptance ledger|[quality/remaining-work-stage165.md](quality/remaining-work-stage165.md)|
+|全部原编号 / Original acceptance ledger|[quality/remaining-work-stage166.md](quality/remaining-work-stage166.md)|
 |Git分支 / Git branches|[governance/04-git-branches-and-publication.md](governance/04-git-branches-and-publication.md)|
 |工作区规范 / Workspace policy|[governance/03-workspace-and-path-policy.md](governance/03-workspace-and-path-policy.md)|
 
