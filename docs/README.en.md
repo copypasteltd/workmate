@@ -1,3 +1,11 @@
+<!-- frozen-release-148 -->
+
+[Workmate v0.1.0-rc.1 / 首个冻结候选版](releases/v0.1.0-rc.1.md) · [完整编号 / Ledger](quality/remaining-work-stage148.md) · [构建及发布方案 / Freeze plan](development/148-first-frozen-release.md)
+
+17项后端必要检查与4组真实Web/Windows冒烟通过；按用户要求省略广泛回归，模拟AI。独立源码标签、运行包及校验值由发布回执绑定；完整验收继续开放。 / Seventeen focused backend checks and four real client smoke groups passed. Broad regression was deliberately omitted; AI providers are synthetic. Full acceptance remains open.
+
+---
+
 <!-- business-history-stage144 -->
 
 <!-- workflow-handoff-stage145 -->
