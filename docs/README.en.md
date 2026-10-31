@@ -2,7 +2,7 @@
 
 已补齐按费用实际入账期间报表、香港日期投影及同选择明细／CSV。Posting-period reports, daily entry projection and same-selection detail/CSV are implemented.
 
-[更新 / Changes](changes/172-admin-posting-period.md) · [方案 / Behavior](development/172-admin-posting-period.md) · [证据 / Evidence](quality/admin-posting-period-172.json) · [原编号台账 / Original ledger](quality/remaining-work-stage172.md)
+[Git发布回执 / Publication](quality/admin-posting-period-publication-172.json) · [更新 / Changes](changes/172-admin-posting-period.md) · [方案 / Behavior](development/172-admin-posting-period.md) · [证据 / Evidence](quality/admin-posting-period-172.json) · [原编号台账 / Original ledger](quality/remaining-work-stage172.md)
 
 此为v0.1.1之后的源码增量，不在下方冻结ZIP中；原包与标签保持不变。This increment is outside the frozen v0.1.1 bundle below; published archives and tags remain unchanged.
 
