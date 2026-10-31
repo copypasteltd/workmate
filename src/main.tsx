@@ -2682,8 +2682,8 @@ function AdminDialog({
             <Field label={t("執行動作", "Task action")}>
               <select name="action">
                 <option value="cancel">Cancel</option>
-                <option value="pause">Pause queued task</option>
-                <option value="resume">Resume paused task</option>
+                <option value="pause">{t("要求安全暫停", "Request safe pause")}</option>
+                <option value="resume">{t("繼續原工作", "Resume original task")}</option>
                 <option value="retry">Retry</option>
               </select>
             </Field>
