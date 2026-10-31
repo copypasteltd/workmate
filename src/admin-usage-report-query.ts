@@ -18,6 +18,7 @@ export async function captureUsageReport(tx: Tx, s: ReadScope, f: UsageReportFil
     : period("b")];
   for (const [key, value] of Object.entries({ user_id: f.user_id, tenant_id: f.tenant_id, project_id: f.project_id, billing_account_id: f.billing_account_id })) if (value) where.push(`b.${key}=${s.arg(value)}::uuid`);
   if (f.task_id) where.push(`b.kind='task' AND b.id=${s.arg(f.task_id)}::uuid`);
+  for (const key of ["team_id", "team_run_id"] as const) if (f[key]) where.push(`b.${key}=${s.arg(f[key])}::uuid`);
   for (const key of ["payer_kind", "source", "role_key"] as const) if (f[key]) where.push(`b.${key}=${s.arg(f[key])}`);
   if (f.user_id) where.push(s.scope("admin.users.read", "b.tenant_id", "b.project_id"));
   const userName = `CASE WHEN ${s.userField("admin.users.read", "u")} THEN nullif(u.name,'') END`;
@@ -31,12 +32,16 @@ export async function captureUsageReport(tx: Tx, s: ReadScope, f: UsageReportFil
     SELECT t.id,'task'::text AS kind,t.tenant_id,t.project_id,t.created_by AS user_id,${userName} AS user_name,n.name AS tenant_name,p.name AS project_name,
       t.billing_account_id,CASE WHEN w.user_id IS NULL THEN 'tenant' ELSE 'user' END AS payer_kind,coalesce(w.user_id,w.tenant_id) AS payer_id,
       CASE WHEN t.execution_location='desktop' THEN 'desktop_agent' ELSE 'cloud_agent' END AS source,t.role_key,t.role_hash AS template_hash,
-      t.status AS state,t.created_at,t.data_mode,t.attempt,r.runtime_profile_id
+      t.status AS state,t.created_at,t.data_mode,t.attempt,r.runtime_profile_id,
+      g.group_id AS team_id,t.agent_group_run_id AS team_run_id,t.agent_group_node_key AS team_node_key,
+      CASE WHEN t.agent_group_run_id IS NULL THEN 'standalone' WHEN g.id IS NULL THEN 'unrecorded' ELSE 'team' END AS team_attribution
     FROM tasks t JOIN users u ON u.id=t.created_by JOIN tenants n ON n.id=t.tenant_id JOIN projects p ON p.id=t.project_id
       JOIN wallets w ON w.id=t.billing_account_id AND w.data_mode=t.data_mode LEFT JOIN task_runtime_bindings r ON r.task_id=t.id
+      LEFT JOIN agent_group_runs g ON g.id=t.agent_group_run_id AND g.tenant_id=t.tenant_id AND g.project_id=t.project_id
     UNION ALL
     SELECT c.id,'resource',c.tenant_id,c.project_id,c.private_owner,${userName},n.name,p.name,h.billing_account_id,
-      CASE WHEN w.user_id IS NULL THEN 'tenant' ELSE 'user' END,coalesce(w.user_id,w.tenant_id),'cloud_resource',NULL::text,NULL::text,c.state,c.confirmed_at,w.data_mode,NULL::integer,NULL::uuid
+      CASE WHEN w.user_id IS NULL THEN 'tenant' ELSE 'user' END,coalesce(w.user_id,w.tenant_id),'cloud_resource',NULL::text,NULL::text,c.state,c.confirmed_at,w.data_mode,NULL::integer,NULL::uuid,
+      NULL::uuid,NULL::uuid,NULL::text,'standalone'
     FROM cloud_runtime_sessions c JOIN cloud_runtime_holds h ON h.session_id=c.id JOIN wallets w ON w.id=h.billing_account_id
       JOIN users u ON u.id=c.private_owner JOIN tenants n ON n.id=c.tenant_id JOIN projects p ON p.id=c.project_id
   ), candidate AS MATERIALIZED (

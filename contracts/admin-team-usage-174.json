@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "stage": 174,
+  "extends": [
+    "admin-usage-reports-169.json",
+    "admin-posting-period-172.json"
+  ],
+  "database_schema": 156,
+  "filters": {
+    "team_id": "optional UUID; persisted team definition, not a text/prompt-derived guess",
+    "team_run_id": "optional UUID; exact persisted run; intersects all other work filters"
+  },
+  "group_by_additions": [
+    "team",
+    "team_run"
+  ],
+  "captured_work_fields": {
+    "team_id": "original agent_group_runs.group_id; same tenant/project as the task",
+    "team_run_id": "original tasks.agent_group_run_id",
+    "team_node_key": "original node key or coordinator",
+    "team_attribution": "team | standalone | unrecorded"
+  },
+  "money_rule": "Sum original selected member and coordinator work charge/refund entries once. Never add approved whole-team budgets or repeat a coordinator aggregate. Funding account remains attached to each work.",
+  "privacy_rule": "Usage access exposes financial identity references only. No team name, brief, method body, private conversation or deliverable is read. All original scope, user-directory, session, MFA and export gates remain active.",
+  "snapshot": "Captured team references are fixed with the original work-level financial snapshot; later source changes/refunds require a new snapshot.",
+  "csv": "New snapshots carry team_attribution_version=1 and append four captured team columns; older encrypted snapshots retain their prior columns. Same selection and watermark.",
+  "legacy": "Absent team provenance is unrecorded, never guessed as standalone. Omitted request fields remain omitted to preserve idempotency fingerprints.",
+  "qualification_scope": "Native team create/preflight/approve/dispatch and synthetic settlements; no claim of new Codex/team-runtime/professional or production-provider acceptance."
+}

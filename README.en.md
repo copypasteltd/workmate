@@ -1,5 +1,34 @@
 # Workmate · backend
 
+## v0.1.3 · 当前完整交付 / Current complete delivery
+
+[Release / 下载](https://github.com/copypasteltd/workmate/releases/tag/v0.1.3) · [中英使用手册 / Bilingual guide](https://github.com/copypasteltd/workmate/blob/v0.1.3/docs/releases/v0.1.3.md)
+
+本轮完整包包含六仓源码和全部端，纳入团队/单次运行费用报表、原成员/协调员账目、交叉筛选和同快照CSV。当前源码与假数据冻结交付按使用者要求收口；服务器资料和正式服务接入后续提供。AI/媒体/广告/支付使用假数据，Windows未签名；完整专业/生产台账保持。
+
+All six source trees/clients are delivered, including team/run financial reports, original member/coordinator entries, intersecting filters and matching snapshot CSV. This current source/synthetic frozen delivery closes as requested; server/live configuration follows later. External services are synthetic and Windows is unsigned. Full professional/production qualification remains tracked.
+
+
+## 團隊費用 / Team consumption · stage174
+
+團隊及執行ID交叉篩選，成員與協調員實際帳目只加總一次；固定快照明細／CSV保留原身份，舊來源不推斷。Team/run filters and groups sum original work entries once, with immutable detail/CSV and explicit unknown legacy attribution. 21 native report cases and seven current actual Admin journeys; original failed capture retained. Final freeze rebuilds Admin for current CSS.
+
+```mermaid
+flowchart LR
+ T[Team] --> R[Individual run]
+ R --> M[Member / coordinator works]
+ M --> L[Original charges and refunds]
+ L --> S[Scoped financial snapshot]
+ S --> C[Detail and matching CSV]
+```
+
+![實際團隊費用 / Actual team consumption](assets/screenshots/workmate-admin-team-usage-174-03-team-02-single-run.png)
+
+![實際操作 / Actual interaction](assets/screenshots/workmate-admin-team-usage-174-03-team-consumption-workflow.gif)
+
+[MP4](assets/screenshots/workmate-admin-team-usage-174-03-team-consumption-workflow.mp4)
+
+
 ## Current complete frozen delivery · v0.1.2
 
 The complete bundle includes every client, six source trees and the current posting-period reports. Desktop runs Codex locally with explicitly granted full local permission; the native Extension Side Panel reads/uploads authorized files for cloud Codex. Schema156, authorized synthetic AI/media/ads/payments and unsigned Windows.

@@ -37,7 +37,7 @@ export function registerAdminUsageReports(app: FastifyInstance, db: Database) {
       }
       return replay(tx, req.principal.id, "admin.usage-report.create", idempotency, { filters, session: req.principal.sessionId }, async () => {
         const capture = await captureUsageReport(tx, new ReadScope(s.bs), filters, db.config.DEMO_MODE ? "simulated" : "configured_services");
-        const report = { ...capture, filters, data_mode: db.config.DEMO_MODE ? "simulated" : "configured_services", timezone: "Asia/Hong_Kong", time_basis: filters.time_basis ?? "work_created_at", units_time_basis: "selected_work_lifetime", currency: "HKD", estimated: false };
+        const report = { ...capture, team_attribution_version: 1, filters, data_mode: db.config.DEMO_MODE ? "simulated" : "configured_services", timezone: "Asia/Hong_Kong", time_basis: filters.time_basis ?? "work_created_at", units_time_basis: "selected_work_lifetime", currency: "HKD", estimated: false };
         const raw = canonical(report); if (Buffer.byteLength(raw) > usageReportLimit.bytes) throw new Problem(413, "USAGE_REPORT_TOO_LARGE", "Narrow the period or project; the full report exceeds its bounded size");
         const saved = (await tx.query(`INSERT INTO admin_data_previews(principal_id,session_id,auth_version,access_hash,command,definition_hash,manifest,payload_ciphertext,payload_hash)
           VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id,expires_at`, [req.principal.id, req.principal.sessionId, req.principal.authVersion, usageAccessHash(s), { kind: "usage_report", filters }, hash(canonical(filters)), { work_count: report.works.length, as_of: report.as_of }, seal(db.config.MASTER_KEY!, raw), hash(raw)])).rows[0];
@@ -52,7 +52,7 @@ export function registerAdminUsageReports(app: FastifyInstance, db: Database) {
       const { row, report } = await readable(tx, db, req.principal, id), works = selected(report, q);
       await audit(tx, req.principal, "admin.usage.read", id, "succeeded", { operation: "report_page", page: q.page, group_by: q.group_by });
       return { id, expires_at: new Date(row.expires_at).toISOString(), as_of: report.as_of, watermark: row.payload_hash, filters: report.filters, data_mode: report.data_mode, timezone: report.timezone, time_basis: report.time_basis, units_time_basis: report.units_time_basis ?? "selected_work_lifetime", currency: "HKD", estimated: false,
-        summary: summarizeUsage(works, report.time_basis), groups: groupUsage(report.works, report.time_basis), total: works.length, page: q.page, page_size: q.page_size,
+        team_attribution_version: report.team_attribution_version ?? null, summary: summarizeUsage(works, report.time_basis), groups: groupUsage(report.works, report.time_basis), total: works.length, page: q.page, page_size: q.page_size,
         items: works.slice((q.page - 1) * q.page_size, q.page * q.page_size).map(({ operations, ledger, refunds, exportable, ...w }: any) => ({ ...w, operation_count: operations.length })),
       };
     }, undefined, true);
@@ -74,6 +74,7 @@ export function registerAdminUsageReports(app: FastifyInstance, db: Database) {
       const { row, report, s } = await readable(tx, db, req.principal, id), works = selected(report, q);
       if (!s.has("admin.exports.create") || !s.has("admin.exports.download") || works.some((w: any) => !w.exportable)) throw new Problem(403, "ADMIN_FORBIDDEN", "Export authority must cover every selected work; narrow the selection or request access");
       const columns = ["kind", "id", "source", "user_id", "tenant_id", "project_id", "billing_account_id", "payer_kind", "payer_id", "role_key", "created_at", "confirmed_micros", "refunded_micros", "net_micros", "reserved_micros", "reconciliation_hold_micros", "unresolved", "as_of", "watermark", "currency", "time_basis"];
+      if (report.team_attribution_version === 1) columns.push("team_id", "team_run_id", "team_node_key", "team_attribution");
       if (report.time_basis === "ledger_posted_at") columns.push("period_from", "period_to", "group_by", "group_key", "holds_state", "units_time_basis");
       const table = [columns, ...works.map((w: any) => columns.map(c => ({ ...w, net_micros: (BigInt(w.confirmed_micros)-BigInt(w.refunded_micros)).toString(), as_of: report.as_of, watermark: row.payload_hash, currency: "HKD", time_basis: report.time_basis,
         period_from: report.filters.period_from, period_to: report.filters.period_to, group_by: q.group_by, group_key: q.group_key, units_time_basis: "selected_work_lifetime" } as any)[c]))].map(r => r.map(dataCsvCell).join(","));

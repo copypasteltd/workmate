@@ -8,6 +8,7 @@ export const usageReportFilters = z.object({
   payer_kind: z.enum(["user", "tenant"]).optional(),
   source: z.enum(["cloud_agent", "desktop_agent", "cloud_resource"]).optional(),
   role_key: z.string().trim().min(1).max(80).optional(),
+  team_id: uuid.optional(), team_run_id: uuid.optional(),
   model_alias: z.string().trim().min(1).max(200).optional(),
   // Leave omitted input omitted so existing idempotency fingerprints stay valid.
   time_basis: z.enum(["work_created_at", "ledger_posted_at"]).optional(),
@@ -15,7 +16,7 @@ export const usageReportFilters = z.object({
 }).strict().refine(v => Date.parse(v.period_from) < Date.parse(v.period_to), "The end must follow the start");
 export type UsageReportFilters = z.infer<typeof usageReportFilters>;
 export type UsageTimeBasis = "work_created_at" | "ledger_posted_at";
-export const usageGroups = ["user", "payer", "tenant", "project", "role", "source", "day", "capability"] as const;
+export const usageGroups = ["user", "payer", "tenant", "project", "role", "source", "day", "capability", "team", "team_run"] as const;
 export const usageReportSelection = z.object({
   group_by: z.enum(usageGroups).optional(), group_key: z.string().min(1).max(240).optional(),
 }).strict().refine(v => !!v.group_by === !!v.group_key, "Group type and key must be supplied together");
@@ -29,6 +30,9 @@ export function usageAccessHash(s: ReadScope) {
 }
 export const hkDay = (date: string) => new Date(Date.parse(date) + 8 * 3600000).toISOString().slice(0, 10);
 export function workGroups(row: any, by: typeof usageGroups[number], basis: UsageTimeBasis = "work_created_at"): string[] {
+  // Old encrypted snapshots did not capture team attribution. Missing data is
+  // unknown, never evidence that the work was standalone.
+  if (by === "team" || by === "team_run") return [row.team_attribution === "standalone" ? "standalone" : row[by === "team" ? "team_id" : "team_run_id"] ?? "unrecorded"];
   if (by === "capability") return [...new Set<string>(row.operations.map((o: any) => o.capability_version_id).filter(Boolean))];
   if (by === "day" && basis === "ledger_posted_at") return [...new Set<string>([...row.ledger, ...row.refunds].map(r => hkDay(r.created_at)))].sort();
   return [String(({ user: row.user_id, payer: row.billing_account_id, tenant: row.tenant_id, project: row.project_id, role: row.role_key ?? "unrecorded", source: row.source, day: hkDay(row.created_at) } as any)[by])];
