@@ -1,3 +1,13 @@
+# 当前冻结交付 / Current frozen delivery · v0.1.1
+
+最新完整包纳入用户运营筛选和消耗报表。Latest complete bundle includes operational filters and consumption reports.
+
+[发行下载 / Download](https://github.com/copypasteltd/workmate/releases/tag/v0.1.1) · [安装 / Setup](releases/v0.1.1.md)
+
+假数据模式；Windows未签名；数据库156。Authorized synthetic services; unsigned Windows; schema156.
+
+---
+
 # 当前源码增量 / Current source increment · 169
 
 用戶消耗固定報表已完成；Scoped consumption reports implemented.
