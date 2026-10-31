@@ -1,3 +1,11 @@
+<!-- scope-data-export-152 -->
+
+[完整範圍匯出 / Authorized scope export](development/152-scope-data-export.md) · [完整待項 / Ledger](quality/remaining-work-stage152.md) · [更新 / Changes](changes/152-scope-data-export.md)
+
+Unreleased increment152; frozen v0.1.0-rc.1 preserved. Focused functional checks only.
+
+---
+
 <!-- ownership-transfer-151 -->
 
 [企業所有權交接 / Ownership handover](development/151-ownership-transfer.md) · [完整待項 / Ledger](quality/remaining-work-stage151.md) · [更新 / Changes](changes/151-ownership-transfer.md)
