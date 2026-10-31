@@ -1,3 +1,35 @@
+<!-- specialist-copy-155 -->
+
+我的专家 → 复制 → 调整名称、职责或缩小工具 → 核对原品牌、模型费率与方法 → 勾选确认。副本保留原固定版本和模板来源；受理后丢失响应重试恢复同一副本，来源更新及撤权拒绝提交。对话、私人记忆、文件、凭据与本机权限不复制。
+
+```mermaid
+flowchart TD
+ A[Choose saved specialist / Copy] --> B[Name, instructions, narrower approved tools]
+ B --> C[Review original source and fixed versions]
+ C --> D[Explicit confirmation]
+ D --> E[Lock and recheck current session and project]
+ E --> F{Original source, brand, skills and prices still usable?}
+ F -->|No| G[Clear review / reload source]
+ F -->|Yes| H[One signed preview creates one independent copy]
+ H --> I[Retry recovers the same receipt]
+ H --> J[New tasks use retained definition]
+ J --> K[Use existing compare/adopt for later changes]
+```
+
+Media below show the actual Web flow; configuration copying makes no model request.
+
+7 focused SQL/HTTP cases and5 actual Web groups;7 PNGs and2 GIF/MP4 pairs. Backend/Web/Desktop checks and builds passed. Synthetic fixtures; no model call. No new SQL migration: schema154. Broad historical, installed-client/cross-OS and production-provider matrices omitted. Unreleased after v0.1.0-rc.1; all frozen artifacts and tags preserved.
+
+[方案 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/155-specialist-copy.md) · [API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/specialist-copy-openapi.json) · [完整待项 / Ledger](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage155.md)
+
+![Actual Web review](assets/screenshots/workmate-specialist-copy-155-02-review-original-brand.png)
+
+![Actual Web interaction](assets/screenshots/workmate-specialist-copy-155-02-reviewed-copy-recovery.gif)
+
+[Actual MP4](assets/screenshots/workmate-specialist-copy-155-02-reviewed-copy-recovery.mp4)
+
+---
+
 <!-- runtime-pause-154 -->
 
 运行中云任务支持安全暂停和同任务、线程、预算继续。工作详情 → 暂停工作 → 等待当前轮次计量完成 → 继续工作。补充资料后仍保持暂停；未知副作用继续核对，取消按累计明确用量只结算一次。
