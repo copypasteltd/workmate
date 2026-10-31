@@ -85,6 +85,7 @@ import { registerSchedules } from "./schedules.js";
 import { registerFederation } from "./federation.js";
 import { registerDeletions } from "./deletions.js";
 import { registerScopeErasure } from "./scope-erasure.js";
+import { registerOwnershipTransfers } from "./ownership-transfers.js";
 import { startDemoGateway } from "./demo-gateway.js";
 import { startConnectorFixture } from "./connector-fixture.js";
 import { startSeoFixture } from "./seo-fixture.js";
@@ -444,6 +445,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerDedicatedCloud(app, db, storage, catalog);
   registerDeletions(app, db);
   registerScopeErasure(app, db);
+  registerOwnershipTransfers(app, db);
   registerAnalytics(app, db, storage);
   registerFileImports(app, db, storage);
   registerAnalysisReports(app, db, catalog, storage);

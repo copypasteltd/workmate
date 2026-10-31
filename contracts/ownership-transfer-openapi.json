@@ -1,0 +1,136 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Workmate ownership handover",
+    "version": "unreleased-stage151"
+  },
+  "paths": {
+    "/v1/tenants/{tenant}/ownership-transfers": {
+      "get": {
+        "summary": "Current authorized, no-store paginated handover history",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "History restricted by current user or tenant-scoped MFA administrator"
+          }
+        }
+      },
+      "post": {
+        "summary": "Current owner requests a24-hour handover without changing roles",
+        "description": "Strict recipient_id, exact current workspace confirmation and acknowledge_responsibility=true. Idempotency-Key required; one pending handover per tenant. Recipient must be active, not suspended and not already an owner.",
+        "responses": {
+          "200": {
+            "description": "Current handover record"
+          },
+          "409": {
+            "description": "Recipient, name, identity, version or pending handover conflict"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/ownership-transfers/{id}/accept": {
+      "post": {
+        "summary": "accept ownership handover",
+        "description": "Strict expected_revision and acknowledge_responsibility=true; Idempotency-Key required. Accept/decline only by the exact recipient. Cancel by source or current owner. Revalidates exact session, both account authorization and membership versions, expiry and workspace.",
+        "responses": {
+          "200": {
+            "description": "Current terminal result; no repeated role change"
+          },
+          "409": {
+            "description": "Expired, changed or conflicting decision"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/ownership-transfers/{id}/decline": {
+      "post": {
+        "summary": "decline ownership handover",
+        "description": "Strict expected_revision and acknowledge_responsibility=true; Idempotency-Key required. Accept/decline only by the exact recipient. Cancel by source or current owner. Revalidates exact session, both account authorization and membership versions, expiry and workspace.",
+        "responses": {
+          "200": {
+            "description": "Current terminal result; no repeated role change"
+          },
+          "409": {
+            "description": "Expired, changed or conflicting decision"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/ownership-transfers/{id}/cancel": {
+      "post": {
+        "summary": "cancel ownership handover",
+        "description": "Strict expected_revision and acknowledge_responsibility=true; Idempotency-Key required. Accept/decline only by the exact recipient. Cancel by source or current owner. Revalidates exact session, both account authorization and membership versions, expiry and workspace.",
+        "responses": {
+          "200": {
+            "description": "Current terminal result; no repeated role change"
+          },
+          "409": {
+            "description": "Expired, changed or conflicting decision"
+          }
+        }
+      }
+    },
+    "/v1/admin/tenants/{tenant}/ownership-transfers": {
+      "get": {
+        "summary": "Current authorized, no-store paginated handover history",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "History restricted by current user or tenant-scoped MFA administrator"
+          }
+        }
+      }
+    },
+    "/v1/admin/tenants/{tenant}/ownership-transfers/{id}/cancel": {
+      "post": {
+        "summary": "Cancel pending handover using current tenant membership-write permission, recent MFA and explicit-deny rules",
+        "responses": {
+          "200": {
+            "description": "Cancelled without changing member roles"
+          },
+          "403": {
+            "description": "Current scope or MFA insufficient"
+          }
+        }
+      }
+    }
+  }
+}
