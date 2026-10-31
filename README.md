@@ -670,3 +670,36 @@ flowchart LR
 
 [Actual MP4 recording](assets/screenshots/workmate-document-preview-146-04-document-pages.mp4)
 
+
+
+<!-- functional-closure-stage147 -->
+## 阶段147：具名流程与原任务本机准备闭环
+
+本轮复用既有用户、用量、费用、VIP、权限与内容管理。新的本机工作与原云任务分别产生真实受管费用；本轮无新增Admin页面。
+
+使用顺序：登录并选择项目 → 原云任务请求本机文件 → Desktop选择目录／OS权限 → 核对本机独立费用 → 实际本机Codex执行 → 客户逐个上传并确认固定版本 → 原云任务沿原线程继续。工作流按不可变输入运行，查看完整命名交付；重复运行需分别确认规则及预算。
+
+95项后端、5组实际三端流程、11张截图、5组GIF／MP4通过。内部模型继续使用获准假数据，Windows包未签名；完整专业／生产／OS验收保留。
+
+后端覆盖由相同产品源码的92项既有检查与3项并发复测组成；原测试上下文错误及失败记录保留，不宣称新一次95项完整重跑。
+
+```mermaid
+flowchart LR
+  A[Original cloud task] --> B[Request local material]
+  B --> C[Folder and OS grant]
+  C --> D[Review separate fees]
+  D --> E[Actual local Codex]
+  E --> F[Customer uploads exact files]
+  F --> G[Same original cloud thread]
+  G --> H[Complete delivery and settlement]
+```
+
+[Usage / 使用流程](https://github.com/copypasteltd/workmate/blob/docs/docs/development/147-functional-closure.md) · [Detailed contracts / 详细契约](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/147-workflow-contract-and-local-handoff.md) · [Numbered ledger / 全部编号](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage147.md)
+
+以下为真实Web发布配图与录像，不作为Admin或其他端独立页面验收。
+
+![Actual customer flow](assets/screenshots/workmate-functional-closure-147-08-review-local-request-en.png)
+
+![Recorded interaction](assets/screenshots/workmate-functional-closure-147-08-cloud-native-roundtrip.gif)
+
+[Actual MP4](assets/screenshots/workmate-functional-closure-147-08-cloud-native-roundtrip.mp4)
