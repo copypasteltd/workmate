@@ -1,3 +1,21 @@
+## 160 · 管理總覽的用戶、費用與目前權限
+
+用戶數沿用完整用戶目錄的可見範圍；預留額度包含目前模式的個人與企業付款帳戶。累計確認扣費以帳本為準，包含任務及雲端資源，不混入充值、贈送、退款或未結算預留。每次請求在權限鎖後重驗目前MFA會話與權限；無權限或暫不可用的數字顯示破折號，可使用「重新載入總覽」恢復。
+
+9項真實SQL/HTTP定向檢查、3組實際Admin操作通過；使用明確合成的客戶和費用資料，沒有模型請求或真正啟動雲端電腦。原失敗及檢查環境修正保持原紀錄。這是未凍結的後端/Admin原始碼修復；既有v0.1.0-rc.2包和標籤不變，其他端本輪同步說明及共用Admin媒體。
+
+[方案及使用 / Implementation and usage](https://github.com/copypasteltd/workmate/blob/docs/docs/development/160-admin-overview-accuracy.md) · [編號待驗收 / Remaining](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage160.md)
+
+**實際Admin畫面；非各原生端新增驗收 / Actual Admin, not new native-client qualification**
+
+![Authorized overview](assets/screenshots/workmate-admin-overview-160-01-confirmed-charges-personal-hold.png)
+
+![Actual permission change and bilingual interaction](assets/screenshots/workmate-admin-overview-160-01-current-permission-overview.gif)
+
+[MP4](assets/screenshots/workmate-admin-overview-160-01-current-permission-overview.mp4)
+
+---
+
 ## v0.1.0-rc.2 · GitHub Release 已发布
 
 [完整下载 / Complete ZIP](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.2/workmate-v0.1.0-rc.2-complete.zip) · [发布页面 / Release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.2) · [发布记录 / Publication](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/v0.1.0-rc.2-publication.md)

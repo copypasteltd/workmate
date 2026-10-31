@@ -10,6 +10,7 @@ import { resolveWorkContext } from "./persistent-work.js";
 import { registerAdminContent, contentUnion } from "./admin-content.js";
 import { registerAdminContentRevisions } from "./admin-content-revisions.js";
 import { registerAdminDirectory, readScope } from "./admin-directory.js";
+import { registerAdminOverview } from "./admin-overview.js";
 import { registerAdminJobs } from "./admin-jobs.js";
 import { registerAdminDataJobs } from "./admin-data-jobs.js";
 import { providerApprovalVisibility } from "./provider-admin-access.js";
@@ -81,123 +82,7 @@ export function registerAdmin(
       true,
     ),
   );
-  app.get("/v1/admin/overview", { preHandler: requireAdmin(db) }, async (req) =>
-    db.tx(
-      async (tx) => {
-        const tenants = await visibleTenants(
-          tx,
-          req.principal,
-          "admin.overview.read",
-          true,
-        );
-        if (
-          !tenants.length &&
-          !(await can(tx, req.principal, "admin.overview.read"))
-        )
-          throw new Problem(
-            403,
-            "ADMIN_FORBIDDEN",
-            "No authorized overview scope",
-          );
-        const summary: any = {
-          tenants: tenants.length,
-          users: null,
-          tasks: null,
-          charged_micros: null,
-          reserved_micros: null,
-          reconciling: null,
-        };
-        const userTenants = await visibleTenants(
-          tx,
-          req.principal,
-          "admin.users.read",
-        );
-        if (await can(tx, req.principal, "admin.users.read"))
-          summary.users = Number(
-            (await tx.query("SELECT count(*) AS n FROM users")).rows[0].n,
-          );
-        else if (userTenants.length)
-          summary.users = Number(
-            (
-              await tx.query(
-                "SELECT count(DISTINCT user_id) AS n FROM memberships WHERE status='active' AND tenant_id=ANY($1::uuid[])",
-                [userTenants],
-              )
-            ).rows[0].n,
-          );
-        const us = await scopePredicate(
-          tx,
-          req.principal,
-          "admin.usage.read",
-          "tenant_id",
-          "project_id",
-        );
-        if (
-          (await visibleTenants(tx, req.principal, "admin.usage.read", true))
-            .length
-        ) {
-          Object.assign(
-            summary,
-            (
-              await tx.query(
-                `SELECT count(*)::int AS tasks,coalesce(sum(charged_micros),0)::text AS charged_micros FROM tasks WHERE ${us.sql}`,
-                us.values,
-              )
-            ).rows[0],
-          );
-        }
-        const bill = await visibleTenants(
-          tx,
-          req.principal,
-          "admin.billing.read",
-        );
-        if (bill.length)
-          summary.reserved_micros = (
-            await tx.query(
-              "SELECT coalesce(sum(reserved_micros),0)::text AS n FROM wallets WHERE tenant_id=ANY($1::uuid[])",
-              [bill],
-            )
-          ).rows[0].n;
-        const ex = await scopePredicate(
-          tx,
-          req.principal,
-          "admin.execution.read",
-          "tenant_id",
-          "project_id",
-        );
-        if (
-          (
-            await visibleTenants(
-              tx,
-              req.principal,
-              "admin.execution.read",
-              true,
-            )
-          ).length
-        )
-          summary.reconciling = Number(
-            (
-              await tx.query(
-                `SELECT count(*) AS n FROM tasks WHERE status='reconciling' AND ${ex.sql}`,
-                ex.values,
-              )
-            ).rows[0].n,
-          );
-        await audit(tx, req.principal, "admin.overview.read", undefined);
-        return {
-          summary,
-          activity: (
-            await tx.query(
-              "SELECT action,outcome,created_at FROM audit_log WHERE principal_id=$1 ORDER BY id DESC LIMIT 12",
-              [req.principal.id],
-            )
-          ).rows,
-        };
-      },
-      undefined,
-      true,
-    ),
-  );
+  registerAdminOverview(app, db);
   for (const section of [
     "usage",
     "billing",
