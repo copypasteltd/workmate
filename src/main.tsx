@@ -793,7 +793,7 @@ const columns: Record<string, string[]> = {
     "confirmed_customer_charges",
     "vip_summary",
     "registered_at",
-    "last_login_at",
+    "last_active_at",
   ],
   tenants: ["name", "state", "version", "billing_account_id"],
   usage: [
@@ -854,6 +854,7 @@ const headers: Record<string, [string, string]> = {
   vip_summary: ["有效 VIP", "Effective VIP"],
   registered_at: ["註冊時間", "Registered"],
   last_login_at: ["最近登入", "Last login"],
+  last_active_at: ["最近帳戶訪問", "Last account access"],
   billing_account_id: ["帳務帳戶", "Billing account"],
   name: ["名稱", "Name"],
   email: ["郵箱", "Email"],
@@ -1089,6 +1090,7 @@ function SectionContent({ section }: { section: string }) {
   const cursorPaged =
     directory || active === "approvals" || active === "connections";
   const directoryQuery = new URLSearchParams({ limit: "50", ...filters });
+  if (active === "users") directoryQuery.set("view", "operations");
   if (search.trim() && active !== "approvals")
     directoryQuery.set("q", search.trim());
   if (cursors[page - 1]) directoryQuery.set("cursor", cursors[page - 1]!);
@@ -1388,6 +1390,7 @@ function SectionContent({ section }: { section: string }) {
           filters={filters}
           canUsage={a.has("admin.usage.read")}
           canVip={a.has("admin.entitlements.read")}
+          canBilling={a.has("admin.billing.read")}
           onApply={(value) => {
             setPage(1);
             setCursors([null]);
@@ -1877,6 +1880,8 @@ type AdminDirectoryUser = {
   state: "active" | "frozen" | "closed";
   registered_at: string;
   last_login_at: string | null;
+  last_active_at?: string | null;
+  registration_source?: "email_otp" | null;
   confirmed_customer_charges?: unknown;
 };
 type AdminUserMembership = {
@@ -2293,7 +2298,7 @@ function UserDetailContent({ id }: { id: string }) {
     [operation, setOperation] = useState<string | null>(null),
     [membership, setMembership] = useState<string | null>(null);
   const { data, error, loading } = useData<AdminUserDetailResponse>(
-    "/v1/admin/users/" + id,
+    "/v1/admin/users/" + id + "?view=operations",
     refresh,
   );
   const context = useData<AdminUserManagementContext>(
@@ -2382,6 +2387,10 @@ function UserDetailContent({ id }: { id: string }) {
                   "—"
                 )}
               </dd>
+              <dt>{t("最近帳戶訪問", "Last account access")}</dt>
+              <dd>{data.user.last_active_at ? <DateText value={data.user.last_active_at} /> : t("未記錄", "Not recorded")}</dd>
+              <dt>{t("註冊來源", "Registration source")}</dt>
+              <dd>{data.user.registration_source === "email_otp" ? t("工作郵箱驗證碼", "Email verification") : t("未知", "Unknown")}</dd>
               <dt>{t("確認扣費", "Confirmed charges")}</dt>
               <dd>
                 <Value
