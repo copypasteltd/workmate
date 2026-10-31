@@ -1,0 +1,116 @@
+import type { Tx } from "./db.js";
+import type { Storage } from "./storage.js";
+import { Problem, uuid } from "./lib.js";
+import { assertWorkflowContract, collectWorkflowOutputs } from "./workflow-contracts.js";
+
+const sourceTables = ["workflows", "workflow_runs", "assets", "connections", "analytics_datasets",
+  "cloud_workspaces", "workspace_nodes", "agents", "brand_profiles", "memories", "conversations",
+  "creative_mappings", "creative_feedback_reports", "geo_experiments", "geo_runs", "geo_samples"] as const;
+const emptySources = () => ({schema: 1, versions: [], datasets: [], memories: [], brands: [],
+  connections: [], cloud_references: [], workflows: []});
+
+/** Only called after scoped administrator body authorization. This reader starts
+ * at a saved definition's exact sources, not a customer's expired creator task.
+ * It never sets a customer identity, creates a source read or authorizes a run. */
+export async function adminWorkflowVersionAvailable(tx: Tx, workflow: any, version: any) {
+  const refs = structuredClone(version.source_refs ?? emptySources());
+  const datasets = (version.body ?? version.definition)?.steps?.filter((step: any) => step.kind === "analytics.summary")
+    .map((step: any) => uuid.parse(step.dataset_id)) ?? [];
+  refs.datasets = [...new Set([...(refs.datasets ?? []), ...datasets])];
+  await tx.query("SAVEPOINT admin_workflow_sources");
+  try {
+    const read = async () => (await tx.query(
+      "SELECT admin_workflow_source_manifest($1,$2,$3,$4) AS refs",
+      [workflow.tenant_id, workflow.project_id, refs, workflow.id])).rows[0].refs;
+    const sources = await read();
+    if (!sources) { await tx.query("RELEASE SAVEPOINT admin_workflow_sources"); return false; }
+    for (const table of sourceTables) {
+      const ids = [...new Set<string>(sources.filter((r: any) => r.kind === table).map((r: any) => uuid.parse(r.id)))].sort();
+      if (ids.length) await tx.query(`SELECT id FROM ${table} WHERE id=ANY($1::uuid[]) ORDER BY id FOR SHARE NOWAIT`, [ids]);
+    }
+    const available = !!await read();
+    await tx.query("RELEASE SAVEPOINT admin_workflow_sources");
+    return available;
+  } catch (error) {
+    await tx.query("ROLLBACK TO SAVEPOINT admin_workflow_sources");
+    await tx.query("RELEASE SAVEPOINT admin_workflow_sources");
+    if ((error as {code?: string}).code === "55P03")
+      throw new Problem(409, "WORKFLOW_READ_SOURCE_BUSY", "A workflow source is changing; refresh and retry");
+    throw error;
+  }
+}
+
+export async function adminWorkflowHistoryPage(tx: Tx, row: any, backwards: boolean,
+  anchor: {version: number} | null, limit: number) {
+  const args: unknown[] = [row.id];
+  const table = row.private_owner ? "workflow_versions" : "workflow_shared_versions";
+  const extra = row.private_owner ? "v.definition_hash AS sha256,v.role_hashes,v.source_refs,v.published_at,'customer' AS origin"
+    : "v.name,v.origin,NULL::jsonb AS source_refs";
+  const where = anchor ? `AND v.version ${backwards ? ">" : "<"} $2` : "";
+  if (anchor) args.push(anchor.version);
+  const items = (await tx.query(`SELECT v.version,v.definition AS body,v.created_at,${extra}
+    FROM ${table} v WHERE v.workflow_id=$1 ${where}
+    ORDER BY v.version ${backwards ? "ASC" : "DESC"} LIMIT ${limit}`, args)).rows;
+  for (const item of items) {
+    const available = await adminWorkflowVersionAvailable(tx, row, item);
+    const snapshot = item.source_refs;
+    delete item.source_refs;
+    item.series_id = "00000000-0000-0000-0000-000000000000";
+    item.source_unavailable = !available;
+    if (!available) { item.body = null; delete item.name; delete item.sha256; delete item.role_hashes; }
+    else item.body = {definition: item.body, execution_location: row.execution_location,
+      ...(snapshot ? {role_hashes: item.role_hashes, source_refs: snapshot, published_at: item.published_at} : {})};
+  }
+  return items;
+}
+
+/** The legacy run-body endpoint must not expose cached definitions/results after
+ * an input, child task or fixed output has been withdrawn. No customer execution
+ * identity or lease is manufactured for this administrative read. */
+export async function adminWorkflowRunAvailable(tx: Tx, storage: Storage, run: any) {
+  await tx.query("SAVEPOINT admin_workflow_run_read");
+  try {
+    const workflow = (await tx.query("SELECT * FROM workflows WHERE id=$1 AND tenant_id=$2 AND project_id=$3 FOR SHARE NOWAIT",
+      [run.workflow_id,run.tenant_id,run.project_id])).rows[0];
+    if (!workflow || workflow.content_state === "deleted") throw new Problem(409,"WORKFLOW_READ_SOURCE_UNAVAILABLE","The workflow is unavailable");
+    const selected = workflow.private_owner ? (await tx.query("SELECT definition AS body,source_refs FROM workflow_versions WHERE workflow_id=$1 AND version=$2",
+      [workflow.id,run.workflow_version])).rows[0] : {body:run.definition};
+    if (!selected || !await adminWorkflowVersionAvailable(tx,workflow,selected))
+      throw new Problem(409,"WORKFLOW_READ_SOURCE_UNAVAILABLE","A workflow source is unavailable");
+    await assertWorkflowContract(tx,run);
+    const children = new Set<string>(), files: any[] = [...(run.input_files ?? [])];
+    for (const result of run.results ?? []) {
+      if (result.kind === "codex" && result.task_id) children.add(uuid.parse(result.task_id));
+      files.push(...(result.files ?? (result.asset_version_id ? [result] : [])));
+    }
+    if (children.size>8 || files.length>8*201+12) throw new Problem(409,"WORKFLOW_READ_SOURCE_UNAVAILABLE","The workflow result is invalid");
+    for (const id of children) {
+      const child = (await tx.query(`SELECT id FROM tasks WHERE id=$1 AND tenant_id=$2 AND project_id=$3
+        AND created_by=$4 AND private_owner IS NOT DISTINCT FROM $5::uuid AND content_state='active' AND retention_expires_at>clock_timestamp()
+        AND ($5::uuid IS NULL OR coalesce(cloud_workflow_run_id,desktop_workflow_run_id)=$6) FOR SHARE NOWAIT`,
+        [id,run.tenant_id,run.project_id,run.created_by,run.private_owner,run.id])).rows[0];
+      if (!child) throw new Problem(409,"WORKFLOW_READ_SOURCE_UNAVAILABLE","A workflow step is unavailable");
+    }
+    if (files.length) {
+      const available = (await tx.query(`SELECT v.id FROM jsonb_to_recordset($1::jsonb) AS expected(asset_version_id uuid,asset_id uuid,sha256 text)
+        JOIN asset_versions v ON v.id=expected.asset_version_id JOIN assets a ON a.id=v.asset_id
+        WHERE (expected.asset_id IS NULL OR a.id=expected.asset_id) AND (expected.sha256 IS NULL OR v.sha256=expected.sha256)
+        AND a.tenant_id=$2 AND a.project_id=$3 AND (a.private_owner IS NULL OR a.private_owner=$4)
+        AND a.state='active' AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL FOR SHARE OF a NOWAIT`,
+        [JSON.stringify(files),run.tenant_id,run.project_id,run.private_owner])).rows;
+      if (available.length!==files.length) throw new Problem(409,"WORKFLOW_READ_SOURCE_UNAVAILABLE","A fixed workflow file is unavailable");
+    }
+    const manifest = (await tx.query("SELECT content_source_manifest($1,$2,$3,$4) AS refs",
+      [run.tenant_id,run.project_id,[...children],files.map(f=>uuid.parse(f.asset_version_id))])).rows[0].refs;
+    if (!manifest) throw new Problem(409,"WORKFLOW_READ_SOURCE_UNAVAILABLE","A workflow result source is unavailable");
+    if (Object.keys(run.named_outputs ?? {}).length) await collectWorkflowOutputs(tx,storage,run,run.results);
+    await tx.query("RELEASE SAVEPOINT admin_workflow_run_read");
+    return true;
+  } catch (error) {
+    await tx.query("ROLLBACK TO SAVEPOINT admin_workflow_run_read");
+    await tx.query("RELEASE SAVEPOINT admin_workflow_run_read");
+    if ((error as {code?:string}).code === "55P03") throw new Problem(409,"WORKFLOW_READ_SOURCE_BUSY","A workflow source is changing; refresh and retry");
+    if (error instanceof Problem && error.status<500 && !/BUSY|CHANGING/.test(error.code)) return false;
+    throw error;
+  }
+}

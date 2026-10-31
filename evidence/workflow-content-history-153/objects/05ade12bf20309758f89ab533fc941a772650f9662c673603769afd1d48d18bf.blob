@@ -1,0 +1,85 @@
+import type { Tx } from "./db.js";
+import { adminWorkflowHistoryPage } from "./admin-workflow-history.js";
+
+export const businessHistoryKinds = ["brand_profiles", "agent_groups", "project_configurations", "workflow_schedules", "creative_projects", "workflows"] as const;
+export type BusinessHistoryKind = typeof businessHistoryKinds[number];
+export const isBusinessHistory = (kind: string): kind is BusinessHistoryKind => (businessHistoryKinds as readonly string[]).includes(kind);
+const series = "00000000-0000-0000-0000-000000000000";
+const origin = "CASE WHEN v.created_by_admin IS NOT NULL THEN 'administrator' WHEN v.created_by IS NOT NULL THEN 'customer' ELSE 'retained_current' END";
+
+/** All identifiers come from closed descriptors. Values and page anchors stay parameterized. */
+export async function businessHistoryPage(tx: Tx, kind: BusinessHistoryKind, row: any, backwards: boolean,
+  anchor: { version: number; series_id: string } | null, limit: number) {
+  if (kind === "workflows") return adminWorkflowHistoryPage(tx, row, backwards, anchor, limit);
+  let sql: string;
+  if (kind === "brand_profiles") {
+    sql = `SELECT v.version,v.name,v.body,v.sha256,v.created_at,${origin} AS origin,
+      EXISTS(SELECT 1 FROM brand_version_assets d LEFT JOIN asset_versions av ON av.id=d.asset_version_id
+        LEFT JOIN assets a ON a.id=av.asset_id WHERE d.brand_id=v.brand_id AND d.version=v.version AND
+        (a.id IS NULL OR a.tenant_id<>v.tenant_id OR a.project_id<>v.project_id OR a.state<>'active'
+         OR a.retention_expires_at<=clock_timestamp() OR av.erased_at IS NOT NULL OR NOT task_asset_version_sources_available(av.id))) AS source_unavailable
+      FROM brand_profile_versions v WHERE v.brand_id=$1 AND v.erased_at IS NULL`;
+  } else if (kind === "agent_groups" || kind === "project_configurations") {
+    const [table, parent] = kind === "agent_groups" ? ["agent_group_versions", "group_id"] : ["project_configuration_versions", "configuration_id"];
+    sql = `SELECT v.version,v.body,v.sha256,v.created_at,${origin} AS origin,false AS source_unavailable
+      FROM ${table} v WHERE v.${parent}=$1 AND v.erased_at IS NULL`;
+  } else if (kind === "workflow_schedules") {
+    sql = `SELECT v.revision AS version,v.body,v.created_at,'customer' AS origin,false AS source_unavailable
+      FROM workflow_schedule_versions v WHERE v.schedule_id=$1`;
+  } else if (row.kind === "poster") {
+    sql = `SELECT v.version,v.name,v.body,v.created_at,v.origin,
+      EXISTS(SELECT 1 FROM jsonb_array_elements(coalesce(v.body->'layers','[]')) layer
+        LEFT JOIN asset_versions av ON av.asset_id=(layer->>'asset_id')::uuid AND av.version=(layer->>'version')::int
+        LEFT JOIN assets a ON a.id=av.asset_id WHERE layer->>'type'='image' AND
+        (a.id IS NULL OR a.tenant_id<>v.tenant_id OR a.project_id<>v.project_id OR a.state<>'active'
+         OR a.retention_expires_at<=clock_timestamp() OR av.erased_at IS NOT NULL OR NOT task_asset_version_sources_available(av.id))) AS source_unavailable
+      FROM poster_project_versions v WHERE v.creative_id=$1`;
+  } else if (row.kind === "video") {
+    sql = `SELECT v.version,v.definition AS body,v.input_hash AS sha256,v.renderer_profile,v.created_at,'customer' AS origin,
+      EXISTS(SELECT 1 FROM video_project_sources d LEFT JOIN asset_versions av ON av.asset_id=d.asset_id AND av.version=d.asset_version
+        LEFT JOIN assets a ON a.id=av.asset_id WHERE d.video_id=v.video_id AND d.version=v.version AND
+        (a.id IS NULL OR a.tenant_id<>v.tenant_id OR a.project_id<>v.project_id OR a.state<>'active'
+         OR a.retention_expires_at<=clock_timestamp() OR av.erased_at IS NOT NULL OR NOT task_asset_version_sources_available(av.id))) AS source_unavailable
+      FROM video_project_versions v WHERE v.video_id=$1`;
+  } else if (row.kind === "vector" || row.kind === "presentation") {
+    sql = `SELECT v.version,v.input AS body,v.renderer_profile,v.created_at,'customer' AS origin,
+      EXISTS(SELECT 1 FROM unnest(v.source_versions) source_id LEFT JOIN asset_versions av ON av.id=source_id
+        LEFT JOIN assets a ON a.id=av.asset_id WHERE a.id IS NULL OR a.tenant_id<>v.tenant_id OR a.project_id<>v.project_id
+        OR a.state<>'active' OR a.retention_expires_at<=clock_timestamp() OR av.erased_at IS NOT NULL
+        OR NOT task_asset_version_sources_available(av.id)) AS source_unavailable
+      FROM editable_project_versions v WHERE v.creative_id=$1`;
+  } else {
+    sql = `SELECT v.revision AS version,v.unit_id AS series_id,u.creative_key || ' · ' || u.locale || ' · ' || u.size_key AS name,
+      v.input AS body,v.input_hash AS sha256,v.created_at,'customer' AS origin,
+      CASE WHEN v.input->'image' IS NULL OR v.input->'image'='null'::jsonb THEN false ELSE NOT EXISTS(
+        SELECT 1 FROM asset_versions av JOIN assets a ON a.id=av.asset_id
+        WHERE av.asset_id=(v.input->'image'->>'asset_id')::uuid AND av.version=(v.input->'image'->>'version')::int
+        AND a.tenant_id=v.tenant_id AND a.project_id=v.project_id AND a.state='active'
+        AND a.retention_expires_at>clock_timestamp() AND av.erased_at IS NULL AND task_asset_version_sources_available(av.id)) END AS source_unavailable
+      FROM creative_matrix_revisions v JOIN creative_matrix_units u ON u.id=v.unit_id
+      WHERE u.batch_id=$1 AND v.tenant_id=u.tenant_id AND v.project_id=u.project_id`;
+  }
+  const matrix = kind === "creative_projects" && row.kind === "creative_matrix";
+  const args: unknown[] = [row.id];
+  let where = "";
+  if (anchor) {
+    args.push(anchor.version, anchor.series_id);
+    where = matrix
+      ? `WHERE (h.series_id ${backwards ? "<" : ">"} $3::uuid OR (h.series_id=$3::uuid AND h.version ${backwards ? ">" : "<"} $2))`
+      : `WHERE h.version ${backwards ? ">" : "<"} $2`;
+    // Keep the same argument shape for both descriptors, without an unused SQL parameter.
+    if (!matrix) args.pop();
+  }
+  const values = (await tx.query(`SELECT h.*,${matrix ? "h.series_id" : `'${series}'::uuid`} AS series_id FROM (${sql}) h ${where}
+    ORDER BY ${matrix ? `h.series_id ${backwards ? "DESC" : "ASC"},` : ""}h.version ${backwards ? "ASC" : "DESC"} LIMIT ${limit}`, args)).rows;
+  // Brand references are retained exactly, but withdrawn brands cannot disclose old bodies.
+  for (const item of values) {
+    const brand = item.body?.brand;
+    if (brand?.id && Number.isInteger(brand.version)) {
+      const available = await tx.query("SELECT brand_version_available($1,$2) AS ok", [brand.id, brand.version]);
+      if (!available.rows[0]?.ok) item.source_unavailable = true;
+    }
+    if (item.source_unavailable) item.body = null;
+  }
+  return values;
+}
