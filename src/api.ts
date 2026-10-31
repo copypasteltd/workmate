@@ -1,3 +1,4 @@
+import { saveScopeArchive } from "./scope-export-download";
 import { clientFetch, clientJson, connectionFailure } from "./client-failure";
 export let csrfToken = "";
 let sessionRevision = 0;
@@ -116,4 +117,14 @@ export async function download(path: string, filename: string) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+export async function downloadScopeArchive(path: string, filename: string, tenantId?: string, signal?: AbortSignal) {
+  const generation = clientSessionGeneration();
+  return saveScopeArchive({ path, filename, signal,
+    current: () => { if (generation !== clientSessionGeneration()) throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409); },
+    native: window.copyPasteBridge ? () => Promise.reject(new Error("Use the administrator web app to export data")) : undefined,
+    fetch: signal => clientFetch(base + path, { credentials: "include", signal, ...(tenantId ? { headers: { "X-Tenant-ID": tenantId } } : {}) }),
+    unauthorized: () => endAdminSession(),
+  });
 }

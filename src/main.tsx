@@ -6,6 +6,7 @@ import { ApprovalReview } from "./approvals";
 import { AdminPlans } from "./plans";
 import { AdminCapabilities } from "./capabilities";
 import { AdminClientContent } from "./client-content";
+import { AdminScopeExports } from "./scope-exports";
 import { AdminDataJobs, AdminDataComposer } from "./data-jobs";
 import { AdminPrivateCloudSchedules } from "./private-cloud-schedules";
 import { AdminPrivateCloudEvents } from "./private-cloud-events";
@@ -1251,6 +1252,7 @@ function Section({ section }: { section: string }) {
           </div>
         }
       />
+      {section === "content" && a.has("admin.exports.create") && a.has("admin.content.body.read") && <AdminScopeExports key={a.me.user.id} account={a.me.user.id} />}
       {section === "content" && (
         <AdminDeletions
           account={a.me.user.id}
