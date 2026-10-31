@@ -2,7 +2,7 @@
 
 用户运营组合筛选与真实账户访问记录已收口；精确费用、独立账户和当前权限约束不变。Scoped operational filters and truthful access metadata are implemented. Backend/Admin builds,8 native SQL/API cases and6 actual Admin UI checks passed.
 
-[本轮更新 / Changes](changes/168-admin-directory-operational-filters.md) · [方案 / Behavior](development/168-admin-directory-operational-filters.md) · [检查与媒体 / Evidence](quality/admin-directory-filters-168.json) · [完整待办 / Ledger](quality/remaining-work-stage168.md)
+[Git发布回执 / Publication](quality/admin-directory-filters-publication-168.json) · [本轮更新 / Changes](changes/168-admin-directory-operational-filters.md) · [方案 / Behavior](development/168-admin-directory-operational-filters.md) · [检查与媒体 / Evidence](quality/admin-directory-filters-168.json) · [完整待办 / Ledger](quality/remaining-work-stage168.md)
 
 这是v0.1.0之后的源码增量，不在下方原冻结ZIP内；数据库156需匹配的新服务。This increment is excluded from the frozen v0.1.0 ZIP below; schema156 requires matching services.
 
