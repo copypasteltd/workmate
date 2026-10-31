@@ -18,6 +18,7 @@ import { useData, useI18n, Badge, ErrorNotice, Modal, Money } from "./ui";
 import "./cloud-workflows.css";
 import { ScheduleFromRun } from "./cloud-schedules";
 import { EventFromRun } from "./cloud-events";
+import {WorkflowInputs,WorkflowOutputs} from "./workflow-contracts";
 
 type Step = {
   kind: string;
@@ -38,7 +39,8 @@ type Run = {
   cursor: number;
   authorized: boolean;
   definition_hash: string;
-  definition: { steps: Step[] };
+  definition: { steps: Step[];input_schema?:unknown;output_schema?:unknown };
+  input_hash?:string|null;input_values?:Record<string,unknown>;input_files?:any[];named_outputs?:Record<string,unknown>;
   step_budget_micros: number;
   origin_task_id: string;
   active_task: string | null;
@@ -125,6 +127,7 @@ export function PrivateCloudWorkflows() {
           decision: current.decision,
           expected_revision: r.revision,
           definition_hash: r.definition_hash,
+          ...(r.input_hash?{input_hash:r.input_hash}:{}),
           stage: r.authorized ? "step" : "start",
           max_budget_micros: r.step_budget_micros,
           expected_cursor: r.cursor,
@@ -286,6 +289,7 @@ export function PrivateCloudWorkflows() {
                 );
               })}
             </ol>
+            <WorkflowInputs run={run}/><WorkflowOutputs run={run}/>
             <div className="private-workflow-budget">
               <span>
                 {t(
@@ -462,6 +466,7 @@ export function PrivateCloudWorkflows() {
                 t("私有流程", "Private workflow")}{" "}
               · v{action.run.version}
             </p>
+            <WorkflowInputs run={action.run}/>
             {action.decision === "cancel" ? (
               <p>
                 {t(

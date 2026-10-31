@@ -1,0 +1,74 @@
+import {useEffect,useRef,useState} from "react";
+import {Monitor,ArrowRight,FolderOpen,RefreshCw} from "lucide-react";
+import {post} from "./api";
+import {useWorkspace} from "./context";
+import {ErrorNotice,Field,Modal,Money,useData,useI18n} from "./ui";
+import {ResumableUpload} from "./resumable-upload";
+import "./task-local-handoffs.css";
+
+const roles=[['assistant','工作助理','Work assistant'],['fullstack','全端工程師','Full-stack developer'],['software-qa','軟體測試','Software QA'],
+  ['designer','平面設計師','Graphic designer'],['brand-visual','品牌視覺','Brand designer'],['ad-creative','廣告創意','Ad creative'],
+  ['marketing-analyst','營銷分析','Marketing analyst'],['presentation','簡報設計','Presentation designer']];
+
+export function LocalInputHandoffRequest({task,dependency,onChange}:{task:any;dependency:any;onChange:()=>void}) {
+  const w=useWorkspace(),{t}=useI18n(),[open,setOpen]=useState(false),[role,setRole]=useState('assistant'),[budget,setBudget]=useState('1');
+  const [busy,setBusy]=useState(false),[error,setError]=useState<Error|null>(null);
+  if(task.execution_location==='desktop'||dependency.kind!=='file'||dependency.state!=='pending') return null;
+  return <div className="local-handoff-request"><button className="button secondary" onClick={()=>setOpen(true)}><Monitor size={15}/>{t('在 Desktop 準備檔案','Prepare files on Desktop')}</button>
+    {open&&<Modal title={t('交給此帳戶的 Desktop','Send to your Desktop')} onClose={()=>{if(!busy)setOpen(false);}}>
+      <form onSubmit={e=>{e.preventDefault();const micros=Math.round(Number(budget)*1e6);if(busy||!Number.isSafeInteger(micros)||micros<10000||micros>1e10)return;
+        setBusy(true);setError(null);void post(`${w.base}/tasks/${task.id}/local-handoffs`,{dependency_id:dependency.id,expected_dependency_version:dependency.version,role_key:role,budget_micros:micros,confirm:true})
+          .then(()=>{setOpen(false);onChange();}).catch(setError).finally(()=>setBusy(false));}}>
+        <p>{dependency.description}</p><p className="muted">{t('請用同一帳戶在 Desktop 選取目錄及授權，再確認開始。此請求會等待電腦上線；原雲端工作保留。','On Desktop, sign in to the same account, choose a folder, grant local access, then confirm the start. This request waits for your computer; the original cloud task is retained.')}</p>
+        <Field label={t('本機角色','Local specialist')}><select value={role} onChange={e=>setRole(e.target.value)} disabled={busy}>{roles.map(([key,zh,en])=><option key={key} value={key}>{t(zh,en)}</option>)}</select></Field>
+        <Field label={t('本機步驟費用上限 HK$','Local-step budget HK$')}><input type="number" min="0.01" max="10000" step="0.01" required value={budget} onChange={e=>setBudget(e.target.value)} disabled={busy}/></Field>
+        <p className="small-text">{t('本機步驟另計用量，原雲端預算繼續保留。送出請求不會啟動模型或授予電腦權限。','The local step has separate usage; the original cloud budget stays reserved. Sending this request does not start the model or grant computer access.')}</p>
+        <ErrorNotice error={error}/><button className="button primary" disabled={busy}>{busy?t('正在送出…','Sending…'):t('建立本機處理請求','Request local preparation')}<ArrowRight size={15}/></button>
+      </form></Modal>}
+  </div>;
+}
+
+function HandoffReturn({item,onDone}:{item:any;onDone:()=>void}) {
+  const w=useWorkspace(),{t}=useI18n(),[refresh,setRefresh]=useState(0),[query,setQuery]=useState(''),[search,setSearch]=useState(''),[cursor,setCursor]=useState(''),[history,setHistory]=useState<string[]>([]);
+  const [chosen,setChosen]=useState<Record<string,{name:string;version:number}>>({}),[upload,setUpload]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState<Error|null>(null);
+  const task=useData(`${w.base}/tasks/${item.source_task_id}`,refresh),resources=useData(`/v1/tenants/${w.tenant}/task-dependencies/${item.dependency_id}/resources?`+new URLSearchParams({q:search,limit:'30',...(cursor?{cursor}:{})}),refresh);
+  const available=resources.error?undefined:resources.data;
+  return <div className="local-handoff-return"><p>{t('只交回你選取的檔案。確認後將補齊原工作資料，所有必填資料齊備後便繼續原任務。','Return only the files you select. Confirmation supplies the original task input; the same task continues once all required inputs are ready.')}</p>
+    <p className="notice">{item.source_private?t('上傳檔案保留原工作的私人可見範圍。','Uploaded files retain the original task’s private visibility.'):t('原工作屬於專案共享內容。請只選取你同意向專案成員提供的檔案。','The original task is shared with the project. Select only files you agree to share with its members.')}</p>
+    <ErrorNotice error={task.error||resources.error||error}/><form className="dependency-search" onSubmit={e=>{e.preventDefault();setSearch(query);setCursor('');setHistory([]);setRefresh(v=>v+1);}}><Field label={t('搜尋交回檔案','Search return files')}><input value={query} maxLength={160} onChange={e=>setQuery(e.target.value)}/></Field><button className="button secondary">{t('搜尋','Search')}</button></form>
+    <fieldset disabled={busy||!available} className="local-handoff-files"><legend>{t('選取固定檔案版本（最多 20 項）','Choose fixed file versions (up to 20)')}</legend>
+      {available?.items.map((f:any)=><label key={f.id}><input type="checkbox" checked={!!chosen[f.id]} disabled={!chosen[f.id]&&Object.keys(chosen).length>=20} onChange={e=>setChosen(old=>{const next={...old};if(e.target.checked)next[f.id]={name:f.name,version:f.version};else delete next[f.id];return next;})}/><span>{f.name} · v{f.version}</span></label>)}
+      {available&&!available.items.length&&<p className="muted">{t('尚未有可交回檔案。可先上傳或調整搜尋。','No return files yet. Upload a file or change the search.')}</p>}
+    </fieldset><div className="local-handoff-actions"><button className="button" disabled={!history.length||busy} onClick={()=>{setCursor(history.at(-1)!);setHistory(v=>v.slice(0,-1));}}>{t('上一頁','Previous')}</button><button className="button" disabled={!available?.next_cursor||busy} onClick={()=>{setHistory(v=>[...v,cursor]);setCursor(available.next_cursor);}}>{t('下一頁','Next')}</button>
+      <button className="button secondary" disabled={!!task.error||!task.data||busy} onClick={()=>setUpload(v=>!v)}><FolderOpen size={14}/>{t('選取本機檔案上傳','Choose local files to upload')}</button></div>
+    {upload&&task.data&&!task.error&&<ResumableUpload sourceTaskId={item.source_task_id} conversationId={item.source_private?task.data.conversation_id:undefined} onDone={()=>{setUpload(false);setCursor('');setHistory([]);setRefresh(v=>v+1);}}/>}
+    {!!Object.keys(chosen).length&&<p className="small-text">{t('已選版本：','Selected versions: ')}{Object.values(chosen).map(f=>`${f.name} v${f.version}`).join(' · ')}</p>}
+    <button className="button primary" disabled={busy||!Object.keys(chosen).length||!!resources.error||!!task.error} onClick={()=>{setBusy(true);setError(null);void post(`${w.base}/local-handoffs/${item.id}/complete`,{expected_revision:item.revision,definition_hash:item.definition_hash,asset_version_ids:Object.keys(chosen),confirm:true}).then(onDone).catch(setError).finally(()=>setBusy(false));}}>{busy?t('正在交回…','Returning…'):t('確認檔案並繼續原工作','Confirm files and continue original task')}<ArrowRight size={15}/></button>
+  </div>;
+}
+
+export function TaskLocalHandoffs({taskId,onChange,onPrepare,onOpen,sessions=[]}:{taskId?:string;onChange?:()=>void;
+  onPrepare?:(id:string)=>Promise<void>;onOpen?:(id:string)=>void;sessions?:{id:string;handoff?:{id:string}}[]}) {
+  const w=useWorkspace(),{t}=useI18n(),[refresh,setRefresh]=useState(0),[cursor,setCursor]=useState(''),[history,setHistory]=useState<string[]>([]),[selected,setSelected]=useState<any>(null);
+  const [pending,setPending]=useState(''),[error,setError]=useState<Error|null>(null),live=useRef('');live.current=w.base;
+  const data=useData(`${w.base}/local-handoffs?`+new URLSearchParams({limit:'20',...(taskId?{task_id:taskId}:{}),...(cursor?{cursor}:{})}),refresh,5000);
+  useEffect(()=>{setCursor('');setHistory([]);setSelected(null);setError(null);setPending('');},[w.base,taskId]);
+  useEffect(()=>{if(data.error)setSelected(null);},[data.error]);
+  const items=data.error?undefined:data.data?.items;
+  const changed=()=>{setSelected(null);setRefresh(v=>v+1);onChange?.();};
+  const act=async(id:string,fn:()=>Promise<unknown>)=>{if(pending)return;const scope=w.base;setPending(id);setError(null);try{await fn();if(live.current===scope)changed();}catch(e){if(live.current===scope)setError(e as Error);}finally{if(live.current===scope)setPending('');}};
+  if(!data.error&&!items?.length&&!history.length&&!data.data?.next_cursor)return null;
+  return <section className="local-handoffs card" aria-label={t('本機處理請求','Local preparation requests')}><div className="section-title"><h2><Monitor size={18}/>{t('雲端與此電腦協作','Cloud and computer, together')}</h2><button className="text-button" aria-label={t('重新整理本機請求','Refresh local requests')} onClick={()=>setRefresh(v=>v+1)}><RefreshCw size={15}/></button></div>
+    <ErrorNotice error={data.error||error}/>{items?.map((h:any)=>{const local=sessions.find(s=>s.handoff?.id===h.id);return <article key={h.id} className="local-handoff-row" data-handoff={h.id}>
+      <div><strong>{h.source_title}</strong><p>{h.description}</p><small>{h.role_key} · {t('本機費用上限','Local budget')} <Money value={h.budget_micros}/></small></div>
+      <div className="local-handoff-actions"><span className={`local-handoff-state ${h.state}`}>{h.state==='waiting'?t('等待 Desktop 授權','Awaiting Desktop permission'):h.state==='cancelled'?t('已取消','Cancelled'):h.state==='completed'?t('已交回原工作','Returned to original task'):h.ready_to_return?t('完成，待你交回','Ready for your return'):h.native?.status==='reconciling'?t('結果待核對','Outcome needs review'):t('本機處理中','Local work in progress')}</span>
+        {local&&onOpen&&<button className="button secondary" onClick={()=>onOpen(local.id)}>{t('開啟本機工作','Open local work')}</button>}
+        {!local&&h.state==='waiting'&&onPrepare&&<button className="button primary" disabled={!!pending} onClick={()=>void act(h.id,()=>onPrepare(h.id))}>{t('選取目錄與授權','Choose folder and permission')}</button>}
+        {h.ready_to_return&&<button className="button primary" onClick={()=>setSelected(h)}>{t('選擇交回檔案','Choose files to return')}</button>}
+        {['waiting','working'].includes(h.state)&&<button className="text-button" disabled={!!pending} onClick={()=>{if(window.confirm(t('停止此本機步驟？已發生的用量保留，原雲端工作會繼續等待資料。','Stop this local step? Incurred usage remains; the original cloud task keeps waiting for inputs.')))void act(h.id,()=>post(`${w.base}/local-handoffs/${h.id}/cancel`,{expected_revision:h.revision,confirm:true}));}}>{t('取消本機步驟','Cancel local step')}</button>}
+      </div>{h.native?.client_reported&&<p className="muted small-text">{t('完成資訊由客戶電腦回報。請檢查實際檔案後再交回。','Completion was reported by the customer computer. Review actual files before returning them.')}</p>}
+    </article>;})}
+    {(history.length>0||data.data?.next_cursor)&&<div className="local-handoff-actions"><button className="button" disabled={!history.length} onClick={()=>{setCursor(history.at(-1)!);setHistory(v=>v.slice(0,-1));}}>{t('上一頁','Previous')}</button><button className="button" disabled={!data.data?.next_cursor} onClick={()=>{setHistory(v=>[...v,cursor]);setCursor(data.data.next_cursor);}}>{t('下一頁','Next')}</button></div>}
+    {selected&&<Modal title={t('審閱並交回原工作','Review and return to original task')} onClose={()=>setSelected(null)}><HandoffReturn key={selected.id} item={selected} onDone={changed}/></Modal>}
+  </section>;
+}

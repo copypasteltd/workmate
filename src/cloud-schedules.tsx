@@ -24,6 +24,7 @@ import {
   Field,
 } from "./ui";
 import "./cloud-schedules.css";
+import {WorkflowInputs} from "./workflow-contracts";
 
 const announce = () =>
   window.dispatchEvent(new Event("copypaste:cloud-schedules"));
@@ -104,6 +105,7 @@ export function ScheduleFacts({ row }: { row: any }) {
         <summary>
           {t("核對固定方法與輸入", "Review fixed method & inputs")}
         </summary>
+        {b.input_binding&&<WorkflowInputs run={{...b.input_binding,input_values:b.input_binding.values,input_files:b.input_binding.files,definition:row.definition}}/>}
         <ol>
           {row.definition?.steps?.map((step: any, i: number) => (
             <li key={i}>

@@ -23,6 +23,7 @@ import {
   Field,
 } from "./ui";
 import "./cloud-events.css";
+import {WorkflowInputs} from "./workflow-contracts";
 
 const announce = () =>
   window.dispatchEvent(new Event("copypaste:cloud-events"));
@@ -86,6 +87,7 @@ function EventFacts({ row }: { row: any }) {
         </div>
       </dl>
       <p className="event-output">{b.expected_output}</p>
+      {b.input_binding&&<WorkflowInputs run={{...b.input_binding,input_values:b.input_binding.values,input_files:b.input_binding.files,definition:row.definition}}/>}
       <details>
         <summary>
           {t(
@@ -352,6 +354,7 @@ function EventEditor({
                 workflow_version: old?.workflow_version ?? run.version,
                 workflow_definition_hash:
                   old?.workflow_definition_hash ?? run.definition_hash,
+                ...(old?.input_binding?{inputs:old.input_binding.values}:run?.input_hash?{inputs:run.input_values}:{}),
                 ...(row ? { expected_version: row.version } : {}),
               };
             const frozen = JSON.stringify(body);

@@ -573,3 +573,34 @@ flowchart LR
 
 [Actual MP4 recording](assets/screenshots/workmate-document-preview-146-04-document-pages.mp4)
 
+
+
+<!-- functional-closure-stage147 -->
+## Stage147: named workflows and local preparation for the original task
+
+Request local preparation from the original task, explicitly upload/return private versions, review actual workflow inputs and read complete named deliverables.
+
+Sign in and select the project → original cloud task requests local files → Desktop folder/OS grant → separate local fee review → actual local Codex → explicit upload and confirmation of exact versions → the original cloud task resumes its same thread. Workflow execution freezes actual inputs and exposes complete named deliverables; recurring rules and budgets require separate review.
+
+95 backend cases, five actual client journeys, 11 screenshots and five real-time GIF/MP4 pairs passed. Internal model replies remain explicitly synthetic and the Windows package is unsigned. Complete professional, production and OS acceptance remains open.
+
+Backend coverage combines 92 existing checks on identical product bytes with three targeted concurrency reruns. Original test-context failures remain retained; this is not a new full 95-case rerun.
+
+```mermaid
+flowchart LR
+  A[Original cloud task] --> B[Request local material]
+  B --> C[Folder and OS grant]
+  C --> D[Review separate fees]
+  D --> E[Actual local Codex]
+  E --> F[Customer uploads exact files]
+  F --> G[Same original cloud thread]
+  G --> H[Complete delivery and settlement]
+```
+
+[Usage / 使用流程](https://github.com/copypasteltd/workmate/blob/docs/docs/development/147-functional-closure.md) · [Detailed contracts / 详细契约](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/147-workflow-contract-and-local-handoff.md) · [Numbered ledger / 全部编号](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage147.md)
+
+![Actual customer flow](assets/screenshots/workmate-functional-closure-147-08-review-local-request-en.png)
+
+![Recorded interaction](assets/screenshots/workmate-functional-closure-147-08-cloud-native-roundtrip.gif)
+
+[Actual MP4](assets/screenshots/workmate-functional-closure-147-08-cloud-native-roundtrip.mp4)

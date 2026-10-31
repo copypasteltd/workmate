@@ -15,11 +15,13 @@ const encode = (b: Uint8Array) => {
 export function ResumableUpload({
   asset,
   conversationId,
+  sourceTaskId,
   onDone,
   accept,
 }: {
   asset?: any;
   conversationId?: string;
+  sourceTaskId?: string;
   onDone: (asset?: any) => void;
   accept?: string;
 }) {
@@ -68,7 +70,7 @@ export function ResumableUpload({
       }
       const checksum = hex(digest.digest()),
         mime = file.type === "application/x-zip-compressed" ? "application/zip" : file.type || "application/octet-stream";
-      const storageKey = `cp_upload:${w.me.user.id}:${w.tenant}:${w.project}:${conversationId ?? "project"}:${asset?.id ?? "new"}:${asset?.current_version ?? 0}:${encodeURIComponent(file.name)}:${checksum}:${file.size}:${mime}`;
+      const storageKey = `cp_upload:${w.me.user.id}:${w.tenant}:${w.project}:${sourceTaskId ? "task:"+sourceTaskId : conversationId ?? "project"}:${asset?.id ?? "new"}:${asset?.current_version ?? 0}:${encodeURIComponent(file.name)}:${checksum}:${file.size}:${mime}`;
       let saved: any;
       try {
         saved = JSON.parse(localStorage.getItem(storageKey) ?? "null");
@@ -121,6 +123,7 @@ export function ResumableUpload({
             size_bytes: file.size,
             sha256: checksum,
             ...(conversationId ? { conversation_id: conversationId } : {}),
+            ...(sourceTaskId ? { source_task_id: sourceTaskId } : {}),
             ...(asset
               ? { asset_id: asset.id, expected_version: asset.current_version }
               : {}),
@@ -131,6 +134,8 @@ export function ResumableUpload({
           signal: c.signal,
         });
       }
+      if (sourceTaskId && session.source_task_id !== sourceTaskId)
+        throw new Error(t("上傳範圍已變更，請重新選取檔案。","Upload scope changed; choose the file again."));
       setPending({ id: saved.upload_id, key: storageKey });
       const existing = new Map<number, string>(
         session.parts.map((p: any) => [p.part_index, p.sha256]),

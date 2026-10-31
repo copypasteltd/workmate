@@ -14,6 +14,7 @@ import {
   useI18n,
 } from "./ui";
 import { ResumableUpload } from "./resumable-upload";
+import { LocalInputHandoffRequest, TaskLocalHandoffs } from "./task-local-handoffs";
 
 export function TaskInputRequests({
   task,
@@ -32,7 +33,7 @@ export function TaskInputRequests({
     refresh,
     5000,
   );
-  if (task.status !== "needs_input") return null;
+  if (task.status !== "needs_input") return <TaskLocalHandoffs taskId={task.id} onChange={onChange}/>;
   return (
     <section
       className="card task-inputs"
@@ -85,6 +86,7 @@ export function TaskInputRequests({
             }}
           />
         ))}
+      <TaskLocalHandoffs taskId={task.id} onChange={onChange}/>
     </section>
   );
 }
@@ -155,6 +157,7 @@ function InputRequest({
               {t("搜尋", "Search")}
             </button>
           </form>
+          <LocalInputHandoffRequest task={task} dependency={d} onChange={onChange}/>
           <ErrorNotice error={candidates.error} />
           <ErrorNotice error={error} />
           <Field
