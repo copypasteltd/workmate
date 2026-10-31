@@ -1,5 +1,6 @@
 import type { IO } from "./audio-production.js";
 import { exactHKD } from "./financial-notice.js";
+import { workflowInputsReview, workflowInputsReviewable } from "./workflow-contracts.js";
 
 /** Native Chrome Side Panel, company cloud execution; no local Agent. */
 export function mountCloudEvents(
@@ -111,6 +112,8 @@ export function mountCloudEvents(
       make("small", b.workflow_definition_hash),
       make("small", row.specification_hash),
     );
+    const inputs = workflowInputsReview(row, tr);
+    if (inputs) details.append(inputs);
     area.append(
       details,
       make(
@@ -256,10 +259,10 @@ export function mountCloudEvents(
         );
       consent.type = "checkbox";
       consent.name = "event_authorized";
-      consent.disabled = !row.origin_ready;
+      consent.disabled = !row.origin_ready || !workflowInputsReviewable(row);
       activate.disabled = true;
       consent.addEventListener("change", () => {
-        activate.disabled = pending || !consent.checked || !row.origin_ready;
+        activate.disabled = pending || !consent.checked || !row.origin_ready || !workflowInputsReviewable(row);
       });
       label.append(
         consent,

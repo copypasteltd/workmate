@@ -1,0 +1,103 @@
+import {PrivateChatUploads} from "./chat-upload.js";
+type IO={base:string;tenant:string;taskId:string;request:(path:string,method?:string,body?:unknown,key?:string)=>Promise<any>;
+  tr:(zh:string,en:string)=>string;live:()=>boolean;changed:()=>Promise<void>};
+const element=<K extends keyof HTMLElementTagNameMap>(tag:K,text?:string)=>{const e=document.createElement(tag);if(text)e.textContent=text;return e;};
+
+export function localHandoffRequest(dependency:any,io:IO) {
+  const form=element('form'),note=element('p',io.tr('需要此電腦處理檔案？可建立請求，再到 Desktop 選取目錄及授權。原雲端工作會保留。','Need local file preparation? Request it, then choose a folder and permission in Desktop. The original cloud task is retained.'));
+  note.className='hint';const role=element('select'),roleLabel=element('label',io.tr('本機角色','Local specialist'));
+  for(const [id,zh,en] of [['assistant','工作助理','Work assistant'],['fullstack','全端工程師','Full-stack developer'],['designer','平面設計師','Graphic designer'],['marketing-analyst','營銷分析','Marketing analyst']]){
+    const o=element('option',io.tr(zh,en));o.value=id;role.append(o);
+  }
+  roleLabel.className='field';roleLabel.append(role);
+  const budget=element('input'),budgetLabel=element('label',io.tr('本機費用上限 HK$','Local-step budget HK$'));
+  budget.type='number';budget.min='0.01';budget.max='10000';budget.step='0.01';budget.value='1';budget.required=true;budgetLabel.className='field';budgetLabel.append(budget);
+  const button=element('button',io.tr('在 Desktop 準備檔案','Prepare files on Desktop'));button.type='submit';button.className='secondary';
+  const error=element('p');error.setAttribute('role','alert');
+  form.append(note,roleLabel,budgetLabel,button,error);let busy=false;
+  form.addEventListener('submit',e=>{e.preventDefault();const micros=Math.round(Number(budget.value)*1e6);if(busy||!io.live()||!Number.isSafeInteger(micros)||micros<10000||micros>1e10)return;
+    if(!window.confirm(io.tr('建立本機步驟？本機另計用量；此動作不會啟動模型或授予電腦權限。','Request a local step? Local usage is separate. This action does not start the model or grant computer access.')))return;
+    busy=true;button.disabled=true;error.textContent='';
+    void io.request(io.base+'/tasks/'+io.taskId+'/local-handoffs','POST',{dependency_id:dependency.id,expected_dependency_version:dependency.version,role_key:role.value,budget_micros:micros,confirm:true})
+      .then(async()=>{if(io.live())await io.changed();}).catch(()=>{if(io.live())error.textContent=io.tr('未能確認請求，請重新整理原工作。相同請求不會建立重複步驟。','The request could not be confirmed. Refresh the original task. Identical requests do not create duplicate steps.');})
+      .finally(()=>{busy=false;if(io.live())button.disabled=false;});
+  });
+  return form;
+}
+
+export function mountLocalHandoffs(area:HTMLElement,io:IO) {
+  let stopped=false,loading=false,cursor='',nextCursor='',fingerprint='',generation=0;const history:string[]=[];
+  const live=()=>!stopped&&io.live();
+  const draw=async()=>{
+    if(loading||!live())return;loading=true;
+    try{
+      const data=await io.request(io.base+'/local-handoffs?'+new URLSearchParams({task_id:io.taskId,limit:'20',...(cursor?{cursor}:{})}));
+      if(!live())return;const key=JSON.stringify(data);if(key===fingerprint)return;fingerprint=key;generation++;
+      area.replaceChildren();area.hidden=!data.items.length&&!history.length&&!data.next_cursor;
+      if(area.hidden)return;
+      area.append(element('h3',io.tr('本機準備請求','Local preparation requests')));
+      for(const h of data.items){
+        const row=element('section'),heading=element('strong',h.source_title),description=element('p',h.description);
+        row.className='input-request';row.dataset.handoff=h.id;row.append(heading,description);
+        row.append(element('p',h.state==='waiting'?io.tr('等待 Desktop 授權','Awaiting Desktop permission'):h.state==='completed'?io.tr('已交回原工作','Returned to original task'):h.state==='cancelled'?io.tr('已取消','Cancelled'):h.ready_to_return?io.tr('完成，請審閱交回檔案','Ready for file review and return'):io.tr('本機處理中','Local work in progress')));
+        const note=element('p',io.tr('本機角色','Local specialist')+': '+h.role_key+' · HK$ '+(Number(h.budget_micros)/1e6).toFixed(2));note.className='hint';row.append(note);
+        if(h.ready_to_return){
+          const choose=element('button',io.tr('選擇交回檔案','Choose files to return'));choose.className='primary';row.append(choose);
+          choose.addEventListener('click',()=>{choose.disabled=true;void returnFiles(row,h).finally(()=>{if(live()&&row.isConnected)choose.disabled=false;});});
+        }
+        if(['waiting','working'].includes(h.state)){
+          const cancel=element('button',io.tr('取消本機步驟','Cancel local step'));cancel.className='secondary';row.append(cancel);
+          cancel.addEventListener('click',()=>{if(!live()||!window.confirm(io.tr('停止此本機步驟？已發生費用保留，原工作繼續等待資料。','Stop this local step? Incurred fees remain; the original task keeps waiting for inputs.')))return;
+            cancel.disabled=true;void io.request(io.base+'/local-handoffs/'+h.id+'/cancel','POST',{expected_revision:h.revision,confirm:true}).then(()=>{fingerprint='';return draw();}).catch(()=>{fingerprint='';void draw();});});
+        }
+        area.append(row);
+      }
+      if(history.length||data.next_cursor){
+        nextCursor=data.next_cursor??'';const tools=element('div'),previous=element('button',io.tr('上一頁','Previous')),next=element('button',io.tr('下一頁','Next'));tools.className='tools';
+        previous.disabled=!history.length;next.disabled=!nextCursor;previous.onclick=()=>{cursor=history.pop()??'';fingerprint='';void draw();};next.onclick=()=>{history.push(cursor);cursor=nextCursor;fingerprint='';void draw();};tools.append(previous,next);area.append(tools);
+      }
+    }catch{if(live()){fingerprint='';generation++;area.replaceChildren(element('p',io.tr('本機請求暫時不可用，正在重新確認授權。','Local requests are unavailable; checking current access.')));area.hidden=false;}}
+    finally{loading=false;}
+  };
+  const returnFiles=async(row:HTMLElement,h:any)=>{
+    const own=generation,selection=new Set<string>(),form=element('form'),search=element('input'),list=element('fieldset'),note=element('p'),error=element('p');
+    search.placeholder=io.tr('搜尋交回檔案','Search return files');search.setAttribute('aria-label',search.placeholder);search.maxLength=160;
+    note.textContent=h.source_private?io.tr('上傳檔案保留原工作的私人可見範圍。選取及確認後才會上傳。','Uploaded files retain the original task’s private visibility. Files upload only after your selection and confirmation.'):io.tr('原工作屬於共享專案。只選取同意向專案成員提供的檔案。','This task is shared with the project. Select only files you agree to share with its members.');
+    const find=element('button',io.tr('搜尋','Search'));find.type='button';find.className='secondary';const confirm=element('button',io.tr('確認檔案並繼續原工作','Confirm files and continue original task'));confirm.type='submit';confirm.className='primary';confirm.disabled=true;
+    const previous=element('button',io.tr('上一頁','Previous')),next=element('button',io.tr('下一頁','Next'));previous.type=next.type='button';
+    let page='',nextPage='',busy=false,loadId=0;const pages:string[]=[];const active=()=>live()&&own===generation&&row.isConnected;
+    const load=async()=>{const thisLoad=++loadId;list.replaceChildren();confirm.disabled=true;previous.disabled=next.disabled=true;
+      try{const result=await io.request(`/v1/tenants/${io.tenant}/task-dependencies/${h.dependency_id}/resources?`+new URLSearchParams({q:search.value,limit:'30',...(page?{cursor:page}:{})}));
+        if(!active()||thisLoad!==loadId)return;nextPage=result.next_cursor??'';previous.disabled=!pages.length;next.disabled=!nextPage;
+        for(const f of result.items){const label=element('label'),input=element('input');input.type='checkbox';input.checked=selection.has(f.id);input.onchange=()=>{if(input.checked)selection.add(f.id);else selection.delete(f.id);confirm.disabled=!selection.size||selection.size>20||busy;};label.append(input,element('span',f.name+' · v'+f.version));list.append(label);}
+        confirm.disabled=!selection.size||selection.size>20||busy;error.textContent='';
+      }catch{if(active())error.textContent=io.tr('無法讀取目前檔案授權，請重新搜尋。','Current file access could not be checked. Search again.');}
+    };
+    find.onclick=()=>{page='';pages.length=0;void load();};previous.onclick=()=>{page=pages.pop()??'';void load();};next.onclick=()=>{pages.push(page);page=nextPage;void load();};
+    const file=element('input'),upload=element('button',io.tr('上傳選取檔案（5 MiB）','Upload selected file (5 MiB)'));file.type='file';file.setAttribute('aria-label',io.tr('選取交回檔案','Choose return file'));upload.type='button';upload.className='secondary';
+    const transfers=new PrivateChatUploads({
+      request:async(_scope,path,method,body,key)=>{if(!active())throw new Error('Scope changed');return io.request(path,method,body,key);},
+      read:async key=>(await chrome.storage.local.get(key))[key],
+      write:async(key,value)=>{if(value===null)await chrome.storage.local.remove(key);else await chrome.storage.local.set({[key]:value});},
+    });
+    upload.onclick=()=>{const selected=file.files?.[0];if(!active()||busy||!selected)return;
+      if(!selected.size||selected.size>5*1024*1024){error.textContent=io.tr('請選取不超過 5 MiB 的非空檔案。','Choose a non-empty file up to 5 MiB.');return;}
+      if(!window.confirm(io.tr('將此檔案上傳至原工作？上傳完成後仍需選取版本及確認交回。','Upload this file into the original task? You must still select its version and confirm the return.')))return;
+      busy=true;upload.disabled=confirm.disabled=true;error.textContent='';
+      void (async()=>{const task=await io.request(io.base+'/tasks/'+h.source_task_id);if(!active()||task.id!==h.source_task_id)throw new Error('Scope changed');
+        const bytes=new Uint8Array(await selected.arrayBuffer());let raw='';for(let i=0;i<bytes.length;i+=32768)raw+=String.fromCharCode(...bytes.subarray(i,i+32768));
+        await transfers.uploadTask({actor:task.created_by,tenant:io.tenant,project:task.project_id},h.source_task_id,{name:selected.name,type:selected.type,base64:btoa(raw)},h.source_private);
+        if(active()){file.value='';page='';pages.length=0;await load();}
+      })().catch(()=>{if(active())error.textContent=io.tr('未能確認上傳。可選取同一檔案重試，系統會核對已保留分片。','Upload could not be confirmed. Reselect the same file to retry; retained parts will be checked.');})
+      .finally(()=>{busy=false;if(active()){upload.disabled=false;confirm.disabled=!selection.size||selection.size>20;}});
+    };
+    form.append(note,file,upload,search,find,list,previous,next,error,confirm);row.append(form);
+    form.onsubmit=e=>{e.preventDefault();if(!active()||busy||!selection.size||selection.size>20)return;busy=true;confirm.disabled=true;
+      void io.request(io.base+'/local-handoffs/'+h.id+'/complete','POST',{expected_revision:h.revision,definition_hash:h.definition_hash,asset_version_ids:[...selection],confirm:true})
+        .then(async()=>{if(active()){fingerprint='';await io.changed();await draw();}}).catch(()=>{if(active())error.textContent=io.tr('未能交回。請核對目前檔案、原工作及本機執行狀態。','Return could not be confirmed. Review current files, the original task and local execution status.');})
+        .finally(()=>{busy=false;if(active())confirm.disabled=!selection.size||selection.size>20;});};
+    await load();
+  };
+  void draw();const timer=setInterval(()=>void draw(),5000);
+  return ()=>{stopped=true;clearInterval(timer);area.replaceChildren();area.hidden=true;};
+}

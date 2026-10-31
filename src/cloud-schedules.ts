@@ -1,5 +1,6 @@
 import { exactHKD } from "./financial-notice.js";
 import type { IO } from "./audio-production.js";
+import { workflowInputsReview, workflowInputsReviewable } from "./workflow-contracts.js";
 
 /** The native right Side Panel reviews cloud requests; it never runs a local Agent. */
 export function mountCloudSchedules(
@@ -103,6 +104,8 @@ export function mountCloudSchedules(
             ),
           );
     details.append(make("small", b.workflow_definition_hash));
+    const inputs = workflowInputsReview(row, io.tr);
+    if (inputs) details.append(inputs);
     area.append(details);
     if (row.next?.length) {
       const next = make("details");
@@ -150,7 +153,7 @@ export function mountCloudSchedules(
     fields.className = "cloud-schedule-controls";
     fields.disabled = confirmedVersions.has(row.id);
     async function decide(action: string) {
-      if (!live() || fields.disabled) return;
+      if (!live() || fields.disabled || (["activate", "resume"].includes(action) && !workflowInputsReviewable(row))) return;
       const body = pending
         ? {
             decision: action,
@@ -197,7 +200,7 @@ export function mountCloudSchedules(
       check.type = "checkbox";
       check.name = "schedule_authorized";
       check.required = true;
-      check.disabled = expired || !row.origin_ready;
+      check.disabled = expired || !row.origin_ready || !workflowInputsReviewable(row);
       const label = make("label");
       label.append(
         check,
@@ -217,7 +220,7 @@ export function mountCloudSchedules(
       submit.className = "primary";
       submit.disabled = true;
       check.onchange = () => {
-        submit.disabled = !check.checked || expired || !row.origin_ready;
+        submit.disabled = !check.checked || expired || !row.origin_ready || !workflowInputsReviewable(row);
       };
       const decline = make(
         "button",
@@ -306,6 +309,7 @@ export function mountCloudSchedules(
           check.type = "checkbox";
           check.name = "resume_authorized";
           check.required = true;
+          check.disabled = !workflowInputsReviewable(row);
           const label = make("label");
           label.append(
             check,
@@ -325,11 +329,11 @@ export function mountCloudSchedules(
           resume.className = "primary";
           resume.disabled = true;
           check.onchange = () => {
-            resume.disabled = !check.checked;
+            resume.disabled = !check.checked || check.disabled;
           };
           form.onsubmit = (e) => {
             e.preventDefault();
-            if (check.checked) void decide("resume");
+            if (check.checked && !check.disabled) void decide("resume");
           };
           fields.append(label, resume);
         }

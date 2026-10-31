@@ -11,6 +11,7 @@ import { mountCloudSchedules } from "./cloud-schedules.js";
 import { mountCloudEvents } from "./cloud-events.js";
 import { mountPublications } from "./publications.js";
 import { mountCreativePackages } from "./creative-packages.js";
+import { mountLocalHandoffs, localHandoffRequest } from "./local-handoffs.js";
 import {
   exactHKD,
   financialLabels,
@@ -97,6 +98,7 @@ let dependencyRevision = 0,
 let taskDrawRevision = 0;
 let taskVersion = 0;
 let generatedVideos: { key: string; dispose: () => void } | undefined;
+let localHandoffs: { key: string; dispose: () => void } | undefined;
 let audioProductions: { key: string; dispose: () => void } | undefined;
 let cloudSchedules: { key: string; dispose: () => void } | undefined;
 let publicationWorkspace: { key: string; dispose: () => void } | undefined;
@@ -105,6 +107,8 @@ let startFlow: Promise<void> | null = null;
 class WorkspaceChanged extends Error {}
 const base = () => `/v1/tenants/${tenant}/projects/${project}`;
 function clearTask() {
+  localHandoffs?.dispose();
+  localHandoffs = undefined;
   generatedVideos?.dispose();
   generatedVideos = undefined;
   audioProductions?.dispose();
@@ -881,6 +885,12 @@ async function drawTask(t: any) {
     endpoint = base(),
     revision = workspaceRevision;
   const videoKey = [revision, endpoint, t.id, locale].join(":");
+  if(localHandoffs?.key!==videoKey){
+    localHandoffs?.dispose();
+    localHandoffs={key:videoKey,dispose:mountLocalHandoffs($("local-handoffs"),{base:endpoint,tenant,taskId:t.id,request,tr,
+      live:()=>revision===workspaceRevision&&endpoint===base()&&task===t.id,
+      changed:async()=>{dependencyFingerprint="";await openTask(t.id);await tasks();await chat.state.refresh();}})};
+  }
   if (
     t.role_key === "workflow-consultant" &&
     !t.source_unavailable &&
@@ -1195,6 +1205,9 @@ async function drawTask(t: any) {
             "Choose an existing connection; open the full workspace to manage authorization. This does not synchronize reports.",
           );
     row.append(search, label, error, pages, confirm, note);
+    if(d.kind==="file") row.append(localHandoffRequest(d,{base:endpoint,tenant,taskId:t.id,request,tr,live,changed:async()=>{
+      dependencyFingerprint="";await openTask(t.id);await tasks();await chat.state.refresh();
+    }}));
     area.append(row);
     void load();
   }
@@ -1434,6 +1447,8 @@ $("close-task").addEventListener("click", () => {
   clearTask();
 });
 window.addEventListener("pagehide", () => {
+  localHandoffs?.dispose();
+  localHandoffs = undefined;
   generatedVideos?.dispose();
   generatedVideos = undefined;
   audioProductions?.dispose();

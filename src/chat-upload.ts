@@ -6,6 +6,7 @@ interface UploadIO {
   write(key: string, value: unknown): Promise<void>;
 }
 interface SelectedFile { name: string; type: string; base64: string }
+interface TaskScope { id: string; private: boolean }
 const uuid = /^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i;
 const sha = async (bytes: Uint8Array) => [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes.slice().buffer))].map(b => b.toString(16).padStart(2, "0")).join("");
 function encoded(bytes: Uint8Array) {
@@ -19,8 +20,11 @@ export class PrivateChatUploads {
   private inflight = new Map<string, Promise<any>>();
   private tail: Promise<unknown> = Promise.resolve();
   constructor(private io: UploadIO) {}
-  async upload(scope: ChatScope, conversationId: string, file: SelectedFile) {
-    if (![scope?.actor, scope?.tenant, scope?.project, conversationId].every(id => typeof id === "string" && uuid.test(id)))
+  uploadTask(scope: ChatScope, taskId: string, file: SelectedFile, isPrivate: boolean) {
+    return this.upload(scope, undefined, file, {id:taskId,private:isPrivate});
+  }
+  async upload(scope: ChatScope, conversationId: string | undefined, file: SelectedFile, task?: TaskScope) {
+    if (![scope?.actor, scope?.tenant, scope?.project, task?.id ?? conversationId].every(id => typeof id === "string" && uuid.test(id)))
       throw new Error("Invalid private upload scope");
     if (!file || typeof file.name !== "string" || !file.name || file.name.length > 180 || /[\x00-\x1f\\/]/.test(file.name)
       || typeof file.type !== "string" || file.type.length > 120 || typeof file.base64 !== "string"
@@ -29,15 +33,15 @@ export class PrivateChatUploads {
     const raw = atob(file.base64), bytes = Uint8Array.from(raw, c => c.charCodeAt(0));
     if (!bytes.length || bytes.length > 5 * 1024 * 1024 || encoded(bytes) !== file.base64) throw new Error("Invalid selected file bytes");
     const digest = await sha(bytes), type = file.type || "application/octet-stream";
-    const identity = await sha(new TextEncoder().encode(JSON.stringify([scope.actor, scope.tenant, scope.project, conversationId, file.name, type, digest, bytes.length])));
-    const key = `chat-upload:${scope.actor}:${scope.tenant}:${scope.project}:${identity}`;
+    const identity = await sha(new TextEncoder().encode(JSON.stringify([scope.actor, scope.tenant, scope.project, task ? "task:"+task.id : conversationId, file.name, type, digest, bytes.length])));
+    const key = `${task ? "task-upload" : "chat-upload"}:${scope.actor}:${scope.tenant}:${scope.project}:${identity}`;
     const existing = this.inflight.get(key); if (existing) return existing;
     // Serialize file transfers so twenty attachments cannot exhaust ten reserved upload slots.
-    const work = this.tail.catch(() => {}).then(() => this.transfer(scope, conversationId, file.name, type, bytes, digest, key))
+    const work = this.tail.catch(() => {}).then(() => this.transfer(scope, conversationId, file.name, type, bytes, digest, key, task))
       .finally(() => { if (this.inflight.get(key) === work) this.inflight.delete(key); });
     this.inflight.set(key, work); this.tail = work; return work;
   }
-  private async transfer(scope: ChatScope, conversationId: string, name: string, type: string, bytes: Uint8Array, digest: string, key: string) {
+  private async transfer(scope: ChatScope, conversationId: string | undefined, name: string, type: string, bytes: Uint8Array, digest: string, key: string, task?: TaskScope) {
     const base = chatBase(scope) + "/uploads", saved = await this.io.read(key);
     const receipt = saved && uuid.test(saved.createKey) && (!saved.uploadId || uuid.test(saved.uploadId))
       ? { createKey: saved.createKey as string, uploadId: saved.uploadId as string | undefined }
@@ -46,13 +50,14 @@ export class PrivateChatUploads {
     try {
       if (!receipt.uploadId) {
         const accepted = await this.io.request(scope, base, "POST", {
-          project_id: scope.project, conversation_id: conversationId, filename: name, content_type: type, size_bytes: bytes.length, sha256: digest,
+          project_id: scope.project, ...(task ? {source_task_id:task.id} : {conversation_id:conversationId}), filename: name, content_type: type, size_bytes: bytes.length, sha256: digest,
         }, receipt.createKey);
         if (!uuid.test(accepted?.upload_id)) throw new Error("Private upload acceptance was not confirmed");
         receipt.uploadId = accepted.upload_id; await this.io.write(key, receipt);
       }
       const path = base + "/" + receipt.uploadId;
       const current = await this.io.request(scope, path);
+      if (task && current?.source_task_id !== task.id) throw new Error("Task upload scope changed");
       if (current?.upload_id !== receipt.uploadId || current.size_bytes !== bytes.length || current.sha256 !== digest
         || !Number.isInteger(current.part_size_bytes) || current.part_size_bytes < 1 || current.part_size_bytes > 4 * 1024 * 1024
         || !["pending", "completed"].includes(current.state) || !Array.isArray(current.parts)) throw new Error("Private upload manifest could not be verified");
@@ -69,8 +74,9 @@ export class PrivateChatUploads {
       }
       // Completion rechecks current ownership, source state and conversation on the server.
       const asset = await this.io.request(scope, path + "/complete", "POST", { sha256: digest, size_bytes: bytes.length }, receipt.createKey);
-      if (!uuid.test(asset?.id) || !uuid.test(asset?.version?.id) || asset.private_owner !== scope.actor
-        || asset.tenant_id !== scope.tenant || asset.project_id !== scope.project || asset.version.metadata?.conversation_id !== conversationId
+      if (!uuid.test(asset?.id) || !uuid.test(asset?.version?.id) || asset.private_owner !== (task && !task.private ? null : scope.actor)
+        || asset.tenant_id !== scope.tenant || asset.project_id !== scope.project
+        || (task ? asset.version.metadata?.input_task_id !== task.id : asset.version.metadata?.conversation_id !== conversationId)
         || asset.version.sha256 !== digest || Number(asset.version.bytes) !== bytes.length) throw new Error("Private file ownership was not confirmed / 未能確認檔案的私人會話歸屬");
       return asset;
     } catch (e: any) {
