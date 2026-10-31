@@ -618,10 +618,12 @@ function AdminShell() {
 }
 function Overview() {
   const { t } = useI18n(),
-    a = useAdmin();
-  const { data, error, loading } = useData("/v1/admin/overview", 0, 30000);
+    a = useAdmin(),
+    [revision, setRevision] = useState(0);
+  const { data, error, loading } = useData("/v1/admin/overview", revision, 30000);
   const approvals = useData(
     a.has("admin.approvals.read") ? "/v1/admin/approvals/summary" : null,
+    revision,
   );
   return (
     <>
@@ -633,10 +635,12 @@ function Overview() {
           "Your people, workspaces, usage and the items that need attention, in one clear view.",
         )}
         action={
-          <span className="badge">
-            <span />
-            {t("平台即時資料", "Live platform data")}
-          </span>
+          <div className="row-actions">
+            <span className="badge"><span />{t("平台即時資料", "Live platform data")}</span>
+            <button className="button secondary" disabled={loading} onClick={() => setRevision(v => v + 1)}>
+              {t("重新載入總覽", "Refresh overview")}
+            </button>
+          </div>
         }
       />
       <ErrorNotice error={error} />
@@ -644,13 +648,13 @@ function Overview() {
         <Loading />
       ) : (
         <>
-          <div className="metrics-grid">
+          <div className="metrics-grid" aria-describedby="overview-charge-basis">
             {[
               [t("註冊用戶", "Registered users"), data?.summary.users],
               [t("企業工作空間", "Workspaces"), data?.summary.tenants],
               [
-                t("累計消耗", "Settled usage"),
-                data?.summary.charged_micros === null ? (
+                t("累計確認扣費", "Confirmed charges"),
+                data?.summary.charged_micros == null ? (
                   "—"
                 ) : (
                   <Money value={data?.summary.charged_micros} />
@@ -658,7 +662,7 @@ function Overview() {
               ],
               [
                 t("預留額度", "Reserved credit"),
-                data?.summary.reserved_micros === null ? (
+                data?.summary.reserved_micros == null ? (
                   "—"
                 ) : (
                   <Money value={data?.summary.reserved_micros} />
@@ -674,6 +678,9 @@ function Overview() {
               </div>
             ))}
           </div>
+          <p id="overview-charge-basis" className="muted small-text">
+            {t("確認扣費包含目前模式的任務及雲端資源費用；不含充值、贈送、退款或未結算預留。未獲授權或暫不可用的數字以破折號顯示。", "Confirmed charges include task and cloud resource charges in the current mode. Funding, gifts, refunds and unsettled holds are separate. A dash means the figure is unauthorized or unavailable.")}
+          </p>
           <div className="admin-overview-grid">
             <section className="card attention-card">
               <p className="eyebrow">WHAT NEEDS YOUR ATTENTION.</p>
