@@ -1,3 +1,13 @@
+本轮交付已收口 / Current delivery complete · [交付结果 / Handoff](releases/v0.1.3-closeout.md)
+
+## v0.1.3 · 已发布 / Published
+
+[完整下载 / Complete bundle](https://github.com/copypasteltd/workmate/releases/download/v0.1.3/workmate-v0.1.3-complete.zip) · [使用 / Guide](releases/v0.1.3.md) · [回执 / Receipt](quality/release-publication-175.json)
+
+全部端、源码和团队/入账期间费用报表已纳入下载包。All clients, sources and team/posting-period reports are included. 外部假数据；Windows未签名。Synthetic services; unsigned Windows.
+
+---
+
 ## v0.1.3 · 本轮完整冻结 / Current complete freeze
 
 [安装使用 / Usage](releases/v0.1.3.md) · [本轮范围 / Scope](releases/v0.1.3-delivery-scope.md) · [变更 / Changes](changes/175-release-v013-freeze.md)
