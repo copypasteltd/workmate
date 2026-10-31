@@ -1,0 +1,361 @@
+{
+  "stage": 177,
+  "status": "deployed_and_qualified",
+  "at": "2026-10-31T20:36:11.112800+00:00",
+  "mode": "authorized_synthetic_public_https",
+  "base_release": "v0.1.3",
+  "previous_increment": 176,
+  "origins": {
+    "web": "https://agent.copypaste.hk",
+    "admin": "https://agent-dashboard.copypaste.hk",
+    "api": "https://ai-api.copypaste.hk"
+  },
+  "upstream": {
+    "lan": "192.168.31.20",
+    "zerotier": "192.168.196.204",
+    "ports": [
+      63070,
+      63071,
+      63072
+    ]
+  },
+  "native_versions": {
+    "desktop": "0.7.2",
+    "extension": "0.5.3",
+    "local_codex": "0.163.0-alpha.11",
+    "windows_signed": false
+  },
+  "checks": {
+    "cookie_and_production_config": 6,
+    "http_transport_and_auth_races": 20,
+    "public_browser_journey": 13,
+    "packaged_native_surfaces": 4,
+    "desktop_authorization_and_local_catalog": 3,
+    "unit_evidence": "Observed successful tool TAP output; no implementation changes after these checks. Native Desktop authorization/catalog uses the actual packaged application.",
+    "all_owned_windows_closed": true
+  },
+  "actual_codex_task": {
+    "id": "580d6303-9fa3-4032-a907-91e6f1b3ac8b",
+    "status": "succeeded",
+    "kernel": "codex",
+    "execution": "cloud_linux",
+    "provider_mode": "simulated",
+    "download_verified": true
+  },
+  "cookie_boundaries": {
+    "user": {
+      "secure": true,
+      "httpOnly": true,
+      "sameSite": "Lax",
+      "domain": "agent.copypaste.hk"
+    },
+    "admin": {
+      "secure": true,
+      "httpOnly": true,
+      "sameSite": "Lax",
+      "domain": "agent-dashboard.copypaste.hk"
+    }
+  },
+  "server": {
+    "stage": 177,
+    "at": "2026-10-31T20:31:18.627134+00:00",
+    "status": "deployed_and_qualified",
+    "health": [
+      {
+        "origin": "https://agent.copypaste.hk",
+        "status": 200,
+        "kernel": "codex",
+        "mode": "simulated"
+      },
+      {
+        "origin": "https://agent-dashboard.copypaste.hk",
+        "status": 200,
+        "kernel": "codex",
+        "mode": "simulated"
+      },
+      {
+        "origin": "https://ai-api.copypaste.hk",
+        "status": 200,
+        "kernel": "codex",
+        "mode": "simulated"
+      }
+    ],
+    "cors": [
+      {
+        "origin": "https://agent.copypaste.hk",
+        "status": 204
+      },
+      {
+        "origin": "https://agent-dashboard.copypaste.hk",
+        "status": 204
+      },
+      {
+        "origin": "chrome-extension://fffkcnmfdhahlnifgdilabheppkgnlok",
+        "status": 204
+      }
+    ],
+    "unregistered_origin_denied": true,
+    "downloads": [
+      {
+        "file": "CopyPaste-0.7.2-x64-Portable.exe",
+        "status": 200,
+        "bytes": 184447868,
+        "sha256": "e4e66a4b3397b87d4aa0d241b221d8217c27ba2289e813845ce474741fc571a6"
+      },
+      {
+        "file": "CopyPaste-0.7.2-x64-Setup.exe",
+        "status": 200,
+        "bytes": 184671068,
+        "sha256": "91116b235ba8d7c2c05c4a670e13a9042073809d4655d532cc863da1fe8180c2"
+      },
+      {
+        "file": "CopyPaste-Extension-0.5.3.zip",
+        "status": 200,
+        "bytes": 496198,
+        "sha256": "6a0857831368f8e60271e7719cce9c36fb2a34dc5bda16b179a9fe511efea957"
+      }
+    ],
+    "foreign_config_count": 23,
+    "foreign_service_count": 61,
+    "foreign_configuration_bytes_unchanged": true,
+    "foreign_service_pids_unchanged": true,
+    "credentials_retained": true,
+    "credentials_mode": "root 0600",
+    "private_ports_loopback_only": true,
+    "virtualization_invoked": false,
+    "operator_guide": "/root/cfg/workmate/DEPLOYMENT-README.md"
+  },
+  "receipts": {
+    "actual-browser-02.json": "dev/copypaste-delivery/evidence/public-domains-177/actual-browser-02.json",
+    "native-surfaces-02.json": "dev/copypaste-delivery/evidence/public-domains-177/native-surfaces-02.json",
+    "desktop-authorization-03.json": "dev/copypaste-delivery/evidence/public-domains-177/desktop-authorization-03.json",
+    "server-runtime.json": "dev/copypaste-delivery/evidence/public-domains-177/server-runtime.json",
+    "server-final.json": "dev/copypaste-delivery/evidence/public-domains-177/server-final.json",
+    "client-artifacts.json": "dev/copypaste-delivery/evidence/public-domains-177/client-artifacts.json"
+  },
+  "retained_failures": [
+    {
+      "receipt": "dev/copypaste-delivery/evidence/public-domains-177/retained-browser-c0c71124-9087-4f8b-81f6-36cc76047869.json",
+      "original_sha256": "5a5101bc70fd01513ceed87e2daa0db12a76e98ce285327c63d2771f5942ec00",
+      "explanation": "Observed real bootstrap-401 versus email sign-in race; fixed Web/Admin authentication generations."
+    },
+    {
+      "receipt": "dev/copypaste-delivery/evidence/public-domains-177/retained-native-9518c9de-df3e-4b69-9592-a5c02df0aa88.json",
+      "original_sha256": "dbd4ca2c22f3347684d5c487d763399fd3d03abe995b4b61e6ea634146cdaaaa",
+      "explanation": "Verifier reloaded before the packaged initial file navigation settled; forward verifier waits for initial navigation."
+    },
+    {
+      "receipt": "dev/copypaste-delivery/evidence/public-domains-177/retained-desktop-auth-76b55c10-c070-49f0-ba16-f5490e147cb4.json",
+      "original_sha256": "4039d2d698fb755caf8e43587f03a74abe5262a434fd2ef51b177b829c7f2e2c",
+      "explanation": "Verifier used the visual label rather than the actual Local specialist accessible name; corrected forward verifier."
+    }
+  ],
+  "sources": {
+    "dev/copypaste-platform/README.en.md": "7168838d21994e762fb5d9c605ee32adb4b742566a67a109edf74447c00386ce",
+    "dev/copypaste-platform/README.md": "1337a95c39d41b479eaf8937d0b2aebfa3569124bd97d3601a020ce9ecc92848",
+    "dev/copypaste-platform/src/auth.ts": "74249592248d4e53120980b8c3db628f52e6c52a10c318efa9657961c5a73376",
+    "dev/copypaste-platform/src/cookie-policy.ts": "9282a248a6709bfa2dd879745972170459ab9d590ab43c9415c126203904fb68",
+    "dev/copypaste-platform/src/federation.ts": "3ea22c2f29f449560d25f7f42dc9865f15c580f1cde19a7dda44bbc8239a66a3",
+    "dev/copypaste-platform/src/publication-connections.ts": "dbf83c614c351219d6b55ba14b31d112ca4dfa2faed153cb2eb6d23255edc4d2",
+    "dev/copypaste-platform/tests/cookie-policy-177-v2.test.ts": "fc812a63eda596aba1549452e32ac6d50647167aa815ae928b7d576e4c09b76a",
+    "dev/copypaste-platform/tests/cookie-policy-177.test.ts": "58bf96ff75cd1f6d5d0e54e8100fe53c539bfc0cee7da9e7e830b73e907c613b",
+    "dev/copypaste-web/README.en.md": "098bdd7f24f7cb26541734b98b239b5dc509f0de6d549a86f83d079e628685fa",
+    "dev/copypaste-web/README.md": "13ca788ef918c9efb513f5e2959f2d124ea301ab43f647a6b605a9ffb952b9ab",
+    "dev/copypaste-web/src/api.ts": "5e92b3ba192c82a5487d5dc3ed55eea9a4fa3f2a5d9513dcc6960dd4ffa2b2d4",
+    "dev/copypaste-admin/README.en.md": "615c7d9f5fbea28b4e9d8d89e036f568d792d87627e45fc055fb707697a903bd",
+    "dev/copypaste-admin/README.md": "83c80011316244f4e1a81c9f21504e4e5a6b0646068b1dd11a12c6ee2f385ad7",
+    "dev/copypaste-admin/src/api.ts": "3791a55ad3f6cb877a8f3337ffc222d6d81fb08b31027b7405ee99bc869d98fe",
+    "dev/copypaste-desktop/README.en.md": "0f2c5323c99a77678bf96eb6ab864ab29328b05340eed888b4e13b2354bb5a27",
+    "dev/copypaste-desktop/README.md": "fe690d8f89fb210e8d94c8196cae0e3adb2c360a09d5ec7d9785ca957b745d58",
+    "dev/copypaste-desktop/deployment.json": "451a4c8d8af7b1d4d342aa6fb492160b3386024b6ca1f4046a46733b2116766a",
+    "dev/copypaste-desktop/package-lock.json": "062d12953ab59cac4b60e071673f962998722525d23c2bdeed041c24022a3bb4",
+    "dev/copypaste-desktop/package.json": "069d99b8077d160a1378c547abb64dba6fd73107ef4f48e8d25ca57318d2453c",
+    "dev/copypaste-desktop/renderer/src/api.ts": "06a37f2e813e4d4f8d22e22261b771846956d258336d3f1a7aac56ad1472e45d",
+    "dev/copypaste-desktop/src/deployment.ts": "c45a4b4ee359f036da5206068dc436af5a32a123661edd700f32f07de47fcf9f",
+    "dev/copypaste-extension/README.en.md": "5cc36f6c745547a5f48dc863298fe2304f775a3525d8d98a05420952ee6b5dc1",
+    "dev/copypaste-extension/README.md": "e4f05e41ddc09d5fbe2b5ea3cbbf3da2defb7fd315afd29987610692203761c5",
+    "dev/copypaste-extension/deployment.json": "929640d8a513f74174c40bc4273ae7a3111cca6c278b9b23e81af6cac3edffd1",
+    "dev/copypaste-extension/package-lock.json": "de0b116655a47a079437cb36adf72f5c463b09fc7a62c83e9b69425bfec230d8",
+    "dev/copypaste-extension/package.json": "dd2d4b5097b3784fa0ce458619295c0ffb2c36e70264c02cc223a59e94093c29",
+    "dev/copypaste-extension/scripts/build.mjs": "f0e5343c3bb27e2b7235c7159acdcfb1b48e3333a4f04bfebfadedfecd273227",
+    "dev/copypaste-delivery/README.en.md": "1a3d52b15fd6d1c8253423683829145ae0f764724ef8a832556c867d83b26691",
+    "dev/copypaste-delivery/README.md": "d5eb04379121ed812239ae015e84afa71954c8f7b61c1d8ae387fe523656e491",
+    "dev/copypaste-delivery/evidence/public-domains-177/actual-browser-02.json": "661369c23e028c57569beef44561f61aaba8457906a2eb5ec3efd3f3610defb4",
+    "dev/copypaste-delivery/evidence/public-domains-177/client-artifacts.json": "fcee3d0e3729bd851092bc3a6200ae31856b0b63f223353b56744366f5f76ec9",
+    "dev/copypaste-delivery/evidence/public-domains-177/desktop-authorization-03.json": "7a04913fa1a22c6255990d5fb48c7bfb715349357d94b81901f1052bffa53a30",
+    "dev/copypaste-delivery/evidence/public-domains-177/native-surfaces-02.json": "18b3209e511740edfac31414f8b923f2b4ee8ab35f3ad9bbac81c5397446a107",
+    "dev/copypaste-delivery/evidence/public-domains-177/retained-browser-c0c71124-9087-4f8b-81f6-36cc76047869.json": "5a5101bc70fd01513ceed87e2daa0db12a76e98ce285327c63d2771f5942ec00",
+    "dev/copypaste-delivery/evidence/public-domains-177/retained-desktop-auth-76b55c10-c070-49f0-ba16-f5490e147cb4.json": "4039d2d698fb755caf8e43587f03a74abe5262a434fd2ef51b177b829c7f2e2c",
+    "dev/copypaste-delivery/evidence/public-domains-177/retained-failed-runs.json": "9855ba47024536e3341f97f7bfa49cda2d2851b15087a4f2e7d47b4bf8ecd803",
+    "dev/copypaste-delivery/evidence/public-domains-177/retained-native-9518c9de-df3e-4b69-9592-a5c02df0aa88.json": "dbd4ca2c22f3347684d5c487d763399fd3d03abe995b4b61e6ea634146cdaaaa",
+    "dev/copypaste-delivery/evidence/public-domains-177/server-final.json": "58dd1f30ab80aabe9fda56ded7a58946f7d26ba3ddb910fc172a4ed322f0bc1f",
+    "dev/copypaste-delivery/evidence/public-domains-177/server-runtime.json": "00c20374b465a72aa11b078aca21aaa850be00ac67f1270bb61947e410051a68",
+    "dev/copypaste-delivery/scripts/finalize-domain-server-177-v1.sh": "48ca22bf4eb8d6da1a3af0b4b22153b715d2f24de7ea23699fa28e1bbf6ac558",
+    "dev/copypaste-delivery/scripts/install-domain-clients-177-v1.sh": "9520c2197bfdf5249ebc1c3b20ee424857b8cba81c9c4e44ef97e70636e23c00",
+    "dev/copypaste-delivery/scripts/install-domain-frontends-177-v1.sh": "e041be46ea0aea5b3fdd13cc39cba0b1e20f9b2e5944520f54ee5d4d218edbba",
+    "dev/copypaste-delivery/scripts/install-domain-handoff-177-v1.sh": "fa2794785245782a64d7d1832fd421c9318be3e73f199ea4e32288e9371f79e9",
+    "dev/copypaste-delivery/scripts/install-domain-runtime-177-v1.sh": "aac7b6dc6a0dc2f93670f1f71e1440a29bd32223e68438edfc5c7eebb46c6d13",
+    "dev/copypaste-delivery/scripts/package-domain-clients-177-v1.py": "5be5277e4d845f587bb4d63a72f222378395ac261d70abdca8f758242a3d35ab",
+    "dev/copypaste-delivery/scripts/package-domain-frontends-177-v1.py": "1874d7bd2f16073afbfa221fba0acff498dcc6a768d0bbe8b917c2cadaeed4ea",
+    "dev/copypaste-delivery/scripts/package-domain-handoff-177-v1.py": "8ed0f6f1b16ba0d1a17929483122ee8f84ea9e3f269a6b0bdfc456cacbd0f91a",
+    "dev/copypaste-delivery/scripts/package-domain-runtime-177-v1.py": "a15038df06d891e50970ae966fb24dc59999b74b63b47e27712c138e29b04623",
+    "dev/copypaste-delivery/scripts/qualify-desktop-authorization-177-v1.mjs": "b7e56d502b40a7d3c391921c3293499dc388710a7780a91562d9135bc92261eb",
+    "dev/copypaste-delivery/scripts/qualify-desktop-authorization-177-v2.mjs": "7cdd91d117108ef1c764c49253b437c929ec9d3d53d477d41d769d0410b85fee",
+    "dev/copypaste-delivery/scripts/qualify-desktop-authorization-177-v3.mjs": "426b0556a7f985ccdd5d4b50bd64968a8c0338c83153aacadc1256e43b66e265",
+    "dev/copypaste-delivery/scripts/qualify-domains-177-v1.mjs": "5ec3723244e0546579231e14945cfa4e94eb7f489a6fde07e53385070b9aa605",
+    "dev/copypaste-delivery/scripts/qualify-domains-177-v2.mjs": "e54ca5f355a8e5fbf8a3e02c6fa118297395e4f91a1e69478575d9cbcaef5e83",
+    "dev/copypaste-delivery/scripts/qualify-native-domains-177-v1.mjs": "a486d4a20d532a483cf255c7c4759d9673f063e05ba7ae6dadd547b152ef8e77",
+    "dev/copypaste-delivery/scripts/qualify-native-domains-177-v2.mjs": "5949dd3b0938641dbab5d7d9d4de8f33ef76d5e30b997f6212379c4f38c1e18e",
+    "dev/copypaste-delivery/scripts/remote-console-177-v1.py": "082977ee43adc4ab33cca5e10586916d85b4e6e1adc0bb5eeb8a7a064657f2be",
+    "dev/copypaste-delivery/scripts/render-domain-media-177-v1.py": "3e28cd0c9df876700269b9a15d4dc026ded3d9b9aab95a2b53cb274961c9eeee",
+    "dev/copypaste-delivery/tests/auth-bootstrap-race-177.test.ts": "ad1b3c5caf4a7e98a98cf3ebc88a47687e5a26996ed35f6f1c90304f5d8af6c2",
+    "dev/copypaste-delivery/tests/public-config-session-177.test.ts": "9884bec2fdc168459df5336bdb7eae9f2698b0df5a3a8dee6fc7e7154bf63c90",
+    "docs/README.en.md": "92ea640492b603e85126685fdf710b39078f037f760f9218fa34ec1610580d78",
+    "docs/README.md": "92ea640492b603e85126685fdf710b39078f037f760f9218fa34ec1610580d78",
+    "docs/changes/177-public-domains.md": "6643a65ec68c98af6cfa28d96b534f53485d852614dd7aa368d2baa86d88abb3",
+    "docs/development/177-public-domains.md": "8f926a3b09b08886521dddc7aae028a68fddf999370bab96e765903354321bd5",
+    "docs/releases/domains-177.md": "5b906a89b718af65fa94db4e4d6fd8c1d49cf91f01f3955cf3f79b78a7d60611",
+    "docs/requirements/33-public-domains.md": "44e310c17020116f4dac1488b684b3b8145bbdb9adc7c491f87a54ebaa9ed0ea",
+    "docs/tools/publish-domains-177-v1.py": "7a6166c9cb66830a5278d3a7ff286ffdcb6e942e4ee7937fc27386db4382ba80",
+    "docs/tools/record-public-domains-177-v1.py": "4ddc7904c800cab316b1f666c350eb1480afbc689f6d76eec8f85b6dfc57bbbc",
+    "docs/tools/update-domain-readmes-177-v1.py": "b909fc9dafed1a640724d90f76d953e13b2cf9eb30cd2bd12e42509cd8f41512"
+  },
+  "media": [
+    {
+      "path": "dev/copypaste-web/assets/demos/177-public-domains.gif",
+      "bytes": 2571576,
+      "sha256": "80eb150380e3744b38264c71e66d93e3268396f50bcbee01728953fa952a85b3"
+    },
+    {
+      "path": "dev/copypaste-web/assets/demos/177-public-domains.mp4",
+      "bytes": 479235,
+      "sha256": "89ecd82f832c7c7bd393a9084f8131d740ec22ec2a0aad059dec3258bd01dcaa"
+    },
+    {
+      "path": "dev/copypaste-web/assets/screenshots/177-domain-landing.png",
+      "bytes": 75655,
+      "sha256": "137731b50d00628cc620a3c88c74e47b80828a9e09ab7b63ff286e22f2980e0b"
+    },
+    {
+      "path": "dev/copypaste-web/assets/screenshots/177b-domain-created.png",
+      "bytes": 116664,
+      "sha256": "f5fffc113a7dd8eb9f6da19a2cd6cdda568d47de6f4268db47b0c65771f82935"
+    },
+    {
+      "path": "dev/copypaste-web/assets/screenshots/177b-domain-files.png",
+      "bytes": 102056,
+      "sha256": "0f31714d3799ad9018afa12261ed5e64e935775f4b4ad844ff51edc095863889"
+    },
+    {
+      "path": "dev/copypaste-web/assets/screenshots/177b-domain-landing.png",
+      "bytes": 75655,
+      "sha256": "137731b50d00628cc620a3c88c74e47b80828a9e09ab7b63ff286e22f2980e0b"
+    },
+    {
+      "path": "dev/copypaste-web/assets/screenshots/177b-domain-roles.png",
+      "bytes": 74832,
+      "sha256": "ddc0a7c332e0db708f6ebfcf51f3da7b4c77d02e960a1506dafd0c5830685ca1"
+    },
+    {
+      "path": "dev/copypaste-web/assets/screenshots/177b-domain-task-brief.png",
+      "bytes": 190710,
+      "sha256": "4fd6032a6a835e45449f5dfd11948aa0ac70571617dd826f4d9544921a7d2a40"
+    },
+    {
+      "path": "dev/copypaste-web/assets/screenshots/177b-domain-task-result.png",
+      "bytes": 154630,
+      "sha256": "881f135b00fc582a291d27c024c63e1ceed36714faf71fda8b44564ec88fb387"
+    },
+    {
+      "path": "dev/copypaste-web/assets/screenshots/177b-domain-workspace.png",
+      "bytes": 9712,
+      "sha256": "67aa9cca91f7e1fbb471d772ea6bd15f1133533e62555517b4e9066c9a9f9921"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/demos/177-public-domains.gif",
+      "bytes": 2607173,
+      "sha256": "e79e3bf6f38f6bb700136a04799454ff99e9e9cdc48e4e52ae5aaa95c337bd36"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/demos/177-public-domains.mp4",
+      "bytes": 469677,
+      "sha256": "3f3a4c832d05374790d665f892aa4db97eb5a1c9ce3241ab316d55cb51642e98"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/screenshots/177b-domain-billing.png",
+      "bytes": 147992,
+      "sha256": "bfb00caf2cf54eae394c9f1e4a975755ba6fb47577bcb32496660ba03871e739"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/screenshots/177b-domain-content.png",
+      "bytes": 131833,
+      "sha256": "c56151e68cc900516f695dbc66fcbb1bc10e3ba7d071385ad78e6a91c0bdf87a"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/screenshots/177b-domain-entitlements.png",
+      "bytes": 98068,
+      "sha256": "b2b54d2cae527fbe673dc806663f506838c3c15cc07316f028c963b7f5295839"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/screenshots/177b-domain-overview.png",
+      "bytes": 143736,
+      "sha256": "3f1db57e1e28180a4098d2318b915316862b64d5352e4d6c73d9080808dd0c3e"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/screenshots/177b-domain-usage.png",
+      "bytes": 95806,
+      "sha256": "eb7f9ddcb91e61b9e70f870ce375da12308767c8974456f48c18909a110f9b2d"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/screenshots/177b-domain-users.png",
+      "bytes": 137405,
+      "sha256": "9a15725aa25de1eee8a7805be6845dc6e7a9379df6f866efc735e12e3fc18bf7"
+    },
+    {
+      "path": "dev/copypaste-desktop/assets/screenshots/177-domain-signin.png",
+      "bytes": 451556,
+      "sha256": "79d45b95d93e399a663f01ea38827944d0ea9d50054100d28f17c247987e777e"
+    },
+    {
+      "path": "dev/copypaste-desktop/assets/screenshots/177-domain-workspace.png",
+      "bytes": 112418,
+      "sha256": "6d8b22f63f931c785f5a13f04b7499a0ef9071f46c05ed76b01fca0724ba3e57"
+    },
+    {
+      "path": "dev/copypaste-desktop/assets/screenshots/177c-domain-workspace.png",
+      "bytes": 114783,
+      "sha256": "23da858177ea90b8b08707d5dd250af8b8b102e8178ffb3573ac4ad54961e78a"
+    },
+    {
+      "path": "dev/copypaste-extension/assets/screenshots/177-domain-sidepanel.png",
+      "bytes": 39767,
+      "sha256": "a90d1adc2f1ad14be51710054278321f740a7ee8226ef843ade4003500d4f666"
+    },
+    {
+      "path": "docs/assets/domains-177/admin-users.png",
+      "bytes": 137405,
+      "sha256": "9a15725aa25de1eee8a7805be6845dc6e7a9379df6f866efc735e12e3fc18bf7"
+    },
+    {
+      "path": "docs/assets/domains-177/admin.gif",
+      "bytes": 2607173,
+      "sha256": "e79e3bf6f38f6bb700136a04799454ff99e9e9cdc48e4e52ae5aaa95c337bd36"
+    },
+    {
+      "path": "docs/assets/domains-177/web-task.png",
+      "bytes": 154630,
+      "sha256": "881f135b00fc582a291d27c024c63e1ceed36714faf71fda8b44564ec88fb387"
+    },
+    {
+      "path": "docs/assets/domains-177/web.gif",
+      "bytes": 2571576,
+      "sha256": "80eb150380e3744b38264c71e66d93e3268396f50bcbee01728953fa952a85b3"
+    }
+  ],
+  "boundaries": [
+    "Real AI/media/ads/payment and SMTP are not configured; synthetic mode remains authorized.",
+    "Windows installers are unsigned; the verified updater gate remains closed.",
+    "Exact Windows cloud program/browser profiles are not qualified on Linux.",
+    "This is a domain/source increment, not replacement of frozen v0.1.3."
+  ]
+}

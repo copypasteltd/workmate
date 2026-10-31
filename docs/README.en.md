@@ -1,3 +1,14 @@
+<!-- public-domains-177 -->
+## 正式域名已上线 / Public HTTPS deployment
+
+[Web](https://agent.copypaste.hk) · [Admin](https://agent-dashboard.copypaste.hk) · [API](https://ai-api.copypaste.hk/health/ready)
+
+[使用与运维 / Usage and operations](releases/domains-177.md) · [需求 / Requirements](requirements/33-public-domains.md) · [开发 / Implementation](development/177-public-domains.md) · [变更 / Changes](changes/177-public-domains.md) · [核查 / Evidence](quality/public-domains-177.json)
+
+Desktop 0.7.2 / Extension 0.5.3 固定正式端点；现有凭据保留，外部服务继续使用假数据。Native clients use public endpoints; existing credentials and synthetic-provider mode are retained. 以下为历史部署与发行记录 / Earlier deployments and releases follow.
+
+---
+
 <!-- lan-deployment-176 -->
 ## 内网 HTTP 已部署 / LAN HTTP deployed
 
