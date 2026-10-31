@@ -1,4 +1,6 @@
+import {conversationAttempt,completeConversationAttempt} from "./conversation-attempt";
 import { ProjectConfigurationSummary } from "./project-configuration";
+import { ConversationDeliveryDownload } from "./delivery-quality";
 import { useEffect, useRef, useState } from "react";
 import { AdoptionReview } from "./agent-adoption";
 import { CopyReview } from "./agent-copy-review";
@@ -20,7 +22,7 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
-import { api, ApiError, patch, post } from "./api";
+import { api, ApiError, patch, post, clientSessionGeneration } from "./api";
 import { useWorkspace } from "./context";
 import {
   AsyncForm,
@@ -91,11 +93,11 @@ export function Specialists() {
     );
   async function start(a: any) {
     try {
-      const local = await window.copyPasteBridge!.localAgent("specialist.create", {
-        tenant: w.tenant, project: w.project, role: a.role_key, agent_id: a.id, agent_version: a.version,
+      const c = await post(w.base + "/conversations", {
+        name: a.name,
+        agent_id: a.id,
       });
-      if (!local.ok) throw new Error(local.code ?? "LOCAL_SPECIALIST_UNAVAILABLE");
-      if (local.value?.id) nav("/app?native_project=" + w.project + "&native_session=" + local.value.id);
+      nav("/app/conversations/" + c.id);
     } catch (e) {
       setError(e as Error);
     }
@@ -396,8 +398,7 @@ function SpecialistEditor({
               <option value="assistant">
                 {t("預設助手", "Default assistant")}
               </option>
-              {role === "computer-operator" && <option value={role}>{t("雲端電腦角色 · 請使用 Web", "Cloud computer role · use Web")}</option>}
-              {roles.data?.items.filter((r: any) => r.role_key !== "computer-operator").map((r: any) => (
+              {roles.data?.items.map((r: any) => (
                 <option key={r.role_key} value={r.role_key}>
                   {r.display_name} · {r.role_key}
                 </option>
@@ -741,20 +742,20 @@ export function ConversationDetail() {
     [budget, setBudget] = useState("20"),
     [error, setError] = useState<Error | null>(null);
   const pending = useRef<{ fingerprint: string; payload: any } | null>(null);
+  const [selectedTaskId,setSelectedTaskId]=useState("");
+  const account=String(w.me?.user?.id??""),endpoint=w.base+"/conversations/"+id+"/messages",identity=account+":"+endpoint;
+  const currentIdentity=useRef(identity),lifetime=useRef(0),alive=useRef(false);
+  currentIdentity.current=identity;
+  useEffect(()=>{alive.current=true;const revision=++lifetime.current;
+    pending.current=null;setSelectedTaskId("");setBody("");setError(null);
+    return()=>{alive.current=false;if(lifetime.current===revision)++lifetime.current;};
+  },[identity]);
   const data = useData(w.base + "/conversations/" + id, refresh, 3000),
     agents = useData(w.base + "/agents", refresh);
   const c = data.data,
     agent = agents.data?.items.find((a: any) => a.id === c?.agent_id),
-    active = c?.tasks.find((task: any) =>
-      [
-        "queued",
-        "running",
-        "paused",
-        "awaiting_approval",
-        "reconciling",
-        "needs_input",
-      ].includes(task.status),
-    );
+    active = c?.tasks.find((task:any)=>task.id===selectedTaskId) ??
+      c?.tasks.slice().reverse().find((task:any)=>["queued","running","paused","awaiting_approval","reconciling","needs_input"].includes(task.status)) ?? c?.tasks.at(-1);
   async function update(fields: unknown) {
     try {
       await patch(w.base + "/conversations/" + id, {
@@ -773,7 +774,7 @@ export function ConversationDetail() {
         ← {t("我的會話", "Your conversations")}
       </Link>
       <ErrorNotice error={data.error ?? error} />
-      {c && <ProjectConfigurationSummary taskId={c.tasks?.at(-1)?.id} compact />}
+      {c && <ProjectConfigurationSummary taskId={active?.id} compact />}
       {!c ? (
         data.loading && <Loading />
       ) : (
@@ -863,6 +864,7 @@ export function ConversationDetail() {
                         <DateText value={m.created_at} />
                       </header>
                       <p className="preserve-text">{m.body}</p>
+                      {m.role === "assistant" && m.task_id && <ConversationDeliveryDownload base={w.base} taskId={m.task_id}/>}
                       {m.task_id && (
                         <Link
                           className="text-link"
@@ -892,8 +894,13 @@ export function ConversationDetail() {
                   </div>
                 )}
               </div>
+              {c.tasks.length>0 && <Field label={t("選擇要查看或補充資料的工作","Select a task to view or provide inputs")}>
+                <select aria-label={t("目前選中的工作","Selected task")} value={active?.id??""} onChange={e=>setSelectedTaskId(e.target.value)}>
+                  {c.tasks.map((task:any)=><option key={task.id} value={task.id}>{task.title} · {task.status} · {task.id.slice(0,8)}</option>)}
+                </select>
+              </Field>}
               {active && (
-                <div className="notice">
+                <div className="notice" data-selected-task={active.id}>
                   <Badge value={active.status} />
                   {active.status === "queued" &&
                     active.capacity_wait_reason && (
@@ -911,6 +918,7 @@ export function ConversationDetail() {
               )}
               {active?.status === "needs_input" && (
                 <TaskInputRequests
+                  key={active.id}
                   task={{ ...active, conversation_id: c.id }}
                   onChange={() => setRefresh((v) => v + 1)}
                 />
@@ -938,40 +946,29 @@ export function ConversationDetail() {
                       : t("交付工作", "Delegate task")
                   }
                   onSubmit={async () => {
-                    const fingerprint = JSON.stringify({
-                      body,
-                      intent,
-                      mode,
-                      budget,
-                    });
-                    if (pending.current?.fingerprint !== fingerprint)
-                      pending.current = {
-                        fingerprint,
-                        payload: {
-                          client_message_id: crypto.randomUUID(),
-                          expected_version: c.version,
-                          intent,
-                          mode,
-                          body,
-                          ...(intent === "delegate"
-                            ? {
-                                budget_micros: Math.round(Number(budget) * 1e6),
-                              }
-                            : {}),
-                        },
-                      };
+                    const revision=lifetime.current,session=clientSessionGeneration();
+                    const valid=()=>alive.current&&revision===lifetime.current&&currentIdentity.current===identity&&session===clientSessionGeneration();
+                    const input={body,intent,mode,...(intent==="delegate"?{budget_micros:Math.round(Number(budget)*1e6)}:{})};
+                    const fingerprint=JSON.stringify([identity,input]);
+                    if(pending.current?.fingerprint!==fingerprint){
+                      const payload=await conversationAttempt(account,endpoint,input,c.version);
+                      if(!valid())return;
+                      pending.current={fingerprint,payload};
+                    }
+                    const attempt=pending.current!;
                     try {
-                      await post(
-                        `${w.base}/conversations/${id}/messages`,
-                        pending.current!.payload,
-                      );
-                      pending.current = null;
-                      setBody("");
-                      setRefresh((v) => v + 1);
-                    } catch (e) {
-                      if (e instanceof ApiError && e.status < 500)
-                        pending.current = null;
-                      throw e;
+                      const accepted=await post(endpoint,attempt.payload);
+                      await completeConversationAttempt(account,endpoint,input,attempt.payload.client_message_id);
+                      if(!valid()||pending.current!==attempt)return;
+                      pending.current=null;setBody("");
+                      if(accepted.task?.id)setSelectedTaskId(accepted.task.id);
+                      setRefresh(v=>v+1);
+                    } catch(e) {
+                      if(e instanceof ApiError&&e.status>=400&&e.status<500&&![408,429].includes(e.status)){
+                        await completeConversationAttempt(account,endpoint,input,attempt.payload.client_message_id);
+                        if(valid()&&pending.current===attempt)pending.current=null;
+                      }
+                      if(valid()){setRefresh(v=>v+1);throw e;}
                     }
                   }}
                 >
@@ -981,7 +978,7 @@ export function ConversationDetail() {
                       onChange={(e) => setIntent(e.target.value)}
                     >
                       <option value="delegate">
-                        {t("交付給專家", "Delegate to specialist")}
+                        {t("開始獨立新工作", "Start independent new work")}
                       </option>
                       <option value="note">
                         {t("保存筆記（不啟動 AI）", "Save note (no AI task)")}
@@ -1024,8 +1021,8 @@ export function ConversationDetail() {
                       {active && (
                         <p className="muted small-text">
                           {t(
-                            "請等待目前工作完成，或先取消；期間仍可保存筆記。",
-                            "Wait for the current task or cancel it. You can still save notes.",
+                            "每次交付都是獨立新工作，各自預留預算。補充資料或取消請先選中對應工作。",
+                            "Each delegation starts independent work with its own reserved budget. Select the relevant task to provide inputs or cancel.",
                           )}
                         </p>
                       )}
