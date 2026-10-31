@@ -1,3 +1,17 @@
+## 162 · 冻结版源码启动补丁
+
+完整rc.3已发布。本轮新增安装前端口检查及有效入门链接；当前分支直接使用，已解压rc.3源码可应用约719KB的精确补丁。先选择数据库端口，再依次运行 `npm run demo:preflight`、`npm run bootstrap:demo`、`npm run demo:check`、`npm run demo`；结束执行 `npm run stop`。六文件补丁及CLI的9项检查通过；保留客户配置、数据和冻结包。
+
+[完整中英步骤](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/v0.1.0-rc.3-onboarding-162.md) · [源码补丁](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.3/workmate-v0.1.0-rc.3-onboarding-162.zip)
+
+下图及GIF沿用158实际首单流程，非本轮新增各原生端验收。
+
+![原有实际首单](assets/screenshots/workmate-source-handoff-158-04-first-task-delivered.png)
+
+![原有实际交互](assets/screenshots/workmate-source-handoff-158-04-first-source-task.gif)
+
+---
+
 ## v0.1.0-rc.3 · 完整冻结交付
 
 本版纳入下方160修复。Desktop、Web、Admin、原生Chrome右侧栏、后端、六仓可构建源码及固定Codex配套文件统一封装；[完整使用说明](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.3/docs/releases/v0.1.0-rc.3.md)。[下载入口](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.3)的资产以发布回执为准。外部接口使用获准假数据，Windows包未签名；完整生产验收继续独立跟踪。
