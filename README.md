@@ -1,3 +1,25 @@
+## v0.1.0-rc.2 · 当前完整冻结发版
+
+六仓当前源码与分发构建共同冻结至数据库155版。产品发版号与各组件npm版本独立。Web/Extension使用云端Codex，无边框Desktop在客户本机执行Codex并由客户明确授予权限；Admin保留独立身份及用户、费用、VIP、消耗与内容控制。
+
+将buildable-sources与source-runtime两包解压合并至同一个较短父目录，在生成的dev/copypaste-delivery中依次执行 npm run bootstrap:demo → npm run demo:check → npm run demo。若55432被占用，在各个启动窗口先明确设置 COPYPASTE_SOURCE_DATABASE_PORT 为空闲本机端口；结束用 npm run stop。四个Codex文件须相邻保留。当前体验与录屏的外部依赖使用获准模拟数据，Codex、权限、文件与账本走真实实现；完整历史/跨系统/真实提供方回归按要求省略。
+
+[Release guide / 发版说明](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.2/docs/releases/v0.1.0-rc.2.md) · [Source startup / 源码启动](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.2/docs/development/158-current-source-startup.md)
+
+**Actual shared Web first-use flow / 实际Web源码首次使用（非各原生端新增完整验收）**
+
+![First task delivery / 首次任务交付](assets/screenshots/workmate-source-handoff-158-04-first-task-delivered.png)
+
+![Actual task interaction / 实际任务交互](assets/screenshots/workmate-source-handoff-158-04-first-source-task.gif)
+
+[MP4 recording / 交互录像](assets/screenshots/workmate-source-handoff-158-04-first-source-task.mp4)
+
+**Current packaged Windows startup / 当前Windows包实际启动**
+
+![Packaged Desktop / 打包客户端](assets/screenshots/workmate-release-freeze-158-01-packaged-start.png)
+
+---
+
 ## 157 · 云端会话独立多工作
 
 同一私有云端会话可在套餐额度内提交独立新工作。先选择具体任务，再查看进度、补充资料或停止；各项预算和结果独立。Web保留相同输入的原请求键/版本以恢复丢失回复；Extension保留已保存的完整回执并抛弃旧目标的迟到进度。
