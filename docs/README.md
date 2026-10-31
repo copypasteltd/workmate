@@ -1,3 +1,11 @@
+<!-- conversation-directory-156 -->
+
+[完整会话目录 / Private conversation directory](development/156-conversation-directory.md) · [API](contracts/conversation-directory-openapi.json) · [限定证据 / Evidence](quality/conversation-directory-checkpoint-156.md) · [当前编号 / Ledger](quality/remaining-work-stage156.md) · [更新 / Changes](changes/156-conversation-directory.md)
+
+Unreleased156; first frozen v0.1.0-rc.1 preserved.7 focused backend checks /5 actual Web groups. No new migration; schema154.
+
+---
+
 <!-- specialist-copy-155 -->
 
 [专家复制 / Reviewed specialist copies](development/155-specialist-copy.md) · [API](contracts/specialist-copy-openapi.json) · [限定证据 / Evidence](quality/specialist-copy-checkpoint-155.md) · [当前编号 / Ledger](quality/remaining-work-stage155.md) · [更新 / Changes](changes/155-specialist-copy.md)

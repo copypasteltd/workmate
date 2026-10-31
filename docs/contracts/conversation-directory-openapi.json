@@ -1,0 +1,178 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Workmate private conversation directory supplement",
+    "version": "156"
+  },
+  "paths": {
+    "/v1/conversations": {
+      "get": {
+        "summary": "Browse currently authorized private conversations",
+        "parameters": [
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 160
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 40
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No-store items and next_cursor; canonical fields conform to frozen Conversation schema"
+          },
+          "400": {
+            "description": "Invalid cursor/query or mismatched actor, session, scope or filters"
+          },
+          "401": {
+            "description": "Current session unavailable"
+          },
+          "403": {
+            "description": "Current authority denied"
+          },
+          "404": {
+            "description": "Project or authorized scope unavailable"
+          },
+          "409": {
+            "description": "Cursor expired; refresh directory"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/conversations": {
+      "get": {
+        "summary": "Browse currently authorized private conversations",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 160
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 200
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No-store items and next_cursor; canonical fields conform to frozen Conversation schema"
+          },
+          "400": {
+            "description": "Invalid cursor/query or mismatched actor, session, scope or filters"
+          },
+          "401": {
+            "description": "Current session unavailable"
+          },
+          "403": {
+            "description": "Current authority denied"
+          },
+          "404": {
+            "description": "Project or authorized scope unavailable"
+          },
+          "409": {
+            "description": "Cursor expired; refresh directory"
+          }
+        }
+      }
+    }
+  },
+  "x-existing-canonical-contract": "catalog/openapi.json listConversations / ConversationList / Conversation remain unchanged",
+  "x-order": [
+    "pinned DESC",
+    "updated_at DESC with SQL UTC microseconds",
+    "id DESC"
+  ],
+  "x-authority": "Every page rechecks current user/exact session/federation and tenant/project access; own active conversations only. Optional canonical project scope never grants another user's private conversations.",
+  "x-cursor": "HMAC, current actor/session/auth/tenant/project-or-null/filter/page size,30 minute lifetime. Invalid400; expired409. No model call or credentials.",
+  "x-live-pagination": "Live keyset directory; refresh after mutations for current order. This is not a frozen export snapshot.",
+  "x-schema-version": 154
+}

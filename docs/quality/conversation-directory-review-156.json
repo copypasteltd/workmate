@@ -1,0 +1,33 @@
+{
+  "requirement": "REQ-061",
+  "verdict": "partial",
+  "baseline_heads": {
+    "platform": "c54e103d23b0321dae598e68a20a24358ad39ace",
+    "web": "d862c24d16fc8cb38c0c4d88a5c1c633e70024f2",
+    "admin": "c9d5c17bc5e7765c839b5f0c03d54b20baf98062",
+    "desktop": "0f25f6172879cddf9a639e37abc5e4159176f283",
+    "extension": "a4d65a217ebdedb4c5a720f26dd4791e19213995",
+    "delivery": "696c0adbf3e145777dced79d4128ca2d69296609",
+    "docs": "28e0cf15fb81cede58b92cf3631857d8d3bd6e6b"
+  },
+  "confirmed_old_gap": "Legacy LIMIT200 with no next_cursor or client paging hides same-name/unknown-name older empty conversations. Unique-name search and known-ID access remain valid alternative paths.",
+  "source_check": {
+    "agent": "req032_check",
+    "mode": "read_only",
+    "searched": [
+      "GET legacy conversations query/response",
+      "Web/Desktop Conversations rendering and controls",
+      "Extension ConversationState/ChatPanel and storage receipt",
+      "canonical /v1/conversations implementation versus existing catalog contract"
+    ]
+  },
+  "independent_refutation": {
+    "agent": "archive_149_refutation",
+    "mode": "read_only",
+    "confirmed_gap": true,
+    "new_issue": "Extension historyLoading stuck after new-chat generation changes",
+    "fix": "History requests use scope reference plus independent historyRevision; reset invalidates replies",
+    "post_fix_result": "No further definite blocker found within reviewed scope"
+  },
+  "limits": "Static reviews do not prove runtime behavior or complete REQ061. Focused runtime source receipts are separate; full lifecycle acceptance remains open."
+}
