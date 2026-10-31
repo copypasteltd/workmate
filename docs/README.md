@@ -1,3 +1,11 @@
+## v0.1.2 · 已发布 / Published
+
+[完整下载 / Complete bundle](https://github.com/copypasteltd/workmate/releases/download/v0.1.2/workmate-v0.1.2-complete.zip) · [使用 / Guide](releases/v0.1.2.md) · [回执 / Receipt](quality/release-publication-173.json)
+
+全部端、源码和入账期间报表已纳入下载包。All clients, sources and posting-period reports are included. 外部假数据；Windows未签名。Synthetic services; unsigned Windows.
+
+---
+
 ## 当前完整冻结交付 / Current complete freeze · v0.1.2
 
 最新完整包纳入全部端及费用入账期间报表。All clients and posting-period reports are included.
