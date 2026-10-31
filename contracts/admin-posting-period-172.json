@@ -1,0 +1,61 @@
+{
+  "version": 172,
+  "extends": "admin-usage-reports-169.json",
+  "schema_version": 156,
+  "schema_change_in_this_increment": false,
+  "filters": {
+    "time_basis": {
+      "optional": true,
+      "values": ["work_created_at", "ledger_posted_at"],
+      "when_omitted": "work_created_at; omit the property in parsed input so existing idempotency fingerprints remain unchanged"
+    },
+    "period": "Required ISO offset timestamps; inclusive from and exclusive to.",
+    "work_created_at": "Select works by creation time; sum their cumulative charges/refunds and current holds as of the snapshot.",
+    "ledger_posted_at": "Select scoped works having an actual charge or linked consumption refund posted within the period, independently of work creation. Sum only charge/refund entries within that period. Refund origins may be outside it.",
+    "intersection": "Existing user, payer, tenant, project, task, role, source, capability and model conditions and all current allow/deny scopes remain conjunctive. Capability/model conditions select works by a matching operation rather than allocating whole-work prices to capabilities."
+  },
+  "posting_accounting": {
+    "confirmed_micros": "Exact inverted sum of in-period charge ledger amounts, once per work/entry.",
+    "refunded_micros": "In-period positive compensation journals linked to an original consume/raw charge under billing.refund for the same payer account.",
+    "net_micros": "confirmed minus refunded as an exact decimal string; a refund-only period can be negative.",
+    "reserved_micros": null,
+    "reconciliation_hold_micros": null,
+    "holds_state": "outside_posted_activity",
+    "current_holds": "Separate per-work current reserved/reconciliation amounts at snapshot time; never added to period activity or daily totals.",
+    "unresolved_works": "Current unresolved status of the selected works at snapshot time, not a historical count of unresolved activity during the period.",
+    "units_time_basis": "selected_work_lifetime; operation usage is contextual and must not be added across posting-day groups",
+    "internal_cost": "Independent scoped permission; null/not_recorded until actual supplier bills are connected. No retail-price proxy."
+  },
+  "groups": {
+    "day": "Asia/Hong_Kong day of actual in-period charge/refund entries. A work may occur on multiple days. Each day projects its own entries and exact amounts; monetary day totals sum to the report while work/operation counts are not additive.",
+    "other": "Existing seven group types remain; capability groups count only and do not allocate money."
+  },
+  "detail_query": {
+    "route": "GET /v1/admin/usage-reports/:id/works/:kind/:work",
+    "optional_pair": ["group_by", "group_key"],
+    "strict": true,
+    "selection": "No pair preserves full-snapshot detail. The pair selects the same group as summary/CSV; day detail exposes only that day's entries. A work outside the group returns404.",
+    "refund_origin": ["source_entry_id", "original_charge_id", "original_charge_micros", "original_charge_posted_at"]
+  },
+  "snapshot": {
+    "single_sql_capture": true,
+    "encrypted": true,
+    "ttl_seconds": 300,
+    "immutable_reads": ["summary", "groups", "paging", "detail", "CSV"],
+    "maximum_works": 5000,
+    "maximum_operations": 20000,
+    "maximum_payload_bytes": 16777216,
+    "oversize": "413, no silent truncation; work bound precedes operation filters",
+    "identity": "Current independent Admin, recent MFA, original session/auth version, permission-binding hash and environment on every access. Changed authority invalidates the snapshot.",
+    "export": "Both create/download permissions must cover every selected work. Partial authority refuses the whole export."
+  },
+  "csv": {
+    "legacy_columns_unchanged": true,
+    "posting_columns_added": ["period_from", "period_to", "group_by", "group_key", "holds_state", "units_time_basis"],
+    "exact_selection": "Same projected works and monetary amounts, as_of and watermark as summary/detail.",
+    "null_holds": "Empty CSV values, never zero.",
+    "negative_money": "Existing spreadsheet formula protection prefixes a literal apostrophe, e.g. '-100001, without rounding the decimal string.",
+    "privacy": "No prompts, outputs, email addresses, credentials or provider response bodies."
+  },
+  "release": "Source increment after frozen v0.1.1; frozen archives and tags remain unchanged."
+}

@@ -6,7 +6,16 @@ import { usageReportLimit, type UsageReportFilters } from "./admin-usage-report-
 /** Customer ledger charges are work-level facts. A capability filter selects
  * works that used it; it never assigns the entire charge to that capability. */
 export async function captureUsageReport(tx: Tx, s: ReadScope, f: UsageReportFilters, mode: string) {
-  const where = [`b.data_mode=${s.arg(mode)}`, s.scope("admin.usage.read", "b.tenant_id", "b.project_id"), `b.created_at>=${s.arg(f.period_from)}::timestamptz`, `b.created_at<${s.arg(f.period_to)}::timestamptz`];
+  const from = s.arg(f.period_from), to = s.arg(f.period_to), posted = f.time_basis === "ledger_posted_at";
+  const period = (alias: string) => `${alias}.created_at>=${from}::timestamptz AND ${alias}.created_at<${to}::timestamptz`;
+  const workCharge = `((b.kind='task' AND l.task_id=b.id) OR (b.kind='resource' AND l.cloud_runtime_session_id=b.id)) AND l.kind='charge' AND l.data_mode=b.data_mode AND l.billing_account_id=b.billing_account_id`;
+  const consumptionRefund = `j.kind='compensation' AND j.direction='credit' AND original.kind='consume' AND j.billing_account_id=original.billing_account_id
+    AND EXISTS(SELECT 1 FROM billing_operations bo WHERE bo.id=j.operation_id AND bo.billing_account_id=j.billing_account_id AND bo.action='billing.refund')`;
+  const where = [`b.data_mode=${s.arg(mode)}`, s.scope("admin.usage.read", "b.tenant_id", "b.project_id"), posted
+    ? `(EXISTS(SELECT 1 FROM ledger l WHERE ${workCharge} AND ${period("l")}) OR EXISTS(
+        SELECT 1 FROM ledger l JOIN billing_journal original ON original.raw_entry_id=l.id JOIN billing_journal j ON j.source_entry_id=original.id
+        WHERE ${workCharge} AND j.billing_account_id=l.billing_account_id AND ${consumptionRefund} AND ${period("j")}))`
+    : period("b")];
   for (const [key, value] of Object.entries({ user_id: f.user_id, tenant_id: f.tenant_id, project_id: f.project_id, billing_account_id: f.billing_account_id })) if (value) where.push(`b.${key}=${s.arg(value)}::uuid`);
   if (f.task_id) where.push(`b.kind='task' AND b.id=${s.arg(f.task_id)}::uuid`);
   for (const key of ["payer_kind", "source", "role_key"] as const) if (f[key]) where.push(`b.${key}=${s.arg(f[key])}`);
@@ -50,16 +59,17 @@ export async function captureUsageReport(tx: Tx, s: ReadScope, f: UsageReportFil
     FROM tool_operations o JOIN candidate b ON b.id=o.task_id AND b.kind='task'
   ), selected AS MATERIALIZED (SELECT b.* FROM candidate b WHERE ${matchOperations}),
   bounded_ops AS MATERIALIZED (SELECT o.* FROM ops o JOIN selected b ON b.id=o.work_id AND b.kind='task' ORDER BY o.created_at,o.id,o.channel LIMIT ${usageReportLimit.operations + 1}),
-  charges AS MATERIALIZED (
+  charge_sources AS MATERIALIZED (
     SELECT l.*,b.kind AS work_kind,b.id AS work_id FROM ledger l JOIN selected b
       ON (b.kind='task' AND l.task_id=b.id) OR (b.kind='resource' AND l.cloud_runtime_session_id=b.id)
     WHERE l.kind='charge' AND l.data_mode=b.data_mode AND l.billing_account_id=b.billing_account_id
-  ), refunds AS MATERIALIZED (
-    SELECT j.id,j.amount_micros,j.created_at,j.operation_id,c.work_id,c.work_kind,j.source_entry_id
+  ), charges AS MATERIALIZED (SELECT * FROM charge_sources c WHERE ${posted ? period("c") : "true"}),
+  refunds AS MATERIALIZED (
+    SELECT j.id,j.amount_micros,j.created_at,j.operation_id,c.work_id,c.work_kind,j.source_entry_id,
+      c.id AS original_charge_id,(-c.amount_micros)::text AS original_charge_micros,c.created_at AS original_charge_posted_at
     FROM billing_journal j JOIN billing_journal original ON original.id=j.source_entry_id
-      JOIN charges c ON c.id=original.raw_entry_id
-    WHERE j.kind='compensation' AND j.direction='credit' AND j.billing_account_id=c.billing_account_id
-      AND EXISTS(SELECT 1 FROM billing_operations bo WHERE bo.id=j.operation_id AND bo.action='billing.refund')
+      JOIN charge_sources c ON c.id=original.raw_entry_id
+    WHERE j.billing_account_id=c.billing_account_id AND ${consumptionRefund} AND ${posted ? period("j") : "true"}
   )
   SELECT statement_timestamp() AS as_of,(SELECT count(*)::int FROM candidate) AS candidate_count,
     (SELECT count(*)::int FROM bounded_ops) AS operation_count,
@@ -73,9 +83,13 @@ export async function captureUsageReport(tx: Tx, s: ReadScope, f: UsageReportFil
       'refunds',coalesce((SELECT jsonb_agg((to_jsonb(r)-ARRAY['work_id','work_kind'])||jsonb_build_object('amount_micros',r.amount_micros::text) ORDER BY r.created_at,r.id) FROM refunds r WHERE r.work_id=b.id AND r.work_kind=b.kind),'[]'::jsonb)
     ) ORDER BY b.created_at DESC,b.id DESC,b.kind) FROM selected b),'[]'::jsonb) AS works`, s.values)).rows[0];
   if (result.candidate_count > usageReportLimit.works || result.operation_count > usageReportLimit.operations)
-    throw new Problem(413, "USAGE_REPORT_TOO_LARGE", "Narrow the work creation period, user or project; reports never truncate totals");
+    throw new Problem(413, "USAGE_REPORT_TOO_LARGE", "Narrow the period, user or project; reports never truncate totals");
   for (const w of result.works) {
     w.unresolved = w.state === "reconciling" || w.reconciliation_hold_micros !== "0" || w.operations.some((o: any) => ["unknown", "reconciling", "dispatched", "submitting", "in_progress"].includes(o.state));
+    if (posted) {
+      w.current_holds = { reserved_micros: w.reserved_micros, reconciliation_hold_micros: w.reconciliation_hold_micros };
+      w.reserved_micros = null; w.reconciliation_hold_micros = null; w.holds_state = "outside_posted_activity";
+    }
     if (w.internal_readable) w.internal_cost = { amount_micros: null, state: "not_recorded" };
     delete w.internal_readable;
   }

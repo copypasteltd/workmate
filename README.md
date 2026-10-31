@@ -1,4 +1,26 @@
-# Workmate · backend · v0.1.0
+# Workmate · backend
+
+## 当前源码增量 · 阶段172
+
+Admin新增工作建立／费用入账两种期间。旧任务本期扣费、跨期香港日期、区间外原扣费的退款及负净消耗可查询；分组、明细和CSV共用一份固定快照。预留额度与累积操作用量另行说明。当前源码需配套Backend/Admin，数据库仍为156。此增量不在已冻结v0.1.1 ZIP内；原包与标签保持。
+
+本轮新增8项原生SQL/API＋1项精确投影检查；6项原报表检查在源码一致时继承其实际通过结果；7组实际Admin操作通过。首次历史测试资料缺少资金来源而被约束拒绝，已以新版本补齐来源与资金变动；失败原记录保留，未关闭保护。全部原完整验收范围继续跟踪。
+
+```mermaid
+flowchart LR
+ A[Admin MFA] --> B[Creation or posting period]
+ B --> C[Scoped fixed snapshot]
+ C --> D[Hong Kong day entries]
+ D --> E[Same summary and detail]
+ D --> F[Authorized CSV]
+```
+
+![Posting-period report](assets/screenshots/workmate-admin-posting-period-172-01-posting-01-period-summary.png)
+
+![Actual interaction](assets/screenshots/workmate-admin-posting-period-172-01-posting-period-workflow.gif)
+
+[MP4](assets/screenshots/workmate-admin-posting-period-172-01-posting-period-workflow.mp4) · [方案 / Behavior](https://github.com/copypasteltd/workmate/blob/docs/docs/development/172-admin-posting-period.md)
+
 ## 冻结交付 v0.1.1
 
 完整包统一包含Windows Desktop（本机Codex、无边框）、Web、独立Admin、Chrome右侧Side Panel、Backend、六仓源码和固定runtime。假数据模式，Windows未签名；当前数据库156。
