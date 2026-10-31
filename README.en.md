@@ -1,3 +1,17 @@
+## 162 · Frozen source onboarding addon
+
+The complete rc.3 is published. Early startup-port checks and corrected guide links are available on the current branches; extracted rc.3 sources can use the approximately719KB exact patch. Choose the database port first, then run `npm run demo:preflight`, `npm run bootstrap:demo`, `npm run demo:check` and `npm run demo`; finish with `npm run stop`. Nine focused patch/CLI checks pass. Local configuration/data and frozen distributions stay intact.
+
+[Bilingual steps](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/v0.1.0-rc.3-onboarding-162.md) · [Source addon](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.3/workmate-v0.1.0-rc.3-onboarding-162.zip)
+
+The following original stage158 first-task media is reused with its original scope; it is not new installed-client acceptance.
+
+![Original real first task](assets/screenshots/workmate-source-handoff-158-04-first-task-delivered.png)
+
+![Original real interaction](assets/screenshots/workmate-source-handoff-158-04-first-source-task.gif)
+
+---
+
 ## v0.1.0-rc.3 · Complete frozen handoff
 
 Includes the stage160 correction below. Desktop, Web, Admin, native Chrome Side Panel, Backend, six buildable source trees and the pinned Codex companion ship together. [Full usage guide](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.3/docs/releases/v0.1.0-rc.3.md) · [Release assets](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.3); actual publication is recorded in its receipt. External providers use authorized synthetic data and Windows remains unsigned. Whole production acceptance is separately tracked.
