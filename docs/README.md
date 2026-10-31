@@ -1,3 +1,12 @@
+<!-- lan-deployment-176 -->
+## 内网 HTTP 已部署 / LAN HTTP deployed
+
+[访问、登录及运维 / Access and operations](releases/lan-176.md) · [核查 / Evidence](quality/lan-deployment-176.json) · [变更 / Changes](changes/176-lan-http-deployment.md)
+
+Web `63070` · Admin `63071` · API `63072`；独立服务、数据库及明文服务器配置已交付。Native isolated services/database and server-side plaintext configuration delivered. Synthetic services; current native-client endpoint limitations are explicit in the guide.
+
+---
+
 本轮交付已收口 / Current delivery complete · [交付结果 / Handoff](releases/v0.1.3-closeout.md)
 
 ## v0.1.3 · 已发布 / Published
