@@ -1,3 +1,19 @@
+## v0.1.3 · 本轮完整冻结 / Current complete freeze
+
+[安装使用 / Usage](releases/v0.1.3.md) · [本轮范围 / Scope](releases/v0.1.3-delivery-scope.md) · [变更 / Changes](changes/175-release-v013-freeze.md)
+
+全端源码、团队费用调整、双语说明和实际媒体统一交付；服务器信息后续提供。Complete source, team billing, bilingual guides and actual media; server information follows later.
+
+---
+
+## 團隊費用更新 / Team usage · stage174
+
+團隊及執行ID交叉篩選，成員與協調員實際帳目只加總一次；固定快照明細／CSV保留原身份，舊來源不推斷。Team/run filters and groups sum original work entries once, with immutable detail/CSV and explicit unknown legacy attribution. 21 native report cases and seven current actual Admin journeys; original failed capture retained. Final freeze rebuilds Admin for current CSS.
+
+[需求 / Requirement](requirements/31-admin-team-usage.md) · [更新 / Changes](changes/174-admin-team-usage.md) · [記錄 / Evidence](quality/admin-team-usage-174.json)
+
+---
+
 ## v0.1.2 · 已发布 / Published
 
 [完整下载 / Complete bundle](https://github.com/copypasteltd/workmate/releases/download/v0.1.2/workmate-v0.1.2-complete.zip) · [使用 / Guide](releases/v0.1.2.md) · [回执 / Receipt](quality/release-publication-173.json)

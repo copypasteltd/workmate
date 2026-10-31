@@ -248,3 +248,9 @@ M1 试点即包含可运营后台：独立登录/MFA、细动作/字段/范围�
 Admin可选工作建立或实际费用入账期间；旧任务当期扣费和退款、香港日账目投影、同选择明细及CSV见 [需求30](../requirements/30-admin-posting-period.md)。预留和累积操作用量分开，退款原扣费只作来源追溯。原完整专业／成本／规模验收保留；增量在v0.1.1冻结包之外。
 
 Admin now offers posting-period accounting alongside creation cohorts, with projected day detail/CSV and original-charge provenance. Holds and lifetime units remain separate. Original full acceptance remains; this increment is outside frozen v0.1.1.
+
+## 團隊費用 / Team consumption
+
+團隊及執行ID交叉篩選，成員與協調員實際帳目只加總一次；固定快照明細／CSV保留原身份，舊來源不推斷。Team/run filters and groups sum original work entries once, with immutable detail/CSV and explicit unknown legacy attribution. 21 native report cases and seven current actual Admin journeys; original failed capture retained. Final freeze rebuilds Admin for current CSS.
+
+[詳細 / Details](../requirements/31-admin-team-usage.md)
