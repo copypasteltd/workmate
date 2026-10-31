@@ -24,7 +24,10 @@ import { taskPrivateAssetScopeSQL } from "./task-private-asset-scope.js";
 import { connectorFact, connectorLimits } from "./connector-model.js";
 import { campaignFile, normalizeCampaignFile } from "./analytics-file.js";
 import {
-  calculateWebAnalytics, checkedWebSnapshot, webAnalyticsPage, webAnalyticsSelection,
+  calculateWebAnalytics,
+  checkedWebSnapshot,
+  webAnalyticsPage,
+  webAnalyticsSelection,
 } from "./web-analytics.js";
 
 export const analysisSourcesInput = z
@@ -40,17 +43,20 @@ const connectorReadFields = z
     after_id: uuid.optional(),
     offset: z.number().int().min(0).max(connectorLimits.facts).default(0),
     limit: z.number().int().min(1).max(20).default(12),
-  }).strict();
-export const connectorReadInputV1 = connectorReadFields
+  })
+  .strict();
+export const connectorReadInputV1 = connectorReadFields.refine(
+  (v) => (v.snapshot_id ? !v.after_id : v.offset === 0),
+  "Choose a snapshot with a fact offset, or list snapshots with an optional cursor",
+);
+export const connectorReadInput = connectorReadFields
+  .extend({ analysis: webAnalyticsSelection.optional() })
   .refine(
     (v) => (v.snapshot_id ? !v.after_id : v.offset === 0),
     "Choose a snapshot with a fact offset, or list snapshots with an optional cursor",
-  );
-export const connectorReadInput = connectorReadFields.extend({ analysis: webAnalyticsSelection.optional() })
-  .refine(v => v.snapshot_id ? !v.after_id : v.offset === 0,
-    "Choose a snapshot with a fact offset, or list snapshots with an optional cursor")
+  )
   .refine(
-    v => !v.analysis || !!v.snapshot_id,
+    (v) => !v.analysis || !!v.snapshot_id,
     "Website calculations require one exact captured snapshot",
   );
 export const analysisSourceReadInput = z
@@ -61,6 +67,8 @@ export const analysisFileInspectInput = z
     asset_version_id: uuid,
     sheet_name: z.string().min(1).max(200).optional(),
     header_row: z.number().int().min(1).max(1000).optional(),
+    csv_delimiter: z.enum(["comma", "semicolon", "tab"]).optional(),
+    csv_encoding: z.enum(["utf8", "utf16le", "utf16be"]).optional(),
   })
   .strict();
 
@@ -236,8 +244,10 @@ export async function inspectAnalysisFile(
     selected_sheet: file.selected_sheet,
     header_row: file.header_row,
     hidden_rows: file.hidden_rows,
+    csv_delimiter: file.csv_delimiter,
+    csv_encoding: file.csv_encoding,
     instructions:
-      "Confirm source, currency, timezone, account, attribution and conversion definitions; map actual column headers if necessary. Supply file_inputs with this fixed version/hash. Missing conversions or revenue stay unknown. Platform exports require complete definitions. No shared dataset is created.",
+      "Confirm date order, decimal/grouping format and CSV delimiter/header/encoding without guessing; use number_format/date_format in options. Confirm source, currency, timezone, account, attribution and conversion definitions; map actual column headers if necessary. Supply file_inputs with this fixed version/hash. Missing conversions or revenue stay unknown. Platform exports require complete definitions. No shared dataset is created.",
   };
 }
 export async function taskAnalysis(
@@ -639,13 +649,29 @@ export async function readFrozenConnector(
   );
   if (input.analysis) {
     const checked = checkedWebSnapshot(row, bytes);
-    const query = new URLSearchParams({ profile: input.analysis.profile, account_id: input.analysis.account_id,
-      date_from: input.analysis.date_from, date_to: input.analysis.date_to, group_by: [...input.analysis.group_by].sort().join(",") });
+    const query = new URLSearchParams({
+      profile: input.analysis.profile,
+      account_id: input.analysis.account_id,
+      date_from: input.analysis.date_from,
+      date_to: input.analysis.date_to,
+      group_by: [...input.analysis.group_by].sort().join(","),
+    });
     const reportPath = `/v1/tenants/${t.tenant_id}/projects/${t.project_id}/connector-snapshots/${row.id}/web-analysis`;
-    return { kind: "captured_web_analytics", ...webAnalyticsPage(
-      calculateWebAnalytics(row, checked, input.analysis), input.offset, Math.min(input.limit, 2)),
-      report_downloads: Object.fromEntries(["html", "csv", "json"].map(format => [format, reportPath + "?" + query.toString() + "&format=" + format])),
-      page_notice: "Group evidence is paginated. Follow next_offset. Summary covers observed captured rows only; totalUsers is never added across source rows. No live request or additional model charge.",
+    return {
+      kind: "captured_web_analytics",
+      ...webAnalyticsPage(
+        calculateWebAnalytics(row, checked, input.analysis),
+        input.offset,
+        Math.min(input.limit, 2),
+      ),
+      report_downloads: Object.fromEntries(
+        ["html", "csv", "json"].map((format) => [
+          format,
+          reportPath + "?" + query.toString() + "&format=" + format,
+        ]),
+      ),
+      page_notice:
+        "Group evidence is paginated. Follow next_offset. Summary covers observed captured rows only; totalUsers is never added across source rows. No live request or additional model charge.",
     };
   }
   const end = input.offset + input.limit;

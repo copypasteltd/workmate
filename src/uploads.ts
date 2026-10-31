@@ -131,6 +131,16 @@ async function staging(db: Database, id: string) {
     throw new Error("UPLOAD_STAGING_UNSAFE");
   return dir;
 }
+// CSV exports may carry UTF-16 BOMs. Validate the decoded text prefix instead
+// of treating UTF-16's zero bytes as binary; other text MIME guards stay intact.
+function utf16CsvPrefix(head: Buffer) {
+  const bom = head.subarray(0, 2).toString("hex");
+  if (bom !== "fffe" && bom !== "feff") return false;
+  try {
+    return !new TextDecoder(bom === "fffe" ? "utf-16le" : "utf-16be", { fatal: true })
+      .decode(head, { stream: true }).includes("\0");
+  } catch { return false; }
+}
 function verifyType(mime: string, head: Buffer) {
   const h = head.toString("hex"),
     t = head.toString("ascii");
@@ -162,7 +172,7 @@ function verifyType(mime: string, head: Buffer) {
                           ? h.startsWith("504b0304") || h.startsWith("504b0506")
                           : mime.startsWith("text/") ||
                               mime === "application/json"
-                            ? !head.includes(0)
+                            ? !head.includes(0) || (mime === "text/csv" && utf16CsvPrefix(head))
                             : mime === "application/octet-stream";
   if (!match)
     throw new Problem(

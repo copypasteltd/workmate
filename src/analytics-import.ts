@@ -8,6 +8,14 @@ import {
   type MetricRow,
 } from "./metric-calculator.js";
 
+import {
+  campaignNumber,
+  campaignDate,
+  numberFormat,
+  dateFormat,
+  type CsvLayout,
+} from "./analytics-conventions.js";
+
 export const NORMALIZER_VERSION = "campaign-csv/1.0";
 const fields = [
   "date",
@@ -40,6 +48,8 @@ export const importOptions = z
       .default("dataset"),
     attribution_definition: z.string().trim().min(1).max(1000).optional(),
     conversion_definition: z.string().trim().min(1).max(1000).optional(),
+    number_format: numberFormat.optional(),
+    date_format: dateFormat.optional(),
     mapping: z.partialRecord(z.enum(fields), z.string().max(200)).default({}),
     source_filename: z
       .string()
@@ -131,39 +141,44 @@ function fail(
     { path: `row ${line}.${column}`, message },
   ]);
 }
-function numeric(
-  value: string,
-  line: number,
-  column: string,
-  nullable = false,
-) {
-  const s = value.trim();
-  if (nullable && ["", "--", "—", "N/A", "null"].includes(s)) return null;
-  if (!/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$/.test(s))
-    fail(
-      line,
-      column,
-      "Use a non-negative decimal; leave unavailable conversions/value blank",
-    );
-  return s.replaceAll(",", "");
-}
-function csvRecords(csv: string) {
+function csvRecords(csv: string, layout: CsvLayout = {}) {
   const invalid = csv.search(
     /[\u0000-\u0008\u000B\u000C\u000E-\u001F\uD800-\uDFFF\uFFFE\uFFFF]/u,
   );
   if (invalid >= 0)
     fail(
-      csv.slice(0, invalid).split("\n").length,
+      csv.slice(0, invalid).split(/\r\n|\r|\n/).length,
       "csv",
       "CSV contains unsupported control characters or malformed Unicode",
       "CSV_INVALID",
     );
   if (Buffer.byteLength(csv, "utf8") > 5_000_000)
     throw new Problem(400, "CSV_SIZE", "CSV exceeds 5 MB");
-  let records: { record: string[]; info: { lines: number } }[];
+  const offset = (layout.header_row ?? 1) - 1;
+  // Report headings are plain text, not CSV records. Skip their physical lines
+  // before the lexer so quotes in a heading cannot corrupt the selected table.
+  let start = 0;
+  const breaks = csv.matchAll(/\r\n|\r|\n/g);
+  for (let n = 0; n < offset; n++) {
+    const next = breaks.next();
+    if (next.done)
+      throw new Problem(
+        400,
+        "CSV_SIZE",
+        "The selected header row is outside the file",
+      );
+    start = next.value.index! + next.value[0].length;
+  }
+  const text = csv.slice(start),
+    bytes = Buffer.from(text, "utf8");
+  let records: {
+    record: string[];
+    info: { lines: number; records: number; bytes: number };
+  }[];
   try {
-    records = parse(csv, {
+    records = parse(text, {
       columns: false,
+      delimiter: layout.delimiter ?? ",",
       info: true,
       skip_empty_lines: true,
       bom: true,
@@ -172,11 +187,24 @@ function csvRecords(csv: string) {
     }) as unknown as typeof records;
   } catch (e: any) {
     fail(
-      Number(e.lines) || 1,
+      offset + (Number(e.lines) || 1),
       "csv",
       "CSV could not be parsed; check quoting and column counts",
       "CSV_INVALID",
     );
+  }
+  // Use consumed original UTF-8 byte positions, not the parser's line counter:
+  // quoted CRLF increments that counter twice. Scan once for true physical rows.
+  let cursor = 0,
+    physical = offset + 1;
+  for (const entry of records) {
+    while (cursor < entry.info.bytes) {
+      const byte = bytes[cursor];
+      if (byte === 13 || (byte === 10 && bytes[cursor - 1] !== 13)) physical++;
+      cursor++;
+    }
+    const last = bytes[cursor - 1];
+    entry.info.lines = physical - (last === 10 || last === 13 ? 1 : 0);
   }
   const header = records.shift();
   if (!header || !records.length || records.length > 10000)
@@ -195,15 +223,19 @@ function csvRecords(csv: string) {
     );
   return { headers, records, header };
 }
-export function inspectMetricsCSV(csv: string) {
-  const { headers, records } = csvRecords(csv);
+export function inspectMetricsCSV(csv: string, layout: CsvLayout = {}) {
+  const { headers, records } = csvRecords(csv, layout);
   return {
     headers,
     input_row_count: records.length,
     source_sha256: hash(Buffer.from(csv, "utf8")),
   };
 }
-export function normalizeMetricsCSV(csv: string, input: ImportOptions = {}) {
+export function normalizeMetricsCSV(
+  csv: string,
+  input: ImportOptions = {},
+  layout: CsvLayout = {},
+) {
   const options = importOptions.parse(input);
   try {
     new Intl.DateTimeFormat("en", { timeZone: options.timezone }).format();
@@ -223,7 +255,7 @@ export function normalizeMetricsCSV(csv: string, input: ImportOptions = {}) {
       "IMPORT_DEFINITION_REQUIRED",
       "Platform exports require account, entity level, currency, attribution and conversion definitions",
     );
-  const { headers, records, header } = csvRecords(csv);
+  const { headers, records, header } = csvRecords(csv, layout);
   const mapping: Partial<Record<Field, string>> = {};
   for (const field of fields) {
     if (Object.hasOwn(options.mapping, field)) {
@@ -294,7 +326,15 @@ export function normalizeMetricsCSV(csv: string, input: ImportOptions = {}) {
     const get = (key: Field) =>
       mapping[key] ? (record[headers.indexOf(mapping[key]!)] ?? "") : "";
     const line = info.lines; // Physical final line of the CSV record, including multiline quoted fields.
-    if (get("date_end") && get("date_end") !== get("date"))
+    const dateValue = (field: "date" | "date_end") =>
+      campaignDate(
+        get(field),
+        options.date_format ?? "iso",
+        line,
+        mapping[field] || field,
+      );
+    const date = dateValue("date");
+    if (get("date_end") && dateValue("date_end") !== date)
       fail(
         line,
         mapping.date_end!,
@@ -341,7 +381,17 @@ export function normalizeMetricsCSV(csv: string, input: ImportOptions = {}) {
         "MIXED_CURRENCIES",
       );
     const value = (field: Field, nullable = false) =>
-      numeric(get(field), line, mapping[field] || field, nullable);
+      campaignNumber(
+        get(field),
+        layout.canonical_cells
+          ?.get(info.records)
+          ?.has(headers.indexOf(mapping[field] || ""))
+          ? "dot_decimal"
+          : (options.number_format ?? "dot_decimal"),
+        line,
+        mapping[field] || field,
+        nullable,
+      );
     const money = (field: "spend" | "revenue", nullable = false) => {
       const v = value(field, nullable);
       if (v === null) return null;
@@ -366,7 +416,7 @@ export function normalizeMetricsCSV(csv: string, input: ImportOptions = {}) {
       return Number(v);
     };
     const raw = {
-      date: get("date"),
+      date,
       channel:
         get("channel") ||
         (options.source === "csv_upload"
@@ -422,7 +472,17 @@ export function normalizeMetricsCSV(csv: string, input: ImportOptions = {}) {
   const currency = [...currencies][0];
   const dates = rows.map((r) => r.date).sort();
   const spec = {
-    normalizer_version: NORMALIZER_VERSION,
+    normalizer_version:
+      (options.number_format && options.number_format !== "dot_decimal") ||
+      (options.date_format && options.date_format !== "iso")
+        ? "campaign-csv/1.1"
+        : NORMALIZER_VERSION,
+    ...(options.number_format && options.number_format !== "dot_decimal"
+      ? { number_format: options.number_format }
+      : {}),
+    ...(options.date_format && options.date_format !== "iso"
+      ? { date_format: options.date_format }
+      : {}),
     source: options.source,
     mapping,
     currency,

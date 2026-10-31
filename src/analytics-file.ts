@@ -8,9 +8,19 @@ import {
   columnName,
   WORKBOOK_VERSION,
 } from "./analytics-workbook.js";
+import type { CsvLayout } from "./analytics-conventions.js";
 import { canonical, hash, Problem } from "./lib.js";
 
-export type FileSelection = { sheet_name?: string; header_row?: number };
+export type FileSelection = {
+  sheet_name?: string;
+  header_row?: number;
+  csv_delimiter?: "comma" | "semicolon" | "tab";
+  csv_encoding?: "utf8" | "utf16le" | "utf16be";
+};
+export const csvDelimiter = (
+  v?: FileSelection["csv_delimiter"],
+): CsvLayout["delimiter"] =>
+  v === "semicolon" ? ";" : v === "tab" ? "\t" : ",";
 function workbookError(
   e: unknown,
   file: {
@@ -53,23 +63,38 @@ export function campaignFile(
       "Choose a CSV or XLSX up to 5 MB",
     );
   if (/\.csv$/i.test(filename)) {
-    if (
-      selection.sheet_name ||
-      (selection.header_row && selection.header_row !== 1)
-    )
+    if (selection.sheet_name)
+      throw new Problem(400, "IMPORT_SELECTION", "CSV has no worksheets");
+    const bom = bytes.subarray(0, 2).toString("hex");
+    const detected =
+      bom === "fffe" ? "utf16le" : bom === "feff" ? "utf16be" : "utf8";
+    const encoding = selection.csv_encoding ?? detected;
+    if ((bom === "fffe" || bom === "feff") && encoding !== detected)
       throw new Problem(
         400,
-        "IMPORT_SELECTION",
-        "CSV uses its first row as headers and has no worksheets",
+        "CSV_ENCODING",
+        "The selected encoding conflicts with the file byte-order mark",
       );
+    const layout: CsvLayout = {
+      delimiter: csvDelimiter(selection.csv_delimiter),
+      header_row: selection.header_row ?? 1,
+    };
     try {
-      const csv = new TextDecoder("utf-8", {
-          fatal: true,
-          ignoreBOM: true,
-        }).decode(bytes),
-        inspected = inspectMetricsCSV(csv);
+      const csv = new TextDecoder(
+          encoding === "utf8"
+            ? "utf-8"
+            : encoding === "utf16le"
+              ? "utf-16le"
+              : "utf-16be",
+          {
+            fatal: true,
+            ignoreBOM: true,
+          },
+        ).decode(bytes),
+        inspected = inspectMetricsCSV(csv, layout);
       return {
         ...inspected,
+        source_sha256: hash(bytes),
         csv,
         sheets: [],
         selected_sheet: null,
@@ -77,11 +102,18 @@ export function campaignFile(
         date1904: false,
         hidden_rows: 0,
         file_type: "csv" as const,
-        header_row: 1,
+        header_row: layout.header_row!,
+        csv_encoding: encoding,
+        csv_delimiter: selection.csv_delimiter ?? "comma",
+        canonical_cells: new Map<number, ReadonlySet<number>>(),
       };
     } catch (e) {
       if (e instanceof Problem) throw e;
-      throw new Problem(400, "CSV_INVALID", "CSV must be valid UTF-8");
+      throw new Problem(
+        400,
+        "CSV_INVALID",
+        "CSV does not match the selected text encoding",
+      );
     }
   }
   if (!/\.xlsx$/i.test(filename))
@@ -89,6 +121,12 @@ export function campaignFile(
       415,
       "IMPORT_FILE_TYPE",
       "Only UTF-8 CSV and standard XLSX are supported",
+    );
+  if (selection.csv_delimiter || selection.csv_encoding)
+    throw new Problem(
+      400,
+      "IMPORT_SELECTION",
+      "CSV encoding and delimiter options do not apply to XLSX",
     );
   try {
     const book = readWorkbook(
@@ -110,6 +148,10 @@ export function campaignFile(
       source_sha256: hash(bytes),
       file_type: "xlsx" as const,
       header_row: selection.header_row ?? 1,
+      csv_encoding: null,
+      csv_delimiter: null,
+      canonical_cells:
+        book.canonical_cells ?? new Map<number, ReadonlySet<number>>(),
     };
   } catch (e) {
     if (e instanceof Problem) throw e;
@@ -134,15 +176,40 @@ export function normalizeCampaignFile(
       "Choose the worksheet containing the campaign table",
     );
   try {
-    const normalized = normalizeMetricsCSV(file.csv, {
-      ...options,
-      source_filename: filename,
-    });
+    const normalized = normalizeMetricsCSV(
+      file.csv,
+      {
+        ...options,
+        source_filename: filename,
+      },
+      {
+        ...(file.file_type === "csv"
+          ? {
+              delimiter: csvDelimiter(file.csv_delimiter!),
+              header_row: file.header_row,
+            }
+          : {}),
+        canonical_cells: file.canonical_cells,
+      },
+    );
     // CSV retains the established identity across the legacy text endpoint and
     // the file endpoint. Existing frozen snapshots are not rebound or renamed.
     const spec =
       file.file_type === "csv"
-        ? normalized.spec
+        ? file.header_row === 1 &&
+          file.csv_encoding === "utf8" &&
+          file.csv_delimiter === "comma"
+          ? normalized.spec
+          : {
+              ...normalized.spec,
+              file: {
+                format: "csv",
+                parser_version: "campaign-file/1.1",
+                header_row: file.header_row,
+                encoding: file.csv_encoding,
+                delimiter: file.csv_delimiter,
+              },
+            }
         : {
             ...normalized.spec,
             file: {

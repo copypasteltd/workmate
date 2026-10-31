@@ -41,6 +41,8 @@ export const analysisFileInput = z
       .strict(),
     sheet_name: z.string().min(1).max(200).optional(),
     header_row: z.number().int().min(1).max(1000).optional(),
+    csv_delimiter: z.enum(["comma", "semicolon", "tab"]).optional(),
+    csv_encoding: z.enum(["utf8", "utf16le", "utf16be"]).optional(),
   })
   .strict();
 export const roleAnalysisSpec = analysisSpec

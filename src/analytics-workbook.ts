@@ -415,7 +415,7 @@ export function readWorkbook(bytes: Buffer, sheetName?: string, headerRow = 1) {
     invalid(
       "Unmerge cells in the selected header and data range before import",
     );
-  const rows: { row: number; values: string[] }[] = [];
+  const rows: { row: number; values: string[]; canonical: Set<number> }[] = [];
   let previous = 0,
     cellCount = 0,
     hiddenRows = 0;
@@ -424,7 +424,8 @@ export function readWorkbook(bytes: Buffer, sheetName?: string, headerRow = 1) {
     if (!Number.isSafeInteger(number) || number <= previous || number > 100100)
       invalid("Worksheet row coordinates are invalid or exceed limits");
     previous = number;
-    const values: string[] = [];
+    const values: string[] = [],
+      canonical = new Set<number>();
     let previousColumn = -1;
     for (const cell of list(row.c)) {
       const coordinate = String(cell["@_r"]),
@@ -479,11 +480,13 @@ export function readWorkbook(bytes: Buffer, sheetName?: string, headerRow = 1) {
           "Boolean, error and formula-string cells are not valid campaign data",
           location,
         );
+      if (type === undefined || type === "n" || type === "d")
+        canonical.add(col);
       if (value.length > 10000) invalid("Cell text exceeds limits", location);
       values[col] = value;
     }
     if (number >= headerRow && values.some((v) => v !== "")) {
-      rows.push({ row: number, values });
+      rows.push({ row: number, values, canonical });
       if (["1", "true"].includes(row["@_hidden"])) hiddenRows++;
     }
     if (rows.length > 10001) invalid("Import at most 10,000 data rows");
@@ -495,6 +498,7 @@ export function readWorkbook(bytes: Buffer, sheetName?: string, headerRow = 1) {
   let csv = "",
     physical = 0;
   const locations: { line: number; row: number }[] = [];
+  const canonical_cells = new Map<number, ReadonlySet<number>>();
   for (const row of rows) {
     if (row.values.length > width)
       invalid(
@@ -505,8 +509,9 @@ export function readWorkbook(bytes: Buffer, sheetName?: string, headerRow = 1) {
       { length: width },
       (_, i) => '"' + (row.values[i] ?? "").replaceAll('"', '""') + '"',
     ).join(",");
-    physical += record.split("\n").length;
+    physical += record.split(/\r\n|\n|\r/).length;
     locations.push({ line: physical, row: row.row });
+    canonical_cells.set(locations.length, row.canonical);
     csv += record + "\n";
   }
   return {
@@ -517,5 +522,6 @@ export function readWorkbook(bytes: Buffer, sheetName?: string, headerRow = 1) {
     locations,
     date1904,
     hidden_rows: hiddenRows,
+    canonical_cells,
   };
 }

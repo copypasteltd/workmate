@@ -459,7 +459,11 @@ export function registerAnalytics(
               .type(
                 d.import_spec?.file?.format === "xlsx"
                   ? XLSX_MIME
-                  : "text/csv; charset=utf-8",
+                  : d.import_spec?.file?.encoding === "utf16le"
+                    ? "text/csv; charset=utf-16le"
+                    : d.import_spec?.file?.encoding === "utf16be"
+                      ? "text/csv; charset=utf-16be"
+                      : "text/csv; charset=utf-8",
               )
               .header("X-Content-Type-Options", "nosniff")
               .header(

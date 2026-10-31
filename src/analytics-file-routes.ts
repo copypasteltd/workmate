@@ -9,11 +9,16 @@ import { importOptions } from "./analytics-import.js";
 import { campaignFile, normalizeCampaignFile } from "./analytics-file.js";
 import { campaignSource } from "./analytics-sources.js";
 import { persistCampaignSnapshot } from "./analytics.js";
+export const campaignSelectionFields = {
+  sheet_name: z.string().min(1).max(100).optional(),
+  header_row: z.number().int().min(1).max(100).default(1),
+  csv_delimiter: z.enum(["comma", "semicolon", "tab"]).optional(),
+  csv_encoding: z.enum(["utf8", "utf16le", "utf16be"]).optional(),
+};
 const selection = z
   .object({
     asset_version_id: uuid,
-    sheet_name: z.string().min(1).max(100).optional(),
-    header_row: z.number().int().min(1).max(100).default(1),
+    ...campaignSelectionFields,
   })
   .strict();
 const fields = {
@@ -22,8 +27,9 @@ const fields = {
     .enum(["dataset", "campaign", "adset", "ad"])
     .default("campaign"),
   conversion_definition: z.string().trim().min(1).max(1000).optional(),
-  sheet_name: z.string().min(1).max(100).optional(),
-  header_row: z.number().int().min(1).max(100).default(1),
+  ...campaignSelectionFields,
+  number_format: importOptions.shape.number_format,
+  date_format: importOptions.shape.date_format,
   supersedes_id: uuid.optional(),
 };
 const canonicalInput = z
@@ -77,6 +83,7 @@ export function registerFileImports(
             {
               csv: _csv,
               locations: _locations,
+              canonical_cells: _canonicalCells,
               ...info
             } = campaignFile(source.bytes, source.name, b);
           return {
@@ -111,6 +118,8 @@ export function registerFileImports(
             asset_version_id: _id,
             sheet_name,
             header_row,
+            csv_delimiter,
+            csv_encoding,
             supersedes_id,
             ...options
           } = b;
@@ -129,6 +138,8 @@ export function registerFileImports(
             {
               sheet_name,
               header_row,
+              csv_delimiter,
+              csv_encoding,
             },
           );
           if (
@@ -195,6 +206,8 @@ export function registerFileImports(
               asset_version_id: _id,
               sheet_name,
               header_row,
+              csv_delimiter,
+              csv_encoding,
               supersedes_id,
               ...options
             } = parsed;
@@ -206,7 +219,7 @@ export function registerFileImports(
                 conversion_definition:
                   options.conversion_definition ?? "not_provided",
               },
-              { sheet_name, header_row },
+              { sheet_name, header_row, csv_delimiter, csv_encoding },
             );
             if (
               !options.conversion_definition &&
