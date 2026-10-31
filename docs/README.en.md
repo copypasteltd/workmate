@@ -1,3 +1,11 @@
+## v0.1.0 · 已发布 / Published
+
+[完整ZIP / Complete ZIP](https://github.com/copypasteltd/workmate/releases/download/v0.1.0/workmate-v0.1.0-complete.zip) · [SHA256](https://github.com/copypasteltd/workmate/releases/download/v0.1.0/workmate-v0.1.0-complete.zip.sha256) · [使用 / Guide](releases/v0.1.0.md) · [发布回执 / Receipt](quality/release-publication-167.json)
+
+全部端与源码统一冻结，六个线上资产摘要吻合。All clients and source are frozen; all six uploaded asset digests match. 外部假数据；Windows未签名。Synthetic dependencies; unsigned Windows.
+
+---
+
 # Workmate · v0.1.0 · 冻结交付 / Frozen delivery
 
 [中文使用 / Bilingual guide](releases/v0.1.0.md) · [完整Release / Release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0) · [完整ZIP / Complete ZIP](https://github.com/copypasteltd/workmate/releases/download/v0.1.0/workmate-v0.1.0-complete.zip) · [SHA256](https://github.com/copypasteltd/workmate/releases/download/v0.1.0/workmate-v0.1.0-complete.zip.sha256)
