@@ -1,0 +1,108 @@
+{
+  "requirement_id": "REQ-084",
+  "title": "完整用户目录及用户上下文操作",
+  "requirement": {
+    "verbatim": "完整用户管理：按全局用户去重提供分页、筛选、搜索、详情和企业成员关系，含注册与登录、状态、费用、VIP、任务及内容入口；联系资料按字段授权展示，不把多企业成员算作多个用户。",
+    "source": "docs/requirements/01-srs.md:L206",
+    "priority": "P0",
+    "related_specification": [
+      "docs/product/08-admin-dashboard.md:L67-L68",
+      "docs/product/08-admin-dashboard.md:L83",
+      "docs/product/08-admin-dashboard.md:L87-L91"
+    ]
+  },
+  "review": {
+    "date": "2026-10-31",
+    "reviewer": "/root/admin_directory_165",
+    "verdict": "partial",
+    "confidence": "high",
+    "method": "Read-only static UI to API to authorization to SQL review; no services, tests, browser, product modifications or push.",
+    "independent_refutation": "pending_parent_review",
+    "heads": {
+      "root": "ff192fa01512abf2ace9bdca09a1646b3947a4f2",
+      "admin": "2e85a48b36db3c9b4582cbaed1fa6722761343ea",
+      "platform": "e0e6dfe73ae2d7f4dd0f754e21f278f1b867b65e"
+    },
+    "sha256": {
+      "dev/copypaste-admin/src/main.tsx": "c1bd3b7aa18201265674fc3a8d73dda93419ba619c4a452cdf4c56b88b14892d",
+      "dev/copypaste-admin/src/directory.tsx": "72646ce2067d813351904bbe454b489cea595672afb9478bec86fc30691939ce",
+      "dev/copypaste-admin/src/fees.tsx": "324613c7e9f8306681895b440f85634f7ab8dd5d867fe83b2467df1d11543ef2",
+      "dev/copypaste-admin/src/vip.tsx": "52857196c59f7cf9fca9ac57f60474e9b9b2eb09f695411fb7634ed2bad97531",
+      "dev/copypaste-platform/src/admin-directory.ts": "4f2caec4a8125a70eb78bab1ae45d6d86198af8edc306ac2dc6ac0227b4140ff",
+      "dev/copypaste-platform/src/admin.ts": "ed82b15ea9b34811e723795c7d8a441130f24830603c4bac24b1816181fcc65e",
+      "dev/copypaste-platform/src/admin-content.ts": "f0ae57c45c6a325b89a913678c3c75e66bcd1cf0c7d78a148596e19c2a3c0aea"
+    }
+  },
+  "what_implementation_demands": "A globally unique, authorized user directory with server pagination and usable search/filter/detail, scoped memberships and identity metadata, and working user-context fee/VIP/task/content operations; contact read and search must be field-authorized. The related dashboard specification requires preserved URL filters.",
+  "where_enforcement_lives": [
+    {"property": "global_user_identity", "evidence": ["dev/copypaste-platform/migrations/001-foundation.sql:L3-L6", "dev/copypaste-platform/migrations/001-foundation.sql:L38-L41", "dev/copypaste-platform/src/admin-directory.ts:L396-L419"]},
+    {"property": "bounded_signed_stable_cursor", "evidence": ["dev/copypaste-platform/src/admin-directory.ts:L257-L378", "dev/copypaste-platform/src/admin-directory.ts:L408-L430", "dev/copypaste-admin/src/main.tsx:L1597-L1621"]},
+    {"property": "supported_filters_and_field_authorization", "evidence": ["dev/copypaste-platform/src/admin-directory.ts:L14-L44", "dev/copypaste-platform/src/admin-directory.ts:L55-L154", "dev/copypaste-platform/src/admin-directory.ts:L174-L195", "dev/copypaste-platform/src/admin-directory.ts:L381-L407"]},
+    {"property": "identity_and_memberships", "evidence": ["dev/copypaste-platform/src/admin-directory.ts:L155-L195", "dev/copypaste-platform/src/admin-directory.ts:L440-L482", "dev/copypaste-platform/src/auth.ts:L394-L396", "dev/copypaste-admin/src/main.tsx:L2278-L2350"]}
+  ],
+  "findings": [
+    {
+      "id": "F084-01",
+      "priority": "P1",
+      "title": "User detail loses the selected user in VIP and fee operations",
+      "verdict": "contradicted",
+      "confidence": "high",
+      "root_cause": "UserDetail spreads the response envelope into BillingModal.user. The response has user.id, but BillingModal reads props.user.id. An any prop hides this shape error.",
+      "evidence": ["dev/copypaste-admin/src/main.tsx:L1835-L1857", "dev/copypaste-admin/src/main.tsx:L2215", "dev/copypaste-admin/src/main.tsx:L2387-L2399", "dev/copypaste-platform/src/admin-directory.ts:L477-L481"],
+      "vip_path": ["UserDetail data envelope", "BillingModal subject={kind:user,id:undefined}", "VipCommandModal subject truthy", "empty readOnly required Subject ID", "grant cannot target selected user"],
+      "vip_evidence": ["dev/copypaste-admin/src/vip.tsx:L660-L688", "dev/copypaste-admin/src/vip.tsx:L960-L978"],
+      "fee_path": ["UserDetail data envelope", "BillingModal subject undefined", "CanonicalFeeModal omits subject_id", "GET /v1/admin/billing/accounts?limit=50", "backend preserves account read authorization but omits selected-user predicate"],
+      "fee_evidence": ["dev/copypaste-admin/src/fees.tsx:L486-L519", "dev/copypaste-platform/src/admin-billing.ts:L65-L88"],
+      "static_reproduction": "With valid Admin access and required permissions, select any directory user and open Grant VIP or Manage credit. Trace actual detail response and props. No UI run was performed.",
+      "limits": "No privilege escalation or wrong-user financial mutation was demonstrated. Browser validation wording is unobserved."
+    },
+    {
+      "id": "F084-02",
+      "priority": "P2",
+      "title": "User detail has no selected-user task/content entry",
+      "verdict": "absent",
+      "confidence": "high",
+      "evidence": ["dev/copypaste-admin/src/main.tsx:L2207-L2419", "dev/copypaste-admin/src/main.tsx:L2336-L2341", "dev/copypaste-admin/src/main.tsx:L1092-L1099", "dev/copypaste-platform/src/admin.ts:L47-L52", "dev/copypaste-platform/src/admin-content.ts:L83-L88"],
+      "exhaustive_scope": "Read entire UserDetail return tree and every local action. Searched Link/navigate/tasks/content/execution/billing/entitle/Operation in that function. Only a back Link and unrelated actions exist; task match is a count. Followed alternative general Section API query, generic pagination schema and content projection; none preserves selected-user context.",
+      "limits": "General task and content administration pages exist; their mere presence is not a contextual user entry."
+    },
+    {
+      "id": "F084-03",
+      "priority": "P2",
+      "title": "Directory search/filter state is not preserved in the URL",
+      "verdict": "contradicted",
+      "confidence": "high",
+      "specification": "docs/product/08-admin-dashboard.md:L89",
+      "evidence": ["dev/copypaste-admin/src/main.tsx:L1034-L1071", "dev/copypaste-admin/src/main.tsx:L1328-L1333", "dev/copypaste-admin/src/main.tsx:L1357-L1366", "dev/copypaste-admin/src/main.tsx:L2223"],
+      "static_reproduction": "Apply a user/state/VIP filter, open a user detail and return or reload the directory. Applied filters were only component state; route effect resets them and the back Link uses /users.",
+      "limits": "Backend filtering for supported parameters is present; this finding is frontend persistence."
+    }
+  ],
+  "paths_walked": [
+    "Section directory query -> GET /v1/admin/users -> requireAdmin -> readScope/current bindings/MFA -> scoped users SQL -> per-user DTO/memberships -> signed cursor -> page controls",
+    "Directory filter/search -> strict userQuery -> filter field authorization -> scoped SQL predicates -> UI state without URL persistence",
+    "User row -> UserDetail -> GET /users/:user_id and /management-context -> scoped identity/memberships/usage/entitlements",
+    "UserDetail -> BillingModal -> VipCommandModal -> readOnly required missing subject",
+    "UserDetail -> BillingModal -> CanonicalFeeModal -> billing accounts -> readScope -> optional subject predicate absent",
+    "UserDetail full return tree -> no task/content entry; alternate general pages -> no selected-user filter contract"
+  ],
+  "searched": [
+    {"pattern": "REQ-084|完整用户|用户目录|global.*user|user.*directory", "scope": "requirement, dashboard and technical docs", "result": "Found exact REQ-084 and dashboard details; historical gaps were not treated as current source evidence."},
+    {"pattern": "billing_account_ids", "scope": "all Admin src/**/*.tsx", "result": "0 matching files"},
+    {"pattern": "useSearchParams", "scope": "all Admin src/**/*.tsx", "result": "data-jobs.tsx, deletions.tsx and provider-control.tsx only; none in directory path"},
+    {"pattern": "setSearchParams", "scope": "all Admin src/**/*.tsx", "result": "0 matching files"},
+    {"pattern": "Link|navigate|tasks|content|execution|billing|entitle|Operation", "scope": "UserDetail full function main.tsx:L2207-L2419", "result": "Only Link is back to /users; task match is count; fee/VIP modal references traced; no task/content link or panel."},
+    {"pattern": "subject_id|app.get", "scope": "admin-billing.ts", "result": "Account collection path has optional subject filter at L82-L83."},
+    {"pattern": "last_login_at", "scope": "platform/src", "result": "Normal user login writes auth.ts:L394; directory DTO reads source field."},
+    {"pattern": "registerAdminDirectory|registerAdminContent", "scope": "backend registration", "result": "admin.ts:L659-L661 connects actual routes."},
+    {"pattern": "last_login_at", "scope": "initial attempted auth-service.ts path", "result": "File did not exist; corrected to actual auth.ts. Not counted as 0-hit absence evidence."}
+  ],
+  "how_verdict_was_reached": "Implemented core identity, deduplication, supported filtering, cursor pagination, detail and field authorization rule out absent. Broken selected-user fee/VIP target plus missing task/content entry and URL persistence prevent implemented. Overall design is aligned, so partial rather than globally contradicted.",
+  "open_questions": [
+    "No UI/API execution. Browser-native validation message is unobserved; static prop mismatch is proven.",
+    "Expanded dashboard filters (registration/activity, VIP type/expiry, spend ranges, low balance) are not represented by the current strict schema; no claim of their implementation or exhaustive subfeature audit.",
+    "All federated/native login timestamp semantics were not individually reviewed.",
+    "Account and membership mutation state machines require their own review; existing entry buttons are not proof of mutation correctness.",
+    "A future task/content link alone cannot close F084-02 unless destination UI and API enforce the same selected-user context."
+  ]
+}

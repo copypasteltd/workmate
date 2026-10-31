@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "review_type": "independent_spec_refutation",
+  "reviewer": "/root/desktop_native_165",
+  "date": "2026-10-31",
+  "candidate": "B: Admin 用户详情给费用/VIP 模态框传包装 response 而非 data.user，默认目标 user.id 丢失。",
+  "requirement_ids": ["REQ-084", "REQ-087", "REQ-088", "REQ-098"],
+  "verdict": "成立",
+  "refutation_result": "finding_stands",
+  "confidence": 0.99,
+  "reason": "用户明确要求管理员可主动开费用/VIP，既有产品规格逐字要求用户详情为主要操作入口、直接定位费用/开通VIP、不能让管理员手工拼接ID。传错 wrapper 使目标丢失，尤其 VIP 收到 truthy subject 但 id undefined 后 subject_id 为空且 readOnly，违背该流程。未找到允许此行为的规格例外。",
+  "original_user_instruction": {
+    "source":"本会话用户 Admin 设计开发指令",
+    "verbatim":"要求admin可以管理完整的用户端内容，完整的用户列表和用户消耗情况，并且可以主动帮用户开具体的费用、vip权限等内容。要求足够详细的权限和内容控制。"
+  },
+  "spec_evidence": [
+    {
+      "location":"docs/requirements/01-srs.md:206",
+      "verbatim":"| REQ-084 | P0 | 完整用户管理：按全局用户去重提供分页、筛选、搜索、详情和企业成员关系，含注册与登录、状态、费用、VIP、任务及内容入口；联系资料按字段授权展示，不把多企业成员算作多个用户。 |"
+    },
+    {
+      "location":"docs/requirements/01-srs.md:209",
+      "verbatim":"| REQ-087 | P0 | 人工费用管理：管理员可在权限和限额内充值、赠送限时额度、调整信用上限、扣回误发额度及登记退款；金额采用正数最小单位和明确动作，幂等、账本及原始来源可回溯，不允许直接改余额。 |"
+    },
+    {
+      "location":"docs/requirements/01-srs.md:210",
+      "verbatim":"| REQ-088 | P0 | VIP 人工开通：支持个人或企业主体开通、延期、换方案、撤销和到期，展示来源、精确生效时段、授予者及操作原因；重叠规则可预览，人工授予默认不自动续费或扣款。 |"
+    },
+    {
+      "location":"docs/product/08-admin-dashboard.md:83",
+      "verbatim":"用户详情是主要操作入口：从用户列表进入后，应能直接定位费用、开通 VIP 或打开其内容，不要求管理员在多个系统手工拼接用户 ID。A03 各页签按权限提供，未授权的列、统计和正文不进入响应。",
+      "strength":"直接反驳从详情只是空白通用表单、允许客户自己找ID的解释。"
+    },
+    {
+      "location":"docs/product/08-admin-dashboard.md:113",
+      "verbatim":"用户详情点击「调整费用/额度」→ 明确用户及计费企业/账户 → 选择业务类型 → 输入金额/有效期/原因 → 查看前后差异及政策结果 → 直接执行或进入所需审批 → 展示操作号、流水及用户端生效结果。"
+    },
+    {
+      "location":"docs/product/08-admin-dashboard.md:129",
+      "verbatim":"个人 VIP 与企业方案分别建模；开通必须选择主体、plan_version、开始/结束时间、来源（付费/试用/赠送/补偿）、是否含额度、续费方式及理由。默认人工赠送不自动续费，不暗中建立周期扣款。单独 VIP 标记不自动充值。",
+      "strength":"主体准确是必要条件。保留用户/企业区分意味着修复不能任意把用户ID当企业账户ID。"
+    },
+    {
+      "location":"docs/requirements/02-nonfunctional-and-service-levels.md:85",
+      "verbatim":"后台沿用 CopyPaste 浅深主题及繁中英文，密集表格使用无衬线正文和等宽数字。主体、金额单位、有效期、未知/待对账和权限受限有文字表达。错误摘要可聚焦并定位输入，列表返回保持筛选，提交超时复用 operation/幂等标识，键盘、200% 缩放和窄屏可完成普通开通流程。G10 与 TC-083–102 的运行指标、权限、并发及页面证据另行记录。"
+    }
+  ],
+  "original_tc": [
+    {
+      "location":"docs/quality/01-test-and-acceptance-plan.md:1016",
+      "id":"TC-084",
+      "precondition_verbatim":"前置：同一用户属于三个企业，另有被冻结、无 VIP、未消费与联系字段受限的用户。",
+      "operation_verbatim":"操作与异常：搜索、组合筛选、翻页和打开详情；以客服及财务角色请求完整联系字段。",
+      "pass_verbatim":"通过条件及证据：全局用户只出现一次且成员关系完整；未知消费不写零，字段按权限屏蔽；详情与筛选统计一致且不泄露范围外用户。",
+      "coverage_limit":"本项主要检验目录/详情，不逐字覆盖从详情启动开通模态框；不能仅凭目录正常就把收费/VIP动作判为通过。"
+    },
+    {
+      "location":"docs/quality/01-test-and-acceptance-plan.md:1056",
+      "id":"TC-088",
+      "operation_verbatim":"操作与异常：人工开通、延期、换方案、撤销并重放请求；查看开始结束时刻与个人企业切换，再检查是否自动扣款。",
+      "pass_verbatim":"通过条件及证据：授权内操作可直接完成，主体和版本清楚；重叠按预览策略处理，延期不叠加错误时长；默认不自动续费或扣款，每次变更可追溯。",
+      "strength":"直接要求可完成、主体清楚。"
+    },
+    {
+      "location":"docs/quality/01-test-and-acceptance-plan.md:1046",
+      "id":"TC-087",
+      "operation_verbatim":"操作与异常：提交充值、赠送、扣回和信用调整；重放幂等键，修改同键金额，模拟落账后响应断开与预留竞争。",
+      "pass_verbatim":"通过条件及证据：只产生一次合法分录，异参重放冲突；余额不可直接 PATCH；额度可用性与预留一致，赠送不算实收，失败有可查询 operation。"
+    }
+  ],
+  "limited_original_head_code_check": {
+    "admin_head":"2e85a48b36db3c9b4582cbaed1fa6722761343ea",
+    "refs":[
+      {"location":"dev/copypaste-admin/src/main.tsx:2215", "observation":"UserDetail 读取 /v1/admin/users/:id 的包装 data；2231 标题使用 data.user.display_name 证明用户身份在子对象。"},
+      {"location":"dev/copypaste-admin/src/main.tsx:2387", "observation":"原 HEAD BillingModal.user 是 {...data, memberships:...}，未展开 data.user，所以 props.user.id 未得到该 user ID。"},
+      {"location":"dev/copypaste-admin/src/main.tsx:1847", "observation":"VIP caller 对 truthy props.user 产生 {kind:'user',id:props.user.id}，结果 subject 对象存在但 id undefined。"},
+      {"location":"dev/copypaste-admin/src/main.tsx:1857", "observation":"费用 caller subject={props.user?.id} 同样丢失筛选主体。"},
+      {"location":"dev/copypaste-admin/src/vip.tsx:970", "observation":"subject_id 的 defaultValue=subject?.id、readOnly=!!subject、required。该实际组合造成用户详情进入的个人开通目标为空且不可编辑。"},
+      {"location":"dev/copypaste-admin/src/fees.tsx:516", "observation":"仅在 subject truthy 时将 subject_id 加入账户查询；缺失时退为未筛选的可授权账户列表。"}
+    ],
+    "effect_limits":["能从证据推出 VIP 目标空白阻塞以及费用目标上下文丢失。", "不能据此声称已经发生错误入账、越权开通、跨用户泄露或资金损失；服务端权限/主体校验仍可能拒绝。", "未读取或评定父任务当前补丁，不将未发布工作计入原候选。"]
+  },
+  "possible_refutations_considered":[
+    {"argument":"全局财务/VIP页面可用，详情入口可要求手工找ID", "result":"排除；产品规格83行明确要求用户详情直接定位且不要求手拼用户ID，VIP框又被readOnly锁空。"},
+    {"argument":"不能替用户选企业账户，所以不传用户ID是预期", "result":"排除；用户主体上下文与选定企业/账户不是同一字段，规格113/129行要求明确区分，不能用丢失用户身份替代主体选择。"},
+    {"argument":"用户允许假数据或 unsigned release", "result":"排除；该问题是 Admin 已有组件之间的身份数据结构错配，不依赖 AI 提供方、支付真实响应或 Windows 签名。"}
+  ],
+  "search_record":[
+    "读取 SRS 原始084/087/088、ADMIN01来源119行、Admin产品83/113/129、费用模块68/86/90及后台技术110/116/122的边界。",
+    "重读原 TC-084/087/088，明确目录TC与开通TC的不同覆盖。",
+    "以 git show 固定原Admin HEAD 读取 UserDetail/BillingModal；有限跟踪 VIP subject 输入及 CanonicalFeeModal subject_id 查询。",
+    "首次误猜 admin-users.ts 路径不存在，未作为缺少后端实现证据；本次不开展新后端缺陷搜索。"
+  ],
+  "not_checked":["没有运行测试、浏览器、服务、模型或实际费用/VIP写入。", "未验证所有费用动作、审批策略和真实支付流程。", "没有改产品或推送。", "该判定只确认候选与既有规格冲突，不是完整Admin验收。"]
+}

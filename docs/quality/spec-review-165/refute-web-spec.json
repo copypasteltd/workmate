@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "review_type": "independent_spec_refutation",
+  "reviewer": "/root/desktop_native_165",
+  "date": "2026-10-31",
+  "candidate": "A: 首次创建企业已提交成功但响应丢失，原 UI 重试换新 Idempotency-Key，可能重复创建企业及默认项目。",
+  "requirement_ids": ["REQ-035", "REQ-001", "REQ-003"],
+  "verdict": "成立",
+  "refutation_result": "finding_stands",
+  "confidence": 0.95,
+  "reason": "原需求要求访问/登录到首次使用形成完整流程。UC01 明确把创建企业放在进入默认项目与首项工作的主线上，可靠性规格明确业务状态变更幂等。没有发现允许把同一次提交的未知响应重试解释成第二次创建的例外。REQ-035/TC-035 本身没有逐字写首次创建企业丢回包，但 UC01 和通用可靠性条款补充了该主流程与一致性要求。",
+  "original_user_instruction": {
+    "source": "本会话用户开发指令",
+    "verbatim": "另外侧重处理用户的登录接入体系，处理好用户从访问到使用的完整工作流程，做好产品结构和产品细则的设计"
+  },
+  "spec_evidence": [
+    {
+      "location": "docs/requirements/01-srs.md:157",
+      "verbatim": "| REQ-035 | P0 | Web 工作台：以自然语言委派、会话执行及成果工作面板为主路径，项目、Agent/团队、能力、资料、自动化和用量可导航；无需本地安装完成云端工作。 |",
+      "strength": "要求无需本地安装的完整云端入口；单独这行不是首次建企业幂等的逐字细则。"
+    },
+    {
+      "location": "docs/product/02-user-journeys.md:36",
+      "verbatim": "接受邀请/创建企业 → 进入默认可访问项目及助手 → 直接输入第一项工作目标并附资料，或编辑预填示例 → 按需补阻塞信息 → 在会话旁查看实际产物 → 将有复用价值的资料保存到项目，再邀请同事。",
+      "strength": "直接指定首次建企业为主要用户旅程。"
+    },
+    {
+      "location": "docs/product/02-user-journeys.md:38",
+      "verbatim": "品牌资料可渐进补齐，字体、语言或产品信息确实影响交付时再询问。平台连接不是所有素材任务的前置条件。重复邀请返回已有状态，企业名相同不能合并身份。退出企业不会删除其他成员的任务。",
+      "strength": "最强可能反驳是同名企业允许不同身份；这支持用户主动另建企业，不能授权同一未知创建意图在重试时重复执行。修复应按意图复用 key/body，不能全局按企业名合并。"
+    },
+    {
+      "location": "docs/requirements/02-nonfunctional-and-service-levels.md:33",
+      "verbatim": "Worker 挂掉后回收执行租约，检查步骤和外部作业记录再恢复。消息传递按可能重复设计；业务状态变更、费用记账和外部副作用分别幂等。结果未知的外部写入进入对账或人工处理，不直接重放。",
+      "strength": "业务状态变更幂等是通用约束；后半外部写入条款不是把企业创建误称外部供应商写入。"
+    },
+    {
+      "location": "docs/requirements/24-current-source-release.md:7",
+      "verbatim": "验证只保留六仓构建、关键启动配置、当前Windows包启动和首次登录到交付闭环。数据库清理必须证明本次子进程归属；禁止借发版停止用户其他项目或改写已有生产配置。完整历史/跨系统回归及真实提供方、签名发行按原编号表保留，不阻塞模拟候选版封包。",
+      "strength": "快速候选仍明确保留首次登录到交付闭环，省略广泛验证不允许已知的首次提交逻辑错误。"
+    }
+  ],
+  "original_tc": [
+    {
+      "location": "docs/quality/01-test-and-acceptance-plan.md:526",
+      "id": "TC-035",
+      "precondition_verbatim": "前置：无安装的新用户拥有合法账号和品牌样例。",
+      "operation_verbatim": "操作与异常：完成素材任务和报表导入，刷新/关闭/重开页面，再审阅下载。",
+      "pass_verbatim": "通过条件及证据：完整云端路径可完成；导航保留企业/项目上下文；任务恢复，无需本地安装。",
+      "coverage_limit": "原 TC-035 没有显式列出首次创建企业事务已提交后断开 HTTP 回复。此缺陷是 UC01 + 通用业务幂等推导出的补充场景，不能声称原 TC 已逐字涵盖或本轮已执行原 TC。"
+    },
+    {
+      "location": "docs/quality/01-test-and-acceptance-plan.md:174",
+      "verbatim": "在事务提交前后、供应商接受请求后但回包前、对象写入后但元数据提交前、队列重复投递、租约切换、取消竞争、设备重连与 token 撤销处分别中断。检查权威状态、外部 operation、费用预留与真实文件，不仅检查 HTTP 返回码。",
+      "coverage_limit": "通用提交边界的测试方法，非新执行证据。"
+    }
+  ],
+  "limited_original_head_code_check": {
+    "web_head": "c5ef6b3738a650556f289c3f7217eb1a26ced661",
+    "desktop_head": "ab332889375247dfcb2d8ccf9b4c843dadc44b2a",
+    "refs": [
+      {"location":"dev/copypaste-web/src/main.tsx:542", "observation":"原 HEAD Onboarding.post('/v1/tenants', body) 没有传 requestKey；只有收到 r 才保存企业项目并 refresh/navigate。"},
+      {"location":"dev/copypaste-web/src/api.ts:135", "observation":"原 HEAD api 每次未显式提供 Idempotency-Key 的写入调用生成新的 crypto.randomUUID。"},
+      {"location":"dev/copypaste-web/src/api.ts:164", "observation":"post 的第三参数允许稳定 requestKey，但该原始 onboarding caller 没有使用。"},
+      {"location":"dev/copypaste-desktop/renderer/src/main.tsx:526", "observation":"原 HEAD 同一 onboarding caller，也没有提供显式创建意图 key。"}
+    ],
+    "limit":"仅为候选定位作少量原 HEAD 阅读；这份文档反驳没有运行 HTTP/DB 复现，也没有验证父任务补丁。未重审所有后端创建事务。"
+  },
+  "possible_refutations_considered": [
+    {"argument":"可以合法创建多个同名企业", "result":"排除该反驳；新建不同意图与同一未知意图重试不同，不能按名称简单合并。"},
+    {"argument":"后端已有按 key 幂等", "result":"同一意图在 UI 重试换 key，后端原 key 的去重不能识别该新 key；不能仅凭服务端有幂等函数宣布 UI 正确。"},
+    {"argument":"用户允许假数据与快速跳过测试", "result":"排除该反驳；企业/项目/身份流程仍是主要真实产品逻辑，假 AI 和缩小验证范围没有撤销完整首次使用要求。"}
+  ],
+  "search_record": [
+    "REQ-035/REQ-084/TC-035/TC-084 首先定位到原 SRS 和实际 docs/quality/01-test-and-acceptance-plan.md；早先猜测的 02-test-cases.md、01-acceptance.md 不存在，未作为规格不存在证据。",
+    "枚举 docs/product 当前文件后读取 02-user-journeys.md、05-web-agent-workbench.md；未使用误猜的 02-user-flows-and-information-architecture.md。",
+    "读取 NFR 可靠性33行、当前冻结范围24-current-source-release:7，并对原 HEAD main/api 作有限定位。"
+  ],
+  "not_checked": ["没有测试、浏览器、模型、服务或安装执行。", "没有修改产品或推送。", "未将假数据或未签名限制当作缺陷。", "未判定父任务当前未发布补丁是否通过验收。"]
+}

@@ -1,0 +1,112 @@
+{
+  "candidate": "Web onboarding can create a duplicate workspace and first project after an unconfirmed committed response is retried",
+  "reviewer": "/root/admin_directory_165",
+  "date": "2026-10-31",
+  "method": "Independent static counterexample/refutation review of immutable git show sources; no product edits, runtime API, database connection, tests or browser.",
+  "baseline": {
+    "web_head": "c5ef6b3738a650556f289c3f7217eb1a26ced661",
+    "platform_head": "e0e6dfe73ae2d7f4dd0f754e21f278f1b867b65e"
+  },
+  "decision": "confirmed_not_refuted",
+  "confidence": "high_static",
+  "scope_limit": "A successful first commit followed by transport/JSON delivery failure is the trigger. A failure before the first commit cannot by itself create a duplicate. No claim of duplicate paid work or external provider charges.",
+  "candidate_path": [
+    {
+      "step": "Onboarding calls post('/v1/tenants', {name,project_name}) without the optional requestKey.",
+      "source": "dev/copypaste-web/src/main.tsx:L518-L550"
+    },
+    {
+      "step": "post forwards no Idempotency-Key when requestKey is absent; browser api creates crypto.randomUUID() for each invocation.",
+      "source": "dev/copypaste-web/src/api.ts:L132-L137,L164-L169"
+    },
+    {
+      "step": "clientFetch or clientJson throws CLIENT_RESULT_UNCONFIRMED after a failed write transport/response; it makes one attempt and cannot infer commit status.",
+      "source": "dev/copypaste-web/src/client-failure.ts:L41-L61"
+    },
+    {
+      "step": "AsyncForm catches the failure, displays it and unconditionally clears busy. Its submit button becomes enabled again; no request key or unresolved operation is retained.",
+      "source": "dev/copypaste-web/src/ui.tsx:L379-L428"
+    },
+    {
+      "step": "Retrying the same form invokes post again and produces a different key; backend replay looks up only actor/action/key, so it executes a fresh effect.",
+      "source": "dev/copypaste-platform/src/access.ts:L89-L137"
+    },
+    {
+      "step": "Fresh effect inserts a new tenant UUID, owner membership, wallet and first project, then commits. There is no same-user/same-name reuse condition on this path.",
+      "source": "dev/copypaste-platform/src/workspaces.ts:L36-L81; dev/copypaste-platform/src/db.ts:L35-L57"
+    }
+  ],
+  "refutation_attempts": [
+    {
+      "hypothesis": "The networking layer retries using a stable request key or stores the unconfirmed request.",
+      "result": "rejected",
+      "evidence": "clientFetch does exactly one fetch and throws a typed unconfirmed-write error; post has an optional explicit key but Onboarding does not supply it. New manual submission constructs a new api call and random key.",
+      "sources": ["dev/copypaste-web/src/client-failure.ts:L48-L61", "dev/copypaste-web/src/api.ts:L94-L96,L132-L137,L164-L169", "dev/copypaste-web/src/main.tsx:L542-L546"]
+    },
+    {
+      "hypothesis": "CSRF validation consumes the first request's token, so the same-session retry is rejected.",
+      "result": "rejected",
+      "evidence": "Browser api supplies the existing csrfToken. Backend compares the supplied token to csrf(db,cookie) for the current valid session, with no consumption or tenant-create-specific rotation. A second valid request passes the same check.",
+      "sources": ["dev/copypaste-web/src/api.ts:L133-L135", "dev/copypaste-platform/src/auth.ts:L67-L117"]
+    },
+    {
+      "hypothesis": "Session generation invalidation prevents the retry after the first request.",
+      "result": "rejected",
+      "evidence": "api rejects a response if the sign-in generation changed; /v1/tenants neither changes the session generation nor signs the user out on an unconfirmed connection result. This guards identity changes, not repeated writes within the same session.",
+      "sources": ["dev/copypaste-web/src/api.ts:L94-L104,L144-L161", "dev/copypaste-web/src/session-request.ts:L3-L16"]
+    },
+    {
+      "hypothesis": "Workspace context refresh navigates the user away before retrying.",
+      "result": "rejected_as_guarantee",
+      "evidence": "Onboarding saves IDs, calls w.refresh and navigates only after await post returns. A thrown unconfirmed result skips all three. Context also refreshes on visibility changes, but Onboarding only redirects unauthenticated users; it does not leave /welcome merely because memberships exist. A same-page immediate retry is reachable.",
+      "sources": ["dev/copypaste-web/src/main.tsx:L518-L550", "dev/copypaste-web/src/context.tsx:L63-L92,L131-L142", "dev/copypaste-web/src/main.tsx:L200,L731"]
+    },
+    {
+      "hypothesis": "The per-user authority lock serializes tenant creation and thereby prevents duplicate names.",
+      "result": "rejected",
+      "evidence": "lockUserAuthorities serializes operations on the same user, while currentUserAuthority checks only active status and auth_version. A subsequent serialized request still enters replay with its new key and inserts new rows. Neither function checks existing workspace membership or workspace/project names.",
+      "sources": ["dev/copypaste-platform/src/user-authority.ts:L5-L21", "dev/copypaste-platform/src/workspaces.ts:L36-L81"]
+    },
+    {
+      "hypothesis": "Backend replay uses request content hash as a cross-key deduplication key.",
+      "result": "rejected",
+      "evidence": "The advisory lock and SELECT are keyed by actor/action/key. input_hash is only compared if that exact replay row exists; equal bodies with different keys are independent effects. request_replays primary key is actor_id/action/key.",
+      "sources": ["dev/copypaste-platform/src/access.ts:L99-L137", "dev/copypaste-platform/migrations/001-foundation.sql:L222-L224"]
+    },
+    {
+      "hypothesis": "Tenant/project/membership unique constraints or insert triggers reject a same-name retry.",
+      "result": "rejected",
+      "evidence": "Tenant and project IDs are freshly generated UUID primary keys. Tenant names are not unique; projects have UNIQUE(tenant_id,id), and membership uses PRIMARY KEY(tenant_id,user_id). A new tenant UUID makes every retry independent. Migration search found no same-user tenant-name or project-name uniqueness rule; the project_cloud_workspace insert trigger provisions by new project ID, not user/name.",
+      "sources": ["dev/copypaste-platform/migrations/001-foundation.sql:L34-L45", "dev/copypaste-platform/migrations/023-cloud-file-workspaces.sql:L14,L136", "dev/copypaste-platform/src/workspaces.ts:L48-L68"]
+    },
+    {
+      "hypothesis": "Database transaction rollback undoes the first create when delivery fails.",
+      "result": "rejected",
+      "evidence": "db.tx commits before returning its result. A browser transport/JSON failure after that commit does not invoke transaction rollback. Rollback applies only to an exception inside db.tx before its successful return.",
+      "sources": ["dev/copypaste-platform/src/db.ts:L55-L62", "dev/copypaste-web/src/client-failure.ts:L49-L61"]
+    }
+  ],
+  "static_reproduction": {
+    "preconditions": "Valid active user session and CSRF token; browser client remains on /welcome; first request commits successfully.",
+    "steps": [
+      "Submit company A and first project B. Client creates key K1.",
+      "Allow POST /v1/tenants to commit, but lose or corrupt its response before browser parsing completes.",
+      "AsyncForm shows the unconfirmed-result error and re-enables submit; successful-return ID save/context refresh/navigation did not run.",
+      "Submit unchanged fields again. Client creates K2 != K1.",
+      "Backend serializes the user, finds no replay under K2, and inserts a second company A and first project B under new IDs."
+    ],
+    "runtime_performed": false
+  },
+  "search_record": [
+    {"command": "git show c5ef6b3738a650556f289c3f7217eb1a26ced661:src/main.tsx / ui.tsx / api.ts / client-failure.ts / session-request.ts / context.tsx", "result": "Read immutable relevant functions and all error/finally/navigation branches."},
+    {"command": "git show e0e6dfe73ae2d7f4dd0f754e21f278f1b867b65e:src/workspaces.ts / access.ts / user-authority.ts / db.ts / auth.ts / migrations/001-foundation.sql", "result": "Read immutable tenant create, replay, locks, transaction and auth branches."},
+    {"command": "git grep Onboarding|/onboarding|memberships.length|tenant.create at old Web HEAD in main.tsx/context.tsx", "result": "Onboarding route is /welcome; app redirect handles zero memberships; Onboarding itself has no has-membership guard."},
+    {"command": "git grep case-insensitive unique.*(tenants|projects)|alter table (tenants|projects)|before insert on (tenants|projects)|after insert on (tenants|projects) across old Platform migrations", "result": "Matched foundation identity, data-mode/lifecycle columns, project workspace insert trigger and unrelated tables' FKs/unique constraints. No owner/name or tenant/project-name dedup rule found."},
+    {"command": "initial rg including src/idempotency.ts", "result": "Nonexistent file path; corrected by following workspaces.ts import to access.ts. Failed path was not counted as 0-hit proof."}
+  ],
+  "recommended_boundary": "Retain a request identity and immutable input for one pending user-owned onboarding operation and reuse it on retry/recovery. Do not impose a global workspace-name uniqueness policy merely to compensate for a client request-identity bug. Preserve identity/session invalidation and backend replay behavior.",
+  "open_questions": [
+    "No deliberate response-loss runtime replay was performed by this reviewer; the parent owns integrated verification.",
+    "This review does not evaluate the Desktop bridge's idempotency defaults or Extension onboarding; it confirms the browser Web path only."
+  ]
+}

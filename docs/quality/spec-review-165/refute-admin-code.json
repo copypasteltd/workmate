@@ -1,0 +1,124 @@
+{
+  "candidate": "Admin UserDetail passes response envelope as BillingModal.user, but modal requires flattened user id",
+  "independent_refutation": "not_refuted",
+  "status": "confirmed static code mismatch at original HEAD; no runtime reproduction",
+  "original_heads": {
+    "admin": "2e85a48b36db3c9b4582cbaed1fa6722761343ea",
+    "backend": "e0e6dfe73ae2d7f4dd0f754e21f278f1b867b65e"
+  },
+  "source_snapshots": [
+    {
+      "repository": "admin",
+      "head": "2e85a48b36db3c9b4582cbaed1fa6722761343ea",
+      "path": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-admin\\src\\main.tsx",
+      "sha256": "c1bd3b7aa18201265674fc3a8d73dda93419ba619c4a452cdf4c56b88b14892d"
+    },
+    {
+      "repository": "admin",
+      "head": "2e85a48b36db3c9b4582cbaed1fa6722761343ea",
+      "path": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-admin\\src\\ui.tsx",
+      "sha256": "30ff41373bd6d98ce0945141fdaa22ff086b888d3c9c996ff2c0226a13e25009"
+    },
+    {
+      "repository": "admin",
+      "head": "2e85a48b36db3c9b4582cbaed1fa6722761343ea",
+      "path": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-admin\\src\\api.ts",
+      "sha256": "b9c3a849dd30b9f70c6938af3467822b82387fcb86bf2dd4ee28001e7c8263d9"
+    },
+    {
+      "repository": "admin",
+      "head": "2e85a48b36db3c9b4582cbaed1fa6722761343ea",
+      "path": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-admin\\src\\vip.tsx",
+      "sha256": "52857196c59f7cf9fca9ac57f60474e9b9b2eb09f695411fb7634ed2bad97531"
+    },
+    {
+      "repository": "admin",
+      "head": "2e85a48b36db3c9b4582cbaed1fa6722761343ea",
+      "path": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-admin\\src\\fees.tsx",
+      "sha256": "324613c7e9f8306681895b440f85634f7ab8dd5d867fe83b2467df1d11543ef2"
+    },
+    {
+      "repository": "backend",
+      "head": "e0e6dfe73ae2d7f4dd0f754e21f278f1b867b65e",
+      "path": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\src\\admin-directory.ts",
+      "sha256": "4f2caec4a8125a70eb78bab1ae45d6d86198af8edc306ac2dc6ac0227b4140ff"
+    }
+  ],
+  "claims_checked": [
+    {
+      "counterargument": "Backend adds id at envelope root",
+      "result": "Rejected. admin-directory.ts:477-482 returns {user:dto,memberships,billing_account_ids,effective_entitlements}; id is inside dto."
+    },
+    {
+      "counterargument": "api/useData unwraps or copies user.id to root",
+      "result": "Rejected. api.ts:82 returns raw data; ui.tsx:109-110 puts that raw value in snapshot.data unchanged."
+    },
+    {
+      "counterargument": "UserDetail corrects the modal prop",
+      "result": "Rejected. main.tsx:2390-2399 spreads ...data and replaces memberships only, without id or ...data.user."
+    },
+    {
+      "counterargument": "BillingModal falls back to nested user or route id",
+      "result": "Rejected for canonical/VIP actions. main.tsx:1847 uses props.user.id and :1857 props.user?.id; no nested fallback. Legacy branch does read user?.user?.id at :2109, but main.tsx:1843/1852 routes current buttons away from that branch."
+    },
+    {
+      "counterargument": "VIP modal lets admin enter the missing ID manually",
+      "result": "Rejected. vip.tsx:964/972-974 receives truthy {kind:user,id:undefined}; subject kind is disabled and subject_id is readOnly with defaultValue undefined. Subject is blank and cannot be repaired there."
+    },
+    {
+      "counterargument": "Fee modal filters to the current profile by another source",
+      "result": "Rejected. fees.tsx:516-520 sets subject_id only if subject is truthy; undefined drops filter. No useParams fallback or profile ID source read in this component."
+    }
+  ],
+  "trigger_path": [
+    {
+      "source": "dev/copypaste-admin/src/main.tsx:2256-2272",
+      "step": "Open user profile, click Grant VIP (entitlements.grant) or Manage credit (billing.gift)."
+    },
+    {
+      "source": "dev/copypaste-admin/src/main.tsx:2387-2402",
+      "step": "Modal gets envelope {...data,memberships:...} whose root id is undefined."
+    },
+    {
+      "source": "dev/copypaste-admin/src/main.tsx:1843-1863",
+      "step": "VIP gets truthy subject with missing id; canonical fee gets undefined subject."
+    },
+    {
+      "source": "dev/copypaste-admin/src/vip.tsx:660-680,964-977",
+      "step": "VIP readonly target is blank; selection/preview cannot identify current user."
+    },
+    {
+      "source": "dev/copypaste-admin/src/fees.tsx:516-520",
+      "step": "Fee account options are unfiltered by profile, potentially showing all accounts in existing admin billing scope."
+    }
+  ],
+  "impact": "User-profile VIP entry cannot bind the intended user. User-profile credit entry loses its profile filter; existing backend authorization still applies, so this is not evidence of cross-permission privilege escalation.",
+  "bounded_fix": "Pass a typed explicit subject id (data.user.id) to canonical/VIP paths while preserving the legacy envelope shape where needed; verify target/account binding and direct profile entry regression.",
+  "searched": [
+    {
+      "command": "rg -n BillingModal|function UserDetail|memberships src/main.tsx",
+      "result": "All caller/dispatcher branches read; UserDetail envelope mismatch located."
+    },
+    {
+      "command": "rg -n user.id|user?.id|props.user src/main.tsx",
+      "result": "Canonical/VIP reads flat id; legacy nested fallback exists but not reached by these actions."
+    },
+    {
+      "command": "rg -n /v1/admin/users/:|userDto platform/src -g admin*.ts",
+      "result": "Actual route admin-directory.ts:441 and raw return :477-482."
+    },
+    {
+      "command": "rg -n subject|useParams vip.tsx fees.tsx",
+      "result": "No profile route fallback; vip readonly subject and fee optional query filter read."
+    },
+    {
+      "command": "Guessed vip-command*.tsx/canonical-fee*.tsx literal Windows paths",
+      "result": "Failed glob; corrected symbol search found vip.tsx and fees.tsx."
+    }
+  ],
+  "limits": [
+    "No code changed during refutation",
+    "No tests/browser/service started",
+    "Independent reading of old HEAD, not candidate summary alone"
+  ]
+}

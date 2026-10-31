@@ -1,0 +1,125 @@
+{
+  "schema": 1,
+  "review_type": "independent_directed_static_counterexample_review",
+  "reviewer": "/root/desktop_native_165",
+  "date": "2026-10-31",
+  "requirement_id": "REQ-035",
+  "scope": "本轮 Web/Desktop workspace-creation.ts、workspace-creation-form.tsx、api/context，以及 Desktop native allowlist；为跟踪新回执读取了 backend workspaces.ts 的本次修改。只检查该增量，没有扩展到其他业务。",
+  "snapshot": "父任务阶段165未提交工作区首次静态读取。此文件保留 v1 观察，不断言后续修复仍有相同问题。",
+  "verdict": "needs_changes",
+  "runtime_acceptance": "not_run",
+  "blocking_logic_regressions_confirmed": 0,
+  "privacy_cleanup_findings": 2,
+  "summary": "同键恢复、已失效回执不新建以及 native GET allowlist 源码主链成立；发现两处登出私密名称清理的有限竞态/事件路径缺口，已立即通知父任务。没有证明跨用户服务端访问、错误新建或其他账户UI直接展示旧名称。",
+  "findings": [
+    {
+      "id": "WORKSPACE-FIX-PRIVACY-01",
+      "priority": "P2",
+      "status_at_review": "confirmed_by_static_counterexample",
+      "title": "首次 hash 等待期间退出，旧异步续体可在清理后重新写入企业/项目明文名称",
+      "files": [
+        "dev/copypaste-web/src/workspace-creation.ts:29",
+        "dev/copypaste-web/src/workspace-creation.ts:36",
+        "dev/copypaste-web/src/workspace-creation-form.tsx:33",
+        "dev/copypaste-desktop/renderer/src/workspace-creation.ts:29",
+        "dev/copypaste-desktop/renderer/src/workspace-creation-form.tsx:33"
+      ],
+      "counterexample": [
+        "当前 owner A 无已有 attempt，提交首次创建。form 在33行校验 generation，然后 await beginWorkspaceAttempt。",
+        "beginWorkspaceAttempt 30行读取 existing 后 await crypto.subtle.digest（workspaceFingerprint）；此时尚未持久化 attempt。",
+        "等待期间发生显式退出或换账号；endClientSession/当前身份刷新对现有记录完成 redact。",
+        "旧 digest 继续执行。beginWorkspaceAttempt 35-36行创建并直接 save 包含 body.name/project_name 的记录，没有再检查 generation。",
+        "回到 form 35行的 current() 才发现 SESSION_CHANGED；POST 被正确阻止，但先前写入的私密名称没有撤回，catch 因 generation 不同直接返回。"
+      ],
+      "consequence": "登出/换账号的私密名称清理可被旧异步工作撤销，旧 owner 的企业/项目名称重新出现在同一 renderer 的 sessionStorage。不是证明发生跨账户服务器请求，现有 generation guard 确实阻止后续 POST。",
+      "recommended_minimum_fix": "在持久化紧前同步执行调用者的 generation/owner guard，或把异步 hash 与同步落盘拆开，在 form 再核对后落盘。保留 opaque 请求 key 的恢复设计。",
+      "boundedness": "只针对首次 begin 内部异步后写入；已有 attempt 的 form:32 hash 后 form:33 guard 已在后续保存/POST之前，不能把所有 await 都宣称不安全。",
+      "notification": "已在发现后通过 collaboration.send_message 立即报告父任务。"
+    },
+    {
+      "id": "WORKSPACE-FIX-PRIVACY-02",
+      "priority": "P2",
+      "status_at_review": "confirmed_by_static_path",
+      "title": "Desktop 原生退出事件路径把私密清理错误绑定是否广播",
+      "files": [
+        "dev/copypaste-desktop/renderer/src/api.ts:10",
+        "dev/copypaste-desktop/renderer/src/context.tsx:113",
+        "dev/copypaste-desktop/src/main.ts:325",
+        "dev/copypaste-desktop/src/main.ts:136"
+      ],
+      "counterexample": [
+        "Desktop 已有包含 body/result 名称的未解决创建 attempt。",
+        "用户从“此电脑/准备卸载”触发 DesktopRemovalController，main.ts:325-329 的 withdraw 直接调用 nativeSession.signOut({remote:false})。",
+        "NativeSession changed 向 renderer 发 auth:changed；context.tsx:113-118 的 changed 执行 changeClientSession、clear、refresh，不调用 redact。",
+        "该 refresh 在原生登录已清除后收到401，renderer api 的 protected failure 调 endClientSession(false)。",
+        "api.ts:13 仅在 broadcast 为 true 时调用 redactWorkspaceAttempts。此路径不经过 SignOutButton 在 signOut 完成后的默认 endClientSession()，于是私密 body/result 仍存于 sessionStorage，直到下一次成功身份加载可能清理其他owner。"
+      ],
+      "consequence": "本机原生退出/断开并没有完成该新功能声明的名称清理。owner-key与组件key仍阻止普通另一个owner表单直接加载该记录，未证明其他用户UI直接显示旧名称。",
+      "recommended_minimum_fix": "将私密名称清理与广播开关解耦；原生 auth change 或本地结束会话均应清私密字段，opaque key/fingerprint 继续保留供原owner恢复。",
+      "comparison": "Web api 按 reason==='sign_out' 清理，与 broadcast 独立；Desktop本次实现按 if(broadcast) 清理，事件路径不同。",
+      "notification": "已通过 collaboration.send_message 即时补充父任务。"
+    }
+  ],
+  "directed_paths_reviewed": [
+    {
+      "scenario": "首次 POST 已成功但回复丢失；同tab刷新后重试",
+      "source_verdict": "holds",
+      "evidence": [
+        "workspace-creation.ts:35-36 首次请求前把 owner/key/fingerprint/body/state 写入 sessionStorage。",
+        "workspace-creation-form.tsx:10 从 owner-key 恢复 attempt；22-27 先 GET 原 key 的回执，completed 进入原结果而不再 POST。",
+        "not_found 时29-36 使用原 a.key 和保存的 body；初始没有request完成时才 begin。",
+        "网络/5xx/SESSION_CHANGED 等未知状态不会进入57-58行仅允许的明确 validation400清除。"
+      ],
+      "limit": "没有执行实际 browser refresh/HTTP丢回包。sessionStorage 持续于同tab刷新；关闭整个tab/应用之后是否要有更强恢复不在本次修改要求内，没有新增该范围。"
+    },
+    {
+      "scenario": "账号切换、迟到 HTTP 回复与私密名字",
+      "source_verdict": "partial",
+      "evidence": [
+        "WorkspaceCreationForm 在 main 中 key={me.user.id}，state/inputs不跨owner复用；attempt storage key 包含owner。",
+        "form:17-18捕获client generation；每次HTTP后24/37/42与刷新后52核对，迟到HTTP回复不能写当前scope/navigate。",
+        "context successful refresh 仅保留当前owner的body/result，清理其他owner名字；明确signout也有redact设计。",
+        "上述两个新privacy finding使登出清理不能在所有本次新增路径成立。"
+      ]
+    },
+    {
+      "scenario": "已删除、停用或撤销访问的创建回执",
+      "source_verdict": "holds",
+      "evidence": [
+        "backend workspaces.ts:65-86 新GET要求requireUser/currentUserAuthority；查询按actor_id+tenant.create+key，不接受客户端owner替换。",
+        "saved.revoked_at→removed；currentCreationResult:33-58 重新检查成员、活动企业、删除状态和data_mode，项目经projectAccess。不可用返回unavailable；项目不可读可返回project:null，仍不另建企业。",
+        "form:26/44将removed/unavailable存为终止状态并return，terminal禁用submit。completed本地旧结果也在41-46行重新GET权威回执。",
+        "backend POST:146-150对旧 replay 重新检查当前资源，不能借历史响应恢复访问；不可用410不创建第二个意图。"
+      ],
+      "limit": "只跟踪新caller/callee和旧replay调用边界，没有运行SQL/撤权并发测试或穷尽原权限服务。"
+    },
+    {
+      "scenario": "Desktop 新恢复接口能经过 native allowlist",
+      "source_verdict": "holds",
+      "evidence": [
+        "Desktop src/config.ts:136增加精确 /v1/workspace-creation-requests/[a-f0-9-]{36}，仅GET；客户端key由crypto.randomUUID生成。",
+        "tenant POST原有 /v1/tenants 分支保持GET/POST；通用renderer request仍经固定company origin和main IPC。",
+        "git diff --ignore-space-at-eol 显示 config 语义仅新增这一条；大范围diff源自CRLF/LF，不是放宽整个native allowlist。"
+      ],
+      "limit": "没有启动Electron或执行allowlist测试；这是路由模式与caller实际字符串的静态对照。"
+    }
+  ],
+  "file_identity_at_read": {
+    "web_desktop_workspace_creation_ts_same_sha256": "7f9da17b93cf361abb5df7d30e37c4d274ad9c66fec26ec7a46a76983f741201",
+    "web_desktop_workspace_creation_form_tsx_same_sha256": "d06e8f72c6fa76e4830776fabbe32299ba6ea93fa21888cbdbc39bb1eb60fdf6f",
+    "note": "在初次读取后执行Get-FileHash确认两端相同；后续父任务可能修改，两项摘要不代表最终冻结版本。"
+  },
+  "search_and_read_record": [
+    "git diff --stat 与本轮main/api/context/config修改；新workspace两个文件未跟踪，不在git diff正文，因此显式Get-Content全部阅读。",
+    "为两端新文件标注行号，展开两端context/auth事件与API失败处理；只沿既有DesktopRemoval.signOut caller校验privacy路径。",
+    "读取platform/src/workspaces.ts新增GET/POST/currentCreationResult，确认owner、资源失效、不可重新创建语义。",
+    "Get-FileHash核对两端新文件；git diff --ignore-space-at-eol确认native config实际语义变化。",
+    "在Desktop cwd误试 src/workspaces.ts 不存在，随后显式切platform cwd读取，不以错误路径推导功能缺失。"
+  ],
+  "constraints_observed": [
+    "所有shell cwd显式D:/dev/copypasted/自有agent或子目录。",
+    "没有启动测试、服务、浏览器、模型、Docker/WSL或虚拟化。",
+    "未修改父任务产品代码、原审查报告；仅新增本JSON。",
+    "没有提交、推送或改写冻结内容。"
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "review_type": "independent_directed_static_counterexample_recheck",
+  "reviewer": "/root/desktop_native_165",
+  "date": "2026-10-31",
+  "requirement_id": "REQ-035",
+  "previous_record": "docs/quality/spec-review-165/fix-review-workspace-v1.json",
+  "scope": "仅复核父任务针对v1两处名称清理问题的修复，以及原指定丢回包恢复、账户隔离、失效回执、新native allowlist。未扩大功能审查。",
+  "verdict": "no_remaining_findings_in_reviewed_change",
+  "ready_for_parent_freeze_decision": true,
+  "runtime_acceptance": "not_run_by_this_reviewer",
+  "remaining_findings_in_scope": [],
+  "rechecked_findings": [
+    {
+      "id": "WORKSPACE-FIX-PRIVACY-01",
+      "status": "closed_by_source_recheck",
+      "refs": [
+        "dev/copypaste-web/src/workspace-creation.ts:29",
+        "dev/copypaste-web/src/workspace-creation-form.tsx:14",
+        "dev/copypaste-web/src/workspace-creation-form.tsx:38",
+        "dev/copypaste-desktop/renderer/src/workspace-creation.ts:29",
+        "dev/copypaste-desktop/renderer/src/workspace-creation-form.tsx:38"
+      ],
+      "reason": "beginWorkspaceAttempt在digest await后31行先同步current()，才重读existing并创建/保存；form传入检查mounted+session generation的current。旧会话续体无法在退出清理后重新落明文名称。首次hash期间另一调用已经保存的attempt也会被重读，同fingerprint返回同key。form另加submitting.current同步闸门并在unmount标记live=false。"
+    },
+    {
+      "id": "WORKSPACE-FIX-PRIVACY-02",
+      "status": "closed_by_source_recheck",
+      "refs": [
+        "dev/copypaste-desktop/renderer/src/api.ts:10",
+        "dev/copypaste-desktop/renderer/src/context.tsx:113"
+      ],
+      "reason": "Desktop endClientSession现在无条件调用redactWorkspaceAttempts，与broadcast无关；native auth changed也在changeClientSession/clear/refresh前redact。因此断开电脑/原生退出→auth changed→401/endClientSession(false)路径不再留下body/result名称，同时保留opaque key/fingerprint。"
+    }
+  ],
+  "retained_checks": [
+    {
+      "scenario": "丢回包及同tab刷新",
+      "static_result": "holds",
+      "reason": "请求前保存owner/key/body，恢复先GET原key，not_found使用同key+原body，completed不再POST；未知结果不清请求身份。"
+    },
+    {
+      "scenario": "账号切换及迟到响应",
+      "static_result": "holds",
+      "reason": "owner storage key与owner组件key隔离；异步HTTP、hash、refresh边界均通过current校验；旧组件unmount和session generation阻止旧续体写scope/导航。两处v1名称清理漏洞已关闭。"
+    },
+    {
+      "scenario": "已删除/停用/撤销访问回执",
+      "static_result": "holds",
+      "reason": "服务端actor绑定并重查活动tenant/project权限；removed/unavailable是前端终止状态，禁止新POST。旧completed回执也重新读权威状态。原项目失效返回project:null不会新建替代企业。"
+    },
+    {
+      "scenario": "Desktop新接口",
+      "static_result": "holds",
+      "refs": ["dev/copypaste-desktop/src/config.ts:136"],
+      "reason": "精确UUID形状的workspace-creation-requests路径仅允许GET，原tenants POST保留；固定company origin和其他native禁止路径保持。"
+    }
+  ],
+  "observed_sha256": {
+    "web_and_desktop_workspace_creation_ts": "69efbf8413b0015185afe5fcc26ce168c44e24acbb0075761797cab4de79f0de",
+    "web_and_desktop_workspace_creation_form_tsx": "aba1d0ceec3942737b96afd8bc31bb4bac100b7a488e2c41ebee2f12374a0a7a",
+    "note": "当前两端对应文件摘要一致，仅标识本次源文件快照，不是已发布安装包验收。"
+  },
+  "v1_metadata_correction": {
+    "field": "file_identity_at_read.web_desktop_workspace_creation_form_tsx_same_sha256",
+    "correct_at_v1_read": "d06e8f72c6fa76e4830776fabe32299ba6ea93fa21888cbdbc39bb1eb60fdf6f",
+    "reason": "v1手工抄写该摘要多一个b；本记录更正元数据，保留v1原文件。v1代码路径和两项反例不受影响。"
+  },
+  "validation_limits": [
+    "只读源码和diff/Get-FileHash；没有启动测试、服务、浏览器、模型或安装器。",
+    "父任务报告的4项helper测试和Desktop类型检查不是本审查人执行，未把其描述转为本轮运行验收。",
+    "没有修改父任务产品、v1或原始REQ报告，没有提交或推送。",
+    "结论仅用于本次有限修改的冻结判断，不代表完整REQ-035、全端或生产签名/提供方验收。"
+  ]
+}

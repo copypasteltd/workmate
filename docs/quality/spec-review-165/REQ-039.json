@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "requirement_id": "REQ-039",
+  "reviewer": "/root/desktop_native_165",
+  "date": "2026-10-31",
+  "workspace": "D:/dev/copypasted/自有agent",
+  "baseline": {
+    "desktop": "ab332889375247dfcb2d8ccf9b4c843dadc44b2a",
+    "backend": "e0e6dfe73ae2d7f4dd0f754e21f278f1b867b65e"
+  },
+  "spec": {
+    "location": "docs/requirements/01-srs.md:161",
+    "verbatim": "| REQ-039 | P1 | Desktop：主窗口无边框、无 Electron 默认边框及菜单，使用品牌自绘标题栏及窗口控制；支持原生安装、登录、工作台、退出、更新与卸载；不要求用户安装 Docker/WSL；系统支持范围有发布矩阵。 |",
+    "amendment_location": "docs/requirements/03-client-execution-amendment.md:44",
+    "amendment_verbatim": "Desktop 版本的内容，agent必须要在本地运行，并且允许客户向其提供 fully permission。要求最终的操作能力对标 codex desktop",
+    "subclauses": ["DESK-L01", "DESK-L02", "DESK-L03", "DESK-L04", "DESK-L05", "DESK-L06", "DESK-L07", "DESK-L08"],
+    "all_verbatim_subclauses": "See REQ-039.md section 1; copied from amendment lines 66-75 without rewriting."
+  },
+  "source_path_verdict": "implemented",
+  "confidence": 0.9,
+  "full_requirement_acceptance": "undecidable",
+  "reason": "Trusted native main, customer consent, local fixed Codex app-server, company inference, owned stop/withdrawal and native installation lifecycle form an implemented source chain. This read-only review cannot stand in for actual installed-client tool/upgrade/uninstall observations or full original acceptance.",
+  "new_confirmed_functional_gaps": [],
+  "new_confirmed_functional_gap_count": 0,
+  "enforcement": [
+    {"claim":"frameless native shell", "refs":["dev/copypaste-desktop/src/window-controls.ts:10", "dev/copypaste-desktop/src/main.ts:631", "dev/copypaste-desktop/src/preload.cts:67"]},
+    {"claim":"native PKCE login and epoch ownership", "refs":["dev/copypaste-desktop/renderer/src/sessions.tsx:79", "dev/copypaste-desktop/src/main.ts:434", "dev/copypaste-desktop/src/native-session.ts:69", "dev/copypaste-desktop/src/local-agent.ts:263"]},
+    {"claim":"local workspace actual route and main IPC", "refs":["dev/copypaste-desktop/renderer/src/main.tsx:855", "dev/copypaste-desktop/renderer/src/main.tsx:951", "dev/copypaste-desktop/src/preload.cts:251", "dev/copypaste-desktop/src/main.ts:712", "dev/copypaste-desktop/src/config.ts:80"]},
+    {"claim":"separate pairing/file bridge", "refs":["dev/copypaste-desktop/src/main.ts:512", "dev/copypaste-desktop/src/main.ts:532", "dev/copypaste-desktop/src/desktop-pairing.ts"]},
+    {"claim":"customer-only explicit full permission", "refs":["dev/copypaste-desktop/renderer/src/local-agent.tsx:256", "dev/copypaste-desktop/src/main.ts:198", "dev/copypaste-desktop/src/local-agent.ts:662", "dev/copypaste-desktop/src/local-codex.ts:101", "dev/copypaste-desktop/src/local-codex.ts:311", "dev/copypaste-desktop/src/local-codex.ts:422"]},
+    {"claim":"fixed local Codex, local skills, company gateway", "refs":["dev/copypaste-desktop/src/main.ts:225", "dev/copypaste-desktop/src/local-runtime.ts", "dev/copypaste-desktop/src/local-codex.ts:213", "dev/copypaste-desktop/src/local-codex.ts:305", "dev/copypaste-desktop/src/local-codex.ts:354", "dev/copypaste-desktop/src/local-agent.ts:1406", "dev/copypaste-desktop/src/local-agent.ts:1608"]},
+    {"claim":"actual server registration and native-family/project/task authorization", "refs":["dev/copypaste-platform/src/server.ts:465", "dev/copypaste-platform/src/desktop-executions.ts:235", "dev/copypaste-platform/src/desktop-executions.ts:261", "dev/copypaste-platform/src/desktop-executions.ts:308", "dev/copypaste-platform/src/desktop-executions.ts:617"]},
+    {"claim":"owned stop and unknown-outcome recovery", "refs":["dev/copypaste-desktop/src/local-startup.ts:114", "dev/copypaste-desktop/src/local-agent.ts:219", "dev/copypaste-desktop/src/local-agent.ts:2281", "dev/copypaste-desktop/src/local-codex.ts:773", "dev/copypaste-desktop/src/local-codex.ts:808"]},
+    {"claim":"logout/revocation/quit withdrawal", "refs":["dev/copypaste-desktop/src/native-session.ts:214", "dev/copypaste-desktop/src/main.ts:136", "dev/copypaste-desktop/src/main.ts:782", "dev/copypaste-desktop/src/main.ts:970", "dev/copypaste-desktop/src/local-agent.ts:2383", "dev/copypaste-desktop/src/local-agent.ts:2434"]},
+    {"claim":"update admission and native verify/parent wait", "refs":["dev/copypaste-desktop/src/main.ts:280", "dev/copypaste-desktop/src/desktop-updates.ts:446", "dev/copypaste-desktop/src/update-native.ts:27", "dev/copypaste-desktop/src/update-installer-host.cs:43"]},
+    {"claim":"native setup and withdrawal-before-uninstall", "refs":["dev/copypaste-desktop/package.json:61", "dev/copypaste-desktop/scripts/desktop-lifecycle.nsh:28", "dev/copypaste-desktop/src/main.ts:949", "dev/copypaste-desktop/src/desktop-removal.ts:209", "dev/copypaste-desktop/src/main.ts:320"]}
+  ],
+  "paths_walked": [
+    "NativeSignInButton -> preload.signIn -> auth:signin -> removal.activate -> PKCE callback -> NativeSession.acceptLogin -> localAccessReset",
+    "LocalAgentWorkspace -> native list/create/permission/send -> trusted main local-agent IPC -> LocalAgentController -> /desktop-executions -> LocalStartupCoordinator -> LocalCodexSession -> packaged codex.exe app-server -> local turn",
+    "deviceSync -> signed durable pairing -> bounded files bridge; kept separate from local Agent workspace/grant",
+    "stop/revoke/logout -> local ownership/abort -> child interrupt/close -> owned PID tree cleanup -> original company cancellation/settlement receipt",
+    "window close -> before-quit -> all local controllers close -> app.exit",
+    "DesktopUpdateController.install -> admission/checkpoints -> native verify helper READY/COMMIT -> parent exit -> verified NSIS installer",
+    "NSIS uninstall -> app --prepare-uninstall -> durable removal marker -> local withdrawal -> host unregister -> cache/receipt status -> nonzero prevents deletion"
+  ],
+  "refuted_candidates": [
+    {"candidate":"Desktop home still runs cloud Agent", "verdict":"excluded", "reason":"Actual LocalAgentWorkspace route reaches packaged native app-server; cloud work is explicit external link."},
+    {"candidate":"full permission remains one-hour/new-files-only bridge", "verdict":"excluded", "reason":"Native grant and dangerFullAccess are separate from files bridge."},
+    {"candidate":"full permission secretly disables shell or repeats every command approval", "verdict":"excluded", "reason":"Actual shell=true, approval never and returned sandbox/profile verification."},
+    {"candidate":"uninstall deletes files without withdrawal", "verdict":"excluded", "reason":"NSIS waits app preparation and aborts deletion if local cleanup does not complete."},
+    {"candidate":"unsigned candidate proves missing update implementation", "verdict":"excluded", "reason":"Actual signed update chain exists; unsigned synthetic release is explicitly authorized and disclosed."}
+  ],
+  "searches": [
+    {"query":"rg --files desktop/src, renderer and scripts", "result":"Located and then read main, preload, local controller/runtime, native auth, pairing and lifecycle callees."},
+    {"query":"rg -n DESK-L0|fully|完整本機|完整本机|local Codex|full permission in client amendment", "result":"Found active clauses at lines44,66-75; historical stage descriptions were not used as current implementation evidence."},
+    {"query":"rg -n BrowserWindow|Menu\\.|frame:|ipcMain|before-quit|session|permission|pair|disconnect in main", "result":"Expanded actual shell, PKCE, ownership, IPC, update/removal and quit code."},
+    {"query":"rg -n auth|start|stop|full|permission|folder|choose|native in local-agent UI", "result":"Expanded native directory/grant/send/stop/retry/revoke callers."},
+    {"query":"rg -n spawn\\(|app-server|shell|sandbox|approval|danger|config|baseURL in local-codex", "result":"Expanded real spawn, permission/provider overrides, returned profile check and owned close."},
+    {"query":"rg -n LocalAgentWorkspace|CloudWorkspaceLink|sessions|signin|signOut|deviceSync|pair across renderer/main/preload", "result":"Confirmed actual route registration and independent bridge."},
+    {"query":"rg -n desktop-executions|registerDesktop|desktopExecutions in platform/src", "result":"Followed server registration into runtime and actor/family/project SQL enforcement."},
+    {"query":"rg -n minimize|toggle-maximize|window:command|titlebar|app-region", "result":"Found actual native custom shell in preload, not renderer component name."},
+    {"query":"rg Windows|macOS|Linux|unsigned|未签 in README and docs/releases", "result":"Current Windows x64 unsigned synthetic release scope confirmed; no new OS qualification claimed."},
+    {"query":"Initial incorrect backend/release/helper paths and PowerShell literal wildcards", "result":"Failed path/glob searches; corrected to copypaste-platform, docs/releases, README.md, src/update-installer-host.cs and reread. Failures/truncated output do not prove absent functionality."}
+  ],
+  "related_parent_owned_issue": {
+    "topic":"First company onboarding unknown response may change idempotency key on retry",
+    "location":"dev/copypaste-desktop/renderer/src/main.tsx:526",
+    "status":"Parent reported and owns independent review/fix; not a new finding independently established by this REQ-039 review."
+  },
+  "not_checked": [
+    "No tests/services/models/browser/installer were run.",
+    "No new installed-client PKCE/directory/actual native tool/stop/uninstall full observation.",
+    "All browser/program tool subprocess semantics and every team/workflow child path not deeply audited.",
+    "All DB migrations/triggers and original TC matrix not exhaustively audited.",
+    "No macOS/Linux or company-signed upgrade acceptance; approved fake providers and unsigned candidate retained."
+  ],
+  "detailed_report": "docs/quality/spec-review-165/REQ-039.md"
+}
