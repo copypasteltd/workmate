@@ -1,0 +1,460 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Workmate authorized scope data export",
+    "version": "152"
+  },
+  "paths": {
+    "/v1/tenants/{tenant}/export-preview": {
+      "get": {
+        "summary": "Preview readable scope",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized preview JSON"
+          },
+          "400": {
+            "description": "Invalid parameters or mismatched tenant header"
+          },
+          "401": {
+            "description": "Current sign-in required"
+          },
+          "403": {
+            "description": "Permission, scope deny or recent MFA required"
+          },
+          "404": {
+            "description": "Unavailable or unauthorized scope (including archived customer project)"
+          },
+          "409": {
+            "description": "Changed selection, archived admin scope or changing source"
+          },
+          "413": {
+            "description": "Explicit complete export capacity exceeded; no truncation"
+          },
+          "429": {
+            "description": "Export concurrency or rate capacity"
+          },
+          "503": {
+            "description": "Temporary disk unavailable"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/export-package": {
+      "get": {
+        "summary": "Save the acknowledged exact readable scope",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "expected_snapshot",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          {
+            "name": "acknowledge",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "true"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verified ZIP with Content-Length and X-Content-SHA256"
+          },
+          "400": {
+            "description": "Invalid parameters or mismatched tenant header"
+          },
+          "401": {
+            "description": "Current sign-in required"
+          },
+          "403": {
+            "description": "Permission, scope deny or recent MFA required"
+          },
+          "404": {
+            "description": "Unavailable or unauthorized scope (including archived customer project)"
+          },
+          "409": {
+            "description": "Changed selection, archived admin scope or changing source"
+          },
+          "413": {
+            "description": "Explicit complete export capacity exceeded; no truncation"
+          },
+          "429": {
+            "description": "Export concurrency or rate capacity"
+          },
+          "503": {
+            "description": "Temporary disk unavailable"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/export-preview": {
+      "get": {
+        "summary": "Preview readable scope",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized preview JSON"
+          },
+          "400": {
+            "description": "Invalid parameters or mismatched tenant header"
+          },
+          "401": {
+            "description": "Current sign-in required"
+          },
+          "403": {
+            "description": "Permission, scope deny or recent MFA required"
+          },
+          "404": {
+            "description": "Unavailable or unauthorized scope (including archived customer project)"
+          },
+          "409": {
+            "description": "Changed selection, archived admin scope or changing source"
+          },
+          "413": {
+            "description": "Explicit complete export capacity exceeded; no truncation"
+          },
+          "429": {
+            "description": "Export concurrency or rate capacity"
+          },
+          "503": {
+            "description": "Temporary disk unavailable"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/export-package": {
+      "get": {
+        "summary": "Save the acknowledged exact readable scope",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "expected_snapshot",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          {
+            "name": "acknowledge",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "true"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verified ZIP with Content-Length and X-Content-SHA256"
+          },
+          "400": {
+            "description": "Invalid parameters or mismatched tenant header"
+          },
+          "401": {
+            "description": "Current sign-in required"
+          },
+          "403": {
+            "description": "Permission, scope deny or recent MFA required"
+          },
+          "404": {
+            "description": "Unavailable or unauthorized scope (including archived customer project)"
+          },
+          "409": {
+            "description": "Changed selection, archived admin scope or changing source"
+          },
+          "413": {
+            "description": "Explicit complete export capacity exceeded; no truncation"
+          },
+          "429": {
+            "description": "Export concurrency or rate capacity"
+          },
+          "503": {
+            "description": "Temporary disk unavailable"
+          }
+        }
+      }
+    },
+    "/v1/admin/scopes/{kind}/{id}/export-preview": {
+      "get": {
+        "summary": "Preview readable scope",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "projects",
+                "tenants"
+              ]
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized preview JSON"
+          },
+          "400": {
+            "description": "Invalid parameters or mismatched tenant header"
+          },
+          "401": {
+            "description": "Current sign-in required"
+          },
+          "403": {
+            "description": "Permission, scope deny or recent MFA required"
+          },
+          "404": {
+            "description": "Unavailable or unauthorized scope (including archived customer project)"
+          },
+          "409": {
+            "description": "Changed selection, archived admin scope or changing source"
+          },
+          "413": {
+            "description": "Explicit complete export capacity exceeded; no truncation"
+          },
+          "429": {
+            "description": "Export concurrency or rate capacity"
+          },
+          "503": {
+            "description": "Temporary disk unavailable"
+          }
+        }
+      }
+    },
+    "/v1/admin/scopes/{kind}/{id}/export-package": {
+      "get": {
+        "summary": "Save the acknowledged exact readable scope",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "projects",
+                "tenants"
+              ]
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "expected_snapshot",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          {
+            "name": "acknowledge",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "true"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verified ZIP with Content-Length and X-Content-SHA256"
+          },
+          "400": {
+            "description": "Invalid parameters or mismatched tenant header"
+          },
+          "401": {
+            "description": "Current sign-in required"
+          },
+          "403": {
+            "description": "Permission, scope deny or recent MFA required"
+          },
+          "404": {
+            "description": "Unavailable or unauthorized scope (including archived customer project)"
+          },
+          "409": {
+            "description": "Changed selection, archived admin scope or changing source"
+          },
+          "413": {
+            "description": "Explicit complete export capacity exceeded; no truncation"
+          },
+          "429": {
+            "description": "Export concurrency or rate capacity"
+          },
+          "503": {
+            "description": "Temporary disk unavailable"
+          }
+        }
+      }
+    }
+  },
+  "x-manifest-format": "workmate-scope-export-1",
+  "x-export-categories": [
+    "agent_group_members",
+    "agent_group_nodes",
+    "agent_group_runs",
+    "agent_group_versions",
+    "agent_groups",
+    "agent_skill_bindings",
+    "agent_versions",
+    "agents",
+    "analysis_evidence",
+    "analysis_report_sources",
+    "analysis_reports",
+    "analysis_snapshots",
+    "analytics_datasets",
+    "asset_versions",
+    "assets",
+    "brand_profile_versions",
+    "brand_profiles",
+    "brand_version_assets",
+    "cloud_event_inbox",
+    "cloud_event_triggers",
+    "cloud_event_versions",
+    "cloud_schedule_occurrences",
+    "cloud_schedule_versions",
+    "cloud_schedules",
+    "cloud_workspaces",
+    "connections",
+    "connector_profiles",
+    "connector_snapshots",
+    "conversation_messages",
+    "conversations",
+    "creative_feedback_mappings",
+    "creative_feedback_reports",
+    "creative_mappings",
+    "creative_matrix_revisions",
+    "creative_matrix_units",
+    "creative_projects",
+    "dataset_evidence",
+    "delivery_reviews",
+    "editable_project_outputs",
+    "editable_project_versions",
+    "geo_experiments",
+    "geo_runs",
+    "geo_samples",
+    "memories",
+    "memory_versions",
+    "poster_project_versions",
+    "project_configuration_versions",
+    "project_configurations",
+    "projects",
+    "publication_effects",
+    "publication_events",
+    "publication_operations",
+    "publication_policies",
+    "seo_documents",
+    "seo_runs",
+    "skill_installations",
+    "solution_installations",
+    "solution_trials",
+    "solution_versions",
+    "task_dependencies",
+    "task_events",
+    "task_plans",
+    "task_quality_measurements",
+    "task_source_reads",
+    "tasks",
+    "video_project_sources",
+    "video_project_versions",
+    "video_renders",
+    "workflow_runs",
+    "workflow_schedule_versions",
+    "workflow_schedules",
+    "workflow_versions",
+    "workflows",
+    "workspace_nodes"
+  ],
+  "x-limits": {
+    "binary_bytes": 17179869184,
+    "versions": 10000,
+    "records_per_category": 100000,
+    "text_bytes": 67108864
+  },
+  "x-authorization": "Project read or workspace manage; current session/membership/source/erasure fences. Admin: scoped admin.exports.create + admin.content.body.read, fresh MFA, all overlapping project denies; shared content only.",
+  "x-preview": "snapshot SHA-256, name, tenant_id, project_id, audience, categories with record/byte counts, versions, binary_bytes, text_bytes, selected/archived projects, exclusions and limits; no raw content or storage keys."
+}

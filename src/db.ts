@@ -26,10 +26,14 @@ export class Database {
     tenant?: string,
     control = false,
     actor?: string,
+    options?: { snapshot: string },
   ): Promise<T> {
     const c = await (control ? this.control : this.app).connect();
     try {
-      await c.query("BEGIN");
+      if (options && !/^[a-f0-9]{8}-[a-f0-9]{8}-[0-9]+$/i.test(options.snapshot))
+        throw new Error("DATABASE_SNAPSHOT_INVALID");
+      await c.query(options ? "BEGIN ISOLATION LEVEL REPEATABLE READ" : "BEGIN");
+      if (options) await c.query(`SET TRANSACTION SNAPSHOT '${options.snapshot}'`);
       await c.query("SELECT set_config('app.tenant_id',$1,true)", [
         tenant ?? "",
       ]);
