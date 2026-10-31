@@ -1,3 +1,32 @@
+<!-- scope-erasure-150 -->
+
+**未冻结增量150：项目/企业永久清理闭环**
+
+owner/admin从「项目」预览永久删除，输入完整名称并确认不可恢复及保留范围；整企业仅owner可删。后台内容管理要求对应范围删除权限与近期MFA。/cleanup为独立账户页面，最后企业删除后仍可查看。立即阻止新工作与原文访问；本机/云端执行按公司实际用量收尾，未知费用保留核对。Desktop仍本机运行Codex；Extension仍为云端Agent与原生右侧栏。
+
+11项当前后端检查、6组真实三端流程、初次8步构建及3步定向重构建通过。明确省略一项耗时旧备份重复检查，保留其先前单项通过及所有失败原件；未扩跑广泛回归或真实付费模型。必要帐务/审计、共用身份、其他范围引用与客户本机副本适用明确保留规则。完整导出、全部衍生/生产恢复验收、真实供应方/广告账号和签名仍待完成。首个冻结v0.1.0-rc.1标签及五个ZIP保持原样。
+
+```mermaid
+flowchart LR
+ A[Current owner or scoped admin] --> B[Preview and exact-name confirmation]
+ B --> C[Permanent scope fence]
+ C --> D[Cancel new work and close inflight execution]
+ D --> E[21 resource roots and derived cleanup]
+ E --> F[Safe progress and retained financial facts]
+ C --> G[Erasure ledger]
+ G --> H[Replay before restoring old backup objects]
+```
+
+Actual component journey.
+
+![Actual screen](assets/screenshots/workmate-scope-erasure-150-04-permanent-delete-confirmation-en.png.png)
+
+![Actual interaction](assets/screenshots/workmate-scope-erasure-150-04-scope-cleanup.gif)
+
+[Actual MP4](assets/screenshots/workmate-scope-erasure-150-04-scope-cleanup.mp4)
+
+---
+
 <!-- project-lifecycle-149 -->
 
 **当前开发增量149：首个冻结版 `v0.1.0-rc.1` 后的项目管理修复**

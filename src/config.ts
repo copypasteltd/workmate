@@ -103,6 +103,7 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
     return false;
   }
   if (pathname === "/v1/session/context") return method === "GET";
+  if (pathname === "/v1/scope-deletions") return method === "GET";
   if (pathname === "/v1/brand-version-options") return method === "GET";
   if (["/v1/solution-access", "/v1/solution-targets", "/v1/solution-installations"].includes(pathname)) return method === "GET";
   if (pathname === "/v1/solution-versions") return method === "GET" || method === "POST";
