@@ -590,3 +590,6 @@ Run each component using its own bilingual guide. Use the backend demo configura
 
 
 Stage146: [actual document pages and source selection](development/146-document-pages-and-source-selection.md) · [all original numbered scopes](quality/remaining-work-stage146.md).
+
+
+Stage147: [functional customer journeys](development/147-functional-closure.md) · [all numbered scopes](quality/remaining-work-stage147.md) · [detailed contracts](technical/147-workflow-contract-and-local-handoff.md).

@@ -327,3 +327,8 @@ Stage 95 binds actual committed components with `finalize_media_effects_manifest
 阶段146使用 `record_document_preview_146_v1.py`、`prepare_document_preview_publication_146_v1.py`、`audit_document_preview_publication_146_v1.py` 和 `publish_document_preview_publication_146_v1.py --push`。保留404427条历史证明身份及原始尝试，绑定当前三端文件分页与来源选择、实际媒体和六组件源码；审计增量并普通原子更新八个远端引用，读取SHA核对。所有原始完整验收与用户文件保持。
 
 Stage146 retains404427 historical proof identities and original attempts. Its source-bound document previews and actual client media are published through an ordinary atomic eight-ref push with remote SHA readback. Original whole-product acceptance scopes remain open.
+
+
+<!-- functional-closure-stage147 -->
+阶段147保留406365条历史证明身份和全部原始失败；当前功能使用独立来源检查点与增量发布核查，普通原子更新八个远端引用并读取SHA确认。没有重放旧运行或声称全平台回归。
+Stage147 retains406365 historical proof identities and all original failures, binds the current functional increment, then ordinarily updates eight remote refs atomically with SHA readback.

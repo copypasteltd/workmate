@@ -1,0 +1,96 @@
+{
+  "at": "2026-10-30T22:47:10.383Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "native surface boundaries",
+      "arguments": [
+        "--test",
+        "tests/native-surface-integrity.test.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web build",
+      "arguments": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Extension compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Extension build",
+      "arguments": [
+        "scripts/build.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop build",
+      "arguments": [
+        "D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "unsigned Windows package",
+      "arguments": [
+        "node_modules/electron-builder/out/cli/cli.js",
+        "--win",
+        "--dir",
+        "--config.directories.output=release/functional-closure-147-01"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_unchanged": true,
+  "package_root": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\release\\functional-closure-147-01\\win-unpacked",
+  "package_files": {
+    "CopyPaste.exe": "e665c6948ea3abcf557e27e12a2798e39751a98f10acb0b8f836e24b2c3cd7f3",
+    "resources/app.asar": "b737afba560ba0a9ea30619ab2f916cf5633311d8e143c064c6055d332b11b37",
+    "resources/local-codex/codex.exe": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+    "resources/local-codex/runtime-manifest.json": "13490b9b1b9822967b8cea7134c2ba306671e58050a0897545184a7af6f34605"
+  },
+  "source_manifest": {
+    "path": "evidence/functional-closure-147/build-01-sources.json",
+    "sha256": "9ce8573c6ae64872a377a6c87ae0d241cb7c5ef1680fa7f9ee9630dce6088796"
+  },
+  "raw_report": {
+    "path": "evidence/functional-closure-147/build-01.tap",
+    "sha256": "0108ee17265d248e2ca3bc56723f9668f58b11d8f18a287cf6fb4a144f019e44"
+  },
+  "verifier": {
+    "path": "evidence/functional-closure-147/build-01-verifier.mjs",
+    "sha256": "f295ee52037c00cea65aeed70af3d3c22c826ca67da9b98e385e19503983b6d2"
+  },
+  "scope": "Current Web, native Chrome Side Panel and unsigned frameless Windows Desktop build; actual interaction qualification is recorded separately."
+}

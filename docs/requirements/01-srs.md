@@ -243,3 +243,6 @@ BRAND01 为用户指定官网作为最终产品视觉依据的指令，REQ-081/0
 
 
 当前文件分页与来源选择细则见 [补充需求](11-document-preview-and-source-selection.md)，保留本文全部原始范围。
+
+
+具名流程与原任务本机准备补充见 [FC147需求](12-workflow-contract-and-local-handoff.md)，保留全部原始范围。

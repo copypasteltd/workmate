@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: exact private attachment re-selection reuses its verified immutable version without a second asset
+ok 1 - exact private attachment re-selection reuses its verified immutable version without a second asset
+  ---
+  duration_ms: 9.657
+  ...
+# Subtest: concurrent selection of identical bytes creates one private upload and one immutable result
+ok 2 - concurrent selection of identical bytes creates one private upload and one immutable result
+  ---
+  duration_ms: 1.6914
+  ...
+# Subtest: worker replacement after lost create acceptance replays the original manifest and key
+ok 3 - worker replacement after lost create acceptance replays the original manifest and key
+  ---
+  duration_ms: 2.0654
+  ...
+# Subtest: a 5 MiB private file resumes after a committed part response is lost, verifying both real byte ranges
+ok 4 - a 5 MiB private file resumes after a committed part response is lost, verifying both real byte ranges
+  ---
+  duration_ms: 2175.0233
+  ...
+# Subtest: lost completion resumes the same accepted asset without reuploading or creating another version
+ok 5 - lost completion resumes the same accepted asset without reuploading or creating another version
+  ---
+  duration_ms: 39.0128
+  ...
+# Subtest: changing conversation, project, actor or bytes never reuses another private upload receipt
+ok 6 - changing conversation, project, actor or bytes never reuses another private upload receipt
+  ---
+  duration_ms: 4.9163
+  ...
+# Subtest: revocation between attempts stops recovery before completion and never falls back to shared upload
+ok 7 - revocation between attempts stops recovery before completion and never falls back to shared upload
+  ---
+  duration_ms: 2.9093
+  ...
+# Subtest: an HTTP-successful shared result is rejected instead of being presented as a private attachment
+ok 8 - an HTTP-successful shared result is rejected instead of being presented as a private attachment
+  ---
+  duration_ms: 1.1023
+  ...
+# Subtest: invalid scope or file bytes are rejected before any network request or receipt write
+ok 9 - invalid scope or file bytes are rejected before any network request or receipt write
+  ---
+  duration_ms: 432.7603
+  ...
+# Subtest: a private original task without a conversation uploads selected bytes into its exact task scope
+ok 10 - a private original task without a conversation uploads selected bytes into its exact task scope
+  ---
+  duration_ms: 13.7196
+  ...
+# Subtest: lost acceptance reuses the same task key, while a different original task receives a separate receipt
+ok 11 - lost acceptance reuses the same task key, while a different original task receives a separate receipt
+  ---
+  duration_ms: 6.5921
+  ...
+# Subtest: a changed retained task scope stops before sending bytes; a shared response cannot masquerade as private
+ok 12 - a changed retained task scope stops before sending bytes; a shared response cannot masquerade as private
+  ---
+  duration_ms: 3.493
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5981.4711

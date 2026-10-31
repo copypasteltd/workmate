@@ -590,3 +590,6 @@ Run each component using its own bilingual guide. Use the backend demo configura
 
 
 阶段146补充：[文件分页与来源选择](./requirements/11-document-preview-and-source-selection.md) · [当前完整编号](./quality/remaining-work-stage146.md)
+
+
+阶段147：[主链功能与使用](development/147-functional-closure.md) · [完整编号](quality/remaining-work-stage147.md) · [详细契约](technical/147-workflow-contract-and-local-handoff.md)。
