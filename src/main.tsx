@@ -1253,6 +1253,7 @@ function Section({ section }: { section: string }) {
       />
       {section === "content" && (
         <AdminDeletions
+          account={a.me.user.id}
           canRetry={a.has("admin.content.delete")}
           refresh={refresh}
         />

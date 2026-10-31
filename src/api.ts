@@ -1,6 +1,7 @@
 import { clientFetch, clientJson, connectionFailure } from "./client-failure";
 export let csrfToken = "";
 let sessionRevision = 0;
+export const clientSessionGeneration = () => sessionRevision;
 function endAdminSession() {
   ++sessionRevision;
   csrfToken = "";

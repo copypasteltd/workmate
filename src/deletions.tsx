@@ -1,3 +1,4 @@
+import { ScopeErasureDialog, type ErasureTarget } from "./scope-erasure-dialog";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
@@ -15,6 +16,7 @@ import {
 } from "./ui";
 
 const types: Record<string, [string, string]> = {
+  projects: ["完整專案", "Entire project"], tenants: ["企業工作空間", "Company workspace"], cloud_runtime_sessions: ["雲端電腦執行", "Cloud computer sessions"],
   assets: ["素材", "Assets"],
   tasks: ["任務", "Tasks"],
   agents: ["助手", "Assistants"],
@@ -46,14 +48,18 @@ const states: Record<string, [string, string]> = {
 export function AdminDeletions({
   canRetry,
   refresh: externalRefresh,
+  account,
 }: {
   canRetry: boolean;
+  account: string;
   refresh: number;
 }) {
   const { t } = useI18n(),
     [params, setParams] = useSearchParams(),
     [refresh, setRefresh] = useState(0),
-    [retry, setRetry] = useState<any>(null);
+    [retry, setRetry] = useState<any>(null),
+    [scopeKind, setScopeKind] = useState<"projects"|"tenants">("projects"),
+    [scopeId, setScopeId] = useState(""), [erasure, setErasure] = useState<ErasureTarget|null>(null);
   const rawPage = Number(params.get("cleanup_page") ?? 1),
     page =
       Number.isInteger(rawPage) && rawPage >= 1 && rawPage <= 10000
@@ -129,6 +135,12 @@ export function AdminDeletions({
           "Review cleanup within your authorized scope. Permanent deletion is irreversible. Billing and audit data are retained separately.",
         )}
       </p>
+      {canRetry && <form className="deletion-filters" onSubmit={e => {e.preventDefault();setErasure({kind:scopeKind,id:scopeId,endpoint:`/v1/admin/scopes/${scopeKind}/${scopeId}/erasure`});}}>
+        <Field label={t("永久清理範圍", "Permanent cleanup scope")}><select value={scopeKind} onChange={e=>setScopeKind(e.target.value as any)}><option value="projects">{t("完整專案", "Entire project")}</option><option value="tenants">{t("企業工作空間", "Company workspace")}</option></select></Field>
+        <Field label={t("目標 ID", "Target ID")}><input required value={scopeId} onChange={e=>setScopeId(e.target.value)} pattern="[a-fA-F0-9]{8}(-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}" /></Field>
+        <button className="button secondary" type="submit">{t("預覽永久清理", "Preview permanent cleanup")}</button>
+      </form>}
+      {erasure && canRetry && <ScopeErasureDialog key={erasure.endpoint} account={account} target={erasure} onClose={()=>setErasure(null)} onAccepted={()=>{setErasure(null);setRefresh(v=>v+1);}} />}
       <div className="deletion-filters">
         <Field label={t("搜尋清理 ID", "Search cleanup IDs")}>
           <input
@@ -225,6 +237,7 @@ export function AdminDeletions({
                       </td>
                       <td>
                         {j.progress.completed}/{j.progress.total}
+                        {!!j.retained?.length && <p className="small-text">{t("必要帳務、審計及保留政策適用；客戶本機副本由客戶自行管理。", "Required billing, audit and retention policies apply. Customer-local copies remain customer-managed.")}</p>}
                         {(j.exceptions.length > 0 || j.failures.length > 0) && (
                           <details>
                             <summary>
