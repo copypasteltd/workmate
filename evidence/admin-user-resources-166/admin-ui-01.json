@@ -1,0 +1,109 @@
+{
+  "at": "2026-10-31T13:21:15.904Z",
+  "status": "failed",
+  "stage": "selected-user content",
+  "checks": [
+    {
+      "name": "Independent Admin email OTP and current TOTP",
+      "status": "passed",
+      "facts": {
+        "actual_authentication": true
+      }
+    },
+    {
+      "name": "User detail opens exactly its creator-filtered tasks",
+      "status": "passed",
+      "facts": {
+        "user_id": "b684896a-aae3-4efb-90a1-a2bbdf0addc8",
+        "total": 3
+      }
+    },
+    {
+      "name": "Search and reload preserve the selected user and exact results",
+      "status": "passed",
+      "facts": {
+        "search": "task 2",
+        "user_id": "b684896a-aae3-4efb-90a1-a2bbdf0addc8"
+      }
+    },
+    {
+      "name": "Return link restores original user and directory conditions",
+      "status": "passed",
+      "facts": {
+        "path": "/users/b684896a-aae3-4efb-90a1-a2bbdf0addc8",
+        "state": "active",
+        "search": "Harbour Creator"
+      }
+    }
+  ],
+  "errors": [
+    "selected-user content: Error: locator.waitFor: Error: strict mode violation: getByText('Harbour creator brief.txt', { exact: true }) resolved to 2 elements:\n    1) <span>Harbour creator brief.txt</span> aka getByText('Harbour creator brief.txt').first()\n    2) <span>Harbour creator brief.txt</span> aka getByText('Harbour creator brief.txt').nth(1)\n\nCall log:\n\u001b[2m  - waiting for getByText('Harbour creator brief.txt', { exact: true }) to be visible\u001b[22m\n"
+  ],
+  "screenshots": [
+    {
+      "path": "copypaste-admin/assets/screenshots/workmate-admin-user-resources-166-01-user-resources-01-user-detail-entries.png",
+      "sha256": "0e01ac55dd7130c2729d015d99795a9f47da8d94e8164aa5a661ef959d761a0c",
+      "source": "Actual Admin OTP/TOTP, native SQL-backed creator-filtered task/content pages, search/reload/return, original-brand attribution, live body dialog target switch and invalid-target refusal. Synthetic business fixture; no AI/provider call or new native client acceptance.",
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/workmate-admin-user-resources-166-01-user-resources-02-selected-user-tasks.png",
+      "sha256": "ace91fbf3a64507a0d53f1faeb0abeadfd8fe4cfebd1d0c74228b88d01009522",
+      "source": "Actual Admin OTP/TOTP, native SQL-backed creator-filtered task/content pages, search/reload/return, original-brand attribution, live body dialog target switch and invalid-target refusal. Synthetic business fixture; no AI/provider call or new native client acceptance.",
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/workmate-admin-user-resources-166-01-user-resources-03-search-restored-after-reload.png",
+      "sha256": "ce54ab441b4e460e9640a4c6f476496a0d45887baf3062b1d7154ddf0ad6a497",
+      "source": "Actual Admin OTP/TOTP, native SQL-backed creator-filtered task/content pages, search/reload/return, original-brand attribution, live body dialog target switch and invalid-target refusal. Synthetic business fixture; no AI/provider call or new native client acceptance.",
+      "edited": false
+    }
+  ],
+  "recordings": [
+    {
+      "component": "admin",
+      "name": "user-task-content-scope",
+      "source": "Actual Admin OTP/TOTP, native SQL-backed creator-filtered task/content pages, search/reload/return, original-brand attribution, live body dialog target switch and invalid-target refusal. Synthetic business fixture; no AI/provider call or new native client acceptance.",
+      "started_at": "2026-10-31T13:21:11.302Z",
+      "finished_at": "2026-10-31T13:21:14.277Z",
+      "capture_timing": "Actual wall-clock capture intervals; no accelerated or invented response frames",
+      "observed_frames": 18,
+      "distinct_frames": 7,
+      "skipped_capture_errors": 0,
+      "seconds": 3,
+      "width": 1280,
+      "height": 960,
+      "files": [
+        {
+          "path": "copypaste-admin/assets/screenshots/workmate-admin-user-resources-166-01-user-task-content-scope.mp4",
+          "bytes": 182086,
+          "sha256": "3d9328a396317612264478bb64fe99770d67cd925384e64746c0fc748641220e"
+        },
+        {
+          "path": "copypaste-admin/assets/screenshots/workmate-admin-user-resources-166-01-user-task-content-scope.gif",
+          "bytes": 450265,
+          "sha256": "b3c89fb45258a7dbb53e6a264adbaeb1242054fc3efadefe697654634f7ef4f3"
+        }
+      ],
+      "frame_manifest_sha256": "8a2715d6ddb0c824b203131abdb74be8264ecdc4b20ca0b62006e087e75cb23f",
+      "raw_capture_directory": "copypaste-delivery/.data/workmate-media/3302e178-bc84-4c5d-96b9-83ed6fc730da"
+    }
+  ],
+  "browser_closed": true,
+  "scope": "Actual Admin OTP/TOTP, native SQL-backed creator-filtered task/content pages, search/reload/return, original-brand attribution, live body dialog target switch and invalid-target refusal. Synthetic business fixture; no AI/provider call or new native client acceptance.",
+  "sources_before": {
+    "copypaste-admin/src/main.tsx": "5c00930aafc962f00aee7511018a5802c279dbe3166ed4e8c135d0e75b3bb8fe",
+    "copypaste-admin/src/user-resources.ts": "f1da66ec58b593360b3ec058f11773a4e1454cb0b46d09412f0abe2cb542c8cf",
+    "copypaste-platform/src/admin.ts": "8d42dd6fbf6f74f78b736d0f9ea395c37850c01e3c195c9b06db3044c98b9dd9",
+    "copypaste-platform/src/admin-content.ts": "0c2e9c458a51ab0b505169edddd550abf7360672f37c408da3f5a51fc668770c",
+    "copypaste-platform/src/assets.ts": "cf3199cf213033135a1423330782b3690aeeee3648415508e9e85ad684ed3ea6"
+  },
+  "sources_after": {
+    "copypaste-admin/src/main.tsx": "5c00930aafc962f00aee7511018a5802c279dbe3166ed4e8c135d0e75b3bb8fe",
+    "copypaste-admin/src/user-resources.ts": "f1da66ec58b593360b3ec058f11773a4e1454cb0b46d09412f0abe2cb542c8cf",
+    "copypaste-platform/src/admin.ts": "8d42dd6fbf6f74f78b736d0f9ea395c37850c01e3c195c9b06db3044c98b9dd9",
+    "copypaste-platform/src/admin-content.ts": "0c2e9c458a51ab0b505169edddd550abf7360672f37c408da3f5a51fc668770c",
+    "copypaste-platform/src/assets.ts": "cf3199cf213033135a1423330782b3690aeeee3648415508e9e85ad684ed3ea6"
+  },
+  "verifier_sha256": "e30c43b8dcc7d97b1d6ffa1b464a837dc57dbfac5a02f0984cffd642b3a1fe7d"
+}

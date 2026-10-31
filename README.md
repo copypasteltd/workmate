@@ -4,6 +4,31 @@
 
 面向香港企业的 Codex Agent 平台，首批服务既有 marketing 团队，覆盖设计/媒体、广告与网站/SEO/GEO分析、重复流程和软件开发。本仓库为独立 **delivery** 端，使用 **Native startup / qualification / publication**。视觉遵循 CopyPaste 的暖白底、深色文字、品牌色和编辑式排版。
 
+## 当前分支增量 · 阶段166
+
+用户详情直接进入该用户的任务与内容。搜索、分页和刷新保留目标，返回恢复原目录条件；换用户清空旧正文和操作。当前用户范围与资源范围同时鉴权，正文/下载保持独立权限与近期MFA。二十类内容按实际创建者归属，品牌保留首版作者；未知作者旧资料在全站目录查看。记录按资源类型计算，同名文件资产及目录项具有独立身份。
+
+这是 rc.5 发布后的源码增量，不在已冻结的 rc.5 ZIP 内。冻结标签与下载保持原样。本轮后端/Admin构建、八项原生SQL/API及八组实际页面检查通过，原始定位失败和录制均保留。外部服务仍用已授权假数据，原完整验收范围继续跟踪。
+
+```mermaid
+flowchart LR
+ U[用户详情] --> T[该用户任务]
+ U --> C[该用户内容]
+ T --> P[当前用户与资源权限交集]
+ C --> P
+ P --> S[搜索/分页/刷新保留目标]
+ S --> U
+ C --> B[独立正文与管理权限]
+```
+
+![用户任务](assets/screenshots/workmate-admin-user-resources-166-02-user-resources-02-selected-user-tasks.png)
+
+![用户内容](assets/screenshots/workmate-admin-user-resources-166-02-user-resources-04-original-user-content.png)
+
+![真实交互](assets/screenshots/workmate-admin-user-resources-166-02-user-task-content-scope.gif)
+
+[MP4](assets/screenshots/workmate-admin-user-resources-166-02-user-task-content-scope.mp4) · [Logic / 逻辑](https://github.com/copypasteltd/workmate/blob/docs/docs/development/166-admin-user-resource-context.md) · [Evidence / 回执](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/admin-user-resources-166.json)
+
 ## 方案与结构
 
 主要入口：`scripts/, native/, evidence/functional-closure-165/`。Codex 是唯一 Agent 内核，全部模型请求经公司内部 OpenAI 兼容 API，供应商密钥仅留在后端。专业模板固定 Skill、工具和配置版本；设计师组合为 Codex＋设计 Skill＋公司 Image 2。
@@ -47,7 +72,7 @@ API为localhost4310，Web4317，Admin4318。开发验证码位于platform `.data
 1. 邮箱登录，接受邀请或创建企业及首项目。创建结果未确认时保留原请求；断线/刷新后点“确认并继续”恢复原结果。失效/删除回执不会悄悄新建企业。
 2. 选择项目和角色，填写brief、文件/品牌/账户、预算和授权。必要资料在原任务补齐；执行固定当时接受的配置与Skill版本。
 3. 查看持久进度、审批、成果版本、费用和用量，审阅后下载原文件或继续修改。未知费用保持待核对，不按免费处理或盲目重跑。
-4. Admin从用户详情开费用/VIP，核对主体和预览后按策略确认。目录筛选支持刷新/返回恢复。用户专属任务/内容的统一筛选入口仍待补齐。
+4. Admin从用户详情开费用/VIP，核对主体和预览后按策略确认。目录筛选支持刷新/返回恢复。当前分支已接通按实际创建者筛选的任务和内容入口，返回保留原目录条件。
 
 ## 配置与权限
 
@@ -92,7 +117,7 @@ Web/Admin使用 `VITE_API_BASE` 或同源代理；原生端构建时固定允许
 
 [实际MP4](assets/screenshots/workmate-functional-closure-165-01-recover-original-workspace.mp4)
 
-## 验证与发布
+## rc.5 冻结基线的验证与发布
 
 本次运行七项定向SQL、四项创建草稿检查和实际Web/Admin操作，重建六仓与Windows unpacked/Portable/Setup，核对ASAR和固定Codex。按要求跳过完整重复回归，实际结果以冻结检查点为准。
 
