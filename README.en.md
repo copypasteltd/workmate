@@ -1,5 +1,14 @@
 # Workmate · delivery
 
+## Current complete frozen delivery · v0.1.2
+
+The complete bundle includes every client, six source trees and the current posting-period reports. Desktop runs Codex locally with explicitly granted full local permission; the native Extension Side Panel reads/uploads authorized files for cloud Codex. Schema156, authorized synthetic AI/media/ads/payments and unsigned Windows.
+
+[完整下载 / Complete release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.2) · [安装、登录和使用 / Setup and flows](https://github.com/copypasteltd/workmate/blob/v0.1.2/docs/releases/v0.1.2.md)
+
+本轮重新构建Backend/Admin；其余运行产物及Windows分发核对后复用。继承源码一致的阶段172定向验证，阶段173不重跑功能测试。Backend/Admin rebuilt; unchanged runtimes/Windows distributions verified and reused. Exact-source stage172 focused checks inherited; no functional tests rerun at173. Older entries below retain their historical scope.
+
+
 ## Current source increment · stage172
 
 Admin supports creation and posting periods. Reports include old-work charges, Hong Kong posting days, refunds with an out-of-period original charge and negative net. Summary, projected detail and CSV share one immutable snapshot. Holds and lifetime operation units stay separate. Use matching backend/Admin sources with schema156. This increment is outside the frozen v0.1.1 ZIP; archives/tags remain unchanged.
