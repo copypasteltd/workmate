@@ -1,0 +1,242 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Workmate reviewed specialist copy",
+    "version": "155"
+  },
+  "paths": {
+    "/v1/tenants/{tenant}/projects/{project}/agents/{id}/copy-previews": {
+      "post": {
+        "summary": "Review a copy using the exact original definition",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for browser cookie sessions; native bearer sessions use existing authentication rules"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CopyProposal"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "No-store preview token/expiry/summary, or id/version confirmation receipt"
+          },
+          "400": {
+            "description": "Strict request validation failure"
+          },
+          "401": {
+            "description": "Current user/exact session unavailable"
+          },
+          "403": {
+            "description": "Current write or tool scope denied"
+          },
+          "404": {
+            "description": "Source, target or authorized scope unavailable"
+          },
+          "409": {
+            "description": "Stale/expired preview, changed configuration or unavailable methods"
+          },
+          "410": {
+            "description": "Content no longer available"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/agents/{id}/copies": {
+      "post": {
+        "summary": "Confirm one logical copy; retry recovers the same receipt",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for browser cookie sessions; native bearer sessions use existing authentication rules"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "proposal",
+                  "preview_token",
+                  "acknowledged"
+                ],
+                "properties": {
+                  "proposal": {
+                    "$ref": "#/components/schemas/CopyProposal"
+                  },
+                  "preview_token": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 4096
+                  },
+                  "acknowledged": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "No-store preview token/expiry/summary, or id/version confirmation receipt"
+          },
+          "400": {
+            "description": "Strict request validation failure"
+          },
+          "401": {
+            "description": "Current user/exact session unavailable"
+          },
+          "403": {
+            "description": "Current write or tool scope denied"
+          },
+          "404": {
+            "description": "Source, target or authorized scope unavailable"
+          },
+          "409": {
+            "description": "Stale/expired preview, changed configuration or unavailable methods"
+          },
+          "410": {
+            "description": "Content no longer available"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CopyProposal": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_version",
+          "name"
+        ],
+        "properties": {
+          "source_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 8000
+          },
+          "tool_ids": {
+            "type": "array",
+            "maxItems": 40,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-authority": "Current user/exact session/federation/project locks before replay and source locks; HMAC binds actor/session/auth/tenant/project/source/proposal/guards for10 minutes.",
+  "x-idempotency": "One signed preview creates one copy across different HTTP retry keys. Recovery returns an existing accessible copy, never resurrects deletion.",
+  "x-exclusions": [
+    "conversations",
+    "private memories",
+    "files",
+    "credentials",
+    "connection grants",
+    "local permissions"
+  ],
+  "x-schema-version": 154,
+  "x-upgrades": "Copy retains source role, brand and methods. Use existing compare/adopt for changes. Copying configuration does not invoke a model."
+}
