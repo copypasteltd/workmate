@@ -2,6 +2,7 @@ import { saveScopeArchive } from "./scope-export-download";
 import { clientFetch, clientJson, connectionFailure } from "./client-failure";
 import { clearDeliveryRevisionDrafts } from "./delivery-revision-state";
 import { clearEditableProjectRequests } from "./editable-project-state";
+import { sessionProtectedRequest } from "./session-request";
 export let csrfToken = "";
 let sessionRevision = 0;
 export const clientSessionGeneration = () => sessionRevision;
@@ -94,21 +95,13 @@ export async function api<T = any>(
   options: RequestInit = {},
 ): Promise<T> {
   const revision = sessionRevision;
-  const protectedRequest =
-    /^\/v1\/(?:client-content|agent-groups)(?:[/?]|$)/.test(path) ||
-    (/^\/v1\/(?:connector-providers|connections|syncs|connector-snapshots|snapshots|seo)(?:[/?]|$)/.test(
-      path,
-    ) &&
-      !path.startsWith("/v1/connections/launch/")) ||
-    /^\/v1\/(me(?:[/?]|$)|plans(?:[/?]|$)|effective-entitlements(?:[/?]|$)|entitlement-notifications(?:[/?]|$)|financial-notifications(?:[/?]|$)|support-grants(?:[/?]|$)|session\/context(?:[/?]|$)|members\/|tenants(?:[/?]|$)|invites\/|agent-templates(?:[/?]|$)|solution-(?:versions|installations|trials|targets|access)(?:[/?]|$)|auth\/(?:session|logout|native\/authorize)$)/.test(
-      path,
-    );
+  const protectedRequest = sessionProtectedRequest(path, options.method);
   const headers = new Headers(options.headers);
   const pathTenant = /^\/v1\/tenants\/([a-f0-9-]{36})(?:\/|$)/i.exec(path)?.[1];
   if (pathTenant && !headers.has("X-Tenant-ID"))
     headers.set("X-Tenant-ID", pathTenant);
   const current = () => {
-    if (protectedRequest && revision !== sessionRevision)
+    if (revision !== sessionRevision)
       throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
     if (options.signal?.aborted) throw options.signal.reason;
   };

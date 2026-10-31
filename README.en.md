@@ -1,3 +1,19 @@
+## 163 · Current sign-in, old responses and live progress
+
+Business401 responses now clear the old workspace; stale responses cannot overwrite a newer sign-in. Progress-session withdrawal returns to sign-in while permission403 retains it.28 focused results, three client-interface builds and three actual Web/SQL journeys pass. This source correction is not inside the sealed rc.3 installers; frozen bytes stay unchanged.
+
+[Implementation, build and usage](https://github.com/copypasteltd/workmate/blob/docs/docs/development/163-session-boundary.md) · [Original remaining scopes](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage163.md)
+
+Shared actual Web capture; no new installed-client qualification.
+
+![Actual session withdrawal](assets/screenshots/workmate-session-boundary-163-04-revoked-stream-signin.png)
+
+![Actual stream-to-sign-in interaction](assets/screenshots/workmate-session-boundary-163-04-session-revocation-to-signin.gif)
+
+[MP4](assets/screenshots/workmate-session-boundary-163-04-session-revocation-to-signin.mp4)
+
+---
+
 ## 162 · Frozen source onboarding addon
 
 The complete rc.3 is published. Early startup-port checks and corrected guide links are available on the current branches; extracted rc.3 sources can use the approximately719KB exact patch. Choose the database port first, then run `npm run demo:preflight`, `npm run bootstrap:demo`, `npm run demo:check` and `npm run demo`; finish with `npm run stop`. Nine focused patch/CLI checks pass. Local configuration/data and frozen distributions stay intact.
