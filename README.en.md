@@ -1,3 +1,13 @@
+## v0.1.0-rc.3 · Complete frozen handoff
+
+Includes the stage160 correction below. Desktop, Web, Admin, native Chrome Side Panel, Backend, six buildable source trees and the pinned Codex companion ship together. [Full usage guide](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.3/docs/releases/v0.1.0-rc.3.md) · [Release assets](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.3); actual publication is recorded in its receipt. External providers use authorized synthetic data and Windows remains unsigned. Whole production acceptance is separately tracked.
+
+![Actual Admin overview](assets/screenshots/workmate-admin-overview-160-01-confirmed-charges-personal-hold.png)
+
+![Actual stage160 interaction, original recording](assets/screenshots/workmate-admin-overview-160-01-current-permission-overview.gif)
+
+---
+
 ## 160 · Accurate Admin overview and current authority
 
 User counts follow the authorized directory. Reserved credit includes readable personal and enterprise accounts in the current mode. Confirmed customer charges come from the ledger and include task and cloud resource charges; funding, gifts, refunds and unresolved holds remain separate. The access lock protects a fresh check of the exact current MFA session and bindings. Unauthorized or unavailable figures show dashes, with a visible Refresh overview control.

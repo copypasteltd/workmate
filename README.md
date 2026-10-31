@@ -1,3 +1,13 @@
+## v0.1.0-rc.3 · 完整冻结交付
+
+本版纳入下方160修复。Desktop、Web、Admin、原生Chrome右侧栏、后端、六仓可构建源码及固定Codex配套文件统一封装；[完整使用说明](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.3/docs/releases/v0.1.0-rc.3.md)。[下载入口](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.3)的资产以发布回执为准。外部接口使用获准假数据，Windows包未签名；完整生产验收继续独立跟踪。
+
+![实际Admin费用与权限](assets/screenshots/workmate-admin-overview-160-01-confirmed-charges-personal-hold.png)
+
+![实际交互，沿用160原始录制](assets/screenshots/workmate-admin-overview-160-01-current-permission-overview.gif)
+
+---
+
 ## 160 · 管理總覽的用戶、費用與目前權限
 
 用戶數沿用完整用戶目錄的可見範圍；預留額度包含目前模式的個人與企業付款帳戶。累計確認扣費以帳本為準，包含任務及雲端資源，不混入充值、贈送、退款或未結算預留。每次請求在權限鎖後重驗目前MFA會話與權限；無權限或暫不可用的數字顯示破折號，可使用「重新載入總覽」恢復。
