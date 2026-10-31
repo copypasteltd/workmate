@@ -1,3 +1,21 @@
+## v0.1.0-rc.2 · Current complete release
+
+All six source trees and current distributions are frozen together at schema155. Product release identifiers are independent of component npm versions. Web/Extension execute cloud Codex; the frameless Desktop executes customer-local Codex with explicit customer permission. The administrator dashboard keeps its separate authentication and account/billing/VIP/content controls.
+
+Extract the buildable-source and source-runtime ZIPs under one short parent, open the resulting dev/copypaste-delivery directory, run npm run bootstrap:demo → npm run demo:check → npm run demo. If55432 is occupied, set COPYPASTE_SOURCE_DATABASE_PORT to a free local port in each shell before bootstrap/start. Stop with npm run stop. Keep the four Codex binaries together. Source/recordings use authorized synthetic dependencies; real Codex, task permissions, files and ledger execute. Full historical/cross-OS/provider regression was deliberately skipped.
+
+[Release guide / 发版说明](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.2/docs/releases/v0.1.0-rc.2.md) · [Source startup / 源码启动](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.2/docs/development/158-current-source-startup.md)
+
+**Actual shared Web first-use flow / 实际Web源码首次使用（非各原生端新增完整验收）**
+
+![First task delivery / 首次任务交付](assets/screenshots/workmate-source-handoff-158-04-first-task-delivered.png)
+
+![Actual task interaction / 实际任务交互](assets/screenshots/workmate-source-handoff-158-04-first-source-task.gif)
+
+[MP4 recording / 交互录像](assets/screenshots/workmate-source-handoff-158-04-first-source-task.mp4)
+
+---
+
 ## 157 · Independent cloud work in one conversation
 
 Delegate independent cloud work within the plan quota. Select a task for progress, inputs or Stop; each task owns its budget and output. Web retains the original request key/version for same-input retry after a lost reply; Extension keeps its saved receipt and discards stale target responses.
