@@ -8,12 +8,16 @@ import { clearEditableProjectRequests } from "./editable-project-state";
 import { sessionProtectedRequest } from "./session-request";
 export let csrfToken = "";
 let sessionRevision = 0;
+// A failed bootstrap session read must not cancel an independent email sign-in.
+// Explicit sign-out and a completed sign-in still invalidate older auth flows.
+let authenticationRevision = 0;
 export const clientSessionGeneration = () => sessionRevision;
 export function endClientSession(
   broadcast = true,
   reason: "sign_out" | "expired" = "sign_out",
 ) {
   ++sessionRevision;
+  if (reason === "sign_out") ++authenticationRevision;
   csrfToken = "";
   if (reason === "sign_out") { redactWorkspaceAttempts(); clearWorkDrafts(); clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); }
   window.dispatchEvent(new Event("copypaste:session-ended"));
@@ -25,6 +29,7 @@ export function endClientSession(
 }
 export function changeClientSession() {
   ++sessionRevision;
+  ++authenticationRevision;
   csrfToken = "";
 }
 export const setCsrf = (v: string) => {
@@ -94,6 +99,8 @@ export async function api<T = any>(
   options: RequestInit = {},
 ): Promise<T> {
   const revision = sessionRevision;
+  const authRevision = authenticationRevision;
+  const authenticationRequest = options.method === "POST" && ["/v1/auth/challenges", "/v1/auth/sessions"].includes(path);
   const protectedRequest = sessionProtectedRequest(path, options.method);
   // Public deployment settings do not belong to a signed-in identity. An
   // initial unauthenticated session check must not discard this parallel read.
@@ -103,7 +110,7 @@ export async function api<T = any>(
   if (pathTenant && !headers.has("X-Tenant-ID"))
     headers.set("X-Tenant-ID", pathTenant);
   const current = () => {
-    if (revision !== sessionRevision && !sessionIndependent)
+    if (!sessionIndependent && (authenticationRequest ? authRevision !== authenticationRevision : revision !== sessionRevision))
       throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
     if (options.signal?.aborted) throw options.signal.reason;
   };
