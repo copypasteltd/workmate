@@ -1,3 +1,19 @@
+## rc.4 · 统一冻结交付
+
+本版统一纳入首次启动与登录会话修复，六仓重新构建，Windows同时提供完整目录、Portable与Setup；Desktop实际ASAR与当前构建逐文件核对。完整交付包含七类分发包、当前源码、固定Codex、双语说明和实际媒体。
+
+[Release与完整包](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.4) · [中英使用方案](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.4/docs/releases/v0.1.0-rc.4.md) · [构建与范围](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.4/docs/quality/release-freeze-checkpoint-164.json)
+
+先选可用数据库端口，再运行Delivery的 `demo:preflight` → `bootstrap:demo` → `demo:check` → `demo`。修复已进入本版新包。外部依赖继续为获准假数据，Windows未签名；既有102编号及88项完整验收范围保留。以下为此前实际Web录制，非新增本端安装验收。
+
+![实际会话撤销](assets/screenshots/workmate-session-boundary-163-04-revoked-stream-signin.png)
+
+![实际会话交互](assets/screenshots/workmate-session-boundary-163-04-session-revocation-to-signin.gif)
+
+[实际MP4](assets/screenshots/workmate-session-boundary-163-04-session-revocation-to-signin.mp4)
+
+---
+
 ## 163 · 登录失效、旧响应与实时进度
 
 广告导入、报告、证据等业务接口失去登录时清除旧工作台；旧请求不能覆盖新登录。实时进度收到登录失效时返回登录；权限不足保留登录。28项定向请求检查、三端界面构建及3组实际Web/SQL旅程通过。当前为源码修复，尚未加入既有rc.3安装包；原冻结包保持。
