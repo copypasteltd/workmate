@@ -1,0 +1,549 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Workmate optional Admin directory operations projection",
+    "version": "168"
+  },
+  "description": "Additive query parameters and operations DTO. Existing q/user_id/tenant_id/project_id/state/vip/cursor/limit remain supported. view=operations is required for the two added response fields. All current identity, MFA and field scopes remain mandatory. Dates are half-open; charge bounds inclusive; balance threshold strictly positive. Unknown activity cannot have a recorded range; role_usage requires role_key; account options require balance_state.",
+  "components": {
+    "schemas": {
+      "AdminTenant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "active",
+              "suspended",
+              "closed"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "billing_account_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "state",
+          "version",
+          "billing_account_id"
+        ],
+        "additionalProperties": false
+      },
+      "AdminTenantList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminTenant"
+            },
+            "minItems": 0
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "AdminUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "masked_contact": {
+            "type": "string",
+            "minLength": 1
+          },
+          "contact": {
+            "type": "string",
+            "minLength": 1
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "active",
+              "frozen",
+              "closed"
+            ]
+          },
+          "registered_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_login_at": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tenant_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 0
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "confirmed_customer_charges": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "vip_summary": {
+            "type": "string",
+            "minLength": 1
+          },
+          "auth_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "registration_source": {
+            "enum": [
+              "email_otp",
+              null
+            ]
+          },
+          "last_active_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "display_name",
+          "masked_contact",
+          "state",
+          "registered_at",
+          "last_login_at",
+          "tenant_ids",
+          "version",
+          "auth_version",
+          "registration_source",
+          "last_active_at"
+        ],
+        "additionalProperties": false
+      },
+      "AdminUserDetail": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/AdminUser"
+          },
+          "memberships": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "tenant_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "project_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "minItems": 0
+                },
+                "role": {
+                  "$ref": "#/components/schemas/Role"
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "active",
+                    "removed",
+                    "suspended"
+                  ]
+                }
+              },
+              "required": [
+                "tenant_id",
+                "project_ids",
+                "role",
+                "state"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0
+          },
+          "billing_account_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 0
+          },
+          "effective_entitlements": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "user",
+          "memberships",
+          "billing_account_ids",
+          "effective_entitlements"
+        ],
+        "additionalProperties": false
+      },
+      "AdminUserList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminUser"
+            },
+            "minItems": 0
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "Money": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "enum": [
+              "HKD"
+            ]
+          },
+          "amount_micros": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$",
+            "description": "One millionth of currency; decimal integer string."
+          }
+        },
+        "required": [
+          "currency",
+          "amount_micros"
+        ],
+        "additionalProperties": false
+      },
+      "Role": {
+        "type": "string",
+        "enum": [
+          "owner",
+          "admin",
+          "member",
+          "approver",
+          "viewer"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/v1/admin/users": {
+      "get": {
+        "parameters": [
+          {
+            "name": "period_from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "period_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "registered_from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "registered_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "active_from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "active_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "vip_expiry_from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "vip_expiry_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "charge_min_micros",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,29})$"
+            }
+          },
+          {
+            "name": "charge_max_micros",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,29})$"
+            }
+          },
+          {
+            "name": "balance_required_micros",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,29})$"
+            }
+          },
+          {
+            "name": "view",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "operations"
+              ]
+            }
+          },
+          {
+            "name": "activity",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "known",
+                "unknown"
+              ]
+            }
+          },
+          {
+            "name": "registration_source",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "email_otp",
+                "unknown"
+              ]
+            }
+          },
+          {
+            "name": "vip_status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "effective",
+                "scheduled",
+                "expired",
+                "suspended",
+                "revoked"
+              ]
+            }
+          },
+          {
+            "name": "balance_state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "insufficient",
+                "sufficient"
+              ]
+            }
+          },
+          {
+            "name": "billing_subject",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "personal",
+                "tenant"
+              ]
+            }
+          },
+          {
+            "name": "cost_exception",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending_reconciliation",
+                "none"
+              ]
+            }
+          },
+          {
+            "name": "role_usage",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created",
+                "started"
+              ]
+            }
+          },
+          {
+            "name": "vip_plan",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            }
+          },
+          {
+            "name": "role_key",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "When view=operations; default response remains legacy AdminUserList",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/users/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "view",
+            "in": "query",
+            "schema": {
+              "enum": [
+                "operations"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Optional operational detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

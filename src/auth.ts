@@ -80,7 +80,7 @@ export async function principal(
     throw new Problem(401, "AUTH_REQUIRED", "Admin browser session required");
   const pool = audience === "admin" ? db.control : db.app;
   const { rows } = await pool.query(
-    `SELECT s.*, p.email,p.name,p.status,${audience === "admin" ? "p.enrollment_state," : ""}p.auth_version AS current_version
+    `SELECT s.*, p.email,p.name,p.status,${audience === "admin" ? "p.enrollment_state," : "(p.last_active_at IS NULL OR p.last_active_at<now()-interval '1 minute') AS activity_due,"}p.auth_version AS current_version
     FROM sessions s JOIN ${audience === "admin" ? "admin_principals" : "users"} p ON p.id=s.${audience === "admin" ? "admin_id" : "user_id"}
     WHERE s.token_hash=$1 AND s.revoked_at IS NULL AND s.expires_at>now()`,
     [hash(value)],
@@ -104,6 +104,19 @@ export async function principal(
     const supplied = req.headers["x-csrf-token"];
     if (typeof supplied !== "string" || !equal(supplied, csrf(db, value)))
       throw new Problem(403, "CSRF_FAILED", "Refresh the page and try again");
+  }
+  if (audience === "user" && s.activity_due) {
+    // Account access includes authorized device polling. Never count an Admin
+    // read, failed CSRF, revoked session or an invalid federated identity.
+    await pool.query(
+      `UPDATE users u SET last_active_at=clock_timestamp() FROM sessions a
+       WHERE u.id=$1 AND u.status='active' AND u.admin_closed_at IS NULL
+       AND u.auth_version=$2 AND a.id=$3 AND a.user_id=u.id AND a.auth_version=u.auth_version
+       AND a.token_hash=$4 AND a.audience=$5 AND a.revoked_at IS NULL AND a.expires_at>now()
+       AND (a.federation_identity_id IS NULL OR federated_identity_valid(a.federation_identity_id,u.id,a.federation_revision))
+       AND (u.last_active_at IS NULL OR u.last_active_at<now()-interval '1 minute')`,
+      [s.user_id, s.auth_version, s.id, s.token_hash, s.audience],
+    );
   }
   return {
     id: audience === "admin" ? s.admin_id : s.user_id,
@@ -368,7 +381,7 @@ export function registerAuth(app: FastifyInstance, db: Database) {
         } else {
           person = (
             await tx.query(
-              "INSERT INTO users(email,name) VALUES($1,$2) ON CONFLICT(email) DO UPDATE SET email=EXCLUDED.email RETURNING *",
+              "INSERT INTO users(email,name,registration_source) VALUES($1,$2,'email_otp') ON CONFLICT(email) DO UPDATE SET email=EXCLUDED.email RETURNING *",
               [c.email, body.name ?? c.email.split("@")[0]],
             )
           ).rows[0];
@@ -391,7 +404,7 @@ export function registerAuth(app: FastifyInstance, db: Database) {
           ],
         );
         if (audience === "user")
-          await tx.query("UPDATE users SET last_login_at=now() WHERE id=$1", [
+          await tx.query("UPDATE users SET last_login_at=now(),last_active_at=greatest(last_active_at,now()) WHERE id=$1", [
             person.id,
           ]);
         await audit(

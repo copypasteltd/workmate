@@ -10,6 +10,7 @@ import {
 import { accountState } from "./admin-accounts.js";
 import { canonical, equal, hash, hmac, Problem, uuid } from "./lib.js";
 import { z } from "zod";
+import { operationalDirectoryFields, validateOperationalDirectory } from "./admin-directory-operational.js";
 
 const baseQuery = {
   q: z.string().trim().min(1).max(160).optional(),
@@ -20,6 +21,7 @@ const tenantQuery = z.object(baseQuery).strict();
 const userQuery = z
   .object({
     ...baseQuery,
+    ...operationalDirectoryFields,
     user_id: uuid.optional(),
     tenant_id: uuid.optional(),
     project_id: uuid.optional(),
@@ -32,16 +34,7 @@ const userQuery = z
       .optional(),
   })
   .strict()
-  .refine(
-    (q) =>
-      !q.period_from ||
-      !q.period_to ||
-      Date.parse(q.period_from) < Date.parse(q.period_to),
-    {
-      message: "period_from must precede period_to",
-      path: ["period_to"],
-    },
-  );
+  .superRefine(validateOperationalDirectory);
 type Query = z.infer<typeof userQuery>;
 type Binding = Awaited<ReturnType<typeof bindings>>[number];
 const iso = (d: Date | string) => new Date(d).toISOString();
@@ -157,6 +150,71 @@ function entitled(s: ReadScope, user = "u", q: Query = { limit: 50 }) {
   // Personal grants require a global field permission; tenant grants require an active membership.
   return `${s.noDeniedMembership("admin.entitlements.read", user)} AND e.state='active' AND e.starts_at<=now() AND e.ends_at>now() AND ${user}.status='active' AND ${user}.admin_closed_at IS NULL AND ((e.user_id=${user}.id AND ${s.personalField("admin.entitlements.read", user)}) OR EXISTS(SELECT 1 FROM memberships em JOIN tenants et ON et.id=em.tenant_id WHERE em.user_id=${user}.id AND em.tenant_id=e.tenant_id AND em.status='active' AND NOT em.admin_suspended AND et.status='active' AND et.admin_closed_at IS NULL AND ${memberFilter(s, q, "em")} AND ${s.scope("admin.entitlements.read", "em.tenant_id")}))`;
 }
+function usageVisible(s: ReadScope, q: Query) {
+  return `(EXISTS(SELECT 1 FROM memberships m WHERE m.user_id=u.id AND ${usageMember(s, q)}) OR (${s.arg(s.global("admin.users.read") && s.global("admin.usage.read"))}::boolean AND NOT EXISTS(SELECT 1 FROM memberships m WHERE m.user_id=u.id)))`;
+}
+function chargeAmount(s: ReadScope, q: Query) {
+  let where = taskFilter(s, q);
+  if (q.period_from) where += ` AND l.created_at>=${s.arg(q.period_from)}::timestamptz`;
+  if (q.period_to) where += ` AND l.created_at<${s.arg(q.period_to)}::timestamptz`;
+  return `(SELECT coalesce(sum(-l.amount_micros),0) FROM ledger l JOIN tasks t ON t.id=l.task_id WHERE l.user_id=u.id AND l.kind='charge' AND ${where})`;
+}
+function grantSubject(s: ReadScope, q: Query) {
+  return `${s.noDeniedMembership("admin.entitlements.read")} AND ((e.user_id=u.id AND ${s.personalField("admin.entitlements.read")}) OR EXISTS(SELECT 1 FROM memberships em WHERE em.user_id=u.id AND em.tenant_id=e.tenant_id AND em.status='active' AND NOT em.admin_suspended AND ${memberFilter(s, q, "em")} AND ${s.scope("admin.entitlements.read", "em.tenant_id")}))`;
+}
+function advancedWhere(s: ReadScope, q: Query, dataMode: string) {
+  const predicates: string[] = [];
+  for (const [field, from, to] of [["u.created_at", q.registered_from, q.registered_to], ["u.last_active_at", q.active_from, q.active_to]]) {
+    if (from) predicates.push(`${field}>=${s.arg(from)}::timestamptz`);
+    if (to) predicates.push(`${field}<${s.arg(to)}::timestamptz`);
+  }
+  if (q.activity) predicates.push(`u.last_active_at IS ${q.activity === "known" ? "NOT " : ""}NULL`);
+  if (q.registration_source) predicates.push(q.registration_source === "unknown" ? "u.registration_source IS NULL" : `u.registration_source=${s.arg(q.registration_source)}`);
+  if (q.charge_min_micros !== undefined || q.charge_max_micros !== undefined) {
+    predicates.push(usageVisible(s, q));
+    if (q.charge_min_micros !== undefined) predicates.push(`${chargeAmount(s, q)}>=${s.arg(q.charge_min_micros)}::numeric`);
+    if (q.charge_max_micros !== undefined) predicates.push(`${chargeAmount(s, q)}<=${s.arg(q.charge_max_micros)}::numeric`);
+  }
+  if (q.vip_plan || q.vip_status || q.vip_expiry_from || q.vip_expiry_to) {
+    let grant = `e.plan<>'starter' AND ${grantSubject(s, q)}`;
+    if (q.vip_plan) grant += ` AND e.plan=${s.arg(q.vip_plan)}`;
+    if (q.vip_expiry_from) grant += ` AND e.ends_at>=${s.arg(q.vip_expiry_from)}::timestamptz`;
+    if (q.vip_expiry_to) grant += ` AND e.ends_at<${s.arg(q.vip_expiry_to)}::timestamptz`;
+    if (q.vip === true || q.vip_status === "effective") grant += ` AND ${entitled(s, "u", q)}`;
+    if (q.vip_status === "scheduled") grant += " AND e.state='active' AND e.starts_at>now()";
+    if (q.vip_status === "expired") grant += " AND e.state<>'revoked' AND e.ends_at<=now()";
+    if (q.vip_status === "suspended") grant += " AND e.state='suspended' AND e.ends_at>now()";
+    if (q.vip_status === "revoked") grant += " AND e.state='revoked'";
+    predicates.push(`EXISTS(SELECT 1 FROM entitlement_access e WHERE ${grant})`);
+  }
+  if (q.role_key || q.cost_exception) {
+    let task = `t.created_by=u.id AND ${taskFilter(s, q)}`;
+    if (q.period_from) task += ` AND t.created_at>=${s.arg(q.period_from)}::timestamptz`;
+    if (q.period_to) task += ` AND t.created_at<${s.arg(q.period_to)}::timestamptz`;
+    if (q.role_key) {
+      let role = task + ` AND t.role_key=${s.arg(q.role_key)}`;
+      if (q.role_usage === "started") role += " AND t.attempt>0";
+      predicates.push(`EXISTS(SELECT 1 FROM tasks t WHERE ${role})`);
+    }
+    if (q.cost_exception) {
+      predicates.push(usageVisible(s, q));
+      const pending = `EXISTS(SELECT 1 FROM tasks t WHERE ${task} AND (t.status='reconciling' OR EXISTS(SELECT 1 FROM tool_operations o WHERE o.task_id=t.id AND o.state='reconciling')))`;
+      predicates.push(q.cost_exception === "none" ? `NOT ${pending}` : pending);
+    }
+  }
+  if (q.balance_state) {
+    let account = `w.data_mode=${s.arg(dataMode)} AND ${s.account("admin.billing.read")} AND (w.user_id=u.id OR EXISTS(SELECT 1 FROM memberships m WHERE m.user_id=u.id AND m.tenant_id=w.tenant_id AND ${memberFilter(s, q)}))`;
+    if (q.billing_subject === "personal") account += " AND w.user_id IS NOT NULL";
+    if (q.billing_subject === "tenant") account += " AND w.tenant_id IS NOT NULL";
+    // Same available amount as billingAccount after lazy expiry, without writing
+    // ledger entries during a directory read. Debt is already in balance.
+    const lots = "(SELECT coalesce(sum(f.remaining_micros),0) FROM funding_lots f WHERE f.billing_account_id=w.id)";
+    const expired = "(SELECT coalesce(sum(f.remaining_micros-f.reserved_micros),0) FROM funding_lots f WHERE f.billing_account_id=w.id AND f.expires_at<=now() AND f.remaining_micros>f.reserved_micros)";
+    const available = `(w.balance_micros::numeric+w.credit_limit_micros-w.reserved_micros-${expired})`;
+    predicates.push(`EXISTS(SELECT 1 FROM wallets w WHERE ${account} AND ${lots}>=w.balance_micros AND ${available}${q.balance_state === "insufficient" ? "<" : ">="}${s.arg(q.balance_required_micros ?? "1")}::numeric)`);
+  }
+  return predicates.length ? " AND " + predicates.map(v => "(" + v + ")").join(" AND ") : "";
+}
 async function userDto(
   tx: Tx,
   p: Principal,
@@ -192,6 +250,10 @@ async function userDto(
     tenant_ids: ms.map((m) => m.tenant_id),
     version: row.version,
     auth_version: row.auth_version,
+    ...(q.view === "operations" ? {
+      registration_source: row.registration_source ?? null,
+      last_active_at: row.last_active_at ? iso(row.last_active_at) : null,
+    } : {}),
   };
   if (s.has("admin.usage.read")) {
     const a = new ReadScope(bs),
@@ -216,7 +278,7 @@ async function userDto(
         !ms.length &&
         s.global("admin.users.read"))
     )
-      dto.confirmed_customer_charges = money(n.amount);
+      dto.confirmed_customer_charges = money(row.directory_filtered_charges ?? n.amount);
   }
   if (s.has("admin.entitlements.read")) {
     const e = new ReadScope(bs),
@@ -378,14 +440,16 @@ export function pageCursor(
 }
 
 export function registerAdminDirectory(app: FastifyInstance, db: Database) {
-  app.get("/v1/admin/users", { preHandler: requireAdmin(db) }, async (req) => {
+  app.get("/v1/admin/users", { preHandler: requireAdmin(db) }, async (req, reply) => {
+    reply.header("Cache-Control", "no-store");
     const q = userQuery.parse(req.query);
     return db.tx(
       async (tx) => {
         const s = await readScope(tx, req.principal, "admin.users.read");
         if (
-          ((q.period_from || q.period_to) && !s.has("admin.usage.read")) ||
-          (q.vip !== undefined && !s.has("admin.entitlements.read"))
+          ((q.period_from || q.period_to || q.charge_min_micros !== undefined || q.charge_max_micros !== undefined || q.role_key || q.cost_exception) && !s.has("admin.usage.read")) ||
+          ((q.vip !== undefined || q.vip_plan || q.vip_status || q.vip_expiry_from || q.vip_expiry_to) && !s.has("admin.entitlements.read")) ||
+          (q.balance_state && !s.has("admin.billing.read"))
         )
           throw new Problem(
             403,
@@ -405,12 +469,15 @@ export function registerAdminDirectory(app: FastifyInstance, db: Database) {
         }
         if (q.vip !== undefined)
           where += ` AND ${s.noDeniedMembership("admin.entitlements.read")} AND (${s.personalField("admin.entitlements.read")} OR EXISTS(SELECT 1 FROM memberships m WHERE m.user_id=u.id AND ${memberFilter(s, q)} AND ${s.scope("admin.entitlements.read", "m.tenant_id")})) AND ${q.vip ? "" : "NOT "}EXISTS(SELECT 1 FROM entitlement_access e WHERE e.plan<>'starter' AND ${entitled(s, "u", q)})`;
+        where += advancedWhere(s, q, db.config.DEMO_MODE ? "simulated" : "configured_services");
         where += ` AND u.created_at<=${s.arg(bounds.asof)}::timestamptz`;
         if (bounds.after)
           where += ` AND (u.created_at,u.id)<(${s.arg(bounds.after.at)}::timestamptz,${s.arg(bounds.after.id)}::uuid)`;
+        const chargeProjection = q.charge_min_micros !== undefined || q.charge_max_micros !== undefined
+          ? `,${chargeAmount(s, q)}::text AS directory_filtered_charges` : "";
         const rows = (
           await tx.query(
-            `SELECT u.*,to_char(u.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_at FROM users u WHERE ${where} ORDER BY u.created_at DESC,u.id DESC LIMIT ${s.arg(q.limit + 1)}`,
+            `SELECT u.*,to_char(u.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_at${chargeProjection} FROM users u WHERE ${where} ORDER BY u.created_at DESC,u.id DESC LIMIT ${s.arg(q.limit + 1)}`,
             s.values,
           )
         ).rows;
@@ -440,8 +507,10 @@ export function registerAdminDirectory(app: FastifyInstance, db: Database) {
   app.get(
     "/v1/admin/users/:user_id",
     { preHandler: requireAdmin(db) },
-    async (req) => {
+    async (req, reply) => {
+      reply.header("Cache-Control", "no-store");
       const id = uuid.parse((req.params as any).user_id);
+      const projection = z.object({ view: z.literal("operations").optional() }).passthrough().parse(req.query);
       return db.tx(
         async (tx) => {
           const s = await readScope(tx, req.principal, "admin.users.read");
@@ -457,7 +526,7 @@ export function registerAdminDirectory(app: FastifyInstance, db: Database) {
             req.principal,
             s.bs,
             row,
-            { limit: 50 },
+            { limit: 50, view: projection.view },
           );
           const b = new ReadScope(s.bs);
           const accounts = (

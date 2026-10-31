@@ -180,7 +180,7 @@ async function issue(
   a: any,
 ) {
   const value = token();
-  await tx.query("UPDATE users SET last_login_at=now() WHERE id=$1", [
+  await tx.query("UPDATE users SET last_login_at=now(),last_active_at=greatest(last_active_at,now()) WHERE id=$1", [
     person.id,
   ]);
   const session = (
