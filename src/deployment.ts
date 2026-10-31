@@ -1,1 +1,1 @@
-export const deployment = {"api":"http://localhost:4310","web":"http://localhost:4317","extensionId":"fffkcnmfdhahlnifgdilabheppkgnlok"};
+export const deployment = {"api":"https://ai-api.copypaste.hk","web":"https://agent.copypaste.hk","extensionId":"fffkcnmfdhahlnifgdilabheppkgnlok"};
