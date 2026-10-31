@@ -1,3 +1,11 @@
+## 163 · 登录与进度流 / Sign-in and live progress
+
+[方案和使用](development/163-session-boundary.md) · [证据](quality/session-boundary-checkpoint-163.json) · [原编号待项](quality/remaining-work-stage163.md)
+
+源码修复，未替换rc.3冻结包。Source correction; original frozen distributions remain unchanged.
+
+---
+
 ## rc.3 · 源码补丁已发布 / Source addon published
 
 [完整冻结版](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.3) · [约719KB补丁](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.3/workmate-v0.1.0-rc.3-onboarding-162.zip) · [中英使用 / Instructions](releases/v0.1.0-rc.3-onboarding-162.md) · [实际发布回执](quality/onboarding-publication-162.json)
