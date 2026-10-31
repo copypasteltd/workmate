@@ -9,12 +9,16 @@ import { canonical, hash, seal, unseal } from "./lib.js";
 
 const uuid = z.string().uuid(), sha = z.string().regex(/^[a-f0-9]{64}$/);
 const clock = z.string().datetime({ offset: true });
-export const recoveryTargets = ["assets", "tasks", "agents", "conversations", "memories", "brand_profiles", "analytics_datasets", "creative_mappings", "creative_feedback_reports", "geo_experiments", "geo_runs", "geo_samples", "workflows", "workflow_runs", "workflow_schedules", "creative_projects", "workspace_nodes", "agent_groups", "agent_group_runs", "cloud_runtime_quotes", "cloud_runtime_sessions"] as const;
-export const ledgerSchema = z.object({
-  protocol: z.literal("copypaste-erasure-ledger/1"), id: uuid, source_id: uuid, observed_at: clock,
-  targets: z.array(z.object({ type: z.enum(recoveryTargets), id: uuid, tenant_id: uuid }).strict()).max(1_000_000),
+export const contentRecoveryTargets = ["assets", "tasks", "agents", "conversations", "memories", "brand_profiles", "analytics_datasets", "creative_mappings", "creative_feedback_reports", "geo_experiments", "geo_runs", "geo_samples", "workflows", "workflow_runs", "workflow_schedules", "creative_projects", "workspace_nodes", "agent_groups", "agent_group_runs", "cloud_runtime_quotes", "cloud_runtime_sessions"] as const;
+export const recoveryTargets = [...contentRecoveryTargets, "projects", "tenants"] as const;
+const ledgerBase = z.object({
+  id: uuid, source_id: uuid, observed_at: clock,
   objects: z.array(z.string().regex(/^objects\/[a-f0-9-]{36}$/)).max(1_000_000),
 }).strict();
+export const ledgerSchema = z.discriminatedUnion("protocol", [
+  ledgerBase.extend({protocol:z.literal("copypaste-erasure-ledger/1"),targets:z.array(z.object({type:z.enum(contentRecoveryTargets),id:uuid,tenant_id:uuid}).strict()).max(1_000_000)}),
+  ledgerBase.extend({protocol:z.literal("copypaste-erasure-ledger/2"),targets:z.array(z.object({type:z.enum(recoveryTargets),id:uuid,tenant_id:uuid}).strict()).max(1_000_000)}),
+]);
 export type ErasureLedger = z.infer<typeof ledgerSchema>;
 export const archiveEntry = z.object({
   name: z.string().regex(/^\d{8}\.enc$/),

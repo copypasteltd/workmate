@@ -313,6 +313,8 @@ export async function changeAccountStatus(
   inflight: string,
 ) {
   const status = state === "active" ? "active" : "suspended";
+  if (type === "tenants" && state === "active" && (await tx.query("SELECT 1 FROM tenants WHERE id=$1 AND erasure_requested_at IS NOT NULL", [target])).rowCount)
+    throw new Problem(410, "SCOPE_ERASED", "Permanent workspace deletion cannot be restored");
   await tx.query(
     `UPDATE ${type} SET status=$2,admin_closed_at=CASE WHEN $3='closed' THEN coalesce(admin_closed_at,now()) ELSE NULL END,version=version+1${type === "users" ? ",auth_version=auth_version+1" : ""} WHERE id=$1`,
     [target, status, state],

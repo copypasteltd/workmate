@@ -5,8 +5,11 @@ import { eraseReplayContent } from "./access.js";
 import { requestTaskCancellation } from "./task-control.js";
 import { eraseDedicatedQuote, eraseDedicatedSession } from "./dedicated-cloud-erasure.js";
 import { erasePublicationDependents } from "./publication-erasure.js";
+import { finishScopeErasure, prepareScopeErasure, scopeRetentionExceptions } from "./scope-erasure-cleanup.js";
 
 const targets = new Set([
+  "projects",
+  "tenants",
   "assets",
   "tasks",
   "agents",
@@ -98,7 +101,7 @@ export class ErasureService {
     await this.db.tx(
       async (tx) => {
         const target = (await tx.query("SELECT target_type FROM deletion_jobs WHERE id=$1 AND lease_token=$2", [id, token])).rows[0];
-        if (["cloud_runtime_quotes", "cloud_runtime_sessions"].includes(target?.target_type))
+        if (["projects", "tenants", "cloud_runtime_quotes", "cloud_runtime_sessions"].includes(target?.target_type))
           await tx.query("SELECT pg_advisory_xact_lock(hashtextextended('dedicated-cloud-control',0))");
         const job = (
           await tx.query(
@@ -111,12 +114,13 @@ export class ErasureService {
           throw new Error("ERASURE_TARGET_INVALID");
         const row = (
           await tx.query(
-            `SELECT * FROM ${job.target_type} WHERE id=$1 FOR UPDATE`,
+            `SELECT * FROM ${job.target_type} WHERE id=$1${["projects", "tenants"].includes(job.target_type) ? "" : " FOR UPDATE"}`,
             [job.target_id],
           )
         ).rows[0];
         const state =
-          job.target_type === "assets" ? row?.state : row?.content_state;
+          ["projects", "tenants"].includes(job.target_type) ? row?.erasure_requested_at ? "deleted" : "active"
+            : job.target_type === "assets" ? row?.state : row?.content_state;
         if (row && state !== "deleted")
           throw new Error("ERASURE_TARGET_NOT_DELETED");
         if (row && ["cloud_runtime_quotes", "cloud_runtime_sessions"].includes(job.target_type)) {
@@ -171,7 +175,7 @@ export class ErasureService {
                 );
                 await this.storage.remove(item.locator);
                 await tx.query("UPDATE publication_retired_objects SET erased_at=clock_timestamp() WHERE storage_key=$1 AND erased_at IS NULL", [item.locator]);
-              }
+              } else await tx.query("UPDATE deletion_jobs SET retained=CASE WHEN retained ? 'SHARED_OBJECT_HAS_OTHER_LIVE_REFERENCES' THEN retained ELSE retained || '[\"SHARED_OBJECT_HAS_OTHER_LIVE_REFERENCES\"]'::jsonb END WHERE id=$1", [id]);
               await tx.query(
                 "UPDATE asset_versions SET erased_at=now(),metadata='{}' WHERE asset_id=$1 AND storage_key=$2",
                 [job.target_id, item.locator],
@@ -193,7 +197,7 @@ export class ErasureService {
         }
         const children = (
           await tx.query(
-            "SELECT d.state FROM deletion_dependencies e JOIN deletion_jobs d ON d.id=e.child_job_id WHERE e.job_id=$1 AND d.state<>'completed'",
+            "SELECT d.state FROM deletion_dependencies e JOIN deletion_jobs d ON d.id=e.child_job_id WHERE e.job_id=$1 AND d.state NOT IN('completed','completed_with_exceptions')",
             [id],
           )
         ).rows;
@@ -219,15 +223,28 @@ export class ErasureService {
           );
           return;
         }
+        const scopeJob = ["projects", "tenants"].includes(job.target_type);
+        if (scopeJob && !failures.length) {
+          await finishScopeErasure(tx, job);
+          const pending = (await tx.query("SELECT 1 FROM deletion_items WHERE job_id=$1 AND state<>'completed' LIMIT 1", [id])).rowCount;
+          if (pending) {
+            await tx.query("UPDATE deletion_jobs SET state='queued',next_attempt_at=clock_timestamp(),lease_until=NULL,lease_token=NULL,attempts=greatest(0,attempts-1) WHERE id=$1", [id]);
+            return;
+          }
+          await tx.query(`UPDATE deletion_jobs SET retained=(SELECT coalesce(jsonb_agg(DISTINCT value),'[]') FROM (
+            SELECT value FROM jsonb_array_elements_text(retained || $2::jsonb)
+            UNION SELECT value FROM deletion_dependencies e JOIN deletion_jobs d ON d.id=e.child_job_id,
+              LATERAL jsonb_array_elements_text(d.retained) value WHERE e.job_id=$1) r) WHERE id=$1`, [id, JSON.stringify(scopeRetentionExceptions)]);
+        }
         await tx.query(
-          "UPDATE deletion_jobs SET state=$2,exceptions=$3,completed_at=CASE WHEN $2='completed' THEN now() END,next_attempt_at=now()+make_interval(secs=>least(3600,30*attempts)),lease_until=NULL,lease_token=NULL WHERE id=$1",
+          "UPDATE deletion_jobs SET state=$2,exceptions=$3,completed_at=CASE WHEN $2 IN('completed','completed_with_exceptions') THEN now() END,next_attempt_at=now()+make_interval(secs=>least(3600,30*attempts)),lease_until=NULL,lease_token=NULL WHERE id=$1",
           [
             id,
             failures.length
               ? job.attempts >= 8
                 ? "failed"
                 : "queued"
-              : "completed",
+              : scopeJob ? "completed_with_exceptions" : "completed",
             JSON.stringify(failures),
           ],
         );
@@ -241,6 +258,10 @@ export class ErasureService {
     await eraseReplayContent(tx, [id]);
     await erasePublicationDependents(tx, j.tenant_id, j.target_type, id, j.id);
     switch (j.target_type) {
+      case "projects":
+      case "tenants":
+        await prepareScopeErasure(tx, j, !!this.recoveryId);
+        break;
       case "geo_experiments":
       case "geo_runs": {
         const childTable =

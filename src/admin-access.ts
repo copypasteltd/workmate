@@ -306,6 +306,12 @@ export async function permit(
       "ADMIN_FORBIDDEN",
       "Your admin role or scope does not allow this action",
     );
+  if (key === "admin.content.body.read" && (s.tenant || s.project)) {
+    const erased = (await tx.query(`SELECT 1 WHERE EXISTS(SELECT 1 FROM tenants WHERE id=$1 AND erasure_requested_at IS NOT NULL)
+      OR EXISTS(SELECT 1 FROM projects p JOIN tenants t ON t.id=p.tenant_id WHERE p.id=$2 AND (p.erasure_requested_at IS NOT NULL OR t.erasure_requested_at IS NOT NULL))`,
+      [s.tenant ?? null, s.project ?? null])).rowCount;
+    if (erased) throw new Problem(410, "SCOPE_ERASED", "Private content is unavailable after permanent scope deletion");
+  }
   return allowed;
 }
 export async function can(tx: Tx, p: Principal, key: string, s: Scope = {}) {

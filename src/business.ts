@@ -766,7 +766,7 @@ function registerDevices(app: FastifyInstance, db: Database) {
           public_key: commandPublicKey(db.config.MASTER_KEY!),
           items: (
             await tx.query(
-              "UPDATE device_commands SET state='claimed' WHERE id IN (SELECT id FROM device_commands WHERE device_id=$1 AND state='pending' AND expires_at>now() ORDER BY created_at LIMIT 5 FOR UPDATE SKIP LOCKED) RETURNING *",
+              "UPDATE device_commands SET state='claimed' WHERE id IN (SELECT id FROM device_commands WHERE device_id=$1 AND state='pending' AND expires_at>now() AND (task_id IS NULL OR EXISTS(SELECT 1 FROM tasks t JOIN projects p ON p.id=t.project_id JOIN tenants w ON w.id=p.tenant_id WHERE t.id=device_commands.task_id AND p.erasure_requested_at IS NULL AND w.erasure_requested_at IS NULL)) ORDER BY created_at LIMIT 5 FOR UPDATE SKIP LOCKED) RETURNING *",
               [id],
             )
           ).rows.map((c) => signCommand(db.config.MASTER_KEY!, c)),
@@ -849,7 +849,7 @@ function registerDevices(app: FastifyInstance, db: Database) {
         await tenantAccess(tx, req.principal, tenant);
         const r = (
           await tx.query(
-            "SELECT c.id,c.device_id,c.operation,c.state,c.result,c.expires_at,c.created_at FROM device_commands c JOIN devices d ON d.id=c.device_id WHERE c.id=$1 AND c.device_id=$2 AND d.user_id=$3",
+            "SELECT c.id,c.device_id,c.operation,c.state,c.result,c.expires_at,c.created_at FROM device_commands c JOIN devices d ON d.id=c.device_id WHERE c.id=$1 AND c.device_id=$2 AND d.user_id=$3 AND (c.task_id IS NULL OR EXISTS(SELECT 1 FROM tasks t JOIN projects p ON p.id=t.project_id JOIN tenants w ON w.id=p.tenant_id WHERE t.id=c.task_id AND p.erasure_requested_at IS NULL AND w.erasure_requested_at IS NULL))",
             [command, id, req.principal.id],
           )
         ).rows[0];

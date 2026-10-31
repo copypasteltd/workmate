@@ -48,8 +48,8 @@ const notFound = () => new Problem(404, "NOT_FOUND", "Native workflow not found"
 
 /** Always acquire root -> run -> child, including cleanup after withdrawal.
  * The root stop trigger takes this same order and cancels child media too. */
-export async function lockNativeWorkflowParent(tx: Tx, task: any, active = false) {
-  await lockNativeTeam(tx, task, active);
+export async function lockNativeWorkflowParent(tx: Tx, task: any, active = false, closingErased = false) {
+  await lockNativeTeam(tx, task, active, closingErased);
   if (!task.desktop_workflow_run_id) return null;
   const hint = (await tx.query("SELECT origin_task_id FROM workflow_runs WHERE id=$1", [task.desktop_workflow_run_id])).rows[0];
   if (!hint) throw unavailable();

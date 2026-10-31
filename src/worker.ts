@@ -999,7 +999,7 @@ export class Worker {
           }
         }
         await tx.query(
-          "UPDATE tasks SET status=$2,output=$3,input_tokens=$4,output_tokens=$5,error_code=$6,accrued_micros=$7,lease_until=NULL,updated_at=now(),version=version+1 WHERE id=$1",
+          "UPDATE tasks SET status=$2,output=CASE WHEN content_state='deleted' OR EXISTS(SELECT 1 FROM projects p JOIN tenants w ON w.id=p.tenant_id WHERE p.id=tasks.project_id AND (p.erasure_requested_at IS NOT NULL OR w.erasure_requested_at IS NOT NULL)) THEN NULL ELSE $3 END,input_tokens=$4,output_tokens=$5,error_code=$6,accrued_micros=$7,lease_until=NULL,updated_at=now(),version=version+1 WHERE id=$1",
           [t.id, status, text, input, output, error ?? null, cost],
         );
         await settle(

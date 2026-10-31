@@ -47,6 +47,7 @@ export class Database {
       await c.query("SELECT set_config('app.task_id','',true)");
       await c.query("SELECT set_config('app.billing_actor_id','',true)");
       await c.query("SELECT set_config('app.erasing_content','false',true)");
+      await c.query("SELECT set_config('app.scope_erasure_job','',true)");
       const result = await f(c);
       await c.query("COMMIT");
       return result;

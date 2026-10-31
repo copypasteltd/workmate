@@ -308,7 +308,7 @@ export function registerAssets(
     // A share remains bounded to its owner's current membership and active content.
     const r = (
       await db.control.query(
-        "SELECT v.*,a.name,s.tenant_id,a.id AS asset_id FROM shares s JOIN assets a ON a.id=s.asset_id JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version JOIN tenants t ON t.id=s.tenant_id JOIN memberships m ON m.tenant_id=t.id AND m.user_id=s.created_by JOIN users u ON u.id=m.user_id WHERE s.digest=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.state='active' AND a.private_owner IS NULL AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND task_asset_sources_available(a.id) AND analysis_asset_available(a.id) AND matrix_asset_available(a.id) AND video_asset_available(a.id) AND t.status='active' AND m.status='active' AND u.status='active' AND m.role IN ('owner','admin')",
+        "SELECT v.*,a.name,s.tenant_id,a.id AS asset_id FROM shares s JOIN assets a ON a.id=s.asset_id JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version JOIN tenants t ON t.id=s.tenant_id JOIN memberships m ON m.tenant_id=t.id AND m.user_id=s.created_by JOIN users u ON u.id=m.user_id WHERE s.digest=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.state='active' AND a.private_owner IS NULL AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND task_asset_sources_available(a.id) AND analysis_asset_available(a.id) AND matrix_asset_available(a.id) AND video_asset_available(a.id) AND t.status='active' AND NOT EXISTS(SELECT 1 FROM projects erased WHERE erased.id=a.project_id AND erased.erasure_requested_at IS NOT NULL) AND m.status='active' AND u.status='active' AND m.role IN ('owner','admin')",
         [hash(value)],
       )
     ).rows[0];
@@ -317,7 +317,7 @@ export function registerAssets(
     try {
       const valid = (
         await db.control.query(
-          "SELECT 1 FROM shares s JOIN assets a ON a.id=s.asset_id JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version JOIN memberships m ON m.tenant_id=s.tenant_id AND m.user_id=s.created_by JOIN users u ON u.id=m.user_id JOIN tenants t ON t.id=s.tenant_id WHERE s.digest=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.state='active' AND a.private_owner IS NULL AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND task_asset_sources_available(a.id) AND analysis_asset_available(a.id) AND matrix_asset_available(a.id) AND video_asset_available(a.id) AND m.status='active' AND u.status='active' AND m.role IN ('owner','admin') AND t.status='active'",
+          "SELECT 1 FROM shares s JOIN assets a ON a.id=s.asset_id JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version JOIN memberships m ON m.tenant_id=s.tenant_id AND m.user_id=s.created_by JOIN users u ON u.id=m.user_id JOIN tenants t ON t.id=s.tenant_id WHERE s.digest=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.state='active' AND a.private_owner IS NULL AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND task_asset_sources_available(a.id) AND analysis_asset_available(a.id) AND matrix_asset_available(a.id) AND video_asset_available(a.id) AND m.status='active' AND u.status='active' AND m.role IN ('owner','admin') AND t.status='active' AND NOT EXISTS(SELECT 1 FROM projects erased WHERE erased.id=a.project_id AND erased.erasure_requested_at IS NOT NULL)",
           [hash(value)],
         )
       ).rowCount;

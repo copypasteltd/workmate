@@ -25,6 +25,7 @@ export async function managedProject(tx: Tx, actor: Principal, tenant: string, p
   // Authorize after every lock wait using the same locks as account/membership changes.
   await tenantAccess(tx, actor, tenant, "manage");
   if (!row) throw new Problem(404, "NOT_FOUND", "Project not found");
+  if (row.erasure_requested_at) throw new Problem(410, "SCOPE_ERASED", "Permanent project deletion has been requested");
   return row;
 }
 
@@ -41,7 +42,7 @@ export function registerProjectManagement(app: FastifyInstance, db: Database) {
     reply.header("Cache-Control", "no-store");
     return db.tx(async tx => {
       await tenantAccess(tx, req.principal, tenant, "manage");
-      const filter = "tenant_id=$1 AND ($2::text='all' OR archived=($2='archived')) AND ($3::text='' OR position(lower($3) in lower(name||' '||description))>0)";
+      const filter = "tenant_id=$1 AND erasure_requested_at IS NULL AND ($2::text='all' OR archived=($2='archived')) AND ($3::text='' OR position(lower($3) in lower(name||' '||description))>0)";
       const values = [tenant, q.state, q.search];
       const items = (await tx.query(
         `SELECT id,tenant_id,name,description,archived,created_at FROM projects WHERE ${filter} ORDER BY created_at DESC,id DESC LIMIT $4 OFFSET $5`,

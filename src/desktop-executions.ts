@@ -1,3 +1,5 @@
+import { lockCurrentScopeSession } from "./scope-closure-authority.js";
+import { lockMemberships } from "./membership.js";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { Database, Tx } from "./db.js";
 import type { Catalog } from "./catalog.js";
@@ -256,15 +258,18 @@ export async function registerDesktopExecutions(
   registerDesktopGeo(app, db, catalog, desktopFamily, desktopLocalRoleKeys);
   registerNativeAgentGroups(app, db, catalog, desktopFamily, desktopLocalRoleKeys, storage);
 
-  async function own(tx: Tx, req: FastifyRequest, write = false, lock = false) {
+  async function own(tx: Tx, req: FastifyRequest, write = false, lock = false, closureOnly = false) {
     const p = executionParams.parse(req.params);
-    await projectAccess(
-      tx,
-      req.principal,
-      p.tenant,
-      p.project,
-      write ? "write" : "read",
-    );
+    if (closureOnly) await lockCurrentScopeSession(tx,req.principal);
+    const erased = closureOnly && !!(await tx.query(`SELECT 1 FROM projects p JOIN tenants w ON w.id=p.tenant_id
+      WHERE p.id=$1 AND p.tenant_id=$2 AND (p.erasure_requested_at IS NOT NULL OR w.erasure_requested_at IS NOT NULL)`,[p.project,p.tenant])).rowCount;
+    if (erased) {
+      await lockMemberships(tx,p.tenant);
+      if (!(await tx.query("SELECT 1 FROM memberships WHERE tenant_id=$1 AND user_id=$2 AND status='active' AND NOT admin_suspended",[p.tenant,req.principal.id])).rowCount)
+        throw new Problem(404,"NOT_FOUND","Local execution not found");
+      // Match scope expansion before acquiring any parent/child row lock.
+      await tx.query("SELECT pg_advisory_xact_lock(hashtextextended('dedicated-cloud-control',0))");
+    } else await projectAccess(tx,req.principal,p.tenant,p.project,write ? "write" : "read");
     const family = await desktopFamily(tx, req.principal);
     if (lock) {
       const hint = (
@@ -275,7 +280,7 @@ export async function registerDesktopExecutions(
       ).rows[0];
       if (hint) {
         await lockLocalHandoffParent(tx, hint);
-        await lockNativeWorkflowParent(tx, hint);
+        await lockNativeWorkflowParent(tx, hint, false, erased);
       }
     }
     const t = (
@@ -285,7 +290,7 @@ export async function registerDesktopExecutions(
         [p.execution, p.project],
       )
     ).rows[0];
-    if (!t || t.execution_location !== "desktop")
+    if (!t || t.tenant_id !== p.tenant || t.execution_location !== "desktop" || (!erased && t.content_state !== "active"))
       throw new Problem(404, "NOT_FOUND", "Local execution not found");
     const d = (
       await tx.query(
@@ -294,9 +299,10 @@ export async function registerDesktopExecutions(
         [t.id],
       )
     ).rows[0];
-    if (!d || d.actor_id !== req.principal.id || d.native_family_id !== family)
+    if (!d || d.tenant_id !== p.tenant || d.project_id !== p.project || t.created_by !== req.principal.id || t.private_owner !== req.principal.id || d.actor_id !== req.principal.id || d.native_family_id !== family)
       throw new Problem(404, "NOT_FOUND", "Local execution not found");
-    return { d, t };
+    if (erased) t.output = null;
+    return { d, t, erased };
   }
 
   async function authorize(tx: Tx, d: any, t: any, active = true, observedLeaseAt?: number) {
@@ -1104,8 +1110,9 @@ export async function registerDesktopExecutions(
       z.object({}).strict().parse(req.body);
       key(req);
       const result = await db.tx(async (tx) => {
-        const { d, t } = await own(tx, req, false, true);
+        const { d, t, erased } = await own(tx, req, false, true, true);
         const cancelled = await requestTaskCancellation(tx, t);
+        if (erased) cancelled.output = null;
         if (
           d.state === "prepared" &&
           ["cancelled", "failed"].includes(cancelled.status)
@@ -1123,7 +1130,7 @@ export async function registerDesktopExecutions(
           ).rows[0],
           cancelled,
         );
-      }, p.tenant);
+      }, p.tenant, true, req.principal.id);
       await closeCompanyCalls(p.execution);
       await closeGateway(p.execution);
       return result;
@@ -1140,7 +1147,7 @@ export async function registerDesktopExecutions(
       // First fence admission durably; then close any in-flight upstream; finally
       // settle only server-observed usage. A retry resumes these same phases.
       await db.tx(async (tx) => {
-        const { d, t } = await own(tx, req, false, true);
+        const { d, t, erased } = await own(tx, req, false, true, true);
         if (d.client_report && d.client_report.hash !== hash(canonical(report)))
           throw denied("DESKTOP_RESULT_CONFLICT");
         if (["finished", "reconciling"].includes(d.state)) return;
@@ -1157,11 +1164,11 @@ export async function registerDesktopExecutions(
             },
           ],
         );
-      }, p.tenant);
+      }, p.tenant, true, req.principal.id);
       await closeCompanyCalls(p.execution);
       await closeGateway(p.execution);
       return db.tx(async (tx) => {
-        const { d, t } = await own(tx, req, false, true);
+        const { d, t, erased } = await own(tx, req, false, true, true);
         if (["finished", "reconciling"].includes(d.state))
           return publicExecution(d, t);
         await tx.query("SELECT set_config('app.task_id',$1,true)", [t.id]);
@@ -1174,13 +1181,13 @@ export async function registerDesktopExecutions(
           new Date(t.lease_until).getTime() <= Date.now();
         const status = uncertain
           ? "reconciling"
-          : t.cancel_requested || report.status === "interrupted"
+          : erased || t.cancel_requested || report.status === "interrupted"
             ? "cancelled"
             : report.status === "completed"
               ? "succeeded"
               : "failed";
         await tx.query(
-          "UPDATE tasks SET status=$2,output=$3,runtime_thread=$4,runtime_turn=$5,input_tokens=$6,output_tokens=$7,accrued_micros=$8,lease_until=NULL,version=version+1,updated_at=now() WHERE id=$1",
+          "UPDATE tasks SET status=$2,output=CASE WHEN content_state='deleted' OR EXISTS(SELECT 1 FROM projects p JOIN tenants w ON w.id=p.tenant_id WHERE p.id=tasks.project_id AND (p.erasure_requested_at IS NOT NULL OR w.erasure_requested_at IS NOT NULL)) THEN NULL ELSE $3 END,runtime_thread=$4,runtime_turn=$5,input_tokens=$6,output_tokens=$7,accrued_micros=$8,lease_until=NULL,version=version+1,updated_at=now() WHERE id=$1",
           [
             t.id,
             status,
@@ -1229,7 +1236,7 @@ export async function registerDesktopExecutions(
           ).rows[0],
           (await tx.query("SELECT * FROM tasks WHERE id=$1", [t.id])).rows[0],
         );
-      }, p.tenant);
+      }, p.tenant, true, req.principal.id);
     },
   );
 
@@ -1393,7 +1400,11 @@ export async function registerDesktopExecutions(
           const hint = (
             await tx.query("SELECT * FROM tasks WHERE id=$1", [row.task_id])
           ).rows[0];
-          if (hint) await lockNativeWorkflowParent(tx, hint);
+          if (hint) {
+            const erased = !!(await tx.query("SELECT 1 FROM projects p JOIN tenants w ON w.id=p.tenant_id WHERE p.id=$1 AND (p.erasure_requested_at IS NOT NULL OR w.erasure_requested_at IS NOT NULL)",[hint.project_id])).rowCount;
+            if (erased) await tx.query("SELECT pg_advisory_xact_lock(hashtextextended('dedicated-cloud-control',0))");
+            await lockNativeWorkflowParent(tx,hint,false,erased);
+          }
           const t = (
             await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [
               row.task_id,

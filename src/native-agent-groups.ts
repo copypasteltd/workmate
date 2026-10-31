@@ -34,12 +34,12 @@ type Family = (tx: Tx, actor: Principal) => Promise<string>;
 
 /** A shared lock here precedes task locks in native admission/inference/finish.
  * The team dispatcher takes an exclusive run lock before admitting children. */
-export async function lockNativeTeam(tx: Tx, task: any, active = false) {
+export async function lockNativeTeam(tx: Tx, task: any, active = false, closingErased = false) {
   if (!task.agent_group_run_id || task.execution_location !== "desktop") return;
   const r = (await tx.query("SELECT * FROM agent_group_runs WHERE id=$1 FOR SHARE", [task.agent_group_run_id])).rows[0];
   if (!r || r.execution_location !== "desktop" || r.tenant_id !== task.tenant_id || r.project_id !== task.project_id
     || r.created_by !== task.created_by || r.conversation_id !== task.conversation_id
-    || r.content_state !== "active" || (active && (r.state !== "running" || new Date(r.deadline_at).getTime() <= Date.now())))
+    || (!closingErased && r.content_state !== "active") || (active && (r.state !== "running" || new Date(r.deadline_at).getTime() <= Date.now())))
     throw unavailable("NATIVE_TEAM_STOPPED");
   return r;
 }

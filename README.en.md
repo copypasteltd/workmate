@@ -1,3 +1,32 @@
+<!-- scope-erasure-150 -->
+
+**Unreleased increment150 — permanent project/workspace cleanup**
+
+Owners/admins open Projects, preview permanent deletion, type the exact name and acknowledge irreversibility and retention. Only owners delete a whole workspace. Admin Content management requires scoped deletion permission and recent MFA. Cleanup history remains accessible at /cleanup after the last workspace is removed. New work/source access is blocked immediately. In-flight executions close using real company usage; unknown charges remain held. Native Desktop runs Codex locally; Extension keeps its cloud agent and right Side Panel.
+
+11 focused backend cases,6 actual client groups and3 targeted rebuild steps after8 all-client build steps passed. One unchanged expensive backup scenario was deliberately not repeated; its earlier individual pass and all original failures are retained. No broad regressions or paid models. Required billing/audit facts, shared identities, live references and customer-local copies follow explicit retention boundaries. Full export, all derivative/production recovery acceptance, real provider/advertising accounts and signing remain open. The first frozen v0.1.0-rc.1 tags and five archives are unchanged.
+
+```mermaid
+flowchart LR
+ A[Current owner or scoped admin] --> B[Preview and exact-name confirmation]
+ B --> C[Permanent scope fence]
+ C --> D[Cancel new work and close inflight execution]
+ D --> E[21 resource roots and derived cleanup]
+ E --> F[Safe progress and retained financial facts]
+ C --> G[Erasure ledger]
+ G --> H[Replay before restoring old backup objects]
+```
+
+Shared actual Web illustration; no new UI acceptance for this component.
+
+![Actual screen](assets/screenshots/workmate-scope-erasure-150-04-scope-cleanup-completed-en.png.png)
+
+![Actual interaction](assets/screenshots/workmate-scope-erasure-150-04-scope-cleanup.gif)
+
+[Actual MP4](assets/screenshots/workmate-scope-erasure-150-04-scope-cleanup.mp4)
+
+---
+
 <!-- project-lifecycle-149 -->
 
 **Current development increment149 — project management after frozen `v0.1.0-rc.1`**

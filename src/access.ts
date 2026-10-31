@@ -141,7 +141,7 @@ export async function eraseReplayContent(tx: Pick<Tx, "query">, ids: string[]) {
   // Keep the uniqueness tombstone so retries cannot recreate paid work or
   // retrieve an old serialized prompt after its source has been erased.
   await tx.query(
-    "UPDATE request_replays SET response='{}',revoked_at=now() WHERE revoked_at IS NULL AND (response::text LIKE ANY($1::text[]) OR action=ANY($2::text[]))",
+    "UPDATE request_replays SET response='{}',revoked_at=now() WHERE revoked_at IS NULL AND action NOT LIKE 'scope.erasure:%' AND action NOT LIKE 'admin.scope.erasure:%' AND (response::text LIKE ANY($1::text[]) OR action=ANY($2::text[]))",
     [
       ids.map((id) => `%${id}%`),
       ids.flatMap((id) => [`tool:${id}`, `conversation.message:${id}`]),

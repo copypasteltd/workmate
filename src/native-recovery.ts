@@ -14,6 +14,8 @@ import { fenceRestoredDedicatedCloud } from "./dedicated-cloud-recovery.js";
 import { eraseDedicatedQuote, eraseDedicatedSession } from "./dedicated-cloud-erasure.js";
 import { fenceRestoredPublications, erasePublicationDependents } from "./publication-erasure.js";
 import { hash } from "./lib.js";
+import { runMigrations } from "../scripts/migration-runner.js";
+import { replayScopeErasure } from "./scope-erasure-cleanup.js";
 import {
   canonicalDirectory, checkedFile, durableWrite, encryptEntry, decryptEntry, recoveryKey,
   sealRecovery, openRecovery, verifyBackup, ledgerSchema, recoveryTargets,
@@ -68,7 +70,7 @@ async function source(c: pg.Client) {
 async function captureLedger(c: pg.Client, sourceId: string, at: string): Promise<ErasureLedger> {
   const targets = (await c.query("SELECT target_type AS type,target_id AS id,tenant_id FROM deletion_jobs ORDER BY target_type,target_id")).rows;
   const objects = (await c.query("SELECT storage_key FROM object_erasure_tombstones ORDER BY storage_key")).rows.map(r => r.storage_key);
-  return ledgerSchema.parse({ protocol: "copypaste-erasure-ledger/1", id: randomUUID(), source_id: sourceId, observed_at: at, targets, objects });
+  return ledgerSchema.parse({ protocol: "copypaste-erasure-ledger/2", id: randomUUID(), source_id: sourceId, observed_at: at, targets, objects });
 }
 async function receipt(c: pg.Client, row: { id: string; source_id: string; kind: string; outcome: string; started_at: string; snapshot_at?: string; ledger_at?: string; incident_at?: string; file_count?: number; plaintext_bytes?: number; manifest_sha256?: string; detail?: Record<string, unknown> }) {
   await c.query(`INSERT INTO recovery_runs(id,source_id,kind,outcome,started_at,finished_at,snapshot_at,ledger_at,incident_at,file_count,plaintext_bytes,manifest_sha256,detail)
@@ -240,12 +242,19 @@ export async function restoreNativeBackup(o: RecoveryOptions, input: {
     const targetOwner = await owner(o, input.databaseName);
     try {
       await targetOwner.query("UPDATE recovery_environment SET state='quarantined',restore_id=$1,quarantined_at=clock_timestamp() WHERE singleton", [restoreId]);
+      // Upgrade only the isolated, disconnected target. The migration runner
+      // verifies every recorded source digest before applying forward SQL.
+      await runMigrations(targetOwner, "isolated recovery");
       await targetOwner.query("BEGIN");
       await fenceRestoredDedicatedCloud(targetOwner, restoreId);
       await fenceRestoredPublications(targetOwner);
       await targetOwner.query("SELECT set_config('app.erasing_content','true',true)");
+      for (const item of ledger.targets) if (item.type === "tenants" || item.type === "projects")
+        await replayScopeErasure(targetOwner, item.type, item.id, item.tenant_id);
       for (const item of ledger.targets) {
         if (!recoveryTargets.includes(item.type)) throw new Error("RECOVERY_ERASURE_TARGET_INVALID");
+        if (item.type === "tenants" || item.type === "projects") continue;
+        await targetOwner.query("SELECT set_config('app.erasing_content','true',true)");
         const column = item.type === "assets" ? "state" : "content_state";
         const counters = (await targetOwner.query("SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name=$1 AND column_name IN('version','moderation_version','revision') AND data_type IN('integer','bigint')", [item.type])).rows;
         const bump = counters.map(r => `,"${r.column_name}"="${r.column_name}"+1`).join("");
@@ -269,7 +278,7 @@ export async function restoreNativeBackup(o: RecoveryOptions, input: {
     // Materialize objects only after applying the newer deletion ledger. Deleted bytes never reappear.
     const active = await owner(o, input.databaseName);
     let erasedObjects: Set<string>;
-    try { erasedObjects = new Set((await active.query("SELECT storage_key FROM object_erasure_tombstones UNION SELECT v.storage_key FROM asset_versions v JOIN assets a ON a.id=v.asset_id WHERE a.state='deleted' AND NOT EXISTS(SELECT 1 FROM asset_versions live JOIN assets owner ON owner.id=live.asset_id WHERE live.storage_key=v.storage_key AND owner.state<>'deleted' AND live.erased_at IS NULL)")).rows.map(r => r.storage_key)); }
+    try { erasedObjects = new Set((await active.query("SELECT storage_key FROM object_erasure_tombstones UNION SELECT v.storage_key FROM asset_versions v JOIN assets a ON a.id=v.asset_id WHERE a.state='deleted' AND NOT EXISTS(SELECT 1 FROM asset_versions live JOIN assets owner ON owner.id=live.asset_id WHERE live.storage_key=v.storage_key AND owner.state<>'deleted' AND live.erased_at IS NULL) UNION SELECT i.locator FROM deletion_items i WHERE i.kind='object' AND NOT publication_object_referenced(i.locator) AND NOT EXISTS(SELECT 1 FROM asset_versions live JOIN assets owner ON owner.id=live.asset_id WHERE live.storage_key=i.locator AND owner.state<>'deleted' AND live.erased_at IS NULL)")).rows.map(r => r.storage_key)); }
     finally { await active.end(); }
     for (const entry of m.files.slice(1)) {
       if (entry.kind === "object" && erasedObjects.has(entry.locator)) continue;
@@ -288,12 +297,12 @@ export async function restoreNativeBackup(o: RecoveryOptions, input: {
     }
     const erasure = new ErasureService(db, new Storage(env), () => false, restoreId);
     for (let batch = 0; batch < 100; batch++) {
-      const count = Number((await db.control.query("SELECT count(*) AS n FROM deletion_jobs WHERE state<>'completed'")).rows[0].n);
+      const count = Number((await db.control.query("SELECT count(*) AS n FROM deletion_jobs WHERE state NOT IN('completed','completed_with_exceptions')")).rows[0].n);
       if (!count) break;
-      await db.control.query("UPDATE deletion_jobs SET state='queued',next_attempt_at=clock_timestamp(),lease_token=NULL,lease_until=NULL,attempts=0 WHERE state<>'completed'");
+      await db.control.query("UPDATE deletion_jobs SET state='queued',next_attempt_at=clock_timestamp(),lease_token=NULL,lease_until=NULL,attempts=0 WHERE state NOT IN('completed','completed_with_exceptions')");
       await erasure.advance(Math.min(count, 100));
     }
-    const remaining = Number((await db.control.query("SELECT count(*) AS n FROM deletion_jobs WHERE state<>'completed'")).rows[0].n);
+    const remaining = Number((await db.control.query("SELECT count(*) AS n FROM deletion_jobs WHERE state NOT IN('completed','completed_with_exceptions')")).rows[0].n);
     const missing = (await db.control.query(`SELECT v.storage_key FROM asset_versions v JOIN assets a ON a.id=v.asset_id
       WHERE a.state<>'deleted' AND v.erased_at IS NULL AND NOT EXISTS(SELECT 1 FROM object_erasure_tombstones t WHERE t.storage_key=v.storage_key)`)).rows;
     for (const row of missing) await checkedFile(path.join(target, row.storage_key));

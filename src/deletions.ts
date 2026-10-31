@@ -25,13 +25,14 @@ const result = (r: any) => ({
   id: r.id,
   state: r.state,
   exceptions: r.exceptions,
+  retained: r.retained ?? [],
 });
 async function detail(tx: Tx, row: any) {
   return (await details(tx, [row]))[0];
 }
 // Only IDs from the already scoped page are expanded. Never return locators,
 // private owners or lease tokens, and avoid two extra queries per listed job.
-async function details(tx: Tx, rows: any[]) {
+export async function deletionJobDetails(tx: Tx, rows: any[]) {
   if (!rows.length) return [];
   const ids = rows.map((row) => row.id),
     counts = (
@@ -66,6 +67,7 @@ async function details(tx: Tx, rows: any[]) {
     failures: failuresByJob.get(row.id) ?? [],
   }));
 }
+const details = deletionJobDetails;
 export function registerDeletions(app: FastifyInstance, db: Database) {
   const create: RouteHandlerMethod = async (req, reply) => {
     const tenant = uuid.parse(
@@ -224,6 +226,8 @@ export function registerDeletions(app: FastifyInstance, db: Database) {
             .optional(),
           target_type: z
             .enum([
+              "projects",
+              "tenants",
               "assets",
               "tasks",
               "agents",
