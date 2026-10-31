@@ -67,6 +67,7 @@ import {
   DesktopWorkflows,
   lockNativeWorkflowParent,
 } from "./desktop-workflows.js";
+import { admitLocalHandoff, localHandoffSelection, lockLocalHandoffParent, registerTaskLocalHandoffs } from "./task-local-handoffs.js";
 
 const params = z.object({ tenant: uuid, project: uuid });
 const executionParams = params.extend({ execution: uuid });
@@ -80,6 +81,7 @@ const createBody = binding
     agent_id: uuid.optional(),
     agent_version: z.number().int().positive().optional(),
     delivery_revision: revisionSelection.optional(),
+    local_handoff: localHandoffSelection.optional(),
   })
   .strict()
   .refine(
@@ -207,6 +209,7 @@ export async function registerDesktopExecutions(
 ) {
   await seedDesktopRuntime(db);
   registerDesktopSolutions(app, db, catalog, desktopLocalRoleKeys);
+  registerTaskLocalHandoffs(app, db, catalog, desktopLocalRoleKeys);
   const gateways = new Map<string, Promise<Gateway>>(),
     shutdown = new AbortController();
   type CompanyCall = { taskId: string; actorId: string; nativeFamilyId: string;
@@ -270,7 +273,10 @@ export async function registerDesktopExecutions(
           p.project,
         ])
       ).rows[0];
-      if (hint) await lockNativeWorkflowParent(tx, hint);
+      if (hint) {
+        await lockLocalHandoffParent(tx, hint);
+        await lockNativeWorkflowParent(tx, hint);
+      }
     }
     const t = (
       await tx.query(
@@ -376,6 +382,7 @@ export async function registerDesktopExecutions(
     const check = async (tx: Tx) => {
       // Lock the task before its execution row everywhere; dispatch, finish and
       // heartbeat use the same ordering and cannot admit behind finalization.
+      await lockLocalHandoffParent(tx, t);
       await lockNativeWorkflowParent(tx, t);
       const current = (
         await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [t.id])
@@ -473,6 +480,7 @@ export async function registerDesktopExecutions(
       ["brand-visual", "presentation"].includes(role.role_key);
     const tools = new TaskBusinessTools(db, catalog, storage, {
       authorize: async (tx) => {
+        await lockLocalHandoffParent(tx, t);
         await lockNativeWorkflowParent(tx, t);
         const current = (
           await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [t.id])
@@ -669,6 +677,9 @@ export async function registerDesktopExecutions(
       await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
         "desktop-session:" + b.local_session_id,
       ]);
+      const handoff = b.local_handoff
+        ? await admitLocalHandoff(tx, catalog, req.principal, p.tenant, p.project, b.local_handoff, b, family)
+        : undefined;
       return replay(
         tx,
         req.principal.id,
@@ -676,12 +687,20 @@ export async function registerDesktopExecutions(
         key(req),
         b,
         async () => {
+          if (handoff?.existing) {
+            const t = (await tx.query("SELECT * FROM tasks WHERE id=$1", [handoff.task_id])).rows[0];
+            const d = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1", [handoff.task_id])).rows[0];
+            if (!t || !d) throw denied("LOCAL_HANDOFF_CHANGED");
+            await assertTaskContentSources(tx, t);
+            return publicExecution(d, t);
+          }
           const previous = (
             await tx.query(
               "SELECT d.*,t.role_key,t.role_hash,t.input_context FROM desktop_executions d JOIN tasks t ON t.id=d.task_id WHERE local_session_id=$1 ORDER BY d.created_at DESC LIMIT 1",
               [b.local_session_id],
             )
           ).rows[0];
+          if (handoff && previous) throw denied("LOCAL_HANDOFF_SESSION_REUSED");
           if (
             previous &&
             (previous.tenant_id !== p.tenant ||
@@ -758,6 +777,7 @@ export async function registerDesktopExecutions(
             },
             key(req),
             { execution_location: "desktop", ...(context ? { context } : {}),
+              ...(handoff ? { task_id: handoff.task_id, local_handoff_id: handoff.local_handoff_id, role_hash: handoff.role_hash } : {}),
               ...(revision ? { delivery_revision: revision.binding, content_source_task_id: previous.task_id } : {}) },
           );
           const d = (
@@ -1244,7 +1264,10 @@ export async function registerDesktopExecutions(
           const hint = (
             await tx.query("SELECT * FROM tasks WHERE id=$1", [d.task_id])
           ).rows[0];
-          if (hint) await lockNativeWorkflowParent(tx, hint);
+          if (hint) {
+            await lockLocalHandoffParent(tx, hint);
+            await lockNativeWorkflowParent(tx, hint);
+          }
           const t = (
             await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [
               d.task_id,

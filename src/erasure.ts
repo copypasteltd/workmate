@@ -358,6 +358,16 @@ export class ErasureService {
       }
       case "assets":
         await tx.query("UPDATE assets SET name='[deleted]' WHERE id=$1", [id]);
+        // Retire task-bound receipts before clearing their result. Their fixed
+        // upload version and deleted asset journal authorize this transition;
+        // a deleted, unrelated asset never permits another receipt to change.
+        await tx.query(
+          `UPDATE upload_sessions u SET state='cancelled',filename='[deleted]',result=NULL
+           WHERE u.source_task_id IS NOT NULL AND u.result->>'id'=$1
+           AND EXISTS(SELECT 1 FROM asset_versions v WHERE v.upload_session_id=u.id
+             AND v.asset_id=$1::uuid AND v.id::text=u.result#>>'{version,id}')`,
+          [id],
+        );
         await tx.query(
           "UPDATE upload_sessions SET filename='[deleted]',result=NULL WHERE result->>'id'=$1",
           [id],
@@ -543,7 +553,7 @@ export class ErasureService {
         break;
       case "workflow_runs":
         await tx.query(
-          "UPDATE workflow_runs SET definition='{}',results='[]' WHERE id=$1",
+          "UPDATE workflow_runs SET definition='{}',results='[]',input_values='{}',input_files='[]',input_hash=NULL,named_outputs='{}' WHERE id=$1",
           [id],
         );
         break;

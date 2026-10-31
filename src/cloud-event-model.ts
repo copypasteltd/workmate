@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { name, Problem, uuid } from "./lib.js";
+import {workflowInputValues,workflowFrozenBinding} from "./workflow-contracts.js";
 
 export const eventType = z.string().regex(/^[a-z][a-z0-9_.-]{2,79}$/);
 export const eventOptions = z
@@ -22,6 +23,7 @@ export const eventRequest = eventOptions
     workflow_id: uuid,
     workflow_version: z.number().int().positive(),
     workflow_definition_hash: z.string().regex(/^[a-f0-9]{64}$/),
+    inputs:workflowInputValues.optional(),
   })
   .strict();
 export const eventDecision = z
@@ -58,6 +60,7 @@ export type FrozenEventMethod = {
   workflow_definition_hash: string;
   role_hashes: Record<string, string>;
   source_refs: Record<string, unknown>;
+  input_binding?:{values:Record<string,string|number|boolean>;files:any[];input_hash:string};
   max_budget_micros: number;
 };
 export type EventBody = FrozenEventMethod &
@@ -77,6 +80,7 @@ export const eventBodyDTO = eventOptions
     workflow_definition_hash: z.string().regex(/^[a-f0-9]{64}$/),
     role_hashes: z.record(z.string(), z.string()),
     source_refs: z.record(z.string(), z.unknown()),
+    input_binding:workflowFrozenBinding.optional(),
     max_budget_micros: z.number().int().nonnegative().safe(),
     max_daily_budget_micros: z.number().int().nonnegative().safe(),
     actor_auth_version: z.number().int().positive(),

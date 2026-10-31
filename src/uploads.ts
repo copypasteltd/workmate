@@ -24,6 +24,7 @@ import { requireUser, audit } from "./auth.js";
 import { projectAccess, key, replay } from "./access.js";
 import { Problem, uuid, hash } from "./lib.js";
 import { saveAssetFile } from "./storage.js";
+import { taskLocalUploadScope } from "./task-local-handoffs.js";
 const partSize = 4 * 1024 * 1024,
   ordinaryLimit = 100 * 1024 * 1024,
   mediaLimit = 1024 * 1024 * 1024;
@@ -41,6 +42,7 @@ const createInput = z
     size_bytes: z.number().int().positive().max(mediaLimit),
     sha256: sha,
     conversation_id: uuid.optional(),
+    source_task_id: uuid.optional(),
   })
   .strict();
 const versionInput = createInput
@@ -64,6 +66,7 @@ async function session(
   req: FastifyRequest,
   tenant: string,
   id: string,
+  checkSource = true,
 ) {
   // Membership first establishes the actor for the upload owner RLS policy.
   const project = (req.params as any).project;
@@ -79,6 +82,14 @@ async function session(
     const { tenantAccess } = await import("./access.js");
     await tenantAccess(tx, req.principal, tenant);
   }
+  // Preserve parent -> upload lock order when deletion cancels task transfers.
+  const hint = (await tx.query("SELECT * FROM upload_sessions WHERE id=$1", [id])).rows[0];
+  if (!hint || (project && project !== hint.project_id))
+    throw new Problem(404, "NOT_FOUND", "Upload not found");
+  await projectAccess(tx, req.principal, tenant, hint.project_id, "write");
+  const source = checkSource && hint.source_task_id
+    ? await taskLocalUploadScope(tx,req.principal,tenant,hint.project_id,hint.source_task_id,hint.state === "pending",hint.conversation_id)
+    : undefined;
   const s = (
     await tx.query(
       "SELECT *,expires_at>now() AS valid FROM upload_sessions WHERE id=$1 FOR UPDATE",
@@ -104,7 +115,7 @@ async function session(
       "UPLOAD_EXPIRED",
       "Upload expired or cancelled; start a new upload",
     );
-  return s;
+  return { ...s, task_scope: source };
 }
 async function staging(db: Database, id: string) {
   const dir = rootPath(db, id),
@@ -197,12 +208,18 @@ export function registerUploads(
       );
     const value = await db.tx(async (tx) => {
       await projectAccess(tx, req.principal, tenant, b.project_id, "write");
+      if (b.source_task_id && b.asset_id)
+        throw new Problem(400,"UPLOAD_SCOPE_CONFLICT","Task input uploads create a new explicitly selected file");
+      const source = b.source_task_id
+        ? await taskLocalUploadScope(tx,req.principal,tenant,b.project_id,b.source_task_id,true,b.conversation_id)
+        : undefined;
+      const conversationId = source ? source.conversation_id : b.conversation_id ?? null;
       if (
-        b.conversation_id &&
+        conversationId &&
         !(
           await tx.query(
             "SELECT 1 FROM conversations WHERE id=$1 AND created_by=$2 AND project_id=$3 AND content_state='active'",
-            [b.conversation_id, req.principal.id, b.project_id],
+            [conversationId, req.principal.id, b.project_id],
           )
         ).rowCount
       )
@@ -231,7 +248,7 @@ export function registerUploads(
             );
           const s = (
             await tx.query(
-              "INSERT INTO upload_sessions(tenant_id,project_id,created_by,filename,mime_type,size_bytes,sha256,asset_id,expected_version,conversation_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *",
+              "INSERT INTO upload_sessions(tenant_id,project_id,created_by,filename,mime_type,size_bytes,sha256,asset_id,expected_version,conversation_id,source_task_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *",
               [
                 tenant,
                 b.project_id,
@@ -242,7 +259,8 @@ export function registerUploads(
                 b.sha256,
                 b.asset_id ?? null,
                 b.expected_version ?? null,
-                b.conversation_id ?? null,
+                conversationId,
+                source?.task_id ?? null,
               ],
             )
           ).rows[0];
@@ -276,6 +294,8 @@ export function registerUploads(
       return {
         upload_id: id,
         state: s.state,
+        source_task_id: s.source_task_id ?? null,
+        conversation_id: s.conversation_id ?? null,
         size_bytes: Number(s.size_bytes),
         sha256: s.sha256,
         part_size_bytes: s.part_size,
@@ -463,6 +483,7 @@ export function registerUploads(
           size,
           sha256: b.sha256,
           conversation: s.conversation_id ?? undefined,
+          ...(s.task_scope?.private_owner ? { privateOwner: s.task_scope.private_owner } : {}),
           asset: s.asset_id ?? undefined,
           expectedVersion: s.expected_version ?? undefined,
           sourceUpload: id,
@@ -470,6 +491,7 @@ export function registerUploads(
             upload_id: id,
             source_filename: s.filename,
             checksum_verified: true,
+            ...(s.source_task_id ? { input_task_id:s.source_task_id,input_origin:"customer_selected_upload" } : {}),
           },
         });
         await tx.query(
@@ -503,7 +525,7 @@ export function registerUploads(
     const tenant = tenantOf(req),
       id = idOf(req);
     return db.tx(async (tx) => {
-      const s = await session(tx, req, tenant, id);
+      const s = await session(tx, req, tenant, id, false);
       if (s.state === "completed")
         throw new Problem(
           409,

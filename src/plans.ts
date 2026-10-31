@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { Tx } from "./db.js";
-import { Problem } from "./lib.js";
+import { hash, Problem } from "./lib.js";
 import { publishedLegacyDefinition } from "./commercial-plans.js";
 import { effectiveVip } from "./vip.js";
 const all = [
@@ -76,6 +76,7 @@ export async function authorizeTaskPlan(
   role: any,
   budget: number,
   mode: "execute" | "ask" | "plan" = "execute",
+  localHandoff?: { id: string; task_id: string; project: string; prompt: string; role_hash: string; execution_location: "cloud" | "desktop" },
 ) {
   await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
     `task-quota:${tenant}:${user}`,
@@ -87,10 +88,33 @@ export async function authorizeTaskPlan(
       "PLAN_BUDGET_LIMIT",
       "Task budget exceeds your current plan limit",
     );
+  // Only the direct, frozen waiting parent of this admitted native child yields
+  // its execution slot. Money remains reserved independently for both tasks.
+  let waitingParent: string | null = null;
+  if (localHandoff) {
+    const bound = (await tx.query(`SELECT t.id FROM task_local_handoffs h
+      JOIN tasks t ON t.id=h.source_task_id JOIN users u ON u.id=t.created_by
+      JOIN task_dependencies d ON d.id=h.dependency_id
+      WHERE h.id=$1 AND h.native_task_id=$2 AND h.state='working'
+      AND h.tenant_id=$3 AND h.project_id=$4 AND h.created_by=$5
+      AND t.tenant_id=$3 AND t.project_id=$4 AND t.created_by=$5
+      AND t.execution_location='cloud' AND t.mode='execute' AND t.status='needs_input'
+      AND NOT t.cancel_requested AND t.content_state='active' AND t.retention_expires_at>clock_timestamp()
+      AND u.status='active' AND u.auth_version=t.actor_auth_version
+      AND d.task_id=t.id AND d.kind='file' AND d.state='pending' AND d.version=h.dependency_version
+      AND h.parent_prompt_hash=encode(digest(t.prompt,'sha256'),'hex')
+      AND h.description_hash=encode(digest(d.description,'sha256'),'hex')
+      AND h.native_prompt_hash=$6 AND h.role_key=$7 AND h.role_hash=$8 AND h.budget_micros=$9
+      AND NOT EXISTS(SELECT 1 FROM tasks existing WHERE existing.id=h.native_task_id)`,
+      [localHandoff.id,localHandoff.task_id,tenant,localHandoff.project,user,hash(localHandoff.prompt),role.role_key,localHandoff.role_hash,budget])).rows[0];
+    if (!bound || localHandoff.execution_location !== "desktop" || mode !== "execute")
+      throw new Problem(409,"LOCAL_HANDOFF_CHANGED","Refresh the original task and local preparation before continuing");
+    waitingParent=bound.id;
+  }
   const n = (
     await tx.query(
-      "SELECT count(*)::int AS n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND status IN ('queued','running','paused','awaiting_approval','reconciling','needs_input')",
-      [tenant, user],
+      "SELECT count(*)::int AS n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND ($3::uuid IS NULL OR id<>$3) AND status IN ('queued','running','paused','awaiting_approval','reconciling','needs_input')",
+      [tenant, user, waitingParent],
     )
   ).rows[0].n;
   if (n >= p.body.max_active_tasks)

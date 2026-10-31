@@ -24,6 +24,25 @@ export function taskPrivateAssetScopeSQL(
         WHERE approved_input.asset_version_id=v.id AND approved_input.sha256=v.sha256)
     )
     OR EXISTS (
+      SELECT 1 FROM tasks workflow_task
+      JOIN workflow_runs workflow_run
+        ON workflow_run.id=coalesce(workflow_task.cloud_workflow_run_id,workflow_task.desktop_workflow_run_id)
+       AND workflow_run.tenant_id=workflow_task.tenant_id
+       AND workflow_run.project_id=workflow_task.project_id
+       AND workflow_run.private_owner=workflow_task.created_by
+       AND workflow_run.execution_location=workflow_task.execution_location
+       AND workflow_run.content_state='active'
+      WHERE workflow_task.id=$${taskParameter}::uuid
+       AND workflow_task.private_owner=workflow_task.created_by
+       AND workflow_run.id::text=workflow_task.input_context->'workflow_binding'->>'run_id'
+       AND workflow_run.input_hash=workflow_task.input_context->'workflow_binding'->>'input_hash'
+       AND workflow_run.input_values=workflow_task.input_context->'workflow_binding'->'values'
+       AND workflow_run.input_files=workflow_task.input_context->'workflow_binding'->'files'
+       AND EXISTS (SELECT 1 FROM jsonb_to_recordset(workflow_run.input_files)
+         AS approved_input(asset_id uuid,asset_version_id uuid,sha256 text)
+         WHERE approved_input.asset_id=v.asset_id AND approved_input.asset_version_id=v.id AND approved_input.sha256=v.sha256)
+    )
+    OR EXISTS (
       SELECT 1 FROM tasks selected_task
       JOIN task_dependencies selected_input
         ON selected_input.task_id=selected_task.id

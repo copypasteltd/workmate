@@ -31,6 +31,10 @@ function nativeSchema(schema: unknown): unknown {
     "minLength",
     "maxLength",
     "pattern",
+    // Property-name patterns constrain business input names on the server.
+    // The pinned native tool wire schema keeps the typed additionalProperties
+    // and omits this unsupported presentation keyword, like scalar patterns.
+    "propertyNames",
     "format",
     "maxItems",
     "default",

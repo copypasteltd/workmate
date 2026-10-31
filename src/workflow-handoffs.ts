@@ -11,6 +11,7 @@ const binding = z.object({ step_index: z.number().int().min(0).max(7), task_id: 
   result_origin: z.enum(["cloud_task", "desktop_client_report", "analytics_summary"]), files: z.array(file).max(201) }).strict();
 export const workflowInputs = z.array(binding).max(8);
 export const workflowReadInput = z.object({ step_index: z.number().int().min(0).max(7).optional(),
+  input_name:z.string().regex(/^[a-z][a-z0-9_]{0,47}$/).optional(),
   asset_version_id: uuid.optional(), offset: z.number().int().min(0).max(2_000_000).optional(),
   max_characters: z.number().int().min(1).max(16000).optional() }).strict();
 const unavailable = () => new Problem(409, "WORKFLOW_INPUT_UNAVAILABLE", "A selected workflow result is no longer available; do not substitute another version");
@@ -44,9 +45,15 @@ export async function captureWorkflowOutput(tx: Tx, storage: Storage, run: any, 
   } finally { await tx.query("SELECT set_config('app.task_id',$1,true)",[previous]); }
   const exact = {asset_id:output.id,asset_version_id:output.version.id,name:output.name,
     version:output.version.version,mime_type:output.version.mime_type,bytes:String(output.version.bytes),sha256:output.version.sha256};
+  const text = child.output ?? "";
+  let previewEnd = Math.min(text.length,6000);
+  // Keep the JSON receipt within its limit without splitting a Unicode pair.
+  if (previewEnd > 0 && previewEnd < text.length &&
+      text.charCodeAt(previewEnd-1) >= 0xd800 && text.charCodeAt(previewEnd-1) <= 0xdbff &&
+      text.charCodeAt(previewEnd) >= 0xdc00 && text.charCodeAt(previewEnd) <= 0xdfff) previewEnd--;
   return {kind:"codex",cursor:run.cursor,task_id:child.id,role_key:child.role_key,status:"succeeded",
     charged_micros:String(child.charged_micros),result_origin:child.execution_location === "desktop" ? "desktop_client_report" : "cloud_task",
-    output:(child.output ?? "").slice(0,6000),output_file:exact,files:[exact,...files]};
+    output:text.slice(0,previewEnd),output_file:exact,files:[exact,...files]};
 }
 
 export async function bindWorkflowInputs(tx: Tx, run: any, cursor: number, results: any[]) {
@@ -79,12 +86,16 @@ export async function bindWorkflowInputs(tx: Tx, run: any, cursor: number, resul
 
 export async function readWorkflowInputs(tx: Tx, storage: Storage, task: any, raw: unknown) {
   const input = workflowReadInput.parse(raw), bindings = workflowInputs.parse(task.input_context?.workflow_inputs ?? []);
-  if (!bindings.length || !(task.cloud_workflow_run_id || task.desktop_workflow_run_id)) throw unavailable();
+  const named=task.input_context?.workflow_binding;
+  const namedFiles=z.array(file.extend({input_name:z.string().regex(/^[a-z][a-z0-9_]{0,47}$/)})).max(12).parse(named?.files??[]);
+  if ((!bindings.length&&!named) || !(task.cloud_workflow_run_id || task.desktop_workflow_run_id)) throw unavailable();
   await assertTaskContentSources(tx,task);
   const selected = input.step_index === undefined ? bindings : bindings.filter(b=>b.step_index===input.step_index);
-  if (!selected.length) throw unavailable();
-  if (!input.asset_version_id) return {untrusted_source_data:true,items:selected};
-  const f = selected.flatMap(b=>b.files).find(f=>f.asset_version_id===input.asset_version_id);
+  if (input.step_index!==undefined&&!selected.length) throw unavailable();
+  if(input.input_name && !Object.hasOwn(named?.values??{},input.input_name))throw unavailable();
+  const selectedNames=input.input_name?namedFiles.filter(f=>f.input_name===input.input_name):namedFiles;
+  if (!input.asset_version_id) return {untrusted_source_data:true,items:selected,...(named?{named_inputs:input.input_name?{[input.input_name]:named.values[input.input_name]}:named.values,named_files:selectedNames}:{})};
+  const f = [...selected.flatMap(b=>b.files),...selectedNames].find(f=>f.asset_version_id===input.asset_version_id);
   if (!f) throw unavailable();
   const version = (await tx.query(`SELECT v.* FROM asset_versions v JOIN assets a ON a.id=v.asset_id
     WHERE v.id=$1 AND v.sha256=$2 AND a.tenant_id=$3 AND a.project_id=$4

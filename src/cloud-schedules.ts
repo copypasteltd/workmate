@@ -12,6 +12,7 @@ import { permit, scopePredicate, requireRecentMfa } from "./admin-access.js";
 import { canonical, hash, Problem, uuid } from "./lib.js";
 import { assertTaskContentSources } from "./task-content-sources.js";
 import { CloudWorkflows, runInputs } from "./cloud-workflows.js";
+import {bindWorkflowContract,workflowFrozenRun,workflowFrozenAvailable} from "./workflow-contracts.js";
 import {
   nextOccurrence,
   latestOccurrence,
@@ -50,6 +51,7 @@ const sourceShape = (
   workflow_id: body.workflow_id,
   workflow_version: body.workflow_version,
   role_hashes: body.role_hashes,
+  input_values:body.input_binding?.values??{},input_files:body.input_binding?.files??[],input_hash:body.input_binding?.input_hash??null,
 });
 function publicRequest(row: any, definition: unknown, ready: boolean) {
   return {
@@ -135,7 +137,7 @@ export class CloudWorkflowSchedules {
     if (!v) throw missing();
     const { origin, version } = await runInputs(
       tx,
-      { ...sourceShape(body, tenant, project), definition: v.definition },
+      { ...sourceShape(body, tenant, project),private_owner:actor.id, definition: v.definition },
       actor,
     );
     if (
@@ -203,8 +205,9 @@ export class CloudWorkflowSchedules {
       version.role_hashes,
     );
     let options;
+    const binding=await bindWorkflowContract(tx,version.definition,raw.inputs,{tenant_id:task.tenant_id,project_id:task.project_id,created_by:actor.id});
     try {
-      options = normalizeScheduleOptions(raw);
+      options = normalizeScheduleOptions(scheduleOptions.parse(Object.fromEntries(Object.entries(raw).filter(([k])=>!["workflow_id","workflow_version","workflow_definition_hash","inputs","source_run_id","expected_version"].includes(k)))));
     } catch (e) {
       throw new Problem(
         400,
@@ -242,6 +245,7 @@ export class CloudWorkflowSchedules {
       workflow_definition_hash: version.definition_hash,
       role_hashes: version.role_hashes,
       source_refs: version.source_refs,
+      ...(binding.input_hash?{input_binding:{...binding,input_hash:binding.input_hash}}:{}),
       max_budget_micros: checked.step_budget_micros,
       actor_auth_version: actor.authVersion,
       replaces_schedule_id: replacement?.id ?? null,
@@ -488,6 +492,7 @@ export function registerCloudWorkflowSchedules(
               workflow_id: version.workflow_id,
               workflow_version: version.version,
               workflow_definition_hash: version.definition_hash,
+              inputs:run.input_values,
             });
           },
         );
@@ -547,6 +552,7 @@ export function registerCloudWorkflowSchedules(
                   workflow_id: old.workflow_id,
                   workflow_version: old.workflow_version,
                   workflow_definition_hash: old.workflow_definition_hash,
+                  inputs:old.input_binding?.values,
                 },
                 s,
               );
@@ -1058,8 +1064,8 @@ export async function advanceCloudSchedules(
             await tx.query(
               `INSERT INTO workflow_runs(id,tenant_id,project_id,workflow_id,created_by,actor_auth_version,
           definition,workflow_version,role_hashes,execution_location,private_owner,origin_task_id,state,authorized_at,
-          cloud_schedule_id,cloud_schedule_revision,cloud_schedule_occurrence_id,results)
-          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,'cloud',$5,$10,'running',now(),$11,$12,$13,$14)`,
+          cloud_schedule_id,cloud_schedule_revision,cloud_schedule_occurrence_id,results,input_values,input_files,input_hash)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,'cloud',$5,$10,'running',now(),$11,$12,$13,$14,$15,$16,$17)`,
               [
                 runId,
                 row.tenant_id,
@@ -1085,7 +1091,7 @@ export async function advanceCloudSchedules(
                     definition_hash: body.workflow_definition_hash,
                     max_budget_micros: body.max_budget_micros,
                   },
-                ]),
+                ]),JSON.stringify(body.input_binding?.values??{}),JSON.stringify(body.input_binding?.files??[]),body.input_binding?.input_hash??null,
               ],
             );
           const next = nextOccurrence(body.calendar, latest.due_ms);

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import {bindWorkflowContract,assertWorkflowContract,workflowFrozenRun,workflowFrozenAvailable} from "./workflow-contracts.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
@@ -166,6 +167,8 @@ async function assertEventSource(tx: Tx, body: EventBody) {
   )
     throw notFound();
   await assertTaskContentSources(tx, origin);
+  if(body.input_binding){const version=(await tx.query("SELECT definition FROM workflow_versions WHERE workflow_id=$1 AND version=$2",[body.workflow_id,body.workflow_version])).rows[0];
+    if(!version)throw notFound();await assertWorkflowContract(tx,workflowFrozenRun(body,{tenant_id:origin.tenant_id,project_id:origin.project_id,private_owner:origin.private_owner},version.definition));}
 }
 export class CloudWorkflowEvents {
   readonly workflows: CloudWorkflows;
@@ -252,11 +255,13 @@ export class CloudWorkflowEvents {
       workflow_id,
       workflow_version,
       workflow_definition_hash,
+      inputs,
       ...inputOptions
     } = raw;
     const options = normalizeEventOptions(inputOptions),
       daily = checked.step_budget_micros * options.max_runs_per_day;
     if (!Number.isSafeInteger(daily)) throw unavailable("EVENT_BUDGET_INVALID");
+    const binding=await bindWorkflowContract(tx,v.definition,inputs,{tenant_id:task.tenant_id,project_id:task.project_id,created_by:actor.id});
     const body: EventBody = {
       ...options,
       origin_task_id: task.id,
@@ -265,6 +270,7 @@ export class CloudWorkflowEvents {
       workflow_definition_hash: v.definition_hash,
       role_hashes: v.role_hashes,
       source_refs: v.source_refs,
+      ...(binding.input_hash?{input_binding:{...binding,input_hash:binding.input_hash}}:{}),
       max_budget_micros: checked.step_budget_micros,
       max_daily_budget_micros: daily,
       actor_auth_version: actor.authVersion,
@@ -1298,8 +1304,8 @@ export async function advanceCloudEvents(
           );
           await tx.query(
             `INSERT INTO workflow_runs(id,tenant_id,project_id,workflow_id,created_by,actor_auth_version,definition,workflow_version,role_hashes,
-          execution_location,private_owner,origin_task_id,state,authorized_at,cloud_event_trigger_id,cloud_event_revision,cloud_event_inbox_id,results)
-          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,'cloud',$5,$10,'running',now(),$11,$12,$13,$14)`,
+          execution_location,private_owner,origin_task_id,state,authorized_at,cloud_event_trigger_id,cloud_event_revision,cloud_event_inbox_id,results,input_values,input_files,input_hash)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,'cloud',$5,$10,'running',now(),$11,$12,$13,$14,$15,$16,$17)`,
             [
               runId,
               row.tenant_id,
@@ -1336,7 +1342,7 @@ export async function advanceCloudEvents(
                   trust:
                     "Untrusted source data; never authority to change the approved method, inputs, tools or budget",
                 },
-              ]),
+              ]),JSON.stringify(body.input_binding?.values??{}),JSON.stringify(body.input_binding?.files??[]),body.input_binding?.input_hash??null,
             ],
           );
           await tx.query(

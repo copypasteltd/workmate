@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { name, uuid } from "./lib.js";
+import {workflowInputValues} from "./workflow-contracts.js";
 import {
   calendarInput,
   nextOccurrence,
@@ -21,6 +22,7 @@ export const scheduleToolRequest = scheduleOptions
     workflow_id: uuid,
     workflow_version: z.number().int().positive(),
     workflow_definition_hash: z.string().regex(/^[a-f0-9]{64}$/),
+    inputs:workflowInputValues.optional(),
   })
   .strict();
 export const scheduleRequestDecision = z
@@ -51,6 +53,7 @@ export type CloudScheduleBody = {
   workflow_definition_hash: string;
   role_hashes: Record<string, string>;
   source_refs: Record<string, unknown>;
+  input_binding?:{values:Record<string,string|number|boolean>;files:any[];input_hash:string};
   max_budget_micros: number;
   actor_auth_version: number;
   replaces_schedule_id: string | null;

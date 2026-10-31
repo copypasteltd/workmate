@@ -38,6 +38,9 @@ export async function enqueueTask(
   b: TaskInput,
   requestKey: string,
   options: {
+    /** Internal reserved identity for a transactionally admitted local handoff. */
+    task_id?: string;
+    local_handoff_id?: string;
     context?: WorkContext;
     conversation?: any;
     billing_account_id?: string;
@@ -52,6 +55,7 @@ export async function enqueueTask(
     cloud_workflow?: { run_id: string; cursor: number };
     /** Exact predecessor versions selected by the frozen, customer-approved workflow. */
     workflow_inputs?: import("zod").infer<typeof import("./workflow-handoffs.js").workflowInputs>;
+    workflow_binding?: {run_id:string;input_hash:string;values:Record<string,unknown>;files:any[]};
     /** Internal, exact reviewed team step. Never accepted from task API input. */
     agent_group?: { run_id: string; node_key: string; deferred?: boolean };
     /** Validated server-owned media parameters; never accepted by the generic task API. */
@@ -242,6 +246,8 @@ export async function enqueueTask(
     role,
     b.budget_micros,
     b.mode,
+    options.local_handoff_id && options.task_id ? { id:options.local_handoff_id,task_id:options.task_id,project,prompt:b.prompt,
+      role_hash:catalog.digest(role),execution_location:options.execution_location ?? "cloud" } : undefined,
   );
   const reviewedProjectConfiguration = await freezeProjectConfiguration(
     tx,
@@ -258,8 +264,8 @@ export async function enqueueTask(
     ? undefined : reviewedProjectConfiguration;
   const task = (
     await tx.query(
-      `INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
-    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *`,
+      `INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status,id)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,coalesce($24::uuid,gen_random_uuid())) RETURNING *`,
       [
         tenant,
         project,
@@ -284,7 +290,9 @@ export async function enqueueTask(
           : (parent?.private_owner ?? null),
         {
           ...(options.context ?? {}),
+          ...(options.local_handoff_id ? { local_handoff_id: options.local_handoff_id } : {}),
           ...(options.workflow_inputs ? { workflow_inputs: options.workflow_inputs } : {}),
+          ...(options.workflow_binding ? { workflow_binding: options.workflow_binding } : {}),
           ...((options.delivery_revision ?? parent?.input_context?.delivery_revision)
             ? { delivery_revision: options.delivery_revision ?? parent.input_context.delivery_revision } : {}),
           ...(options.dedicated_computer ? { dedicated_computer: options.dedicated_computer } : {}),
@@ -309,6 +317,7 @@ export async function enqueueTask(
         options.agent_group?.run_id ?? null,
         options.agent_group?.node_key ?? null,
         options.agent_group?.deferred ? "paused" : "queued",
+        options.task_id ?? null,
       ],
     )
   ).rows[0];
