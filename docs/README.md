@@ -1,3 +1,11 @@
+## v0.1.0-rc.4 · 当前冻结交付 / Current frozen handoff
+
+[Release](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.4) · [中英使用 / Bilingual guide](releases/v0.1.0-rc.4.md) · [构建 / Builds](quality/release-freeze-checkpoint-164.json) · [原编号验收 / Original acceptance](quality/remaining-work-stage164.md)
+
+首次启动与会话修复统一纳入新构建；全部端、源码、固定Codex与媒体统一交付。Fresh builds integrate startup/session fixes. Includes all clients, source, pinned runtime and original actual media. 获准假数据；Windows未签名。Synthetic dependencies; unsigned Windows.
+
+---
+
 ## 163 · 登录与进度流 / Sign-in and live progress
 
 [方案和使用](development/163-session-boundary.md) · [证据](quality/session-boundary-checkpoint-163.json) · [原编号待项](quality/remaining-work-stage163.md)
