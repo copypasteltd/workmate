@@ -1,0 +1,19 @@
+{
+  "stage": 157,
+  "schema": 155,
+  "new_endpoint": false,
+  "paths": [
+    "POST /v1/tasks",
+    "POST /v1/tenants/:tenant/projects/:project/conversations/:id/messages"
+  ],
+  "behavior": "independent cloud delegation within existing quota, authority and task budget",
+  "request_replay": "unchanged exact original body and idempotency key; legacy expected_version remains part of the original body",
+  "conflicts": [
+    "CONVERSATION_CHANGING",
+    "VERSION_CONFLICT",
+    "PLAN_TASK_LIMIT",
+    "CONTEXT_REVOKED",
+    "GROUP_CONVERSATION_READ_ONLY"
+  ],
+  "native_desktop": "unchanged local thread ownership; this contract concerns cloud work"
+}
