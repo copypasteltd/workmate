@@ -1,3 +1,4 @@
+import { redactWorkspaceAttempts } from "./workspace-creation";
 import { saveScopeArchive } from "./scope-export-download";
 import { clientFetch, clientJson, connectionFailure } from "./client-failure";
 import { clearWorkDrafts } from "./work-draft";
@@ -13,7 +14,7 @@ export function endClientSession(
 ) {
   ++sessionRevision;
   csrfToken = "";
-  if (reason === "sign_out") { clearWorkDrafts(); clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); }
+  if (reason === "sign_out") { redactWorkspaceAttempts(); clearWorkDrafts(); clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); }
   window.dispatchEvent(new Event("copypaste:session-ended"));
   if (broadcast)
     localStorage.setItem(

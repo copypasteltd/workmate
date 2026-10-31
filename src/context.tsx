@@ -1,3 +1,4 @@
+import { redactWorkspaceAttempts } from "./workspace-creation";
 import {
   createContext,
   useCallback,
@@ -16,7 +17,7 @@ interface WorkspaceState {
   tenant: string;
   project: string;
   projects: any[];
-  refresh: () => Promise<void>;
+  refresh: (requireCurrent?: boolean) => Promise<void>;
   setTenant: (id: string) => void;
   setProject: (id: string) => void;
   reloadProjects: (preferredProject?: string) => Promise<void>;
@@ -60,11 +61,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setTenantState(id);
     localStorage.setItem("cp_tenant", id);
   };
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (requireCurrent = false) => {
     const revision = ++loadRevision.current;
     try {
       const m = await api("/v1/session/context");
-      if (revision !== loadRevision.current) return;
+      if (revision !== loadRevision.current) { if (requireCurrent) throw new Error("Workspace refresh was replaced. Check again."); return; }
+      redactWorkspaceAttempts(String(m.user.id));
       clearWorkDrafts(String(m.user.id));
       setMe(m);
       setError(null);
@@ -81,11 +83,11 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       if (
         revision !== loadRevision.current ||
         (e as any).code === "SESSION_CHANGED"
-      )
-        return;
+      ) { if (requireCurrent) throw e; return; }
       if ((e as any).status === 401) {
         clear();
       } else setError(e as Error);
+      if (requireCurrent) throw e;
     } finally {
       if (revision === loadRevision.current) setLoading(false);
     }
