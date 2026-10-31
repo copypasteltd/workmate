@@ -1,3 +1,33 @@
+<!-- ownership-transfer-151 -->
+
+**Unreleased increment151 — explicit workspace ownership handover**
+
+An owner selects an active existing non-owner member in Members & access, confirms the exact workspace name and requests a24-hour handover. Only the named recipient accepts; their workspace notice leads to the inbox. Acceptance atomically makes the recipient an owner and the source an admin. Decline/cancel/expiry or changed authorization cannot grant roles. Existing private authorship, task actors, billing identity and OS permission stay separate. Admin inspects/cancels through its existing membership manager with current tenant permission and recent MFA; independent privilege approvals remain required.
+
+9 targeted backend cases,6 actual Web/Desktop/Admin groups,8 build steps and12 native-surface boundaries passed;6 real screenshots and3 GIF/MP4 pairs are retained. Broad production/history/OS regression was deliberately omitted; no AI model was called. Full exports, real providers/advertising accounts, signing and whole-product acceptance remain open. Frozen v0.1.0-rc.1 tags and five archives remain intact.
+
+```mermaid
+flowchart LR
+ A[Current workspace owner] --> B[Exact recipient and workspace confirmation]
+ B --> C[Pending for 24 hours]
+ C --> D[Recipient personally accepts]
+ D --> E[Lock current users and memberships]
+ E --> F[Promote recipient and demote former owner atomically]
+ C --> G[Decline / cancel / expire / invalidate]
+ F --> H[Minimal auditable history]
+ G --> H
+```
+
+Actual component journey.
+
+![Actual screen](assets/screenshots/workmate-ownership-transfer-151-01-ownership-accepted-en.png.png)
+
+![Actual interaction](assets/screenshots/workmate-ownership-transfer-151-01-ownership-handover.gif)
+
+[Actual MP4](assets/screenshots/workmate-ownership-transfer-151-01-ownership-handover.mp4)
+
+---
+
 <!-- scope-erasure-150 -->
 
 **Unreleased increment150 — permanent project/workspace cleanup**
