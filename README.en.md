@@ -1,5 +1,19 @@
 # Workmate · extension · v0.1.0
 
+<!-- lan-deployment-176 -->
+## LAN HTTP deployment · stage176
+
+Web: http://192.168.31.20:63070 · Admin: http://192.168.31.20:63071 · API: http://192.168.31.20:63072
+
+The native right Side Panel and approved-file acquisition/upload remain. Frozen extension defaults are not repointed to this HTTP LAN address; cloud service is available through Web.
+
+Server plaintext credentials: `/root/cfg/workmate/credentials.txt` (root `0600`). Email OTP is retrieved through the protected test mailbox; Admin additionally requires TOTP. Synthetic services remain explicitly labeled.
+
+[部署、登录与运维 / Deployment and login guide](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/lan-176.md)
+
+[实际 Web 交互 / Actual Web recording](https://github.com/copypasteltd/workmate/blob/web/assets/demos/176-lan-http.gif) · [后台截图 / Admin capture](https://github.com/copypasteltd/workmate/blob/admin/assets/screenshots/176e-lan-users.png)
+
+
 ## v0.1.3 · 当前完整交付 / Current complete delivery
 
 [Release / 下载](https://github.com/copypasteltd/workmate/releases/tag/v0.1.3) · [中英使用手册 / Bilingual guide](https://github.com/copypasteltd/workmate/blob/v0.1.3/docs/releases/v0.1.3.md)
