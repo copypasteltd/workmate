@@ -1,0 +1,59 @@
+{
+  "prior_full_client_build": {
+    "path": "evidence/scope-erasure-150/build-01.json",
+    "sha256": "d3555b973afe262fe3e9c9898bbb0b34dba89dc504270720b0c813b09ef8e6ca"
+  },
+  "at": "2026-10-31T03:15:01.582Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "native surface boundaries",
+      "arguments": [
+        "--test",
+        "tests/native-surface-integrity.test.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop build",
+      "arguments": [
+        "D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "unsigned Windows package",
+      "arguments": [
+        "node_modules/electron-builder/out/cli/cli.js",
+        "--win",
+        "--dir",
+        "--config.directories.output=release/scope-erasure-150-02"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_unchanged": true,
+  "package_root": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\release\\scope-erasure-150-02\\win-unpacked",
+  "package_files": {
+    "CopyPaste.exe": "4e48acec5292d59b3824c02b1de17824b7acb1beb3f292182ffef502a8f9736d",
+    "resources/app.asar": "01cc6675c10bacfd88b35cb164d067ee6dd4c20e1a2d6ddc86e9d69d8231c768",
+    "resources/local-codex/codex.exe": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+    "resources/local-codex/runtime-manifest.json": "13490b9b1b9822967b8cea7134c2ba306671e58050a0897545184a7af6f34605"
+  },
+  "source_manifest": {
+    "path": "evidence/scope-erasure-150/build-02-sources.json",
+    "sha256": "3ed512f1c53db80178fcf660a0d0ddf3807ebb6b3ee62df82876842c1e22f5c2"
+  },
+  "raw_report": {
+    "path": "evidence/scope-erasure-150/build-02.tap",
+    "sha256": "904a7affae3bfe190fca5bb5b8f32cc231f2c95c42b8342dd6c0fd219e35a57c"
+  },
+  "verifier": {
+    "path": "evidence/scope-erasure-150/build-02-verifier.mjs",
+    "sha256": "36b37293d190089e9da119ef66c51889763bd3528022494e91d1b4b194adcb5f"
+  },
+  "scope": "Current Web, Admin and unsigned frameless Windows Desktop permanent scope erasure build. Native surface boundary checks preserve Desktop-local/Extension-cloud execution. Unchanged Extension evidence remains historical; no broad regression suite. Actual project interactions are qualified separately; frozen release artifacts remain unchanged."
+}

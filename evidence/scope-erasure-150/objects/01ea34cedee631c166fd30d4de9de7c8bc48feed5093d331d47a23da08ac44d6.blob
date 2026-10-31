@@ -1,0 +1,286 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Workmate project management",
+    "version": "1.0.0",
+    "description": "Management-only archived-project access. Normal projectAccess remains active-only. Archiving gates availability while archived; it is not durable task cancellation or data erasure. Cancel work separately when required."
+  },
+  "paths": {
+    "/v1/tenants/{tenant}/project-directory": {
+      "get": {
+        "operationId": "listManagedProjects",
+        "security": [
+          {
+            "customerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived",
+                "all"
+              ],
+              "default": "active"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "description": "Case-insensitive literal substring, not SQL wildcard syntax"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid fields or mismatched optional X-Tenant-ID"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Current owner/admin role required"
+          },
+          "404": {
+            "description": "Workspace or project unavailable"
+          },
+          "409": {
+            "description": "PROJECT_CHANGED or conflicting idempotency key"
+          },
+          "200": {
+            "description": "Current owner/admin project directory, Cache-Control no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Project"
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "page_size": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}": {
+      "patch": {
+        "operationId": "updateManagedProject",
+        "security": [
+          {
+            "customerSession": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Optional for legacy compatibility; first-party clients persist a key for each exact intent. Same key/body returns the current state without reapplying an obsolete mutation; current authorization is checked again."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "archived": {
+                    "type": "boolean"
+                  },
+                  "expected_archived": {
+                    "type": "boolean"
+                  },
+                  "expected_name": {
+                    "type": "string",
+                    "maxLength": 160
+                  },
+                  "expected_description": {
+                    "type": "string",
+                    "maxLength": 2000
+                  }
+                },
+                "anyOf": [
+                  {
+                    "required": [
+                      "name"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "description"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "archived"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid fields or mismatched optional X-Tenant-ID"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Current owner/admin role required"
+          },
+          "404": {
+            "description": "Workspace or project unavailable"
+          },
+          "409": {
+            "description": "PROJECT_CHANGED or conflicting idempotency key"
+          },
+          "200": {
+            "description": "Current project, including replay after subsequent undo. Identity/content/grants preserved; revoked access is not recreated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "customerSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_session"
+      },
+      "csrfToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token"
+      }
+    },
+    "schemas": {
+      "Project": {
+        "type": "object",
+        "required": [
+          "id",
+          "tenant_id",
+          "name",
+          "description",
+          "archived",
+          "created_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "at": "2026-10-31T02:58:52.513Z",
+  "status": "passed",
+  "error": null,
+  "commands": [
+    {
+      "name": "native surface boundaries",
+      "arguments": [
+        "--test",
+        "tests/native-surface-integrity.test.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Web build",
+      "arguments": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Admin compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Admin build",
+      "arguments": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop renderer compiler",
+      "arguments": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Desktop build",
+      "arguments": [
+        "D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "unsigned Windows package",
+      "arguments": [
+        "node_modules/electron-builder/out/cli/cli.js",
+        "--win",
+        "--dir",
+        "--config.directories.output=release/scope-erasure-150-01"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_unchanged": true,
+  "package_root": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\release\\scope-erasure-150-01\\win-unpacked",
+  "package_files": {
+    "CopyPaste.exe": "0700fa4b2ce90b497c8ea6adcc479d3979f1a22110f136a7663b2e3cc83971a5",
+    "resources/app.asar": "01854a3a99f8edf177007e8f2a5671a46a3fd0a178ed67e34753c8d65e7bc579",
+    "resources/local-codex/codex.exe": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+    "resources/local-codex/runtime-manifest.json": "13490b9b1b9822967b8cea7134c2ba306671e58050a0897545184a7af6f34605"
+  },
+  "source_manifest": {
+    "path": "evidence/scope-erasure-150/build-01-sources.json",
+    "sha256": "3b86eba6a17761e7fbcb84e2e289c8e3ecf22e666bc480560f64d79b4d46b4ab"
+  },
+  "raw_report": {
+    "path": "evidence/scope-erasure-150/build-01.tap",
+    "sha256": "cad7dbfa2eeaac8794592c9b0e1fe3effab3404168cb28a7f4fe8c4adfd27802"
+  },
+  "verifier": {
+    "path": "evidence/scope-erasure-150/build-01-verifier.mjs",
+    "sha256": "6f4b16eadb70f5baeeead6449606a9be64751e44b835426e86ab7a4823ec97a2"
+  },
+  "scope": "Current Web, Admin and unsigned frameless Windows Desktop permanent scope erasure build. Native surface boundary checks preserve Desktop-local/Extension-cloud execution. Unchanged Extension evidence remains historical; no broad regression suite. Actual project interactions are qualified separately; frozen release artifacts remain unchanged."
+}
