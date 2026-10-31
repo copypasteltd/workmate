@@ -1,4 +1,8 @@
 # Workmate · delivery · v0.1.0
+## v0.1.1 打包补充 / Packaging follow-up
+
+START-HERE links the committed stage169 ledger. The source manifest records package-frozen-release-170-v3.py as packaging-only overlays. The first failed packaging attempt remains; five completed archives were reused only after exact entry checks. The publishing helper now validates schema156. Application sources, builds and frozen tags are unchanged. This follow-up records that exact helper and these notes; it does not replace release assets.
+
 ## 冻结交付 v0.1.1
 
 完整包统一包含Windows Desktop（本机Codex、无边框）、Web、独立Admin、Chrome右侧Side Panel、Backend、六仓源码和固定runtime。假数据模式，Windows未签名；当前数据库156。
