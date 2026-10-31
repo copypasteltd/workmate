@@ -1,3 +1,9 @@
+## rc.3 · Publication receipt
+
+The frozen candidate is published, and public API metadata confirms all six asset digests. This machine's GitHub page/download connection timed out; original failures and the closed browser receipt are retained. The local complete ZIP remains available. [Final handoff](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/v0.1.0-rc.3-publication.md). This adds a post-publication download checker only; frozen tags and packages stay unchanged.
+
+---
+
 ## v0.1.0-rc.3 · Complete frozen handoff
 
 Includes the stage160 correction below. Desktop, Web, Admin, native Chrome Side Panel, Backend, six buildable source trees and the pinned Codex companion ship together. [Full usage guide](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.3/docs/releases/v0.1.0-rc.3.md) · [Release assets](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.3); actual publication is recorded in its receipt. External providers use authorized synthetic data and Windows remains unsigned. Whole production acceptance is separately tracked.

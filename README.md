@@ -1,3 +1,9 @@
+## rc.3 · 发布回执
+
+完整冻结版已上线；GitHub API公开读取及六附件摘要通过。本机访问GitHub网页/下载发生网络超时，原失败和已关闭浏览器的回执保持；本地完整包可用。[最终交付说明](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/v0.1.0-rc.3-publication.md)。本次只新增发布后下载检查工具，冻结标签及包不变。
+
+---
+
 ## v0.1.0-rc.3 · 完整冻结交付
 
 本版纳入下方160修复。Desktop、Web、Admin、原生Chrome右侧栏、后端、六仓可构建源码及固定Codex配套文件统一封装；[完整使用说明](https://github.com/copypasteltd/workmate/blob/v0.1.0-rc.3/docs/releases/v0.1.0-rc.3.md)。[下载入口](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.3)的资产以发布回执为准。外部接口使用获准假数据，Windows包未签名；完整生产验收继续独立跟踪。
