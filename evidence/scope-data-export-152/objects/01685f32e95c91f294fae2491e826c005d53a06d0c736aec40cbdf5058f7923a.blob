@@ -1,0 +1,126 @@
+/** Explicit public business projections. Adding a database column never exports it. */
+type Dataset = { table: string; columns: string; where: string; expressions?: Record<string, string> };
+const project = "r.project_id=ANY($2::uuid[])", active = "r.content_state='active'";
+const parent = (table: string, column: string) => `r.${column} IN(SELECT id FROM ${table})`;
+const root = (table: string, columns: string, extra = "true"): Dataset => ({ table, columns, where: `${project} AND ${extra}` });
+const child = (table: string, columns: string, source: string, column: string, extra = "true"): Dataset =>
+  ({ table, columns, where: `${parent(source, column)} AND ${extra}` });
+const timed = `${active} AND r.retention_expires_at>clock_timestamp()`;
+export const scopeExportCatalog: Dataset[] = [
+  { table: "projects", columns: "id tenant_id name description archived created_at", where: "r.id=ANY($2::uuid[])" },
+  { table: "assets", columns: "id tenant_id project_id name kind current_version private_owner created_by created_at retention_expires_at", where: "r.id IN(SELECT id FROM export_assets)" },
+  child("asset_versions", "id tenant_id asset_id version mime_type bytes sha256 metadata created_at", "export_assets", "asset_id", "r.erased_at IS NULL AND task_asset_version_sources_available(r.id)"),
+  { table: "tasks", columns: "id tenant_id project_id created_by private_owner conversation_id title prompt role_key role_hash kernel status mode acceptance output error_code budget_micros charged_micros input_tokens output_tokens version parent_id execution_location input_context created_at updated_at retention_expires_at", where: "r.id IN(SELECT id FROM export_tasks)" },
+  child("task_plans", "task_id tenant_id project_id version input_hash body conversation_version approved_task_id approved_by approved_at", "export_tasks", "task_id"),
+  child("task_events", "id tenant_id task_id kind body created_at", "export_tasks", "task_id"),
+  child("delivery_reviews", "id task_id reviewer_id task_version decision comment delivery_snapshot artifact_ids created_at", "export_tasks", "task_id", "r.erased_at IS NULL"),
+  child("task_quality_measurements", "id task_id reporter_id task_version baseline_minutes human_minutes manual_revisions created_at", "export_tasks", "task_id", "r.erased_at IS NULL"),
+  child("task_dependencies", "id task_id step_key kind description required_scope provider state resource_ids version created_at resolved_at", "export_tasks", "task_id"),
+  child("task_source_reads", "task_id kind resource_id asset_version_id sha256 created_at", "export_tasks", "task_id"),
+  root("conversations", "id tenant_id project_id agent_id agent_version created_by name pinned archived version created_at updated_at", `${active} AND created_by=$3`),
+  { table: "conversation_messages", columns: "id tenant_id project_id conversation_id role intent body task_id created_at", where: "r.conversation_id IN(SELECT id FROM conversations WHERE project_id=ANY($2::uuid[]) AND created_by=$3 AND content_state='active')",
+    expressions: { body: "CASE WHEN r.role='assistant' AND r.task_id IS NOT NULL AND NOT (r.task_id=ANY($6::uuid[])) THEN to_jsonb('內容暫不可用 / Source unavailable'::text) ELSE to_jsonb(r.body) END", source_unavailable: "to_jsonb(r.role='assistant' AND r.task_id IS NOT NULL AND NOT (r.task_id=ANY($6::uuid[])))" } },
+  { table: "memories", columns: "id tenant_id project_id brand_id conversation_id private_owner scope name version expires_at created_by created_at updated_at", where: "r.id IN(SELECT id FROM export_memories)" },
+  child("memory_versions", "tenant_id memory_id version content created_by created_at", "export_memories", "memory_id", "r.content IS NOT NULL"),
+  root("agents", "id tenant_id project_id name role_key version enabled created_by created_at updated_at", active),
+  child("agent_versions", "tenant_id agent_id version body created_by created_at", "export_agents", "agent_id"),
+  child("agent_skill_bindings", "tenant_id project_id agent_id agent_version installation_id skill_version_id required", "export_agents", "agent_id"),
+  root("skill_installations", "id tenant_id project_id skill_version_id enabled state version created_by created_at updated_at"),
+  root("brand_profiles", "id tenant_id project_id name version body created_at", active),
+  child("brand_profile_versions", "brand_id version tenant_id project_id name body sha256 created_by created_at", "export_brands", "brand_id", "r.erased_at IS NULL AND brand_version_available(r.brand_id,r.version)"),
+  child("brand_version_assets", "brand_id version tenant_id project_id kind source_key asset_version_id", "export_brands", "brand_id", "r.asset_version_id IN(SELECT id FROM export_versions)"),
+  root("cloud_workspaces", "id tenant_id project_id conversation_id kind private_owner version created_at", active),
+  root("workspace_nodes", "id tenant_id project_id workspace_id parent_id name kind asset_version_id root_kind version reference_state private_owner created_by created_at updated_at", `${active} AND (r.asset_version_id IS NULL OR r.asset_version_id IN(SELECT id FROM export_versions))`),
+  root("project_configurations", "id tenant_id project_id name draft current_version version created_by created_at updated_at", active),
+  root("project_configuration_versions", "configuration_id version tenant_id project_id body sha256 created_by created_at", "r.erased_at IS NULL AND EXISTS(SELECT 1 FROM project_configurations p WHERE p.id=r.configuration_id AND p.content_state='active')"),
+  root("analytics_datasets", "id tenant_id project_id name currency timezone rows source raw_csv source_filename source_sha256 import_spec import_metadata metric_snapshot source_asset_version_id spec_hash created_by created_at retention_expires_at", "r.id IN(SELECT id FROM export_datasets)"),
+  child("dataset_evidence", "id tenant_id project_id dataset_id body", "export_datasets", "dataset_id"),
+  root("analysis_reports", "id tenant_id project_id task_id created_by private_owner source_count spec spec_hash calculation narrative validation asset_version_id created_at", "r.task_id IN(SELECT id FROM export_tasks) AND r.invalidated_at IS NULL AND analysis_report_available(r.id)"),
+  child("analysis_report_sources", "report_id dataset_id", "export_reports", "report_id"),
+  child("analysis_snapshots", "id tenant_id project_id report_id body", "export_reports", "report_id"),
+  child("analysis_evidence", "id tenant_id project_id report_id snapshot_id body", "export_reports", "report_id"),
+  root("connections", "id tenant_id project_id provider name state scopes created_by created_at"),
+  root("connector_profiles", "connection_id tenant_id project_id version account_ids project_ids data_mode api_version catalog_state catalog_limits last_sync_at data_as_of"),
+  root("connector_snapshots", "id tenant_id project_id job_id source state asset_id asset_version sha256 row_count spec_hash data_as_of captured_at data_mode limitations dataset_ids", "EXISTS(SELECT 1 FROM export_versions v WHERE v.asset_id=r.asset_id AND v.version=r.asset_version)"),
+  root("creative_projects", "id tenant_id project_id name kind body version private_owner origin_task_id created_by created_at", "r.id IN(SELECT id FROM export_creatives)"),
+  child("poster_project_versions", "creative_id version tenant_id project_id name body created_by origin created_at", "export_creatives", "creative_id"),
+  child("editable_project_versions", "creative_id version tenant_id project_id kind input source_versions renderer_profile imported_evidence created_by created_at", "export_creatives", "creative_id", "editable_project_version_available(r.creative_id,r.version)"),
+  child("editable_project_outputs", "asset_id creative_id version tenant_id project_id", "export_creatives", "creative_id", "r.asset_id IN(SELECT id FROM export_assets)"),
+  child("video_project_versions", "video_id tenant_id project_id version definition input_hash renderer_profile actor_id created_at", "export_creatives", "video_id"),
+  child("video_project_sources", "video_id version tenant_id project_id asset_id asset_version sha256 mime_type bytes", "export_creatives", "video_id", "EXISTS(SELECT 1 FROM export_versions v WHERE v.asset_id=r.asset_id AND v.version=r.asset_version)"),
+  child("video_renders", "id video_id version tenant_id project_id actor_id revision state input_hash error_code mp4_asset_id project_asset_id script_asset_id storyboard_asset_id subtitles_asset_id probe_asset_id probe elapsed_ms output_bytes created_at started_at finished_at", "export_creatives", "video_id"),
+  child("creative_matrix_units", "id tenant_id project_id batch_id creative_key locale size_key revision state actor_id error_code created_at updated_at", "export_creatives", "batch_id"),
+  { table: "creative_matrix_revisions", columns: "tenant_id project_id unit_id revision input input_hash actor_id created_at", where: "r.unit_id IN(SELECT id FROM creative_matrix_units WHERE batch_id IN(SELECT id FROM export_creatives))" },
+  root("creative_mappings", "id tenant_id project_id name body sha256 asset_version_id dataset_id platform account_id channel ad_id creative_id state version created_by confirmed_by confirmed_at withdrawn_at created_at", `${timed} AND r.state='confirmed' AND creative_mapping_sources_available(r.id)`),
+  root("creative_feedback_reports", "id tenant_id project_id name body sha256 asset_version_id created_by created_at", `${timed} AND r.asset_version_id IN(SELECT id FROM export_versions)`),
+  root("geo_experiments", "id tenant_id project_id name series_id version previous_id body sha256 created_by private_owner created_at retention_expires_at", timed),
+  root("geo_runs", "id tenant_id project_id name experiment_id surface body config_hash created_by private_owner created_at retention_expires_at", timed),
+  root("geo_samples", "id tenant_id project_id name run_id question_key body task_id asset_version_id answer_sha256 analysis observed_at captured_at created_by private_owner created_at", `${timed} AND (r.task_id IS NULL OR r.task_id IN(SELECT id FROM export_tasks))`),
+  root("seo_runs", "id tenant_id project_id task_id created_by private_owner spec_hash checkpoint state revision result_asset_version_id report_asset_version_id previous_run_id error_code created_at finished_at", "r.task_id IN(SELECT id FROM export_tasks) AND r.invalidated_at IS NULL AND seo_run_sources_available(r.id)"),
+  { table: "seo_documents", columns: "id tenant_id project_id run_id asset_id asset_version container_sha256 url_sha256 kind cache_source_id captured_at created_at", where: "r.run_id IN(SELECT id FROM seo_runs WHERE project_id=ANY($2::uuid[]) AND task_id IN(SELECT id FROM export_tasks) AND invalidated_at IS NULL AND seo_run_sources_available(id))" },
+  root("workflows", "id tenant_id project_id name definition version state created_by private_owner execution_location origin_task_id created_at", `${active} AND (r.origin_task_id IS NULL OR r.origin_task_id IN(SELECT id FROM export_tasks))`),
+  child("workflow_versions", "workflow_id version tenant_id project_id private_owner definition definition_hash role_hashes source_refs published_at created_at", "export_workflows", "workflow_id"),
+  root("workflow_runs", "id tenant_id project_id workflow_id created_by private_owner definition workflow_version input_values input_files input_hash revision state cursor results active_task error_code execution_location origin_task_id named_outputs created_at", "r.id=ANY($7::uuid[]) AND r.workflow_id IN(SELECT id FROM export_workflows)"),
+  root("workflow_schedules", "id tenant_id project_id workflow_id name version revision state next_due_at last_error created_by created_at updated_at", active),
+  { table: "workflow_schedule_versions", columns: "schedule_id revision tenant_id project_id body created_by created_at", where: "r.schedule_id IN(SELECT id FROM workflow_schedules WHERE project_id=ANY($2::uuid[]) AND content_state='active')" },
+  root("cloud_schedules", "id tenant_id project_id private_owner request_id name revision version state next_due_at last_error created_at updated_at", active),
+  root("cloud_schedule_versions", "schedule_id revision tenant_id project_id private_owner request_id body specification_hash created_at", "EXISTS(SELECT 1 FROM cloud_schedules s WHERE s.id=r.schedule_id AND s.content_state='active')"),
+  root("cloud_schedule_occurrences", "id schedule_id revision tenant_id project_id private_owner scheduled_local scheduled_at state run_id code missed_count through_local created_at", "EXISTS(SELECT 1 FROM cloud_schedules s WHERE s.id=r.schedule_id AND s.content_state='active')"),
+  root("cloud_event_triggers", "id tenant_id project_id private_owner request_id name revision version state last_error last_dispatched_at created_at updated_at", active),
+  root("cloud_event_versions", "trigger_id revision tenant_id project_id private_owner request_id body specification_hash created_at", "EXISTS(SELECT 1 FROM cloud_event_triggers e WHERE e.id=r.trigger_id AND e.content_state='active')"),
+  root("cloud_event_inbox", "id trigger_id revision tenant_id project_id private_owner event_id event_type data occurred_at received_at expires_at state run_id code launched_at", `${active} AND r.expires_at>clock_timestamp()`),
+  root("agent_groups", "id tenant_id project_id name coordinator_agent_id workspace_id version state created_by created_at updated_at", active),
+  child("agent_group_versions", "group_id version tenant_id project_id body sha256 created_by created_at", "export_groups", "group_id", "r.erased_at IS NULL"),
+  child("agent_group_members", "group_id group_version tenant_id project_id agent_id agent_version is_coordinator role_description", "export_groups", "group_id"),
+  root("agent_group_runs", "id group_id group_version tenant_id project_id name created_by private_owner conversation_id coordinator_task_id definition definition_hash approved_budget_micros max_parallelism state revision error_code created_at deadline_at", "r.id IN(SELECT id FROM export_group_runs)"),
+  { table: "agent_group_nodes", columns: "run_id step_key tenant_id project_id position agent_id agent_version role_key role_hash budget_micros body depends_on task_id state error_code", where: "r.run_id IN(SELECT id FROM export_group_runs) AND (r.task_id IS NULL OR r.task_id IN(SELECT id FROM export_tasks))" },
+  root("solution_versions", "id tenant_id project_id family_id version definition frozen definition_hash state created_by created_at published_at disabled_at disable_reason"),
+  root("solution_installations", "id tenant_id project_id solution_version_id name bindings revision created_by created_at updated_at", "NOT $4::boolean"),
+  root("solution_trials", "id tenant_id project_id solution_version_id installation_id private_owner definition_hash bindings resolved_sources budget_micros created_at reviewed_at review_hashes"),
+];
+
+const stringNumbers = new Set("bytes budget_micros charged_micros input_tokens output_tokens approved_budget_micros output_bytes".split(" "));
+export function exportProjection(d: Dataset) {
+  const entries = d.columns.split(" ").filter(Boolean).map(c => [c, d.expressions?.[c] ?? (stringNumbers.has(c) ? `to_jsonb(r.${c}::text)` : `to_jsonb(r.${c})`)]);
+  for (const [key, value] of Object.entries(d.expressions ?? {})) if (!entries.some(([k]) => k === key)) entries.push([key, value]);
+  return `jsonb_build_object(${entries.map(([k, v]) => `'${k}',${v}`).join(",")})`;
+}
+
+/** Every root is also restricted by PostgreSQL customer RLS. Admin mode exports shared roots only. */
+export const exportCtes = `WITH export_assets AS MATERIALIZED (
+ SELECT id FROM assets WHERE tenant_id=$1 AND project_id=ANY($2::uuid[]) AND state='active'
+ AND retention_expires_at>clock_timestamp() AND task_asset_sources_available(id)
+ AND ($4::boolean=false OR private_owner IS NULL)
+), export_versions AS MATERIALIZED (
+ SELECT id,asset_id,version FROM asset_versions WHERE asset_id IN(SELECT id FROM export_assets)
+ AND erased_at IS NULL AND task_asset_version_sources_available(id)
+), export_tasks AS MATERIALIZED (
+ SELECT id FROM tasks WHERE tenant_id=$1 AND project_id=ANY($2::uuid[]) AND content_state='active'
+ AND retention_expires_at>clock_timestamp() AND id=ANY($6::uuid[])
+ AND ($4::boolean=false OR private_owner IS NULL)
+), export_memories AS MATERIALIZED (
+ SELECT id FROM memories WHERE tenant_id=$1 AND content_state='active' AND (expires_at IS NULL OR expires_at>clock_timestamp())
+ AND (project_id=ANY($2::uuid[]) OR ($5::boolean AND project_id IS NULL))
+ AND ($4::boolean=false OR private_owner IS NULL)
+), export_agents AS MATERIALIZED (SELECT id FROM agents WHERE project_id=ANY($2::uuid[]) AND content_state='active'),
+ export_brands AS MATERIALIZED (SELECT id FROM brand_profiles WHERE project_id=ANY($2::uuid[]) AND content_state='active'),
+ export_datasets AS MATERIALIZED (SELECT id FROM analytics_datasets WHERE project_id=ANY($2::uuid[]) AND content_state='active' AND source_state='active'
+ AND retention_expires_at>clock_timestamp() AND (source_asset_version_id IS NULL OR EXISTS(SELECT 1 FROM export_versions v WHERE v.id=source_asset_version_id))
+ AND connector_dataset_available(source_asset_version_id)),
+ export_reports AS MATERIALIZED (SELECT id FROM analysis_reports WHERE task_id IN(SELECT id FROM export_tasks) AND invalidated_at IS NULL AND analysis_report_available(id)),
+ export_creatives AS MATERIALIZED (SELECT id FROM creative_projects WHERE project_id=ANY($2::uuid[]) AND content_state='active' AND retention_expires_at>clock_timestamp()
+ AND (private_owner IS NULL OR private_owner=$3) AND ($4::boolean=false OR private_owner IS NULL)
+ AND (origin_task_id IS NULL OR origin_task_id IN(SELECT id FROM export_tasks))),
+ export_workflows AS MATERIALIZED (SELECT id FROM workflows WHERE project_id=ANY($2::uuid[]) AND content_state='active' AND ($4::boolean=false OR private_owner IS NULL)),
+ export_groups AS MATERIALIZED (SELECT id FROM agent_groups WHERE project_id=ANY($2::uuid[]) AND content_state='active'),
+ export_group_runs AS MATERIALIZED (SELECT id FROM agent_group_runs WHERE project_id=ANY($2::uuid[]) AND content_state='active'
+ AND retention_expires_at>clock_timestamp() AND ($4::boolean=false OR private_owner IS NULL)
+ AND (coordinator_task_id IS NULL OR coordinator_task_id IN(SELECT id FROM export_tasks)))`;
+
+/** Strip only system transport/credential keys; customer prose stays customer prose. */
+export function exportContent(value: unknown): any {
+  if (Array.isArray(value)) return value.map(exportContent);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(Object.entries(value).filter(([key]) => !/^(?:storage_key|rendition_key|encrypted_.*|sealed_secret|(?:access|refresh|id|bearer)_token|client_secret|credential(?:_cipher|_hash)?|token_hash|session_hash|lease_token|fencing_token|runtime_thread|runtime_turn)$/i.test(key))
+    .map(([key, entry]) => [key, exportContent(entry)]));
+}
