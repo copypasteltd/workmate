@@ -1,5 +1,6 @@
 import { useNavigate, Link } from "react-router-dom";
 import { ScopeErasureDialog, type ErasureTarget } from "./scope-erasure-dialog";
+import { ScopeExportDialog, type ScopeExportTarget } from "./scope-export-dialog";
 import "./scope-erasure.css";
 import { useEffect, useRef, useState } from "react";
 import { Archive, ArrowUpRight, Check, FolderOpen, Pencil, Plus, RotateCcw } from "lucide-react";
@@ -16,6 +17,8 @@ type Action = { kind: "create" } | { kind: "edit" | "archive" | "restore"; proje
 export function ProjectManagement() {
   const { t } = useI18n(), w = useWorkspace(), navigate = useNavigate();
   const [erasure, setErasure] = useState<ErasureTarget | null>(null);
+  const [exportTarget, setExportTarget] = useState<ScopeExportTarget | null>(null);
+  useEffect(() => { setExportTarget(null); }, [w.tenant]);
   const owner = w.me?.memberships.find((m:any) => m.id === w.tenant)?.role === "owner";
   const manager = ["owner", "admin"].includes(w.me?.memberships.find((m: any) => m.id === w.tenant)?.role);
   const [state, setState] = useState("active"), [search, setSearch] = useState(""), [page, setPage] = useState(1);
@@ -70,6 +73,7 @@ export function ProjectManagement() {
           {!p.archived && <button className="text-button" aria-label={t("選用專案：", "Select project: ") + p.name} onClick={() => w.setProject(p.id)}>
             {p.id === w.project ? <Check size={18} /> : <ArrowUpRight size={18} />}{t("選用", "Select")}
           </button>}
+          {!p.archived && <button className="text-button" onClick={() => setExportTarget({ endpoint: root + "/projects/" + p.id + "/export", id: p.id, tenant: w.tenant })}>{t("匯出資料", "Export data")}</button>}
           {manager && <><button className="text-button" onClick={() => setAction({ kind: "edit", project: p })}><Pencil size={15} />{t("編輯", "Edit")}</button>
             <button className="text-button" onClick={() => setAction({ kind: p.archived ? "restore" : "archive", project: p })}>
               {p.archived ? <RotateCcw size={15} /> : <Archive size={15} />}{p.archived ? t("恢復", "Restore") : t("封存", "Archive")}
@@ -85,6 +89,8 @@ export function ProjectManagement() {
       <button className="button secondary" disabled={page * 12 >= directory.data.total || directory.loading} onClick={() => setPage(v => v + 1)}>{t("下一頁", "Next")}</button>
     </nav>}
     {w.base && <ProjectConfigurationPanel key={w.base} />}
+    {manager && <section className="card"><h2>{t("企業資料匯出", "Workspace data export")}</h2><p>{t("打包所有使用中專案的共享資料及你自己的私人資料。先預覽實際範圍，再下載可核對的原始版本。", "Package readable shared materials and your private data across active projects. Review the exact scope before downloading verified original versions.")}</p><button className="button secondary" onClick={() => setExportTarget({ endpoint: root + "/export", id: w.tenant, tenant: w.tenant })}>{t("預覽企業匯出", "Preview workspace export")}</button></section>}
+    {exportTarget && <ScopeExportDialog key={exportTarget.endpoint} target={exportTarget} account={w.me.user.id} onClose={() => setExportTarget(null)} />}
     <section className="card scope-danger-zone"><p>{t("永久清理整個範圍的內容與歷史版本，確認前可查看影響範圍。", "Permanently remove content and historical versions across a scope. Review its impact before confirming.")}</p><Link className="button secondary" to="/cleanup">{t("清理記錄", "Cleanup records")}</Link>{owner && <button className="button secondary" onClick={() => setErasure({kind:"tenants",id:w.tenant,endpoint:root+"/erasure"})}>{t("永久刪除工作空間", "Permanently delete workspace")}</button>}</section>
     {erasure && <ScopeErasureDialog key={erasure.endpoint} target={erasure} account={w.me.user.id} onClose={() => setErasure(null)} onAccepted={() => {setErasure(null); navigate("/cleanup"); void w.refresh();}} />}
     {action && <Modal title={action.kind === "create" ? t("建立新專案", "Create a project") : action.kind === "edit" ? t("編輯專案", "Edit project") : action.kind === "archive" ? t("封存專案", "Archive project") : t("恢復專案", "Restore project")} onClose={() => setAction(null)}>

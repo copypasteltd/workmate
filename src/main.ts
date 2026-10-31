@@ -889,7 +889,8 @@ async function createWindow() {
       redirect: "error",
     });
     if (r.status === 401) await nativeSession.invalidate(t.access_token);
-    return saveDownload(r, dest.filePath);
+    const scopeArchive = /^\/v1\/tenants\/[a-f0-9-]{36}(?:\/projects\/[a-f0-9-]{36})?\/export-package$/i.test(new URL(url).pathname);
+    return saveDownload(r, dest.filePath, scopeArchive ? 17 * 1024 ** 3 : undefined);
   });
   ipcMain.handle("asset:upload", async (_e, p, body) => {
     if (typeof body?.base64 !== "string" || body.base64.length > 34_000_000)

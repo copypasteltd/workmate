@@ -1,3 +1,32 @@
+<!-- scope-data-export-152 -->
+
+**未凍結增量152：完整授權資料匯出**
+
+Web/Desktop：「專案」→「匯出資料」→核對預覽→確認→下載；企業owner/admin可匯出使用中專案與本人私人資料。管理企業不代表可讀其他成員私人正文。Admin在內容管理依範圍、正文/匯出權限和近期MFA匯出共享資料。原始CSV、全部可用檔案歷史版本、業務資料、會話及記憶歷史列入清單和SHA256SUMS；工作流歷史與固定輸出沿用當前來源限制。沒有匯出憑據、內部儲存位置、備份或未上傳本機檔案。
+
+9項後端、6組真實三端下載、8步構建及12項本機邊界檢查通過，6張PNG、3組GIF/MP4保留。瀏覽器fallback能力及原生OS目的地是明確測試輸入；登入、SQL、HTTP、原始物件及ZIP真實核對。按快速發版省略16GiB/大型瀏覽器串流、跨OS、廣泛歷史與正式生產矩陣；沒有呼叫模型。首個v0.1.0-rc.1凍結包原樣保留，本增量不在其中。
+
+```mermaid
+flowchart LR
+ A[Current sign-in and scope] --> B[Preview readable records and fixed originals]
+ B --> C[Confirm exact preview]
+ C --> D[Same-snapshot source and private access checks]
+ D --> E[Disk-streamed ZIP64 and per-file checksums]
+ E --> F[Recheck current scope and selection]
+ F --> G[Browser or native streamed save]
+ G --> H[Close stream and remove temporary archive]
+```
+
+Actual component journey.
+
+![Actual saved archive](assets/screenshots/workmate-scope-data-export-152-03-workspace-saved-en.png)
+
+![Actual interaction](assets/screenshots/workmate-scope-data-export-152-03-scope-export.gif)
+
+[Actual MP4](assets/screenshots/workmate-scope-data-export-152-03-scope-export.mp4)
+
+---
+
 <!-- ownership-transfer-151 -->
 
 **未凍結增量151：企業所有權交接**

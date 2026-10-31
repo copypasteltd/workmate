@@ -1,3 +1,32 @@
+<!-- scope-data-export-152 -->
+
+**Unreleased increment152: complete authorized data export**
+
+Web/Desktop: Projects → Export data → preview → acknowledge → save. Owners/admins can export their active workspace; another member's private records remain inaccessible. Admin Content exports shared project/workspace data with both body-read/export permissions and recent MFA. Original CSV, exact file/history versions, business records and memory/conversation history are listed in a checksum manifest. Retained workflow definitions and outputs obey the same current source boundaries as ordinary readers. Credentials and internal locations are excluded.
+
+9 targeted backend cases,6 actual client download groups,8 build steps and12 native-surface boundaries passed.6 PNGs and3 GIF/MP4 pairs are retained. Browser fallback capability and native OS save destination are explicit fixture inputs; actual auth, SQL, HTTP and original ZIP bytes were verified. Large browser-file streaming,16GiB load, cross-OS, production and broad historical regression were omitted for release speed; no model request. Frozen v0.1.0-rc.1 remains unchanged and does not contain this increment.
+
+```mermaid
+flowchart LR
+ A[Current sign-in and scope] --> B[Preview readable records and fixed originals]
+ B --> C[Confirm exact preview]
+ C --> D[Same-snapshot source and private access checks]
+ D --> E[Disk-streamed ZIP64 and per-file checksums]
+ E --> F[Recheck current scope and selection]
+ F --> G[Browser or native streamed save]
+ G --> H[Close stream and remove temporary archive]
+```
+
+Actual component journey.
+
+![Actual saved archive](assets/screenshots/workmate-scope-data-export-152-03-workspace-saved-en.png)
+
+![Actual interaction](assets/screenshots/workmate-scope-data-export-152-03-scope-export.gif)
+
+[Actual MP4](assets/screenshots/workmate-scope-data-export-152-03-scope-export.mp4)
+
+---
+
 <!-- ownership-transfer-151 -->
 
 **Unreleased increment151 — explicit workspace ownership handover**
