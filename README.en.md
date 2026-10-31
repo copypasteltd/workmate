@@ -1,3 +1,30 @@
+<!-- workflow-content-history-153 -->
+
+Admin reads every retained workflow definition and source-controlled current execution snapshots. Open Content → Read content → expand the exact version and navigate pages. Current scopes, both content permissions, recent MFA and source rechecks apply together; access/source changes clear bodies. Only precise quarantined investigation roots are excepted. Shared history joins erasure and authorized exports.
+
+```mermaid
+flowchart LR
+ A[Admin + scopes + MFA] --> B[Saved definitions / current run]
+ B --> C[Exact sources + locks + recheck]
+ C --> D[Full retained pages / explicit snapshot]
+ D --> E[Focus or15s recheck]
+ E --> F[Access or source changes clear body]
+```
+
+Media show the actual Admin journey; this component has no new client UI acceptance in153.
+
+9 focused backend cases /7 actual browser groups passed with synthetic business/model data; no real provider request. Broad regression and unchanged client builds omitted. SQL150v2/151/152 are forward migrations. Unreleased increment; frozen v0.1.0-rc.1 and its five ZIPs unchanged.
+
+[方案 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/153-workflow-content-history.md) · [API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/workflow-content-history-openapi.json) · [完整待项 / Ledger](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage153.md)
+
+![Actual Admin history](assets/screenshots/workmate-workflow-content-history-153-01-shared-newest-en.png)
+
+![Actual interaction](assets/screenshots/workmate-workflow-content-history-153-01-saved-workflow-history.gif)
+
+[Actual MP4](assets/screenshots/workmate-workflow-content-history-153-01-saved-workflow-history.mp4)
+
+---
+
 <!-- scope-data-export-152 -->
 
 **Unreleased increment152: complete authorized data export**
