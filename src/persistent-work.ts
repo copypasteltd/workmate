@@ -181,6 +181,17 @@ export async function createSpecialist(
         }
       : {}),
   };
+  return persistSpecialist(tx,actor,tenant,project,definition,"agent.create",{
+    role_key: input.role_key,
+    ...(template ? {template_version_id:template.id} : {}),
+  });
+}
+
+/** Persist only a server-constructed, currently authorized fixed definition. */
+export async function persistSpecialist(tx:Tx,actor:Principal,tenant:string,project:string,
+  definition:any,action:string,detail:Record<string,unknown>) {
+  await projectAccess(tx,actor,tenant,project,"write");
+  await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))",["specialist-create:"+project]);
   if (
     (
       await tx.query(
@@ -197,7 +208,7 @@ export async function createSpecialist(
   const row = (
     await tx.query(
       "INSERT INTO agents(tenant_id,project_id,name,role_key,created_by) VALUES($1,$2,$3,$4,$5) RETURNING *",
-      [tenant, project, input.name, input.role_key, actor.id],
+    [tenant, project, definition.name, definition.role_key, actor.id],
     )
   ).rows[0];
   await tx.query(
@@ -208,13 +219,10 @@ export async function createSpecialist(
   await audit(
     tx,
     actor,
-    "agent.create",
+    action,
     row.id,
     "succeeded",
-    {
-      role_key: row.role_key,
-      ...(template ? { template_version_id: template.id } : {}),
-    },
+    detail,
     tenant,
   );
   return getAgentVersion(tx, project, row.id, undefined, true);

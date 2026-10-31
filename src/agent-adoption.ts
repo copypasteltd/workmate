@@ -154,7 +154,7 @@ const sealedHash = (db: Database, domain: string, data: unknown) =>
   hmac(db.config.MASTER_KEY!, `agent-adoption:${domain}:${canonical(data)}`);
 
 /** Hold current user/session and project authority until the short commit ends. */
-async function authority(
+export async function authority(
   tx: Tx,
   p: Principal,
   scope: Scope,

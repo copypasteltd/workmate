@@ -1,3 +1,35 @@
+<!-- specialist-copy-155 -->
+
+Your specialists → Copy → edit name/instructions or narrow approved tools → review original brand, model prices and methods → explicitly confirm. The copy retains original fixed versions and template provenance. Lost-response retries recover the same specialist; changed sources and withdrawn authority are rejected. Private content, credentials and local permissions are excluded.
+
+```mermaid
+flowchart TD
+ A[Choose saved specialist / Copy] --> B[Name, instructions, narrower approved tools]
+ B --> C[Review original source and fixed versions]
+ C --> D[Explicit confirmation]
+ D --> E[Lock and recheck current session and project]
+ E --> F{Original source, brand, skills and prices still usable?}
+ F -->|No| G[Clear review / reload source]
+ F -->|Yes| H[One signed preview creates one independent copy]
+ H --> I[Retry recovers the same receipt]
+ H --> J[New tasks use retained definition]
+ J --> K[Use existing compare/adopt for later changes]
+```
+
+Media below show the actual Web flow; configuration copying makes no model request.
+
+7 focused SQL/HTTP cases and5 actual Web groups;7 PNGs and2 GIF/MP4 pairs. Backend/Web/Desktop checks and builds passed. Synthetic fixtures; no model call. No new SQL migration: schema154. Broad historical, installed-client/cross-OS and production-provider matrices omitted. Unreleased after v0.1.0-rc.1; all frozen artifacts and tags preserved.
+
+[方案 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/155-specialist-copy.md) · [API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/specialist-copy-openapi.json) · [完整待项 / Ledger](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage155.md)
+
+![Actual Web review](assets/screenshots/workmate-specialist-copy-155-02-review-original-brand.png)
+
+![Actual Web interaction](assets/screenshots/workmate-specialist-copy-155-02-reviewed-copy-recovery.gif)
+
+[Actual MP4](assets/screenshots/workmate-specialist-copy-155-02-reviewed-copy-recovery.mp4)
+
+---
+
 <!-- runtime-pause-154 -->
 
 Running cloud work supports safe pause and same-task/thread/budget resume. Task details → Pause task → wait for the measured current turn → Resume task. Answers keep a paused task paused. Unknown effects require reconciliation; cancellation settles known cumulative usage once.
