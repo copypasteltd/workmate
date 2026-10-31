@@ -1,0 +1,78 @@
+{
+  "at": "2026-10-31T17:44:32.245Z",
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: Actual Admin UI checks failed; originals retained\n\n1 !== 0\n",
+  "build_commands": [
+    {
+      "component": "copypaste-platform",
+      "args": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "component": "copypaste-platform",
+      "args": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "component": "copypaste-admin",
+      "args": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "component": "copypaste-admin",
+      "args": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_before": {
+    "copypaste-platform/src/admin.ts": "aedd3e9bb0cc6f88c56de09ced2e64745372431ae561274b58e26d2571e98d3f",
+    "copypaste-platform/src/admin-usage-reports.ts": "7c061d29ee6703c04fa8a7b77e4761fbb89cb975823237009df0ff2d169c3d06",
+    "copypaste-platform/src/admin-usage-report-model.ts": "7f4aa74dba17baa3636a2e37d3118e1d7a71a065c20f02009e7c99b514c6688f",
+    "copypaste-platform/src/admin-usage-report-query.ts": "4cdecb4c78ef23d419df2aed1398284428d11a6dab2b8b0ef3ad1ffcba19e470",
+    "copypaste-platform/tests/admin-usage-report-169-v1.test.ts": "77f287053232863ae8c2b41455c572978d018ab0fd12da99a339bd25d9e493c7",
+    "copypaste-platform/tests/admin-posting-period-172-v2.test.ts": "27ea4192f9d30dfd6336bc3babbb0ab715dfc928ef73c86ff13445741a9d0f10",
+    "copypaste-platform/tests/admin-team-usage-174-v1.test.ts": "47e34d5e040a353061c0a3c0986a3e42c2794f216173db9d9ea56f8319c9625c",
+    "copypaste-platform/tests/admin-team-usage-fixture-174-v1.ts": "998255489acd400b4e6aeea0e3294d8df09246106570b7bd794124dc384b88a1",
+    "copypaste-platform/scripts/serve-admin-team-usage-174-v1.ts": "12ed173607723bed9be24095919d4d839fd251a4b2649ca5433132136bcd0f0b",
+    "copypaste-admin/src/main.tsx": "bfb21af29e37e75f941c8eb1c4f31d200f752b8bf852577040ccea7bddd11f61",
+    "copypaste-admin/src/usage-reports.tsx": "c5c5172850741ddb2e2aea7cf6d7a63605539ffa447be44ec23f4a4080113a6c",
+    "copypaste-admin/src/usage-reports.css": "37c75daf03a77df0337e9361b95f51fe3c8dd85e256f172da5e3c66023848d3f",
+    "copypaste-delivery/scripts/qa-admin-team-usage-174-v1.ts": "26e8574d64d4a4a69ba74fa8d8794ac356a0d53a8551e409cd27d385b6041b4b",
+    "copypaste-delivery/scripts/qualify-admin-team-usage-174-v1.mjs": "9a9919bc2638cc6559f86a946779a82a01b9318ecb4c4ac0edef7d34c245c56f"
+  },
+  "owned_services_closed": true,
+  "database_tests": 21,
+  "fresh_team_sql_api_tests": 6,
+  "current_legacy_report_cases": 15,
+  "source_after": {
+    "copypaste-platform/src/admin.ts": "aedd3e9bb0cc6f88c56de09ced2e64745372431ae561274b58e26d2571e98d3f",
+    "copypaste-platform/src/admin-usage-reports.ts": "7c061d29ee6703c04fa8a7b77e4761fbb89cb975823237009df0ff2d169c3d06",
+    "copypaste-platform/src/admin-usage-report-model.ts": "7f4aa74dba17baa3636a2e37d3118e1d7a71a065c20f02009e7c99b514c6688f",
+    "copypaste-platform/src/admin-usage-report-query.ts": "4cdecb4c78ef23d419df2aed1398284428d11a6dab2b8b0ef3ad1ffcba19e470",
+    "copypaste-platform/tests/admin-usage-report-169-v1.test.ts": "77f287053232863ae8c2b41455c572978d018ab0fd12da99a339bd25d9e493c7",
+    "copypaste-platform/tests/admin-posting-period-172-v2.test.ts": "27ea4192f9d30dfd6336bc3babbb0ab715dfc928ef73c86ff13445741a9d0f10",
+    "copypaste-platform/tests/admin-team-usage-174-v1.test.ts": "47e34d5e040a353061c0a3c0986a3e42c2794f216173db9d9ea56f8319c9625c",
+    "copypaste-platform/tests/admin-team-usage-fixture-174-v1.ts": "998255489acd400b4e6aeea0e3294d8df09246106570b7bd794124dc384b88a1",
+    "copypaste-platform/scripts/serve-admin-team-usage-174-v1.ts": "12ed173607723bed9be24095919d4d839fd251a4b2649ca5433132136bcd0f0b",
+    "copypaste-admin/src/main.tsx": "bfb21af29e37e75f941c8eb1c4f31d200f752b8bf852577040ccea7bddd11f61",
+    "copypaste-admin/src/usage-reports.tsx": "c5c5172850741ddb2e2aea7cf6d7a63605539ffa447be44ec23f4a4080113a6c",
+    "copypaste-admin/src/usage-reports.css": "37c75daf03a77df0337e9361b95f51fe3c8dd85e256f172da5e3c66023848d3f",
+    "copypaste-delivery/scripts/qa-admin-team-usage-174-v1.ts": "26e8574d64d4a4a69ba74fa8d8794ac356a0d53a8551e409cd27d385b6041b4b",
+    "copypaste-delivery/scripts/qualify-admin-team-usage-174-v1.mjs": "9a9919bc2638cc6559f86a946779a82a01b9318ecb4c4ac0edef7d34c245c56f"
+  },
+  "source_unchanged": true,
+  "finished_at": "2026-10-31T17:46:59.428Z",
+  "verifier_sha256": "9a9919bc2638cc6559f86a946779a82a01b9318ecb4c4ac0edef7d34c245c56f",
+  "private_log": ".data/admin-team-usage-174/run-d2688035-059b-4589-b319-c5be2349c616/commands.log",
+  "private_log_sha256": "13c58c2d5613197a23030386feb4e5a5ce9de842ae598ebc12ee0fca58b7ee5a"
+}

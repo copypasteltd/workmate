@@ -1,0 +1,90 @@
+{
+  "at": "2026-10-31T17:49:24.531Z",
+  "status": "passed",
+  "error": null,
+  "build_commands": [
+    {
+      "component": "copypaste-platform",
+      "args": [
+        "node_modules/typescript/bin/tsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "component": "copypaste-platform",
+      "args": [
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "component": "copypaste-admin",
+      "args": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0
+    },
+    {
+      "component": "copypaste-admin",
+      "args": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_before": {
+    "copypaste-platform/src/admin.ts": "aedd3e9bb0cc6f88c56de09ced2e64745372431ae561274b58e26d2571e98d3f",
+    "copypaste-platform/src/admin-usage-reports.ts": "7c061d29ee6703c04fa8a7b77e4761fbb89cb975823237009df0ff2d169c3d06",
+    "copypaste-platform/src/admin-usage-report-model.ts": "7f4aa74dba17baa3636a2e37d3118e1d7a71a065c20f02009e7c99b514c6688f",
+    "copypaste-platform/src/admin-usage-report-query.ts": "4cdecb4c78ef23d419df2aed1398284428d11a6dab2b8b0ef3ad1ffcba19e470",
+    "copypaste-platform/tests/admin-usage-report-169-v1.test.ts": "77f287053232863ae8c2b41455c572978d018ab0fd12da99a339bd25d9e493c7",
+    "copypaste-platform/tests/admin-posting-period-172-v2.test.ts": "27ea4192f9d30dfd6336bc3babbb0ab715dfc928ef73c86ff13445741a9d0f10",
+    "copypaste-platform/tests/admin-team-usage-174-v1.test.ts": "47e34d5e040a353061c0a3c0986a3e42c2794f216173db9d9ea56f8319c9625c",
+    "copypaste-platform/tests/admin-team-usage-fixture-174-v1.ts": "998255489acd400b4e6aeea0e3294d8df09246106570b7bd794124dc384b88a1",
+    "copypaste-platform/scripts/serve-admin-team-usage-174-v1.ts": "12ed173607723bed9be24095919d4d839fd251a4b2649ca5433132136bcd0f0b",
+    "copypaste-admin/src/main.tsx": "bfb21af29e37e75f941c8eb1c4f31d200f752b8bf852577040ccea7bddd11f61",
+    "copypaste-admin/src/usage-reports.tsx": "c5c5172850741ddb2e2aea7cf6d7a63605539ffa447be44ec23f4a4080113a6c",
+    "copypaste-admin/src/usage-reports.css": "37c75daf03a77df0337e9361b95f51fe3c8dd85e256f172da5e3c66023848d3f",
+    "copypaste-delivery/scripts/qa-admin-team-usage-174-v2.ts": "defbd01a5665cd2131b4033c99f6e65763e9eb2721b721da06208cfee3bcc121",
+    "copypaste-delivery/scripts/qualify-admin-team-usage-174-v2.mjs": "cdd52e928ce86e6d97fad0f834ac640761ebe762238b7c254e9472fd163c16a1"
+  },
+  "owned_services_closed": true,
+  "database_tests": 21,
+  "fresh_team_sql_api_tests": 0,
+  "inherited_current_team_sql_api_tests": 6,
+  "current_legacy_report_cases": 15,
+  "inherited_checks": {
+    "path": "evidence/admin-team-usage-174/qualification-01.json",
+    "sha256": "01bff618e814ce68a219d84a2e857adf0b1d7d0ade422c86560cc1bba61e8e82",
+    "exact_source_cases": 21,
+    "scope": "Four production build commands and 21 successful SQL/API cases only. The original UI interruption remains failed. A new UI verifier serializes movie/still screenshots."
+  },
+  "ui": {
+    "path": "evidence/admin-team-usage-174/admin-ui-02.json",
+    "sha256": "722b6b295be2339bf0b926506c6d930216ec27ea8d940d0d1afb4075239440fb",
+    "checks": 7
+  },
+  "source_after": {
+    "copypaste-platform/src/admin.ts": "aedd3e9bb0cc6f88c56de09ced2e64745372431ae561274b58e26d2571e98d3f",
+    "copypaste-platform/src/admin-usage-reports.ts": "7c061d29ee6703c04fa8a7b77e4761fbb89cb975823237009df0ff2d169c3d06",
+    "copypaste-platform/src/admin-usage-report-model.ts": "7f4aa74dba17baa3636a2e37d3118e1d7a71a065c20f02009e7c99b514c6688f",
+    "copypaste-platform/src/admin-usage-report-query.ts": "4cdecb4c78ef23d419df2aed1398284428d11a6dab2b8b0ef3ad1ffcba19e470",
+    "copypaste-platform/tests/admin-usage-report-169-v1.test.ts": "77f287053232863ae8c2b41455c572978d018ab0fd12da99a339bd25d9e493c7",
+    "copypaste-platform/tests/admin-posting-period-172-v2.test.ts": "27ea4192f9d30dfd6336bc3babbb0ab715dfc928ef73c86ff13445741a9d0f10",
+    "copypaste-platform/tests/admin-team-usage-174-v1.test.ts": "47e34d5e040a353061c0a3c0986a3e42c2794f216173db9d9ea56f8319c9625c",
+    "copypaste-platform/tests/admin-team-usage-fixture-174-v1.ts": "998255489acd400b4e6aeea0e3294d8df09246106570b7bd794124dc384b88a1",
+    "copypaste-platform/scripts/serve-admin-team-usage-174-v1.ts": "12ed173607723bed9be24095919d4d839fd251a4b2649ca5433132136bcd0f0b",
+    "copypaste-admin/src/main.tsx": "bfb21af29e37e75f941c8eb1c4f31d200f752b8bf852577040ccea7bddd11f61",
+    "copypaste-admin/src/usage-reports.tsx": "c5c5172850741ddb2e2aea7cf6d7a63605539ffa447be44ec23f4a4080113a6c",
+    "copypaste-admin/src/usage-reports.css": "37c75daf03a77df0337e9361b95f51fe3c8dd85e256f172da5e3c66023848d3f",
+    "copypaste-delivery/scripts/qa-admin-team-usage-174-v2.ts": "defbd01a5665cd2131b4033c99f6e65763e9eb2721b721da06208cfee3bcc121",
+    "copypaste-delivery/scripts/qualify-admin-team-usage-174-v2.mjs": "cdd52e928ce86e6d97fad0f834ac640761ebe762238b7c254e9472fd163c16a1"
+  },
+  "source_unchanged": true,
+  "finished_at": "2026-10-31T17:50:08.203Z",
+  "verifier_sha256": "cdd52e928ce86e6d97fad0f834ac640761ebe762238b7c254e9472fd163c16a1",
+  "private_log": ".data/admin-team-usage-174/run-1b1b4dd5-b053-4cae-8616-4064e3d07fd7/commands.log",
+  "private_log_sha256": "de49630d18981016f4fe254a0e50dd99ed9b583bbd720eb64ed6d0d4d01b25a4"
+}
