@@ -1,4 +1,5 @@
 import { AdminCloudComputers } from "./cloud-computers";
+import { resourceUser, userResourceLink, userResourceReturn } from "./user-resources";
 import { QualitySummary } from "./quality-summary";
 import "./support.css";
 import { AdminConnectionDetail } from "./connections";
@@ -1029,10 +1030,17 @@ function JobsPage() {
   );
 }
 function Section({ section }: { section: string }) {
+  const location = useLocation();
+  // A new target discards the old row, open body and operation before render.
+  return <SectionContent key={section + ":" + (resourceUser(section, location.search) ?? "all")} section={section} />;
+}
+function SectionContent({ section }: { section: string }) {
   const { t } = useI18n(),
     a = useAdmin(),
     navTo = useNavigate(),
     location = useLocation();
+  const subjectId = resourceUser(section, location.search);
+  const hasSubject = subjectId !== null;
   const [cursors, setCursors] = useState<(string | null)[]>([null]);
   const filters: DirectoryFilters =
     section === "users" ? readDirectoryFilters(location.search) : {};
@@ -1084,6 +1092,8 @@ function Section({ section }: { section: string }) {
   if (search.trim() && active !== "approvals")
     directoryQuery.set("q", search.trim());
   if (cursors[page - 1]) directoryQuery.set("cursor", cursors[page - 1]!);
+  const collectionQuery = new URLSearchParams({ page: String(page), page_size: "50", search });
+  if (hasSubject) collectionQuery.set("user_id", subjectId);
   const {
     data: rawData,
     error,
@@ -1095,10 +1105,7 @@ function Section({ section }: { section: string }) {
           active +
           (cursorPaged
             ? "?" + directoryQuery.toString()
-            : "?page=" +
-              page +
-              "&page_size=50&search=" +
-              encodeURIComponent(search)),
+            : "?" + collectionQuery),
     refresh,
   );
   const data =
@@ -1261,8 +1268,21 @@ function Section({ section }: { section: string }) {
           </div>
         }
       />
-      {section === "content" && a.has("admin.exports.create") && a.has("admin.content.body.read") && <AdminScopeExports key={a.me.user.id} account={a.me.user.id} />}
-      {section === "content" && (
+      {hasSubject && (
+        <section className="card section-block" aria-label={t("用戶記錄範圍", "User record scope")}>
+          <h2>{data?.subject?.display_name ?? t("所選用戶", "Selected user")}</h2>
+          <p className="muted">{t(
+            "僅列出此用戶建立或發起、且你獲准查看的記錄。作者不詳的舊資料可於全部獲授權記錄中查找。",
+            "Records are attributed to this creator or initiator within your authorized scope. Older records with no known author remain in the full authorized directory.",
+          )}</p>
+          <div className="row-actions">
+            <Link className="button secondary" to={userResourceReturn(subjectId, location.search)}>{t("返回用戶詳情", "Back to user detail")}</Link>
+            <Link className="text-link" to={"/" + section}>{t("全部獲授權記錄", "All authorized records")}</Link>
+          </div>
+        </section>
+      )}
+      {section === "content" && !hasSubject && a.has("admin.exports.create") && a.has("admin.content.body.read") && <AdminScopeExports key={a.me.user.id} account={a.me.user.id} />}
+      {section === "content" && !hasSubject && (
         <AdminDeletions
           account={a.me.user.id}
           canRetry={a.has("admin.content.delete")}
@@ -1332,7 +1352,7 @@ function Section({ section }: { section: string }) {
                 setSearch(e.target.value);
                 setPage(1);
                 setCursors([null]);
-                if (active === "users") {
+                if (active === "users" || hasSubject) {
                   const query = new URLSearchParams(location.search);
                   if (e.target.value) query.set("search", e.target.value);
                   else query.delete("search");
@@ -1647,7 +1667,7 @@ function Section({ section }: { section: string }) {
           )}
         />
       )}{" "}
-      {section === "execution" && (
+      {section === "execution" && !hasSubject && (
         <>
           <AdminPrivateCloudSchedules
             canPause={a.has("admin.execution.pause")}
@@ -1655,7 +1675,7 @@ function Section({ section }: { section: string }) {
           <AdminPrivateCloudEvents canPause={a.has("admin.execution.pause")} />
         </>
       )}
-      {section === "execution" && (
+      {section === "execution" && !hasSubject && (
         <AdminSchedules
           canPause={a.has("admin.execution.pause")}
           canResume={a.has("admin.execution.resume")}
@@ -2375,6 +2395,13 @@ function UserDetailContent({ id }: { id: string }) {
               </dd>
             </dl>
           </div>
+          <section className="section-block">
+            <h2>{t("用戶工作與內容", "User tasks & content")}</h2>
+            <div className="row-actions">
+              {a.has("admin.execution.read") && <Link className="button secondary" to={userResourceLink("execution", id, location.search)}><Workflow size={17} />{t("查看用戶任務", "View user tasks")}</Link>}
+              {a.has("admin.content.read") && <Link className="button secondary" to={userResourceLink("content", id, location.search)}><Files size={17} />{t("查看用戶內容", "View user content")}</Link>}
+            </div>
+          </section>
           <section className="section-block">
             <h2>{t("企業歸屬與消耗", "Workspace membership & usage")}</h2>
             <div className="project-grid">

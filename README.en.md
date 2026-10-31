@@ -4,6 +4,31 @@
 
 Workmate serves Hong Kong enterprises, beginning with existing marketing teams. This independent **admin** component uses **React / independent MFA / RBAC**. Business areas include design/media, advertising and website/SEO/GEO analytics, repeatable workflows and software development. CopyPaste's warm background, dark text, brand accents and editorial typography guide the interface.
 
+## Current branch increment · stage166
+
+User detail opens creator-filtered tasks and content. Search, pagination and reload retain the user; return navigation restores directory conditions. Changing users discards previous bodies/operations. Current user scope intersects resource scope; body/download authority and recent MFA remain separate. Twenty content kinds use their actual creator; brands retain the original version-1 author. Unknown legacy authors remain unattributed in the full directory. Counts represent resource records; an asset and its cloud node have independent identities.
+
+This source increment follows rc.5 and is not inside its frozen ZIP. Frozen tags/downloads stay unchanged. Current backend/Admin builds, eight native SQL/API cases and eight actual browser checks passed. The original locator failure and its media remain preserved. Authorized synthetic dependencies and all whole-acceptance scopes remain.
+
+```mermaid
+flowchart LR
+ U[User detail] --> T[User tasks]
+ U --> C[User content]
+ T --> P[Current user and resource scope intersection]
+ C --> P
+ P --> S[Search, pagination and reload retain target]
+ S --> U
+ C --> B[Separate body and management authority]
+```
+
+![User tasks](assets/screenshots/workmate-admin-user-resources-166-02-user-resources-02-selected-user-tasks.png)
+
+![User content](assets/screenshots/workmate-admin-user-resources-166-02-user-resources-04-original-user-content.png)
+
+![Actual interaction](assets/screenshots/workmate-admin-user-resources-166-02-user-task-content-scope.gif)
+
+[MP4](assets/screenshots/workmate-admin-user-resources-166-02-user-task-content-scope.mp4) · [Logic / 逻辑](https://github.com/copypasteltd/workmate/blob/docs/docs/development/166-admin-user-resource-context.md) · [Evidence / 回执](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/admin-user-resources-166.json)
+
 ## Architecture and responsibilities
 
 Entry points: `src/main.tsx, src/directory.tsx, src/fees.tsx, src/vip.tsx`. Codex is the only agent kernel. All AI calls use the company's OpenAI-compatible gateway; provider secrets remain server-side. Presets pin Skills, tools and configuration versions. The designer combines Codex, design Skills and company Image 2.
@@ -44,7 +69,7 @@ API uses localhost4310, Web4317 and Admin4318. Development OTP messages are in p
 1. Sign in and accept an invitation or create a workspace/initial project. An uncertain creation keeps its original request. Check & continue after reload reconciles that operation; unavailable/removed receipts never silently create a replacement company.
 2. Select a project/preset, provide the brief, approved files/brand/accounts, budget and permission. Supply missing inputs within the original task. Execution pins accepted configuration and Skill versions.
 3. Review durable progress, approvals, delivery versions, costs and consumption. Download original files or request revisions. Unknown costs stay under reconciliation instead of being treated as free or blindly repeated.
-4. From Admin user detail, verify the billing/VIP subject, inspect its preview and confirm under current policy. Directory filters survive refresh/return. A unified user-filtered task/content entry remains pending.
+4. From Admin user detail, verify the billing/VIP subject, inspect its preview and confirm under current policy. Directory filters survive refresh/return. The current branch connects creator-filtered task/content pages and preserves the original directory conditions on return.
 
 ## Configuration and authority
 
@@ -90,7 +115,7 @@ The shared media shows this release's actual Web/SQL recovery and Admin MFA/targ
 
 [Actual MP4](assets/screenshots/workmate-functional-closure-165-01-recover-original-workspace.mp4)
 
-## Qualification and publication
+## rc.5 frozen baseline qualification and publication
 
 Seven focused SQL cases, four draft-state cases and actual Web/Admin interactions accompany six builds and Windows unpacked/Portable/Setup packaging. Current ASAR bytes and pinned Codex hashes are checked. Repeated broad regression is omitted as requested; the release checkpoint records actual results.
 
