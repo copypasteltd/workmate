@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import type { Database, Tx } from "./db.js";
+import { secureBrowserCookie } from "./cookie-policy.js";
 import { randomInt } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -194,7 +195,7 @@ export function setSessionCookie(
 ) {
   reply.setCookie(admin ? "cp_admin_session" : "cp_session", value, {
     httpOnly: true,
-    secure: db.config.NODE_ENV === "production",
+    secure: secureBrowserCookie(db.config, admin ? "ADMIN_ORIGIN" : "WEB_ORIGIN"),
     sameSite: "lax",
     path: admin ? "/v1/admin" : "/v1",
     maxAge: admin ? 8 * 3600 : 7 * 86400,
@@ -274,7 +275,7 @@ export function registerAuth(app: FastifyInstance, db: Database) {
       if (canonical) {
         reply.setCookie("cp_auth_flow", challenge.flow!, {
           httpOnly: true,
-          secure: db.config.NODE_ENV === "production",
+          secure: secureBrowserCookie(db.config),
           sameSite: "lax",
           path: "/v1/auth",
           maxAge: 600,

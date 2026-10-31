@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
+import { secureBrowserCookie } from "./cookie-policy.js";
 import { audit, requireUser } from "./auth.js";
 import { key, replay } from "./access.js";
 import { hash, Problem, seal, token, unseal, uuid } from "./lib.js";
@@ -84,7 +85,7 @@ export function registerPublicationConnections(app: FastifyInstance, db: Databas
       return state;
     }, s.tenant, true, req.principal.id);
     reply.header("cache-control", "private, no-store").setCookie(cookieName(row.id), unseal(db.config.MASTER_KEY!, row.encrypted_cookie), {
-      httpOnly: true, secure: db.config.NODE_ENV === "production", sameSite: "lax", path: "/v1/publication/callback", maxAge: 300,
+      httpOnly: true, secure: secureBrowserCookie(db.config, "API_ORIGIN"), sameSite: "lax", path: "/v1/publication/callback", maxAge: 300,
     });
     return { state_id: row.id, expires_at: row.expires_at.toISOString(),
       authorization_url: publicationAuthorizationURL(db.config, unseal(db.config.MASTER_KEY!, row.encrypted_state)) };

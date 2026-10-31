@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { Database, Tx } from "./db.js";
+import { secureBrowserCookie } from "./cookie-policy.js";
 import { randomInt } from "node:crypto";
 import { z } from "zod";
 import { domainToASCII } from "node:url";
@@ -101,7 +102,7 @@ function setBrowser(db: Database, reply: FastifyReply, value: string) {
   reply.setCookie(browserCookie, value, {
     httpOnly: true,
     sameSite: "lax",
-    secure: db.config.NODE_ENV === "production",
+    secure: secureBrowserCookie(db.config),
     path: cookiePath,
     maxAge: 600,
   });
