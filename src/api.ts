@@ -3,9 +3,11 @@ import { saveScopeArchive } from "./scope-export-download";
 import { clientFetch, clientJson, connectionFailure } from "./client-failure";
 export let csrfToken = "";
 let sessionRevision = 0;
+let authenticationRevision = 0;
 export const clientSessionGeneration = () => sessionRevision;
-function endAdminSession() {
+function endAdminSession(reason: "sign_out" | "expired" = "expired") {
   ++sessionRevision;
+  if (reason === "sign_out") ++authenticationRevision;
   csrfToken = "";
   window.dispatchEvent(new Event("copypaste:admin-session-ended"));
 }
@@ -46,11 +48,15 @@ export async function api<T = any>(
   options: RequestInit = {},
 ): Promise<T> {
   const revision = sessionRevision;
+  const authRevision = authenticationRevision;
+  // Email/TOTP sign-in may finish while an initial anonymous session read fails.
+  // An explicit logout or newer login continues to invalidate older attempts.
+  const authenticationRequest = options.method === "POST" && ["/v1/admin/auth/challenge", "/v1/admin/auth/verify"].includes(path);
   const protectedRequest = path.startsWith("/v1/admin/") && (!path.startsWith("/v1/admin/auth/") || path === "/v1/admin/auth/logout");
   // Deployment settings are public and survive an unrelated session transition.
   const sessionIndependent = path === "/v1/public/config" && (!options.method || options.method === "GET");
   const current = () => {
-    if (revision !== sessionRevision && !sessionIndependent) throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
+    if (!sessionIndependent && (authenticationRequest ? authRevision !== authenticationRevision : revision !== sessionRevision)) throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
     if (options.signal?.aborted) throw options.signal.reason;
   };
   let status: number, data: any;
@@ -79,9 +85,9 @@ export async function api<T = any>(
   if (status === 401 && protectedRequest) endAdminSession();
   if (status < 200 || status >= 300)
     throw new ApiError(data?.error?.code ?? "REQUEST_FAILED", data?.error?.message ?? "Request failed", status, data?.error?.details);
-  if (path === "/v1/admin/auth/verify") { ++sessionRevision; csrfToken = ""; }
+  if (path === "/v1/admin/auth/verify") { ++sessionRevision; ++authenticationRevision; csrfToken = ""; }
   if (data?.csrf_token) setCsrf(data.csrf_token);
-  if (path === "/v1/admin/auth/logout") endAdminSession();
+  if (path === "/v1/admin/auth/logout") endAdminSession("sign_out");
   return data as T;
 }
 export const post = (path: string, body: unknown = {}, requestKey?: string) =>

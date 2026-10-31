@@ -1,5 +1,40 @@
 # Workmate · admin
 
+<!-- public-domains-177 -->
+## Public HTTPS deployment · stage177
+
+[Web](https://agent.copypaste.hk) · [Admin](https://agent-dashboard.copypaste.hk) · [API readiness](https://ai-api.copypaste.hk/health/ready)
+
+Independent email OTP and TOTP: manage users, usage, charges, VIP/entitlements, content, approvals and audits.
+
+[Current deployment, login and operations / 当前部署、登录与运维](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/domains-177.md)
+
+Credentials are unchanged: server `/root/cfg/workmate/credentials.txt`, root `0600`. Admin: `admin@workmate.local` + email OTP + TOTP. Test mailbox: [protected operator inbox](https://agent-dashboard.copypaste.hk/ops/mailbox/). AI/media/ads/payment remain synthetic; records/files persist. 凭据保留，测试收件箱使用独立操作口令，外部服务仍为假数据。
+
+[Desktop 0.7.2 Setup](https://agent.copypaste.hk/downloads/CopyPaste-0.7.2-x64-Setup.exe) · [Portable](https://agent.copypaste.hk/downloads/CopyPaste-0.7.2-x64-Portable.exe) · [Extension 0.5.3 ZIP](https://agent.copypaste.hk/downloads/CopyPaste-Extension-0.5.3.zip) · [Source increment / 源码增量](https://agent.copypaste.hk/downloads/workmate-domains-177.zip)
+
+Windows installers are unsigned. Extract the Extension ZIP and load it unpacked in Chrome developer mode; the extension ID stays `fffkcnmfdhahlnifgdilabheppkgnlok`. Desktop AI access uses company services; supplier keys are not embedded. Windows 未签名，扩展采用已解压加载，固定 ID 不变。
+
+```mermaid
+flowchart LR
+ W[Web HTTPS] --> P[Same-origin API proxy]
+ A[Admin HTTPS and MFA] --> P
+ N[Desktop / Extension] --> I[Company API HTTPS]
+ P --> B[Isolated backend and database]
+ I --> B
+ N --> L[Local Codex / approved file upload]
+```
+
+![Public Admin users](assets/screenshots/177b-domain-users.png)
+
+![Actual Admin interaction](assets/demos/177-public-domains.gif)
+
+[MP4 recording](assets/demos/177-public-domains.mp4)
+
+---
+
+Earlier releases and deployment history / 以下为历史版本及部署记录。
+
 <!-- lan-deployment-176 -->
 ## LAN HTTP deployment · stage176
 
