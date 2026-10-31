@@ -1,5 +1,9 @@
 # Admin Dashboard 产品与交互规格
 
+**当前源码增量168：** 用户目录已加入注册/账户访问时间、来源、VIP方案/状态/到期、确认扣费、角色使用、待对账及逐账户额度的组合筛选，刷新及详情返回保留URL。最近账户访问包含已授权设备轮询，不等同真人在线；历史来源保持未知。字段和业务范围独立鉴权，读取不写账。详见[需求与兼容](../requirements/28-admin-directory-operational-filters.md)、[开发说明](../development/168-admin-directory-operational-filters.md)。这是v0.1.0之后的源码更新，不包含在原冻结ZIP内。
+
+Stage168 adds scoped operational directory filters, exact confirmed-charge/individual-account conditions and truthful access metadata with restored URLs. Frozen v0.1.0 remains unchanged; schema156 requires matching current services.
+
 <!-- admin-profile-revisions-124 -->
 **阶段124：** 管理员新增专家、品牌及五种范围记忆的结构化修订，沿用三权限交集、近期MFA、签名差异确认、独立来源、原请求恢复及实时撤权。迁移131固定版本与审计，客户旧会话保留原输入，永久删除清除记忆快照。68项相关后端、11项后台单元、8项实际页面、14次布局观察通过；8PNG及3组GIF/MP4保留。见[当前实现和验收边界](../technical/124-admin-profile-revisions.md)与[完整编号待办](../quality/remaining-work-stage124.md)。
 
