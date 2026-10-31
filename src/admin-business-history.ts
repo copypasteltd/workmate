@@ -1,6 +1,7 @@
 import type { Tx } from "./db.js";
+import { adminWorkflowHistoryPage } from "./admin-workflow-history.js";
 
-export const businessHistoryKinds = ["brand_profiles", "agent_groups", "project_configurations", "workflow_schedules", "creative_projects"] as const;
+export const businessHistoryKinds = ["brand_profiles", "agent_groups", "project_configurations", "workflow_schedules", "creative_projects", "workflows"] as const;
 export type BusinessHistoryKind = typeof businessHistoryKinds[number];
 export const isBusinessHistory = (kind: string): kind is BusinessHistoryKind => (businessHistoryKinds as readonly string[]).includes(kind);
 const series = "00000000-0000-0000-0000-000000000000";
@@ -9,6 +10,7 @@ const origin = "CASE WHEN v.created_by_admin IS NOT NULL THEN 'administrator' WH
 /** All identifiers come from closed descriptors. Values and page anchors stay parameterized. */
 export async function businessHistoryPage(tx: Tx, kind: BusinessHistoryKind, row: any, backwards: boolean,
   anchor: { version: number; series_id: string } | null, limit: number) {
+  if (kind === "workflows") return adminWorkflowHistoryPage(tx, row, backwards, anchor, limit);
   let sql: string;
   if (kind === "brand_profiles") {
     sql = `SELECT v.version,v.name,v.body,v.sha256,v.created_at,${origin} AS origin,

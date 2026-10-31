@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { Database, Tx } from "./db.js";
 import type { Storage } from "./storage.js";
 import { requireAdmin, audit } from "./auth.js";
-import { permit } from "./admin-access.js";
+import { lockAdminAccess, permit } from "./admin-access.js";
 import { Problem, uuid, name } from "./lib.js";
 import { eraseReplayContent, key, replay } from "./access.js";
 import { settleIdleTask } from "./paid-task-inputs.js";
@@ -14,7 +14,8 @@ import { eraseWorkspaceNode } from "./cloud-files.js";
 import { matrixContentBody } from "./creative-matrices.js";
 import { videoContentBody } from "./video-projects.js";
 import { stopAgentGroupRun } from "./agent-groups.js";
-import { registerAdminContentHistory } from "./admin-content-history.js";
+import { loadAdminHistoryRow, registerAdminContentHistory } from "./admin-content-history.js";
+import { adminWorkflowHistoryPage, adminWorkflowRunAvailable } from "./admin-workflow-history.js";
 import { isBusinessHistory } from "./admin-business-history.js";
 const tables = [
   "assets",
@@ -91,12 +92,29 @@ export function registerAdminContent(
   storage: Storage,
 ) {
   registerAdminContentHistory(app, db);
+  app.get("/v1/admin/content/workflow_runs/:id/history", {preHandler:requireAdmin(db)}, async(req,reply)=>{
+    const id=uuid.parse((req.params as any).id);
+    z.object({edge:z.enum(["first","last"]).optional()}).strict().parse(req.query);
+    const result=await db.tx(async tx=>{
+      const row=await loadAdminHistoryRow(tx,req.principal,"workflow_runs",id);
+      const available=await adminWorkflowRunAvailable(tx,storage,row);
+      await audit(tx,req.principal,"admin.content.body.read",id,"succeeded",{kind:"workflow_runs",source_unavailable:!available},row.tenant_id);
+      return{id,kind:"workflow_runs",name:"Workflow run",content_kind:"workflow_runs",history_scope:"current_snapshot",
+        history_revision:String(row.revision??1),version:row.revision??1,moderation_version:row.moderation_version,page_size:50,
+        items:[{id,version:row.revision??1,origin:"system_snapshot",created_at:row.created_at,source_unavailable:!available,
+          body:available?{state:row.state,definition:row.definition,results:row.results,execution_location:row.execution_location,
+            workflow_version:row.workflow_version,input_values:row.input_values,input_files:row.input_files,named_outputs:row.named_outputs}:null}],
+        previous_cursor:null,next_cursor:null};
+    },undefined,true);
+    reply.header("Cache-Control","no-store");return result;
+  });
   app.get(
     "/v1/admin/content/:id/body",
     { preHandler: requireAdmin(db) },
     async (req) =>
       db.tx(
         async (tx) => {
+          await lockAdminAccess(tx);
           const { table, row: r } = await find(
             tx,
             uuid.parse((req.params as any).id),
@@ -111,6 +129,31 @@ export function registerAdminContent(
               "CONTENT_DELETED",
               "Deleted content is unavailable",
             );
+          if (table === "workflows") {
+            const row = await loadAdminHistoryRow(tx, req.principal, "workflows", r.id);
+            const saved = await adminWorkflowHistoryPage(tx, row, false, null, 101), versions = saved.slice(0,100);
+            const current = versions.find(v => v.version === row.version);
+            const definition = current?.body?.definition ?? null;
+            const body = row.execution_location === "desktop" ? {definition, execution_location: row.execution_location,
+              versions: versions.map(v => ({version: v.version,definition: v.body?.definition ?? null,
+                ...(v.sha256 ? {definition_hash: v.sha256} : {}),...(v.body ? {role_hashes: v.body.role_hashes,
+                  source_refs: v.body.source_refs,published_at: v.published_at} : {}),created_at:v.created_at,
+                source_unavailable:v.source_unavailable}))} : definition;
+            await audit(tx, req.principal, "admin.content.body.read", r.id, "succeeded", {kind:table,page_items:versions.length}, r.tenant_id);
+            return {id:r.id,name:r.name,mime_type:"application/json",text:JSON.stringify(body,null,2),
+              source_unavailable:!current || current.source_unavailable,truncated:saved.length>100,
+              history_scope:"retained_versions",history_url:`/v1/admin/content/workflows/${r.id}/history`};
+          }
+          if (table === "workflow_runs") {
+            const row = await loadAdminHistoryRow(tx,req.principal,"workflow_runs",r.id);
+            const available = await adminWorkflowRunAvailable(tx,storage,row);
+            await audit(tx,req.principal,"admin.content.body.read",r.id,"succeeded",{kind:table,source_unavailable:!available},r.tenant_id);
+            return {id:r.id,name:"Workflow run",mime_type:"application/json",source_unavailable:!available,
+              text:JSON.stringify({state:r.state,source_unavailable:!available,definition:available?r.definition:null,
+                results:available?r.results:null,...(r.execution_location==="desktop"?{execution_location:r.execution_location,
+                  workflow_version:r.workflow_version,cursor:r.cursor,revision:r.revision,
+                  origin_task_id:available?r.origin_task_id:null,active_task:available?r.active_task:null}:{})},null,2)};
+          }
           await audit(
             tx,
             req.principal,
@@ -285,40 +328,7 @@ export function registerAdminContent(
                                       raw_csv: r.raw_csv,
                                       metric_snapshot: r.metric_snapshot,
                                     }
-                                  : table === "workflows"
-                                    ? r.execution_location === "desktop"
-                                      ? {
-                                          definition: r.definition,
-                                          execution_location:
-                                            r.execution_location,
-                                          versions: (
-                                            await tx.query(
-                                              "SELECT version,definition,definition_hash,role_hashes,source_refs,published_at,created_at FROM workflow_versions WHERE workflow_id=$1 ORDER BY version DESC LIMIT 100",
-                                              [r.id],
-                                            )
-                                          ).rows,
-                                        }
-                                      : r.definition
-                                    : table === "workflow_runs"
-                                      ? {
-                                          definition: r.definition,
-                                          results: r.results,
-                                          state: r.state,
-                                          ...(r.execution_location === "desktop"
-                                            ? {
-                                                execution_location:
-                                                  r.execution_location,
-                                                workflow_version:
-                                                  r.workflow_version,
-                                                cursor: r.cursor,
-                                                revision: r.revision,
-                                                origin_task_id:
-                                                  r.origin_task_id,
-                                                active_task: r.active_task,
-                                              }
-                                            : {}),
-                                        }
-                                      : table === "workspace_nodes"
+                                  : table === "workspace_nodes"
                                         ? {
                                             kind: r.kind,
                                             workspace_id: r.workspace_id,

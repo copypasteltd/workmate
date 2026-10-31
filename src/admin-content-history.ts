@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
 import { audit, requireAdmin, type Principal } from "./auth.js";
-import { lockAdminAccess, permit } from "./admin-access.js";
+import { lockAdminAccess, permit, requireRecentMfa } from "./admin-access.js";
 import { canonical, equal, hmac, Problem, uuid } from "./lib.js";
 import { businessHistoryKinds, businessHistoryPage, isBusinessHistory } from "./admin-business-history.js";
 
@@ -30,7 +30,7 @@ const query = z.object({ edge: z.enum(["first", "last"]).optional(), cursor: z.s
 const changed = () => new Problem(409, "CONTENT_HISTORY_CHANGED",
   "This content changed. Refresh its history before continuing");
 
-async function load(tx: Tx, actor: Principal, kind: Kind, id: string) {
+export async function loadAdminHistoryRow(tx: Tx, actor: Principal, kind: Kind | "workflow_runs", id: string) {
   await lockAdminAccess(tx);
   // Hold the original session and authority while reading this bounded page.
   const session = await tx.query(`SELECT s.id FROM sessions s JOIN admin_principals p ON p.id=s.admin_id
@@ -44,6 +44,7 @@ async function load(tx: Tx, actor: Principal, kind: Kind, id: string) {
   if (!row) throw new Problem(404, "NOT_FOUND", "Content not found");
   for (const permission of ["admin.content.read", "admin.content.body.read"])
     await permit(tx, actor, permission, { tenant: row.tenant_id, project: row.project_id });
+  if (kind === "workflows" || kind === "workflow_runs") await requireRecentMfa(tx, actor);
   if (row.content_state === "deleted") throw new Problem(410, "CONTENT_DELETED", "Deleted content is unavailable");
   if (kind === "creative_projects" && Date.parse(row.retention_expires_at) <= Date.now())
     throw new Problem(410, "CONTENT_EXPIRED", "This project's retention period has ended");
@@ -81,7 +82,7 @@ export function registerAdminContentHistory(app: FastifyInstance, db: Database) 
   app.get("/v1/admin/content/:kind/:id/history", { preHandler: requireAdmin(db) }, async (req, reply) => {
     const {kind, id} = z.object({kind: kinds, id: uuid}).parse(req.params), q = query.parse(req.query);
     const result = await db.tx(async tx => {
-      const row = await load(tx, req.principal, kind, id), c = q.cursor ? decode(db, req.principal, kind, id, q.cursor) : null;
+      const row = await loadAdminHistoryRow(tx, req.principal, kind, id), c = q.cursor ? decode(db, req.principal, kind, id, q.cursor) : null;
       if (c) checkRevision(kind, row, c);
       const backwards = c ? c.direction === "previous" : q.edge === "last";
       const args: any[] = [id];
