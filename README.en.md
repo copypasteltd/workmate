@@ -1,3 +1,21 @@
+## 160 · Accurate Admin overview and current authority
+
+User counts follow the authorized directory. Reserved credit includes readable personal and enterprise accounts in the current mode. Confirmed customer charges come from the ledger and include task and cloud resource charges; funding, gifts, refunds and unresolved holds remain separate. The access lock protects a fresh check of the exact current MFA session and bindings. Unauthorized or unavailable figures show dashes, with a visible Refresh overview control.
+
+Nine focused real SQL/HTTP cases and three actual Admin journeys pass. Customer/accounting facts are explicitly synthetic; there are no model requests or actual cloud computers. Original failures are retained. This is an unfrozen backend/Admin source correction after v0.1.0-rc.2; frozen packages/tags stay intact. Other components receive documentation and explicitly shared Admin media only.
+
+[Implementation and usage](https://github.com/copypasteltd/workmate/blob/docs/docs/development/160-admin-overview-accuracy.md) · [Original full-scope ledger](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage160.md)
+
+**Actual Admin only; no new installed Desktop or Extension acceptance**
+
+![Authorized overview](assets/screenshots/workmate-admin-overview-160-01-confirmed-charges-personal-hold.png)
+
+![Actual permission change and bilingual interaction](assets/screenshots/workmate-admin-overview-160-01-current-permission-overview.gif)
+
+[Actual MP4](assets/screenshots/workmate-admin-overview-160-01-current-permission-overview.mp4)
+
+---
+
 ## v0.1.0-rc.2 · Published GitHub Release / 已发布
 
 [Complete download / 完整包](https://github.com/copypasteltd/workmate/releases/download/v0.1.0-rc.2/workmate-v0.1.0-rc.2-complete.zip) · [Release page / 发布页](https://github.com/copypasteltd/workmate/releases/tag/v0.1.0-rc.2) · [Publication details](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/v0.1.0-rc.2-publication.md)
