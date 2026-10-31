@@ -1,3 +1,38 @@
+<!-- conversation-directory-156 -->
+
+Your conversations → search or Archived → next/previous page → open the original conversation. Same-name and archived records beyond200 are now browsable. Web/Desktop use40-row pages. The native Side Panel preserves its200-row initial compatibility and adds search/archive/page controls without replacing the open chat, draft, attachments or pending receipt. Every page rechecks current authority.
+
+```mermaid
+flowchart TD
+ A[Open private conversation directory] --> B[Current user, exact session and authorized projects]
+ B --> C[Search and archived filter]
+ C --> D[Page by pinned, exact activity time and ID]
+ D --> E{More rows?}
+ E -->|Yes| F[Signed cursor / next page]
+ F --> B
+ E -->|No| G[End of current directory]
+ D --> H[Open original conversation]
+ H --> I[Continue original context and task links]
+ C --> J[Changed filter / refresh returns to first page]
+ B --> K[Withdrawn session / clear private results]
+```
+
+Media below show actual Web controls with synthetic business fixtures; directory reads make no model request. The controller is checked against the actual SQL/HTTP API, including delayed new-chat/reset responses; full extension build only, no new native panel run.
+
+Evidence correction: stage155 compact capture was English because its fixture reset locale on reload; it proves390px layout only. Stage156 switches the actual language control and asserts Chinese lang/title. Historical evidence remains unchanged.
+
+7 focused SQL/HTTP checks and5 actual Web groups;7 PNGs and2 GIF/MP4 pairs. Backend/Web/Desktop/Extension checks and builds passed. Canonical GET /v1/conversations supports an optional project filter; legacy listing remains compatible. Live keyset pagination, not a frozen snapshot. Schema154; no new migration. Broad/installed-client/cross-OS/production matrices omitted. Unreleased after v0.1.0-rc.1; frozen artifacts and tags preserved.
+
+[方案 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/156-conversation-directory.md) · [API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/conversation-directory-openapi.json) · [完整待项 / Ledger](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage156.md)
+
+![Actual Web directory](assets/screenshots/workmate-conversation-directory-156-02-first-page.png)
+
+![Actual Web paging](assets/screenshots/workmate-conversation-directory-156-02-older-private-conversations.gif)
+
+[Actual MP4](assets/screenshots/workmate-conversation-directory-156-02-older-private-conversations.mp4)
+
+---
+
 <!-- specialist-copy-155 -->
 
 Your specialists → Copy → edit name/instructions or narrow approved tools → review original brand, model prices and methods → explicitly confirm. The copy retains original fixed versions and template provenance. Lost-response retries recover the same specialist; changed sources and withdrawn authority are rejected. Private content, credentials and local permissions are excluded.

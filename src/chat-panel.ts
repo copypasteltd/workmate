@@ -44,7 +44,10 @@ export class ChatPanel {
       if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); el<HTMLFormElement>("chat-form").requestSubmit(); }
     });
     el("chat-new").addEventListener("click", () => { this.followLatest = true; void this.run(() => this.state.select("")); });
-    el("chat-refresh").addEventListener("click", () => void this.run(() => this.state.refresh()));
+    el("chat-refresh").addEventListener("click", () => void this.run(async () => {await Promise.all([this.state.refresh(),this.state.browseHistory({refresh:true})]);}));
+    el("chat-history-search-form").addEventListener("submit",e=>{e.preventDefault();void this.run(()=>this.state.browseHistory({q:el<HTMLInputElement>("chat-history-search").value,archived:el<HTMLInputElement>("chat-history-archived").checked}));});
+    el("chat-history-previous").addEventListener("click",()=>void this.run(()=>this.state.browseHistory({direction:"previous"})));
+    el("chat-history-next").addEventListener("click",()=>void this.run(()=>this.state.browseHistory({direction:"next"})));
     el("chat-stop").addEventListener("click", () => void this.run(() => this.state.stop()));
     el("chat-agent").addEventListener("change", () => { this.state.agentId = el<HTMLSelectElement>("chat-agent").value; });
     el("chat-history").addEventListener("change", () => { this.followLatest = true; void this.run(() => this.state.select(el<HTMLSelectElement>("chat-history").value)); });
@@ -131,14 +134,28 @@ export class ChatPanel {
       select.value = value; select.dataset.options = spec;
     };
     const rows = [...s.history];
-    if (c && !rows.some(row => row.id === c.id)) rows.unshift(c);
+    if (c && !rows.some(row => row.id === c.id)) rows.unshift({...c,name:t("目前會話：", "Current chat: ")+c.name});
+    const search=el<HTMLInputElement>("chat-history-search");
+    if(search.dataset.applied!==s.historyQuery){search.value=s.historyQuery;search.dataset.applied=s.historyQuery;}
+    search.placeholder=this.tr("搜尋會話名稱…", "Search conversations…");
+    el("chat-history-search-label").textContent=t("搜尋會話", "Search conversations");
+    el("chat-history-search-button").textContent=t("搜尋", "Search");
+    el("chat-history-archived-label").textContent=t("已封存", "Archived");
+    el("chat-history-previous").textContent=t("上一頁", "Previous");el("chat-history-next").textContent=t("下一頁", "Next");
+    el("chat-history-page").textContent=t("第 ", "Page ")+s.historyPages.length+t(" 頁", "");
+    const browsing=s.loading||s.historyLoading;
+    search.disabled=browsing;el<HTMLInputElement>("chat-history-archived").disabled=browsing;
+    if(el<HTMLInputElement>("chat-history-archived").dataset.applied!==String(s.historyArchived)){el<HTMLInputElement>("chat-history-archived").checked=s.historyArchived;el<HTMLInputElement>("chat-history-archived").dataset.applied=String(s.historyArchived);}
+    el<HTMLButtonElement>("chat-history-search-button").disabled=browsing;
+    el<HTMLButtonElement>("chat-history-previous").disabled=browsing||s.historyPages.length<=1;
+    el<HTMLButtonElement>("chat-history-next").disabled=browsing||!s.historyNext;
     options(history, rows, t("新會話", "New chat"), c?.id ?? "");
     options(agents, s.agents, brief?.body?.resolved?.default_agent ? `${brief.body.resolved.default_agent.name} · v${brief.body.resolved.default_agent.version}` : t("預設助手", "Default assistant"), c?.agent_id ?? s.agentId);
     if (c && !s.agents.some(a => a.id === c.agent_id)) {
       const o = document.createElement("option"); o.value = c.agent_id; o.textContent = t("會話原有角色", "Conversation specialist"); agents.append(o); agents.value = c.agent_id;
     }
     const locked = s.loading || s.sending || !!s.pending || s.importing;
-    history.disabled = locked || s.preparing; agents.disabled = locked || s.preparing || !!s.creation || !!c;
+    history.disabled = locked || s.preparing || s.historyLoading; agents.disabled = locked || s.preparing || !!s.creation || !!c;
     el<HTMLButtonElement>("chat-new").disabled = locked || s.preparing;
     const input = el<HTMLTextAreaElement>("chat-input");
     if (input.value !== s.draft) input.value = s.draft;

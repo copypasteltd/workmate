@@ -32,6 +32,12 @@ export class ConversationState {
   scope?: ChatScope;
   agents: any[] = [];
   history: any[] = [];
+  historyNext: string | null = null;
+  historyPages: string[] = [""];
+  historyQuery = "";
+  historyArchived = false;
+  historyLoading = false;
+  private historyRevision = 0;
   conversation: any = null;
   projectConfiguration: any = null;
   projectConfigurationTaskId = "";
@@ -65,6 +71,7 @@ export class ConversationState {
   }
   reset() {
     ++this.generation; this.scope = undefined; this.agents = []; this.history = [];
+    this.historyNext = null; this.historyPages = [""]; this.historyQuery = ""; this.historyArchived = false; this.historyLoading = false; ++this.historyRevision;
     this.conversation = null; this.attachments = []; this.draft = ""; this.agentId = "";
     this.projectConfiguration = null; this.projectConfigurationTaskId = "";
     this.loading = false; this.sending = false; this.unavailable = false; this.pending = undefined;
@@ -88,7 +95,7 @@ export class ConversationState {
       if (!this.current(g)) return;
       this.acceptBrief(brief);
       this.agents = agents.items.filter((a: any) => a.enabled && a.content_state === "active");
-      this.history = history.items;
+      this.history = history.items; this.historyNext = history.next_cursor ?? null;
       // Saved state is a receipt, never authority. Server rechecks every read/write.
       if (this.validCreation(saved?.creation)) {
         this.creation = saved.creation; this.agentId = this.creation!.agentId;
@@ -119,6 +126,25 @@ export class ConversationState {
   private validCreation(c: any): c is ConversationCreation {
     return c && uuid.test(c.key) && typeof c.name === "string" && c.name.length > 0 && c.name.length <= 160
       && typeof c.agentId === "string" && (c.agentId === "" || uuid.test(c.agentId));
+  }
+  /** Browse the private directory without replacing the open chat, draft or receipt. */
+  async browseHistory(options: {q?:string;archived?:boolean;direction?:"next"|"previous";refresh?:boolean} = {}) {
+    if (!this.scope || this.loading || this.historyLoading) return;
+    const s=this.scope,ticket=++this.historyRevision;
+    const query=(options.q??this.historyQuery).trim(),archived=options.archived??this.historyArchived;
+    if(query.length>160)throw new Error("Search is limited to160 characters / 搜尋最多160字");
+    const changed=query!==this.historyQuery||archived!==this.historyArchived;
+    let pages=changed||options.refresh?[""]:[...this.historyPages];
+    if(options.direction==="next"){if(!this.historyNext||changed)return;pages.push(this.historyNext);}
+    if(options.direction==="previous"){if(pages.length<=1)return;pages.pop();}
+    this.historyQuery=query;this.historyArchived=archived;this.historyLoading=true;this.notify();
+    const cursor=pages.at(-1)!;const params=new URLSearchParams({limit:"200",q:query,archived:String(archived)});
+    if(cursor)params.set("cursor",cursor);
+    try{const result=await this.io.request(s,chatBase(s)+"/conversations?"+params);
+      if(this.scope!==s||ticket!==this.historyRevision)return;
+      this.history=result.items;this.historyNext=result.next_cursor??null;this.historyPages=pages;
+    }catch(e){if(this.scope===s&&ticket===this.historyRevision){this.history=[];this.historyNext=null;this.historyPages=[""];throw e;}}
+    finally{if(this.scope===s&&ticket===this.historyRevision){this.historyLoading=false;this.notify();}}
   }
   get preparing() { return !!this.creating || this.importing; }
   get importing() { return !!this.fileImport; }
