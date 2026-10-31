@@ -1,3 +1,11 @@
+<!-- workflow-content-history-153 -->
+
+[工作流完整阅读 / Workflow readers](development/153-workflow-content-history.md) · [API](contracts/workflow-content-history-openapi.json) · [完整待项 / Ledger](quality/remaining-work-stage153.md) · [更新 / Changes](changes/153-workflow-content-history.md)
+
+Unreleased153; first frozen v0.1.0-rc.1 preserved. 9 focused backend cases /7 actual Admin groups.
+
+---
+
 <!-- scope-data-export-152 -->
 
 [完整範圍匯出 / Authorized scope export](development/152-scope-data-export.md) · [完整待項 / Ledger](quality/remaining-work-stage152.md) · [更新 / Changes](changes/152-scope-data-export.md)

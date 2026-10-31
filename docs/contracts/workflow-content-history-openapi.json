@@ -1,0 +1,119 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Workmate scoped workflow content readers",
+    "version": "153"
+  },
+  "paths": {
+    "/v1/admin/content/workflows/{id}/history": {
+      "get": {
+        "summary": "Retained saved definitions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "edge",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "first",
+                "last"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No-store page; withdrawn bodies explicitly null"
+          },
+          "400": {
+            "description": "Invalid/expired/foreign cursor or unknown query"
+          },
+          "401": {
+            "description": "Current admin session required"
+          },
+          "403": {
+            "description": "Current scope/permissions or recent MFA required"
+          },
+          "404": {
+            "description": "Object not found"
+          },
+          "409": {
+            "description": "History changed or source is changing; refresh"
+          },
+          "410": {
+            "description": "Deleted or permanently erased scope"
+          }
+        }
+      }
+    },
+    "/v1/admin/content/workflow_runs/{id}/history": {
+      "get": {
+        "summary": "Current readable execution snapshot",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "edge",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "first",
+                "last"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No-store page; withdrawn bodies explicitly null"
+          },
+          "400": {
+            "description": "Invalid/expired/foreign cursor or unknown query"
+          },
+          "401": {
+            "description": "Current admin session required"
+          },
+          "403": {
+            "description": "Current scope/permissions or recent MFA required"
+          },
+          "404": {
+            "description": "Object not found"
+          },
+          "409": {
+            "description": "History changed or source is changing; refresh"
+          },
+          "410": {
+            "description": "Deleted or permanently erased scope"
+          }
+        }
+      }
+    }
+  },
+  "x-authorization": "Independent active admin session; current admin.content.read + admin.content.body.read in exact tenant/project; explicit deny wins; MFA within10min. No customer identity/lease/read record.",
+  "x-protocol": "Definitions: <=50 retained versions; signed reversible identity/session/object/current revision cursor; 30min expiry. Run: one current_snapshot only, no invented execution-state history.",
+  "x-source-fence": "Exact saved lineage and confirmed feedback; current source locks and recheck. Only precise quarantined investigated roots are excepted. Withdrawn body=null; sensitive version details removed. No paid execution."
+}
