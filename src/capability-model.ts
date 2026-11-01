@@ -207,7 +207,7 @@ export type CapabilityPreview = {
   payload_hash: string;
   before: CapabilityComparison;
   expires_at: string;
-  decision: "independent_approval";
+  decision: "independent_approval" | "super_admin_direct";
   creates_business_effect: false;
 };
 export type CapabilityAccess = {

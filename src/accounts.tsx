@@ -201,8 +201,8 @@ export function AdminAccountManager({
           {preview.approval && (
             <p className="notice">
               {t(
-                "關閉或重開帳戶須由另一位管理員覆核。關閉不等同刪除資料。",
-                "Closing or reopening requires another administrator's review. Closure retains data according to retention rules.",
+                "最高管理員可直接關閉或重開帳戶；其他角色按策略覆核。關閉不等同刪除資料。",
+                "Highest administrators can close or reopen directly; other roles follow approval policy. Closure retains data according to retention rules.",
               )}
             </p>
           )}

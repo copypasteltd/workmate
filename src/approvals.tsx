@@ -80,7 +80,7 @@ export function ApprovalReview({
     ends_at: ["截止時間", "Ends"],
   };
   return (
-    <Modal title={t("獨立審批", "Independent review")} onClose={onClose}>
+    <Modal title={data?.can_direct_execute ? t("直接執行與審計", "Direct execution and audit") : t("獨立審批", "Independent review")} onClose={onClose}>
       <ErrorNotice error={error} />
       {loading && <Loading />}
       {data && (
@@ -152,8 +152,8 @@ export function ApprovalReview({
             </dl>
           )}
           {pending &&
-            (approval.requester_id === operator ||
-              (["audio_customer", "audio_validation"].includes(command.channel) && data.before?.evidence?.actor_id === operator) ? (
+            (!data.can_direct_execute && (approval.requester_id === operator ||
+              (["audio_customer", "audio_validation"].includes(command.channel) && data.before?.evidence?.actor_id === operator)) ? (
               <p className="notice">
                 {t(
                   "此操作需由另一位管理員審批。",
@@ -165,7 +165,7 @@ export function ApprovalReview({
               (operation.action !== "entitlements.grant_with_credit" ||
                 has("admin.billing.gift")) ? (
               <AsyncForm
-                submitLabel={t("確認審批決定", "Confirm review decision")}
+                submitLabel={data.can_direct_execute ? t("確認直接執行決定", "Confirm direct action") : t("確認審批決定", "Confirm review decision")}
                 onSubmit={async (f) => {
                   const body = {
                       expected_version: approval.version,
@@ -191,10 +191,11 @@ export function ApprovalReview({
                   onClose();
                 }}
               >
+                {data.can_direct_execute && <p className="notice">{t("您是最高管理員，可直接執行或拒絕此申請。操作原因及結果將保留在審計記錄。", "As the highest administrator, you can execute or reject this request directly. The reason and outcome are audited.")}</p>}
                 <Field label={t("審批決定", "Decision")}>
                   <select name="decision">
                     <option value="reject">{t("拒絕", "Reject")}</option>
-                    <option value="approve">{t("批准", "Approve")}</option>
+                    <option value="approve">{data.can_direct_execute ? t("直接執行", "Execute directly") : t("批准", "Approve")}</option>
                   </select>
                 </Field>
                 <Field label={t("審批原因", "Review reason")}>

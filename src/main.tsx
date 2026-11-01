@@ -701,8 +701,8 @@ function Overview() {
                   </strong>
                   <p>
                     {t(
-                      "高影響操作在執行前，由另一位管理員覆核。",
-                      "A second administrator reviews high-impact operations before execution.",
+                      "最高管理員可直接執行；其他角色依策略由另一位管理員覆核。",
+                      "Highest administrators execute directly; other roles follow approval policy and independent review.",
                     )}
                   </p>
                 </div>

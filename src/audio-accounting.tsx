@@ -25,7 +25,7 @@ export function AudioAccountingRecord({ channel, id, access, revision, onCommand
         {r.cost && <><dt>{t("已確認費用", "Confirmed cost")}</dt><dd>{r.cost.amount_micros === null ? t("待確認", "Unconfirmed") : formatHKD(r.cost.amount_micros)} · {r.cost.source === "human_evidence" ? t("人工證據獨立確認", "Independently confirmed human evidence") : r.cost.state}</dd>
           <dt>{t("原費率／報價", "Original rate / quote")}</dt><dd>{formatHKD(r.cost.rate_micros)} / {r.pricing_unit} · {formatHKD(r.cost.quoted_micros)}</dd></>}
       </dl>
-      <p className="muted">{t("證據只作費用及終止核對。原請求不會重送，原媒體與驗證結果會保留。兩項操作分別需要另一位管理員批准；證據提交者也不能審批。", "Evidence supports cost and termination accounting. The original request is never replayed and media qualification is preserved. Each action needs an independent administrator; the evidence author cannot approve.")}</p>
+      <p className="muted">{t("證據只作費用及終止核對。原請求不會重送，原媒體與驗證結果會保留。最高管理員可直接核對；其他角色的兩項操作分別需要另一位管理員批准，證據提交者不能審批。", "Evidence supports cost and termination accounting. The original request is never replayed and media qualification is preserved. Highest administrators can verify directly. For other roles, each action needs an independent administrator and the evidence author cannot approve.")}</p>
       {r.cost?.allocation_exceeded && <p className="notice error">{t("已確認費用超出原報價；此預算已封鎖。", "Confirmed cost exceeds the original quote; this budget is blocked.")}</p>}
       {r.cost?.accounting_resolved && <p className="notice">{t("費用及容量已完成對帳，原業務結果仍保留。", "Cost and capacity accounting is complete; the original business outcome is retained.")}</p>}
       {canWrite && r.state === "unknown" && <details><summary>{t("提交原請求的外部證據", "Submit external evidence for the original request")}</summary>

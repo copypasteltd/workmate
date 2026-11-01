@@ -306,35 +306,29 @@ function Command({
     [operation, setOperation] = useState<any>(null);
   return (
     <Modal
-      title={t("預覽與獨立審批", "Preview and independent review")}
+      title={t("預覽與執行", "Preview and execution")}
       onClose={onClose}
     >
       {operation ? (
         <>
           <h3>
-            {t(
-              "已送交另一位管理員審批",
-              "Submitted for another administrator's review",
-            )}
+            {operation.state === "pending_approval" ? t("已送交另一位管理員審批", "Submitted for another administrator's review") : t("操作已執行並保留審計", "Operation executed and audited")}
           </h3>
           <p>
             <code>{operation.id}</code>
           </p>
           <p>
-            {t(
-              "尚未產生業務效果。請在審批面板查看此操作。",
-              "The business change has not taken effect. Review this operation in the approvals panel.",
-            )}
+            {operation.state === "pending_approval" ? t("尚未產生業務效果。請在審批面板查看此操作。", "The business change has not taken effect. Review this operation in the approvals panel.") : t("最高管理員已直接執行，可查看完整審計記錄。", "The highest administrator executed directly. The complete audit record is available.")}
           </p>
           <Link
             className="button secondary"
-            to={`/audit?view=approvals&search=${operation.id}`}
+            to={operation.state === "pending_approval" ? `/audit?view=approvals&search=${operation.id}` : `/audit?search=${operation.id}`}
             onClick={() => {
               onDone();
               onClose();
             }}
           >
-            {t("查看審批", "View approvals")}
+            {operation.state === "pending_approval" ? t("查看審批", "View approvals") : t("查看審計", "View audit")}
           </Link>
         </>
       ) : preview ? (
@@ -346,7 +340,7 @@ function Command({
             <DateText value={preview.expires_at} />
           </p>
           <AsyncForm
-            submitLabel={t("送交獨立審批", "Submit for independent review")}
+            submitLabel={preview.decision === "super_admin_direct" ? t("確認直接執行", "Confirm direct execution") : t("送交獨立審批", "Submit for independent review")}
             onSubmit={async () => {
               setOperation(
                 await write(access, "/operations", {
@@ -697,8 +691,8 @@ function EvidenceForm({
       </summary>
       <p className="muted">
         {t(
-          "這是人工提交的來源聲明，將綁定此請求；另一位管理員必須獨立核對。",
-          "This human source statement is bound to this request and requires independent verification by another administrator.",
+          "這是綁定此請求的人工來源聲明。最高管理員可直接核對；其他角色須由另一位管理員核對。",
+          "This human source statement is bound to this request. Highest administrators can verify directly; other roles require another verifier.",
         )}
       </p>
       <AsyncForm
@@ -1644,8 +1638,8 @@ export function AdminProviderControl({ access }: { access: CapabilityAccess }) {
       <p className="provider-footnote">
         <ShieldCheck size={15} />
         {t(
-          "費用與策略變更需精確授權、近期 MFA、獨立審批和審計；狀態復查同樣受授權、MFA 與審計保護。",
-          "Cost and policy changes require scoped authority, recent MFA, independent approval and audit. Status rechecks require scoped authority, recent MFA and audit.",
+          "最高管理員可直接執行費用與策略變更；其他角色按策略審批。所有操作保留範圍授權、近期 MFA 與完整審計。",
+          "Highest administrators can execute cost and policy changes directly; other roles follow approval policy. Scoped authority, recent MFA and full audit apply to every action.",
         )}
       </p>
     </div>

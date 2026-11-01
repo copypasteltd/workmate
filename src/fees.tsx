@@ -53,7 +53,7 @@ type Entry = {
 };
 type List<T> = { items: T[]; next_cursor: string | null };
 type Access = {
-  me: { user: { id: string } };
+  me: { user: { id: string }; highest_admin?: boolean };
   has: (permission: string) => boolean;
 };
 type FeeAction = "top_up" | "gift" | "debit" | "credit_limit" | "refund";
@@ -1012,7 +1012,7 @@ export function FeeReview({
             </dd>
           </dl>
           {v.operation.state === "pending_approval" &&
-            (operator === v.operation.actor_id ? (
+            (!v.can_direct_execute && operator === v.operation.actor_id ? (
               <p className="notice">
                 {t(
                   "此操作需由另一位管理員審批。",
@@ -1023,7 +1023,7 @@ export function FeeReview({
               has("admin.approvals.decide") &&
               has(permission(v.command.action)) ? (
               <AsyncForm
-                submitLabel={t("確認審批決定", "Confirm review decision")}
+                submitLabel={v.can_direct_execute ? t("確認直接執行決定", "Confirm direct action") : t("確認審批決定", "Confirm review decision")}
                 onSubmit={async (f) => {
                   const b = {
                       expected_version: v.approval.version,
@@ -1051,7 +1051,7 @@ export function FeeReview({
                 <Field label={t("審批決定", "Decision")}>
                   <select name="decision">
                     <option value="reject">{t("拒絕", "Reject")}</option>
-                    <option value="approve">{t("批准", "Approve")}</option>
+                    <option value="approve">{v.can_direct_execute ? t("直接執行", "Execute directly") : t("批准", "Approve")}</option>
                   </select>
                 </Field>
                 <Field label={t("審批原因", "Review reason")}>

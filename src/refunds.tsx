@@ -34,7 +34,7 @@ type Refund = {
   payment_record_id: string | null;
 };
 type Access = {
-  me: { user: { id: string } };
+  me: { user: { id: string }; highest_admin?: boolean };
   has: (permission: string) => boolean;
 };
 type Detail = { refund: Refund; source_parts: any[]; events: any[] };
@@ -430,7 +430,7 @@ function ReviewRefund({
           )}
           {r.destination === "payment_method" &&
             BigInt(r.held.amount_micros) > 0n &&
-            (r.created_by === access.me.user.id ? (
+            (!access.me.highest_admin && r.created_by === access.me.user.id ? (
               <p className="notice">
                 {t(
                   "請另一位同時具備退款及對帳權限的管理員核實實際付款。",
@@ -472,8 +472,8 @@ function ReviewRefund({
                   </dl>
                   <AsyncForm
                     submitLabel={t(
-                      "保存獨立付款核實",
-                      "Save independent payout review",
+                      "保存付款核實",
+                      "Save payout verification",
                     )}
                     onSubmit={async () => {
                       const action = `refund.outcome:${id}`,

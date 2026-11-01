@@ -1707,7 +1707,7 @@ function PublicationModal({
           <h3>
             {operation.state === "pending_approval"
               ? t("等待另一位管理員審批", "Waiting for another administrator")
-              : t("申請已記錄", "Request recorded")}
+              : t("配置已執行並記錄審計", "Configuration applied and audited")}
           </h3>
           <p className="muted">
             {t(
@@ -1720,10 +1720,10 @@ function PublicationModal({
           </p>
           <Link
             className="button primary"
-            to={`/audit?view=approvals&search=${encodeURIComponent(operation.id)}`}
+            to={operation.state === "pending_approval" ? `/audit?view=approvals&search=${encodeURIComponent(operation.id)}` : `/audit?search=${encodeURIComponent(operation.id)}`}
             onClick={onClose}
           >
-            {t("查看審批", "View approval")}
+            {operation.state === "pending_approval" ? t("查看審批", "View approval") : t("查看審計", "View audit")}
           </Link>
         </div>
       ) : (
@@ -1766,10 +1766,7 @@ function PublicationModal({
                 <form className="form-stack" onSubmit={request}>
                   <label className="cap-confirm">
                     <input type="checkbox" required disabled={busy} />
-                    {t(
-                      "已核對模型、強度與費率，申請獨立審批。",
-                      "I have reviewed the model, effort and rates and request independent approval.",
-                    )}
+                    {preview.decision === "super_admin_direct" ? t("已核對模型、強度與費率，確認以最高管理員身份直接執行並保留審計。", "I have reviewed the model, effort and rates and confirm direct execution as the highest administrator with audit retained.") : t("已核對模型、強度與費率，申請獨立審批。", "I have reviewed the model, effort and rates and request independent approval.")}
                   </label>
                   <button
                     type="submit"
@@ -1779,7 +1776,7 @@ function PublicationModal({
                     <ShieldCheck size={17} />
                     {busy
                       ? t("正在申請…", "Requesting…")
-                      : t("申請獨立審批", "Request independent approval")}
+                      : preview.decision === "super_admin_direct" ? t("確認直接執行", "Confirm direct execution") : t("申請獨立審批", "Request independent approval")}
                   </button>
                 </form>
               )}

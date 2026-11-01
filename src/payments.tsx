@@ -38,7 +38,7 @@ type Detail = {
   refunded_amount: { currency: "HKD"; amount_micros: string };
   refund_pending: boolean;
 };
-type Access = { me: { user: { id: string } }; has: (key: string) => boolean };
+type Access = { me: { user: { id: string }; highest_admin?: boolean }; has: (key: string) => boolean };
 const root = "/v1/admin/billing/payments";
 const uuidPattern = "[a-fA-F0-9-]{36}";
 async function send(
@@ -87,8 +87,8 @@ export function PaymentsPanel({
           <h2>{t("付款記錄", "Payment records")}</h2>
           <p>
             {t(
-              "先登記憑據，由另一位管理員核實，再預覽並入帳。",
-              "Record evidence, have another administrator verify it, then preview and post credit.",
+              "先登記並核實憑據，再預覽及入帳。最高管理員可直接核實，其他角色須由另一位管理員核實。",
+              "Record and verify evidence, then preview and post credit. Highest administrators can verify directly; other roles require another verifier.",
             )}
           </p>
         </div>
@@ -272,7 +272,7 @@ function RecordPayment({
           >
             <p>
               {t(
-                "登記後仍需另一位管理員核實；本步不增加可用餘額。",
+                "登記後仍需核實憑據。最高管理員可直接核實，其他角色須由另一位管理員核實；本步不增加可用餘額。",
                 "Another administrator must verify this record. Registration does not increase available credit.",
               )}
             </p>
@@ -444,7 +444,7 @@ function ReviewPayment({
             </p>
           )}
           {p.state === "recorded" &&
-            (d.recorded_by === access.me.user.id ? (
+            (!access.me.highest_admin && d.recorded_by === access.me.user.id ? (
               <p className="notice">
                 {t(
                   "請另一位具備對帳權限的管理員核實此付款。",
@@ -455,8 +455,8 @@ function ReviewPayment({
               access.has("admin.billing.reconcile") && (
                 <AsyncForm
                   submitLabel={t(
-                    "保存獨立核實記錄",
-                    "Save independent verification",
+                    "保存付款核實記錄",
+                    "Save payment verification",
                   )}
                   onSubmit={async (f) => {
                     if (!confirmed)
