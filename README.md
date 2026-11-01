@@ -1,5 +1,33 @@
 # Workmate · admin
 
+<!-- model-management-179 -->
+## 已有模型可直接编辑和删除 · 阶段179
+
+打开 [模型能力](https://agent-dashboard.copypaste.hk/catalog?view=capabilities)，当前模型的列表和详情均有 **编辑模型**、**删除模型**。编辑表单预填模型、接口和费率，API Key 输入框可直接输入新 Key。同地址／网络范围可保留已保存 Key，更换范围则需填新 Key。
+
+**保存更改**后，当前列表直接显示更新后的同一模型条目；完成验证、发布后供新工作使用。**删除模型 → 确认删除** 后移出可用目录，拦截新代理和新顶层任务选择，也不会回退到演示模型。旧任务、账务及加密连接保留；列表可切换当前模型、配置历史、已删除模型。
+
+The key field is enabled for saved configurations; typing a replacement automatically deselects retained-key mode. Changing the address/network requires a new key. Save/delete commands use the current revision and report stale edits instead of overwriting newer settings. Historical/deleted model definitions expose no Edit/Delete actions. Build: `npm run build`.
+
+```mermaid
+flowchart LR
+ E[Edit existing model] --> C[Same model entry, updated configuration]
+ C --> V[Validate and publish for new work]
+ D[Confirm deletion] --> X[Remove future availability]
+ C --> H[Preserve original task and billing bindings]
+ X --> H
+```
+
+[Usage and implementation / 使用细则](https://github.com/copypasteltd/workmate/blob/docs/docs/development/179-model-management.md)
+
+![Actual editing of an existing model](assets/screenshots/179-edit-model-087bfaac-ff46-480c-ae08-dc1b2aea04ea.png)
+
+![Actual save and deletion](assets/demos/179-model-management.gif)
+
+Earlier implementation and deployment records follow. 以下为原有版本记录。
+
+---
+
 <!-- per-model-connections-178 -->
 ## 每个模型独立配置上游 · 阶段178
 

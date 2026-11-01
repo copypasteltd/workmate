@@ -4,6 +4,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  Pencil,
+  Trash2,
   RefreshCw,
   ShieldCheck,
 } from "lucide-react";
@@ -35,7 +37,10 @@ import {
   type WorkspacePurge,
 } from "./capability-model";
 import "./capabilities.css";
-import { ModelConnectionFields, ModelConnectionCheck } from "./model-connection";
+import {
+  ModelConnectionFields,
+  ModelConnectionCheck,
+} from "./model-connection";
 
 function ProfileName({ value }: { value: CapabilityDocument["profile_key"] }) {
   const { t } = useI18n();
@@ -43,10 +48,13 @@ function ProfileName({ value }: { value: CapabilityDocument["profile_key"] }) {
     <>
       {value === "internal-text-v1"
         ? t("文字與開發", "Text & development")
-        : value === "internal-video-v1" ? t("影片生成", "Video generation")
-        : value === "internal-speech-v1" ? t("語音生成", "Speech generation")
-        : value === "internal-transcription-v1" ? t("音訊轉錄", "Audio transcription")
-        : t("圖片生成與編輯", "Image generation & editing")}
+        : value === "internal-video-v1"
+          ? t("影片生成", "Video generation")
+          : value === "internal-speech-v1"
+            ? t("語音生成", "Speech generation")
+            : value === "internal-transcription-v1"
+              ? t("音訊轉錄", "Audio transcription")
+              : t("圖片生成與編輯", "Image generation & editing")}
     </>
   );
 }
@@ -68,6 +76,7 @@ function ReleaseState({ value }: { value: CapabilityRelease["state"] }) {
       validated: t("驗證有效", "Validation current"),
       rejected: t("驗證未通過", "Validation failed"),
       draft: t("待驗證", "Needs validation"),
+      deleted: t("已刪除", "Deleted"),
     };
   return <span className={`badge status-${value}`}>{labels[value]}</span>;
 }
@@ -95,10 +104,14 @@ export function CapabilityFacts({
         <dd>Codex</dd>
         <dt>{t("請求路由", "Request routing")}</dt>
         <dd>{t("公司內部伺服器", "Company internal server")}</dd>
-        {document.upstream && <>
-          <dt>API Base URL</dt><dd className="model-upstream-url">{document.upstream.base_url}</dd>
-          <dt>API Key</dt><dd>{t("已加密保存 · 不回顯", "Encrypted · never returned")}</dd>
-        </>}
+        {document.upstream && (
+          <>
+            <dt>API Base URL</dt>
+            <dd className="model-upstream-url">{document.upstream.base_url}</dd>
+            <dt>API Key</dt>
+            <dd>{t("已加密保存 · 不回顯", "Encrypted · never returned")}</dd>
+          </>
+        )}
         <dt>{t("推理強度", "Reasoning effort")}</dt>
         <dd>{document.reasoning_effort ?? t("不適用", "Not applicable")}</dd>
         {text ? (
@@ -110,18 +123,40 @@ export function CapabilityFacts({
           </>
         ) : (
           <>
-            <dt>{document.profile_key === "internal-video-v1" ? t("每秒計費影片", "Per billable video second")
-              : document.profile_key === "internal-speech-v1" ? t("每個 Unicode 字元", "Per Unicode scalar")
-              : document.profile_key === "internal-transcription-v1" ? t("每毫秒輸入音訊", "Per input audio millisecond")
-              : t("每張圖片", "Per image")}</dt>
+            <dt>
+              {document.profile_key === "internal-video-v1"
+                ? t("每秒計費影片", "Per billable video second")
+                : document.profile_key === "internal-speech-v1"
+                  ? t("每個 Unicode 字元", "Per Unicode scalar")
+                  : document.profile_key === "internal-transcription-v1"
+                    ? t("每毫秒輸入音訊", "Per input audio millisecond")
+                    : t("每張圖片", "Per image")}
+            </dt>
             <dd>{formatHKD(String(document.rates[0]))}</dd>
           </>
         )}
-        {(document.profile_key === "internal-speech-v1" || document.profile_key === "internal-transcription-v1") && <>
-          <dt>{t("語言", "Locales")}</dt><dd>{document.locales.join(" · ")}</dd>
-          {document.profile_key === "internal-speech-v1" ? <><dt>{t("聲音 ID", "Voice IDs")}</dt><dd>{document.voices.join(" · ")}</dd></>
-            : <><dt>{t("分段時間", "Segment timestamps")}</dt><dd>{document.timestamps ? t("啟用並驗證", "Enabled and verified") : t("不啟用", "Disabled")}</dd></>}
-        </>}
+        {(document.profile_key === "internal-speech-v1" ||
+          document.profile_key === "internal-transcription-v1") && (
+          <>
+            <dt>{t("語言", "Locales")}</dt>
+            <dd>{document.locales.join(" · ")}</dd>
+            {document.profile_key === "internal-speech-v1" ? (
+              <>
+                <dt>{t("聲音 ID", "Voice IDs")}</dt>
+                <dd>{document.voices.join(" · ")}</dd>
+              </>
+            ) : (
+              <>
+                <dt>{t("分段時間", "Segment timestamps")}</dt>
+                <dd>
+                  {document.timestamps
+                    ? t("啟用並驗證", "Enabled and verified")
+                    : t("不啟用", "Disabled")}
+                </dd>
+              </>
+            )}
+          </>
+        )}
       </dl>
     </div>
   );
@@ -194,13 +229,15 @@ export function AdminCapabilities({ access }: { access: CapabilityAccess }) {
     [page, setPage] = useState(0),
     [cursors, setCursors] = useState<(string | null)[]>([null]),
     [edit, setEdit] = useState<{ from?: CapabilityRelease } | null>(null),
+    [remove, setRemove] = useState<CapabilityRelease | null>(null),
+    [view, setView] = useState("active"),
     [detail, setDetail] = useState<string | null>(null),
     [publish, setPublish] = useState<{
       release: CapabilityRelease;
       rollback: boolean;
     } | null>(null),
     [notice, setNotice] = useState("");
-  const query = new URLSearchParams({ limit: "12" });
+  const query = new URLSearchParams({ limit: "12", view });
   if (cursors[page]) query.set("cursor", cursors[page]!);
   const list = useData<{
     items: CapabilityRelease[];
@@ -222,7 +259,7 @@ export function AdminCapabilities({ access }: { access: CapabilityAccess }) {
         title={t("模型能力", "Model capabilities")}
         description={t(
           "為文字、圖片、影片、語音與轉錄建立可驗證的配置，逐次審核模型、語言與費率。",
-            "Create verifiable text, image, video, speech and transcription configurations. Review the model, locales and rates before each publication.",
+          "Create verifiable text, image, video, speech and transcription configurations. Review the model, locales and rates before each publication.",
         )}
         action={
           access.has("admin.catalog.draft") && (
@@ -234,10 +271,27 @@ export function AdminCapabilities({ access }: { access: CapabilityAccess }) {
         }
       />
       <div className="cap-toolbar">
+        <label className="cap-view-label">
+          {t("顯示", "View")}
+          <select
+            aria-label={t("模型列表範圍", "Model list view")}
+            value={view}
+            onChange={(e) => {
+              setView(e.target.value);
+              refresh();
+            }}
+          >
+            <option value="active">{t("目前模型", "Current models")}</option>
+            <option value="history">
+              {t("配置歷史", "Configuration history")}
+            </option>
+            <option value="deleted">{t("已刪除模型", "Deleted models")}</option>
+          </select>
+        </label>
         <p className="muted">
           {t(
-            "配置存檔後保留原定義；變更會建立新版本。",
-            "Saved configurations retain their definition. Changes create a new version.",
+            "可直接編輯模型的接口、密鑰及費率，或刪除模型。新配置需驗證及發佈後供新工作使用。",
+            "Edit a model’s API, key and rates, or delete it. Updated configurations require validation and publication for new work.",
           )}
         </p>
         <button className="button secondary" onClick={refresh}>
@@ -307,15 +361,29 @@ export function AdminCapabilities({ access }: { access: CapabilityAccess }) {
                     >
                       {t("配置與驗證", "Configuration & validation")}
                     </button>
-                    {access.has("admin.catalog.draft") && (
-                      <button
-                        className="button secondary"
-                        onClick={() => setEdit({ from: r })}
-                      >
-                        {t("建立新版本", "Create new version")}
-                      </button>
-                    )}
-                    {r.state === "validated" &&
+                    {access.has("admin.catalog.draft") &&
+                      r.is_current &&
+                      !r.deleted_at && (
+                        <button
+                          className="button secondary"
+                          onClick={() => setEdit({ from: r })}
+                        >
+                          <Pencil size={15} />
+                          {t("編輯模型", "Edit model")}
+                        </button>
+                      )}
+                    {r.is_current &&
+                      !r.deleted_at &&
+                      access.has("admin.catalog.publish") && (
+                        <button
+                          className="button danger"
+                          onClick={() => setRemove(r)}
+                        >
+                          <Trash2 size={15} />
+                          {t("刪除模型", "Delete model")}
+                        </button>
+                      )}
+                    {r.is_current && r.state === "validated" &&
                       access.has("admin.catalog.publish") && (
                         <button
                           className="button primary"
@@ -326,7 +394,8 @@ export function AdminCapabilities({ access }: { access: CapabilityAccess }) {
                           {t("發佈預覽", "Preview publication")}
                         </button>
                       )}
-                    {r.state === "superseded" &&
+                    {!r.deleted_at &&
+                      r.state === "superseded" &&
                       access.has("admin.catalog.rollback") && (
                         <button
                           className="button secondary"
@@ -383,8 +452,12 @@ export function AdminCapabilities({ access }: { access: CapabilityAccess }) {
             setEdit(null);
             setNotice(
               t(
-                "配置已儲存，請執行驗證。",
-                "Configuration saved. Run validation next.",
+                edit.from
+                  ? "模型已更新。請驗證並發佈更新後的配置。"
+                  : "配置已儲存，請執行驗證。",
+                edit.from
+                  ? "Model updated. Validate and publish the updated configuration."
+                  : "Configuration saved. Run validation next.",
               ),
             );
             setDetail(id);
@@ -396,11 +469,37 @@ export function AdminCapabilities({ access }: { access: CapabilityAccess }) {
         <DetailModal
           access={access}
           id={detail}
+          onEdit={(r) => {
+            setDetail(null);
+            setEdit({ from: r });
+          }}
+          onDelete={(r) => {
+            setDetail(null);
+            setRemove(r);
+          }}
           onClose={() => {
             setDetail(null);
             refresh();
           }}
           onDone={refresh}
+        />
+      )}
+      {remove && (
+        <DeleteModelModal
+          access={access}
+          release={remove}
+          onClose={() => setRemove(null)}
+          onDone={() => {
+            setRemove(null);
+            setDetail(null);
+            setNotice(
+              t(
+                "模型已刪除，已移出可用目錄。",
+                "Model deleted and removed from the available catalog.",
+              ),
+            );
+            refresh();
+          }}
         />
       )}
       {publish && (
@@ -441,9 +540,15 @@ function DraftModal({
       const body = capabilityDraft(form),
         result = await command<{ target_ids: string[] }>(
           access,
-          "capability.draft",
-          root + "/drafts",
-          body,
+          from ? "capability.edit:" + from.id : "capability.draft",
+          from ? `${root}/${from.id}/edits` : root + "/drafts",
+          from
+            ? {
+                ...body,
+                expected_version: from.version,
+                expected_revision: from.management_revision,
+              }
+            : body,
         );
       onDone(result.target_ids[0]);
     } catch (e) {
@@ -455,7 +560,11 @@ function DraftModal({
   const d = from?.document;
   return (
     <Modal
-      title={t("建立模型配置", "Create model configuration")}
+      title={
+        from
+          ? t("編輯模型", "Edit model")
+          : t("建立模型配置", "Create model configuration")
+      }
       onClose={() => {
         if (!busy) onClose();
       }}
@@ -468,9 +577,11 @@ function DraftModal({
           )}
         </p>
         <fieldset disabled={busy} className="cap-fields">
+          {from && <input type="hidden" name="profile" value={profile} />}
           <Field label={t("能力類型", "Capability type")}>
             <select
               name="profile"
+              disabled={Boolean(from)}
               value={profile}
               onChange={(e) => setProfile(e.target.value as typeof profile)}
             >
@@ -480,9 +591,15 @@ function DraftModal({
               <option value="internal-image2-v1">
                 {t("圖片生成與編輯", "Image generation & editing")}
               </option>
-              <option value="internal-video-v1">{t("影片生成", "Video generation")}</option>
-              <option value="internal-speech-v1">{t("語音生成", "Speech generation")}</option>
-              <option value="internal-transcription-v1">{t("音訊轉錄", "Audio transcription")}</option>
+              <option value="internal-video-v1">
+                {t("影片生成", "Video generation")}
+              </option>
+              <option value="internal-speech-v1">
+                {t("語音生成", "Speech generation")}
+              </option>
+              <option value="internal-transcription-v1">
+                {t("音訊轉錄", "Audio transcription")}
+              </option>
             </select>
           </Field>
           <Field label={t("內部模型別名", "Internal model alias")}>
@@ -544,30 +661,105 @@ function DraftModal({
                 </Field>
               </div>
             </>
-          ) : profile === "internal-speech-v1" || profile === "internal-transcription-v1" ? <>
-            <Field label={t("語言代碼", "Locale codes")} hint={t("以逗號分隔：en、zh-HK、yue-HK。只會發佈逐項通過驗證的語言。", "Comma-separated: en, zh-HK, yue-HK. Only locales exercised by this validation are published.")}>
-              <input name="locales" required maxLength={100} defaultValue={d && "locales" in d ? d.locales.join(", ") : "en"} />
-            </Field>
-            {profile === "internal-speech-v1" ? <Field label={t("公司聲音 ID", "Company voice IDs")}
-              hint={t("以逗號分隔，一至八個。每個聲音與語言會測試慢速、正常和快速。", "Comma-separated, one to eight. Each voice and locale is checked at slow, normal and fast speeds.")}>
-              <input name="voices" required maxLength={650} defaultValue={d?.profile_key === profile ? d.voices.join(", ") : ""} />
-            </Field> : <label className="checkbox"><input name="timestamps" type="checkbox" defaultChecked={d?.profile_key === profile && d.timestamps} />
-              {t("啟用實際分段時間；驗證會檢查 JSON 與分段格式。", "Enable actual segment timestamps; validation checks JSON and segment formats.")}</label>}
-            <Field label={profile === "internal-speech-v1" ? t("每個 Unicode 字元費率（HKD）", "Rate per Unicode scalar (HKD)")
-              : t("每毫秒輸入音訊費率（HKD）", "Rate per input audio millisecond (HKD)")}
-              hint={t("最多六位小數且大於零。驗證由平台預算支付；保存後會顯示完整案例上限報價。", "Positive, up to six decimal places. Platform funds pay for validation; the saved configuration shows its complete maximum quote.")}>
-              <input name="audio_rate" required inputMode="decimal" defaultValue={d?.profile_key === profile ? rateInput(d.rates[0]) : ""} />
-            </Field>
-          </> : (
-            <Field
-              label={profile === "internal-video-v1" ? t("每秒計費費率（HKD）", "Rate per billable second (HKD)") : t("每張圖片費率（HKD）", "Rate per image (HKD)")}
-              hint={profile === "internal-video-v1" ? t("必須大於零。16 個案例最多報價 184 秒，由平台驗證預算支付。", "Must be positive. 16 cases quote up to 184 seconds, funded by the platform verification budget.") : t(
-                "必須大於零；驗證包含生成及編輯各一次。",
-                "Must be positive. Validation includes one generation and one edit.",
+          ) : profile === "internal-speech-v1" ||
+            profile === "internal-transcription-v1" ? (
+            <>
+              <Field
+                label={t("語言代碼", "Locale codes")}
+                hint={t(
+                  "以逗號分隔：en、zh-HK、yue-HK。只會發佈逐項通過驗證的語言。",
+                  "Comma-separated: en, zh-HK, yue-HK. Only locales exercised by this validation are published.",
+                )}
+              >
+                <input
+                  name="locales"
+                  required
+                  maxLength={100}
+                  defaultValue={
+                    d && "locales" in d ? d.locales.join(", ") : "en"
+                  }
+                />
+              </Field>
+              {profile === "internal-speech-v1" ? (
+                <Field
+                  label={t("公司聲音 ID", "Company voice IDs")}
+                  hint={t(
+                    "以逗號分隔，一至八個。每個聲音與語言會測試慢速、正常和快速。",
+                    "Comma-separated, one to eight. Each voice and locale is checked at slow, normal and fast speeds.",
+                  )}
+                >
+                  <input
+                    name="voices"
+                    required
+                    maxLength={650}
+                    defaultValue={
+                      d?.profile_key === profile ? d.voices.join(", ") : ""
+                    }
+                  />
+                </Field>
+              ) : (
+                <label className="checkbox">
+                  <input
+                    name="timestamps"
+                    type="checkbox"
+                    defaultChecked={d?.profile_key === profile && d.timestamps}
+                  />
+                  {t(
+                    "啟用實際分段時間；驗證會檢查 JSON 與分段格式。",
+                    "Enable actual segment timestamps; validation checks JSON and segment formats.",
+                  )}
+                </label>
               )}
+              <Field
+                label={
+                  profile === "internal-speech-v1"
+                    ? t(
+                        "每個 Unicode 字元費率（HKD）",
+                        "Rate per Unicode scalar (HKD)",
+                      )
+                    : t(
+                        "每毫秒輸入音訊費率（HKD）",
+                        "Rate per input audio millisecond (HKD)",
+                      )
+                }
+                hint={t(
+                  "最多六位小數且大於零。驗證由平台預算支付；保存後會顯示完整案例上限報價。",
+                  "Positive, up to six decimal places. Platform funds pay for validation; the saved configuration shows its complete maximum quote.",
+                )}
+              >
+                <input
+                  name="audio_rate"
+                  required
+                  inputMode="decimal"
+                  defaultValue={
+                    d?.profile_key === profile ? rateInput(d.rates[0]) : ""
+                  }
+                />
+              </Field>
+            </>
+          ) : (
+            <Field
+              label={
+                profile === "internal-video-v1"
+                  ? t("每秒計費費率（HKD）", "Rate per billable second (HKD)")
+                  : t("每張圖片費率（HKD）", "Rate per image (HKD)")
+              }
+              hint={
+                profile === "internal-video-v1"
+                  ? t(
+                      "必須大於零。16 個案例最多報價 184 秒，由平台驗證預算支付。",
+                      "Must be positive. 16 cases quote up to 184 seconds, funded by the platform verification budget.",
+                    )
+                  : t(
+                      "必須大於零；驗證包含生成及編輯各一次。",
+                      "Must be positive. Validation includes one generation and one edit.",
+                    )
+              }
             >
               <input
-                name={profile === "internal-video-v1" ? "video_rate" : "image_rate"}
+                name={
+                  profile === "internal-video-v1" ? "video_rate" : "image_rate"
+                }
                 required
                 inputMode="decimal"
                 defaultValue={
@@ -577,14 +769,26 @@ function DraftModal({
             </Field>
           )}
           <Field label={t("操作原因", "Operation reason")}>
-            <textarea name="reason" required minLength={3} maxLength={1000} />
+            <textarea
+              name="reason"
+              required
+              minLength={3}
+              maxLength={1000}
+              defaultValue={
+                from
+                  ? t("更新此模型配置", "Update this model configuration")
+                  : ""
+              }
+            />
           </Field>
         </fieldset>
         <ErrorNotice error={error} />
         <button className="button primary" type="submit" disabled={busy}>
           {busy
             ? t("正在儲存…", "Saving…")
-            : t("儲存配置", "Save configuration")}
+            : from
+              ? t("儲存更改", "Save changes")
+              : t("儲存配置", "Save configuration")}
         </button>
       </form>
     </Modal>
@@ -593,11 +797,15 @@ function DraftModal({
 function DetailModal({
   access,
   id,
+  onEdit,
+  onDelete,
   onClose,
   onDone,
 }: {
   access: CapabilityAccess;
   id: string;
+  onEdit: (release: CapabilityRelease) => void;
+  onDelete: (release: CapabilityRelease) => void;
   onClose: () => void;
   onDone: () => void;
 }) {
@@ -660,16 +868,62 @@ function DetailModal({
             <ReleaseState value={release.data.state} />
             <Mode value={release.data.data_mode} />
           </div>
+          {release.data.is_current && !release.data.deleted_at && (
+            <div className="cap-actions">
+              {access.has("admin.catalog.draft") && (
+                <button
+                  className="button secondary"
+                  onClick={() => onEdit(release.data!)}
+                >
+                  <Pencil size={15} />
+                  {t("編輯模型", "Edit model")}
+                </button>
+              )}
+              {access.has("admin.catalog.publish") && (
+                <button
+                  className="button danger"
+                  onClick={() => onDelete(release.data!)}
+                >
+                  <Trash2 size={15} />
+                  {t("刪除模型", "Delete model")}
+                </button>
+              )}
+            </div>
+          )}
+          {(!release.data.is_current || release.data.deleted_at) && (
+            <p className="notice">
+              {t(
+                "這是保留的歷史配置。",
+                "This is a retained historical configuration.",
+              )}
+            </p>
+          )}
           <CapabilityFacts
             document={release.data.document}
             version={release.data.version}
           />
-          <ModelConnectionCheck key={release.data.id} release={release.data} access={access} />
-          {release.data.audio_verification_plan && <p className="notice" role="status">
-            {t("完整驗證", "Complete validation")} {release.data.audio_verification_plan.total_cases} {t("個案例，最高報價", "cases; maximum quote")}{" "}
-            <strong>{formatHKD(release.data.audio_verification_plan.quoted_micros)}</strong>.{" "}
-            {t("平台預算支付。格式與協議驗證不代表音質、轉錄準確度或粵語品質驗收。", "Paid from platform funds. Format and protocol checks do not qualify voice quality, transcription accuracy or Cantonese quality.")}
-          </p>}
+          {release.data.is_current && !release.data.deleted_at && (
+            <ModelConnectionCheck
+              key={release.data.id}
+              release={release.data}
+              access={access}
+            />
+          )}
+          {release.data.audio_verification_plan && (
+            <p className="notice" role="status">
+              {t("完整驗證", "Complete validation")}{" "}
+              {release.data.audio_verification_plan.total_cases}{" "}
+              {t("個案例，最高報價", "cases; maximum quote")}{" "}
+              <strong>
+                {formatHKD(release.data.audio_verification_plan.quoted_micros)}
+              </strong>
+              .{" "}
+              {t(
+                "平台預算支付。格式與協議驗證不代表音質、轉錄準確度或粵語品質驗收。",
+                "Paid from platform funds. Format and protocol checks do not qualify voice quality, transcription accuracy or Cantonese quality.",
+              )}
+            </p>
+          )}
           <details className="cap-technical">
             <summary>{t("版本識別", "Version identity")}</summary>
             <dl className="key-value">
@@ -696,58 +950,65 @@ function DetailModal({
               onDone={() => setRevision((v) => v + 1)}
             />
           )}
-          {access.has("admin.catalog.publish") && (
-            <form
-              className="form-stack cap-validation-form"
-              onSubmit={validate}
-            >
-              <h3>{t("驗證此配置", "Validate this configuration")}</h3>
-              <p className="muted">
-                {t(
-                  "驗證會實際呼叫內部模型並記錄費用。結果不明的請求會保留待對帳狀態；重新整理可查看已保存的回執。",
-                  "Validation calls the internal model and records its cost. Uncertain requests remain pending reconciliation. Refresh to inspect the saved receipt.",
-                )}
-              </p>
-              <Field label={t("驗證原因", "Validation reason")}>
-                <textarea
-                  name="reason"
-                  required
-                  minLength={3}
-                  maxLength={1000}
-                  disabled={busy}
-                />
-              </Field>
-              <ErrorNotice error={error} />
-              <button
-                className="button primary"
-                disabled={
-                  busy ||
-                  (receipt.data?.state ?? release.data.validation_state) === "running" ||
-                  (receipt.data?.state ?? release.data.validation_state) === "reconciling" &&
-                    (receipt.data?.audio_suite
-                      ? !receipt.data.audio_suite.accounting.resolved || receipt.data.audio_suite.accounting.allocation_exceeded
-                      : !receipt.data?.video_suite || !receipt.data.video_suite.usage_known)
-                }
-                type="submit"
+          {release.data.is_current &&
+            !release.data.deleted_at &&
+            access.has("admin.catalog.publish") && (
+              <form
+                className="form-stack cap-validation-form"
+                onSubmit={validate}
               >
-                <ShieldCheck size={17} />
-                {busy
-                  ? t(
-                      "驗證中，正在等待回執…",
-                      "Validating; waiting for the receipt…",
-                    )
-                  : t("執行驗證", "Run validation")}
-              </button>
-              {busy && (
-                <p role="status" className="muted">
+                <h3>{t("驗證此配置", "Validate this configuration")}</h3>
+                <p className="muted">
                   {t(
-                    "此操作可能需數分鐘。請保留此頁等待回執。",
-                    "This may take a few minutes. Keep this page open for the receipt.",
+                    "驗證會實際呼叫內部模型並記錄費用。結果不明的請求會保留待對帳狀態；重新整理可查看已保存的回執。",
+                    "Validation calls the internal model and records its cost. Uncertain requests remain pending reconciliation. Refresh to inspect the saved receipt.",
                   )}
                 </p>
-              )}
-            </form>
-          )}
+                <Field label={t("驗證原因", "Validation reason")}>
+                  <textarea
+                    name="reason"
+                    required
+                    minLength={3}
+                    maxLength={1000}
+                    disabled={busy}
+                  />
+                </Field>
+                <ErrorNotice error={error} />
+                <button
+                  className="button primary"
+                  disabled={
+                    busy ||
+                    (receipt.data?.state ?? release.data.validation_state) ===
+                      "running" ||
+                    ((receipt.data?.state ?? release.data.validation_state) ===
+                      "reconciling" &&
+                      (receipt.data?.audio_suite
+                        ? !receipt.data.audio_suite.accounting.resolved ||
+                          receipt.data.audio_suite.accounting
+                            .allocation_exceeded
+                        : !receipt.data?.video_suite ||
+                          !receipt.data.video_suite.usage_known))
+                  }
+                  type="submit"
+                >
+                  <ShieldCheck size={17} />
+                  {busy
+                    ? t(
+                        "驗證中，正在等待回執…",
+                        "Validating; waiting for the receipt…",
+                      )
+                    : t("執行驗證", "Run validation")}
+                </button>
+                {busy && (
+                  <p role="status" className="muted">
+                    {t(
+                      "此操作可能需數分鐘。請保留此頁等待回執。",
+                      "This may take a few minutes. Keep this page open for the receipt.",
+                    )}
+                  </p>
+                )}
+              </form>
+            )}
         </>
       )}
     </Modal>
@@ -796,9 +1057,25 @@ function ValidationReceipt({
       aria-label={t("驗證回執", "Validation receipt")}
     >
       <h3>{t(...(labels[value.state] ?? [value.state, value.state]))}</h3>
-      {value.video_suite && <VideoValidation value={value} releaseVersion={releaseVersion} access={access} onDone={onDone} />}
-      {value.audio_suite && <AudioValidation value={value} releaseVersion={releaseVersion} access={access} onDone={onDone} />}
-      {value.video_suite && <h4>{t("資格決定時的回執", "Receipt at the eligibility decision")}</h4>}
+      {value.video_suite && (
+        <VideoValidation
+          value={value}
+          releaseVersion={releaseVersion}
+          access={access}
+          onDone={onDone}
+        />
+      )}
+      {value.audio_suite && (
+        <AudioValidation
+          value={value}
+          releaseVersion={releaseVersion}
+          access={access}
+          onDone={onDone}
+        />
+      )}
+      {value.video_suite && (
+        <h4>{t("資格決定時的回執", "Receipt at the eligibility decision")}</h4>
+      )}
       <dl className="key-value">
         <dt>{t("開始時間", "Started")}</dt>
         <dd>
@@ -827,8 +1104,14 @@ function ValidationReceipt({
             <small>{t("不代表最終費用", "Not the final cost")}</small>
           )}
         </dd>
-        {!value.video_suite && !value.audio_suite && <><dt>{t("輸入／輸出 tokens", "Input / output tokens")}</dt>
-          <dd>{r.input_tokens ?? "—"} / {r.output_tokens ?? "—"}</dd></>}
+        {!value.video_suite && !value.audio_suite && (
+          <>
+            <dt>{t("輸入／輸出 tokens", "Input / output tokens")}</dt>
+            <dd>
+              {r.input_tokens ?? "—"} / {r.output_tokens ?? "—"}
+            </dd>
+          </>
+        )}
       </dl>
       {r.checks?.length ? (
         <ul className="cap-checks">
@@ -846,14 +1129,17 @@ function ValidationReceipt({
           {t("驗證錯誤", "Validation error")}: <code>{r.error_code}</code>
         </p>
       )}
-      {value.state === "reconciling" && (value.audio_suite ? !value.audio_suite.accounting.resolved : !value.video_suite || !value.video_suite.usage_known) && (
-        <p className="notice">
-          {t(
-            "服務可能已接受呼叫，結果仍待核對。請先查看回執，避免再次產生費用。",
-            "The service may have accepted the call. Its result needs reconciliation. Inspect the receipt before creating another charge.",
-          )}
-        </p>
-      )}
+      {value.state === "reconciling" &&
+        (value.audio_suite
+          ? !value.audio_suite.accounting.resolved
+          : !value.video_suite || !value.video_suite.usage_known) && (
+          <p className="notice">
+            {t(
+              "服務可能已接受呼叫，結果仍待核對。請先查看回執，避免再次產生費用。",
+              "The service may have accepted the call. Its result needs reconciliation. Inspect the receipt before creating another charge.",
+            )}
+          </p>
+        )}
       {value.workspace_cleanup ? (
         <WorkspaceCleanup
           value={value.workspace_cleanup}
@@ -883,113 +1169,390 @@ function ValidationReceipt({
     </section>
   );
 }
-function AudioValidation({ value, releaseVersion, access, onDone }: {
-  value: CapabilityValidation; releaseVersion: number; access: CapabilityAccess; onDone: () => void;
+function AudioValidation({
+  value,
+  releaseVersion,
+  access,
+  onDone,
+}: {
+  value: CapabilityValidation;
+  releaseVersion: number;
+  access: CapabilityAccess;
+  onDone: () => void;
 }) {
-  const { t } = useI18n(), suite = value.audio_suite!;
-  const [busy, setBusy] = useState(false), [error, setError] = useState<Error | null>(null);
+  const { t } = useI18n(),
+    suite = value.audio_suite!;
+  const [busy, setBusy] = useState(false),
+    [error, setError] = useState<Error | null>(null);
   async function cancel(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault(); if (busy) return;
+    e.preventDefault();
+    if (busy) return;
     const reason = String(new FormData(e.currentTarget).get("reason") ?? "");
-    setBusy(true); setError(null);
+    setBusy(true);
+    setError(null);
     try {
-      await command(access, "capability.audio-cancellation:" + value.id,
-        `${root}/validations/${value.id}/audio-cancellations`, { expected_version: releaseVersion, reason });
+      await command(
+        access,
+        "capability.audio-cancellation:" + value.id,
+        `${root}/validations/${value.id}/audio-cancellations`,
+        { expected_version: releaseVersion, reason },
+      );
       onDone();
-    } catch (e) { setError(e as Error); } finally { setBusy(false); }
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setBusy(false);
+    }
   }
   const states: Record<string, [string, string]> = {
-    prepared: ["準備中", "Prepared"], dispatched: ["已送出", "Dispatched"], completed: ["已完成", "Completed"],
-    cancelled: ["已取消", "Cancelled"], unknown: ["費用待核對", "Cost unconfirmed"],
+    prepared: ["準備中", "Prepared"],
+    dispatched: ["已送出", "Dispatched"],
+    completed: ["已完成", "Completed"],
+    cancelled: ["已取消", "Cancelled"],
+    unknown: ["費用待核對", "Cost unconfirmed"],
   };
-  return <section className="cap-video-suite" aria-label={t("音訊驗證進度", "Audio validation progress")}>
-    <p><strong>{t("已驗證案例", "Verified cases")} {suite.verified_cases} / {suite.total_cases}</strong></p>
-    <progress max={suite.total_cases} value={suite.verified_cases} aria-label={t("已驗證音訊案例", "Verified audio cases")} />
-    <dl className="key-value">
-      <dt>{t("全套最高報價", "Suite quoted maximum")}</dt><dd>{formatHKD(suite.quoted_micros)}</dd>
-      <dt>{t("目前已知費用", "Current known cost")}</dt><dd>{formatHKD(suite.known_cost_micros)}{!suite.usage_known && t("（仍有待核對費用）", " (some cost remains unconfirmed)")}</dd>
-      <dt>{t("含獨立對帳的已確認費用", "Confirmed cost including independent accounting")}</dt><dd>{formatHKD(suite.accounting.confirmed_micros)}</dd>
-      <dt>{t("待確認費用／佔用容量的案例", "Unconfirmed costs / held capacity cases")}</dt><dd>{suite.accounting.unconfirmed_cases} / {suite.accounting.capacity_held_cases}</dd>
-      <dt>{t("執行授權期限", "Execution grant expires")}</dt><dd><DateText value={suite.deadline_at} /></dd>
-    </dl>
-    <p className="muted">{t("驗證使用平台預算，關閉此視窗後仍會繼續。它檢查交付格式，不代表聲音、粵語或轉錄準確度的正式驗收。", "Validation uses platform funds and continues when this view closes. It checks delivery formats and does not qualify voice, Cantonese or transcription quality.")}</p>
-    {suite.cancel_requested && <p role="status">{t("已要求停止新案例。已送出的呼叫仍可能產生費用。", "New cases have been stopped. Dispatched calls may still incur costs.")}</p>}
-    {!suite.accounting.resolved && value.state !== "running" && <p className="notice">{t("請在調用管理的音訊對帳中分別確認費用及終止證據。原操作不會自動重送。", "Confirm cost and termination evidence separately in Provider controls → Audio accounting. The original operation is never replayed.")} <Link to="/provider-control?view=audio">{t("處理音訊對帳", "Open audio accounting")}</Link></p>}
-    {!suite.usage_known && suite.accounting.resolved && <p className="notice">{t("獨立費用及容量對帳已完成。原驗證仍未通過；如需驗證，請明確建立一次新的驗證。", "Independent cost and capacity accounting is complete. The original verification remains unqualified; explicitly start a new verification if needed.")}</p>}
-    {suite.accounting.allocation_exceeded && <p className="notice error">{t("外部已確認費用超出原報價，此預算已封鎖，請先處理費用差異。", "The confirmed external cost exceeds the original quote. This budget is blocked pending resolution.")}</p>}
-    {suite.error_code && <p className="notice error"><code>{suite.error_code}</code></p>}
-    <details><summary>{t("查看音訊案例與媒體校驗", "View audio cases and media validation")}</summary>
-      <ol className="cap-video-cases">{suite.cases.map(c => <li key={c.id}>
-        <strong>{c.locale} · {c.kind === "speech" ? `${c.voice} · ${c.speed}×` : `${c.mime_type}${c.timestamps ? t(" · 分段時間", " · segment times") : " · JSON"}`}</strong>
-        <span>{t(...(states[c.state] ?? [c.state, c.state]))}{c.verified && t(" · 格式驗證通過", " · format verified")}</span>
-        <span>{c.accounting.confirmed_micros === null ? t("費用待確認", "Cost unconfirmed") : formatHKD(c.accounting.confirmed_micros)}{c.accounting.cost_source === "human_evidence" && t(" · 人工證據獨立確認", " · independently confirmed human evidence")}</span>
-        {c.media?.fully_decoded && <span>{t("完整解碼", "Fully decoded")} · {c.media.duration_ms} ms</span>}
-        {c.media?.utf8_json && <span>{t("完整 JSON", "Complete JSON")} · {c.media.segment_count} {t("個時間段", "segments")}</span>}
-        {c.error_code && <code>{c.error_code}</code>}
-      </li>)}</ol>
-    </details>
-    {access.has("admin.catalog.publish") && value.state === "running" && !suite.cancel_requested &&
-      <form className="form-stack" onSubmit={cancel}>
-        <Field label={t("停止音訊驗證原因", "Reason to stop audio validation")}><input name="reason" required minLength={3} maxLength={1000} disabled={busy} /></Field>
-        <button className="button secondary" disabled={busy}>{busy ? t("處理中…", "Working…") : t("停止後續案例", "Stop further cases")}</button>
-      </form>}
-    <ErrorNotice error={error} />
-  </section>;
+  return (
+    <section
+      className="cap-video-suite"
+      aria-label={t("音訊驗證進度", "Audio validation progress")}
+    >
+      <p>
+        <strong>
+          {t("已驗證案例", "Verified cases")} {suite.verified_cases} /{" "}
+          {suite.total_cases}
+        </strong>
+      </p>
+      <progress
+        max={suite.total_cases}
+        value={suite.verified_cases}
+        aria-label={t("已驗證音訊案例", "Verified audio cases")}
+      />
+      <dl className="key-value">
+        <dt>{t("全套最高報價", "Suite quoted maximum")}</dt>
+        <dd>{formatHKD(suite.quoted_micros)}</dd>
+        <dt>{t("目前已知費用", "Current known cost")}</dt>
+        <dd>
+          {formatHKD(suite.known_cost_micros)}
+          {!suite.usage_known &&
+            t("（仍有待核對費用）", " (some cost remains unconfirmed)")}
+        </dd>
+        <dt>
+          {t(
+            "含獨立對帳的已確認費用",
+            "Confirmed cost including independent accounting",
+          )}
+        </dt>
+        <dd>{formatHKD(suite.accounting.confirmed_micros)}</dd>
+        <dt>
+          {t(
+            "待確認費用／佔用容量的案例",
+            "Unconfirmed costs / held capacity cases",
+          )}
+        </dt>
+        <dd>
+          {suite.accounting.unconfirmed_cases} /{" "}
+          {suite.accounting.capacity_held_cases}
+        </dd>
+        <dt>{t("執行授權期限", "Execution grant expires")}</dt>
+        <dd>
+          <DateText value={suite.deadline_at} />
+        </dd>
+      </dl>
+      <p className="muted">
+        {t(
+          "驗證使用平台預算，關閉此視窗後仍會繼續。它檢查交付格式，不代表聲音、粵語或轉錄準確度的正式驗收。",
+          "Validation uses platform funds and continues when this view closes. It checks delivery formats and does not qualify voice, Cantonese or transcription quality.",
+        )}
+      </p>
+      {suite.cancel_requested && (
+        <p role="status">
+          {t(
+            "已要求停止新案例。已送出的呼叫仍可能產生費用。",
+            "New cases have been stopped. Dispatched calls may still incur costs.",
+          )}
+        </p>
+      )}
+      {!suite.accounting.resolved && value.state !== "running" && (
+        <p className="notice">
+          {t(
+            "請在調用管理的音訊對帳中分別確認費用及終止證據。原操作不會自動重送。",
+            "Confirm cost and termination evidence separately in Provider controls → Audio accounting. The original operation is never replayed.",
+          )}{" "}
+          <Link to="/provider-control?view=audio">
+            {t("處理音訊對帳", "Open audio accounting")}
+          </Link>
+        </p>
+      )}
+      {!suite.usage_known && suite.accounting.resolved && (
+        <p className="notice">
+          {t(
+            "獨立費用及容量對帳已完成。原驗證仍未通過；如需驗證，請明確建立一次新的驗證。",
+            "Independent cost and capacity accounting is complete. The original verification remains unqualified; explicitly start a new verification if needed.",
+          )}
+        </p>
+      )}
+      {suite.accounting.allocation_exceeded && (
+        <p className="notice error">
+          {t(
+            "外部已確認費用超出原報價，此預算已封鎖，請先處理費用差異。",
+            "The confirmed external cost exceeds the original quote. This budget is blocked pending resolution.",
+          )}
+        </p>
+      )}
+      {suite.error_code && (
+        <p className="notice error">
+          <code>{suite.error_code}</code>
+        </p>
+      )}
+      <details>
+        <summary>
+          {t("查看音訊案例與媒體校驗", "View audio cases and media validation")}
+        </summary>
+        <ol className="cap-video-cases">
+          {suite.cases.map((c) => (
+            <li key={c.id}>
+              <strong>
+                {c.locale} ·{" "}
+                {c.kind === "speech"
+                  ? `${c.voice} · ${c.speed}×`
+                  : `${c.mime_type}${c.timestamps ? t(" · 分段時間", " · segment times") : " · JSON"}`}
+              </strong>
+              <span>
+                {t(...(states[c.state] ?? [c.state, c.state]))}
+                {c.verified && t(" · 格式驗證通過", " · format verified")}
+              </span>
+              <span>
+                {c.accounting.confirmed_micros === null
+                  ? t("費用待確認", "Cost unconfirmed")
+                  : formatHKD(c.accounting.confirmed_micros)}
+                {c.accounting.cost_source === "human_evidence" &&
+                  t(
+                    " · 人工證據獨立確認",
+                    " · independently confirmed human evidence",
+                  )}
+              </span>
+              {c.media?.fully_decoded && (
+                <span>
+                  {t("完整解碼", "Fully decoded")} · {c.media.duration_ms} ms
+                </span>
+              )}
+              {c.media?.utf8_json && (
+                <span>
+                  {t("完整 JSON", "Complete JSON")} · {c.media.segment_count}{" "}
+                  {t("個時間段", "segments")}
+                </span>
+              )}
+              {c.error_code && <code>{c.error_code}</code>}
+            </li>
+          ))}
+        </ol>
+      </details>
+      {access.has("admin.catalog.publish") &&
+        value.state === "running" &&
+        !suite.cancel_requested && (
+          <form className="form-stack" onSubmit={cancel}>
+            <Field
+              label={t("停止音訊驗證原因", "Reason to stop audio validation")}
+            >
+              <input
+                name="reason"
+                required
+                minLength={3}
+                maxLength={1000}
+                disabled={busy}
+              />
+            </Field>
+            <button className="button secondary" disabled={busy}>
+              {busy
+                ? t("處理中…", "Working…")
+                : t("停止後續案例", "Stop further cases")}
+            </button>
+          </form>
+        )}
+      <ErrorNotice error={error} />
+    </section>
+  );
 }
-function VideoValidation({ value, releaseVersion, access, onDone }: {
-  value: CapabilityValidation; releaseVersion: number; access: CapabilityAccess; onDone: () => void;
+function VideoValidation({
+  value,
+  releaseVersion,
+  access,
+  onDone,
+}: {
+  value: CapabilityValidation;
+  releaseVersion: number;
+  access: CapabilityAccess;
+  onDone: () => void;
 }) {
-  const { t } = useI18n(), suite = value.video_suite!;
-  const [busy, setBusy] = useState(false), [error, setError] = useState<Error | null>(null);
+  const { t } = useI18n(),
+    suite = value.video_suite!;
+  const [busy, setBusy] = useState(false),
+    [error, setError] = useState<Error | null>(null);
   async function submit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault(); if (busy) return;
-    const form = new FormData(e.currentTarget), action = String(form.get("action"));
-    setBusy(true); setError(null);
+    e.preventDefault();
+    if (busy) return;
+    const form = new FormData(e.currentTarget),
+      action = String(form.get("action"));
+    setBusy(true);
+    setError(null);
     try {
-      await command(access, "capability." + action + ":" + value.id, `${root}/validations/${value.id}/${action}`,
-        { expected_version: releaseVersion, reason: String(form.get("reason")) });
+      await command(
+        access,
+        "capability." + action + ":" + value.id,
+        `${root}/validations/${value.id}/${action}`,
+        {
+          expected_version: releaseVersion,
+          reason: String(form.get("reason")),
+        },
+      );
       onDone();
-    } catch (e) { setError(e as Error); } finally { setBusy(false); }
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setBusy(false);
+    }
   }
   const states: Record<string, [string, string]> = {
-    prepared: ["準備中", "Prepared"], submitting: ["已送出", "Dispatched"], queued: ["排隊中", "Queued"],
-    in_progress: ["生成中", "Generating"], completed: ["已完成", "Completed"], failed: ["失敗", "Failed"],
-    cancelled: ["已取消", "Cancelled"], unknown: ["結果待確認", "Outcome unconfirmed"],
+    prepared: ["準備中", "Prepared"],
+    submitting: ["已送出", "Dispatched"],
+    queued: ["排隊中", "Queued"],
+    in_progress: ["生成中", "Generating"],
+    completed: ["已完成", "Completed"],
+    failed: ["失敗", "Failed"],
+    cancelled: ["已取消", "Cancelled"],
+    unknown: ["結果待確認", "Outcome unconfirmed"],
   };
-  return <section className="cap-video-suite" aria-label={t("影片驗證進度", "Video verification progress")}>
-    <p><strong>{t("已驗證案例", "Verified cases")} {suite.verified_cases} / {suite.total_cases}</strong></p>
-    <progress max={suite.total_cases} value={suite.verified_cases} aria-label={t("已驗證案例", "Verified cases")} />
-    <dl className="key-value">
-      <dt>{t("全套最高報價", "Suite quoted maximum")}</dt><dd>{formatHKD(suite.quoted_micros)}</dd>
-      <dt>{t("目前已知費用", "Current known cost")}</dt><dd>{formatHKD(suite.known_cost_micros)} {suite.usage_known ? "" : t("（待對帳）", "(pending reconciliation)")}</dd>
-      <dt>{t("執行授權期限", "Execution grant expires")}</dt><dd><DateText value={suite.deadline_at} /></dd>
-    </dl>
-    <p className="muted">{t("平台驗證預算支付。關閉此視窗後，驗證仍會繼續；取消後仍需確認已發出作業的最終費用。", "Funded by the platform verification budget. Validation continues when this view closes; cancellation still requires final usage from dispatched jobs.")}</p>
-    {value.state !== "running" && value.state !== "passed" && suite.usage_known && <p className="notice">{t("原驗證資格不會變更。再次執行驗證將建立新回執，並重新呼叫服務及計費。", "The original eligibility decision stays unchanged. Running validation again creates a new receipt and new billable service calls.")}</p>}
-    {suite.cancel_requested && <p role="status">{value.state !== "running" && suite.usage_known
-      ? t("停止要求已處理；已發出作業的費用均已確認。", "The stop request was processed; usage for all dispatched jobs is confirmed.")
-      : t("已要求停止新案例，正在核對原作業。", "New cases stopped; checking the original job.")}</p>}
-    {suite.error_code && <p className="notice error"><code>{suite.error_code}</code></p>}
-    <details><summary>{t("查看案例與實際媒體校驗", "View cases and actual media validation")}</summary>
-      <ol className="cap-video-cases">{suite.cases.map(c => <li key={c.id}>
-        <strong>{c.size} · {c.seconds}s{c.ordinal === 15 ? t(" · 取消案例", " · cancellation case") : ""}</strong>
-        <span>{t(...(states[c.state] ?? [c.state, c.state]))}{c.verified ? t(" · 驗證通過", " · verified") : ""}</span>
-        <span>{c.actual_micros === null ? t("費用待確認", "Cost unconfirmed") : formatHKD(c.actual_micros)}</span>
-        {c.media && <span>{c.media.width} × {c.media.height} · {c.media.duration_seconds}s · {t("完整解碼", "Fully decoded")}</span>}
-        {c.error_code && <code>{c.error_code}</code>}
-      </li>)}</ol>
-    </details>
-    {access.has("admin.catalog.publish") && (value.state === "running" || !suite.usage_known) &&
-      <form className="form-stack" onSubmit={submit}>
-        <Field label={t("操作原因", "Operation reason")}><input name="reason" required minLength={3} maxLength={1000} disabled={busy} /></Field>
-        <Field label={t("影片驗證操作", "Video verification action")}><select name="action" disabled={busy}>
-          <option value="video-rechecks">{t("重新核對原作業", "Recheck original job")}</option>
-          {value.state === "running" && !suite.cancel_requested && <option value="video-cancellations">{t("停止此套驗證", "Stop this validation suite")}</option>}
-        </select></Field>
-        <button className="button secondary" disabled={busy}>{busy ? t("處理中…", "Working…") : t("執行操作", "Apply action")}</button>
-      </form>}
-    <ErrorNotice error={error} />
-  </section>;
+  return (
+    <section
+      className="cap-video-suite"
+      aria-label={t("影片驗證進度", "Video verification progress")}
+    >
+      <p>
+        <strong>
+          {t("已驗證案例", "Verified cases")} {suite.verified_cases} /{" "}
+          {suite.total_cases}
+        </strong>
+      </p>
+      <progress
+        max={suite.total_cases}
+        value={suite.verified_cases}
+        aria-label={t("已驗證案例", "Verified cases")}
+      />
+      <dl className="key-value">
+        <dt>{t("全套最高報價", "Suite quoted maximum")}</dt>
+        <dd>{formatHKD(suite.quoted_micros)}</dd>
+        <dt>{t("目前已知費用", "Current known cost")}</dt>
+        <dd>
+          {formatHKD(suite.known_cost_micros)}{" "}
+          {suite.usage_known ? "" : t("（待對帳）", "(pending reconciliation)")}
+        </dd>
+        <dt>{t("執行授權期限", "Execution grant expires")}</dt>
+        <dd>
+          <DateText value={suite.deadline_at} />
+        </dd>
+      </dl>
+      <p className="muted">
+        {t(
+          "平台驗證預算支付。關閉此視窗後，驗證仍會繼續；取消後仍需確認已發出作業的最終費用。",
+          "Funded by the platform verification budget. Validation continues when this view closes; cancellation still requires final usage from dispatched jobs.",
+        )}
+      </p>
+      {value.state !== "running" &&
+        value.state !== "passed" &&
+        suite.usage_known && (
+          <p className="notice">
+            {t(
+              "原驗證資格不會變更。再次執行驗證將建立新回執，並重新呼叫服務及計費。",
+              "The original eligibility decision stays unchanged. Running validation again creates a new receipt and new billable service calls.",
+            )}
+          </p>
+        )}
+      {suite.cancel_requested && (
+        <p role="status">
+          {value.state !== "running" && suite.usage_known
+            ? t(
+                "停止要求已處理；已發出作業的費用均已確認。",
+                "The stop request was processed; usage for all dispatched jobs is confirmed.",
+              )
+            : t(
+                "已要求停止新案例，正在核對原作業。",
+                "New cases stopped; checking the original job.",
+              )}
+        </p>
+      )}
+      {suite.error_code && (
+        <p className="notice error">
+          <code>{suite.error_code}</code>
+        </p>
+      )}
+      <details>
+        <summary>
+          {t(
+            "查看案例與實際媒體校驗",
+            "View cases and actual media validation",
+          )}
+        </summary>
+        <ol className="cap-video-cases">
+          {suite.cases.map((c) => (
+            <li key={c.id}>
+              <strong>
+                {c.size} · {c.seconds}s
+                {c.ordinal === 15
+                  ? t(" · 取消案例", " · cancellation case")
+                  : ""}
+              </strong>
+              <span>
+                {t(...(states[c.state] ?? [c.state, c.state]))}
+                {c.verified ? t(" · 驗證通過", " · verified") : ""}
+              </span>
+              <span>
+                {c.actual_micros === null
+                  ? t("費用待確認", "Cost unconfirmed")
+                  : formatHKD(c.actual_micros)}
+              </span>
+              {c.media && (
+                <span>
+                  {c.media.width} × {c.media.height} ·{" "}
+                  {c.media.duration_seconds}s · {t("完整解碼", "Fully decoded")}
+                </span>
+              )}
+              {c.error_code && <code>{c.error_code}</code>}
+            </li>
+          ))}
+        </ol>
+      </details>
+      {access.has("admin.catalog.publish") &&
+        (value.state === "running" || !suite.usage_known) && (
+          <form className="form-stack" onSubmit={submit}>
+            <Field label={t("操作原因", "Operation reason")}>
+              <input
+                name="reason"
+                required
+                minLength={3}
+                maxLength={1000}
+                disabled={busy}
+              />
+            </Field>
+            <Field label={t("影片驗證操作", "Video verification action")}>
+              <select name="action" disabled={busy}>
+                <option value="video-rechecks">
+                  {t("重新核對原作業", "Recheck original job")}
+                </option>
+                {value.state === "running" && !suite.cancel_requested && (
+                  <option value="video-cancellations">
+                    {t("停止此套驗證", "Stop this validation suite")}
+                  </option>
+                )}
+              </select>
+            </Field>
+            <button className="button secondary" disabled={busy}>
+              {busy ? t("處理中…", "Working…") : t("執行操作", "Apply action")}
+            </button>
+          </form>
+        )}
+      <ErrorNotice error={error} />
+    </section>
+  );
 }
 function WorkspaceCleanup({
   value,
@@ -1229,6 +1792,98 @@ function PublicationModal({
           )}
         </>
       )}
+    </Modal>
+  );
+}
+
+function DeleteModelModal({
+  access,
+  release,
+  onClose,
+  onDone,
+}: {
+  access: CapabilityAccess;
+  release: CapabilityRelease;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const { t } = useI18n(),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState<Error | null>(null);
+  async function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const f = new FormData(e.currentTarget);
+      await command(
+        access,
+        "capability.delete:" + release.id,
+        `${root}/${release.id}/deletions`,
+        {
+          expected_version: release.version,
+          expected_revision: release.management_revision,
+          confirm_model: release.document.model_alias,
+          reason: String(f.get("reason")),
+        },
+      );
+      onDone();
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <Modal
+      title={t("刪除模型", "Delete model")}
+      onClose={() => {
+        if (!busy) onClose();
+      }}
+    >
+      <form className="form-stack" onSubmit={submit}>
+        <h3>{release.document.model_alias}</h3>
+        <p>
+          {t(
+            "刪除後將移出可用目錄，新工作不能再使用此模型。已開始的工作及費用歷史會保留；不會自動替換成其他模型。",
+            "Deletion removes this model from the available catalog and blocks new work from selecting it. Existing work and billing history are retained; another model is never substituted automatically.",
+          )}
+        </p>
+        <Field label={t("刪除原因", "Deletion reason")}>
+          <textarea
+            name="reason"
+            required
+            minLength={3}
+            maxLength={1000}
+            defaultValue={t(
+              "管理員刪除此模型配置",
+              "Administrator removes this model configuration",
+            )}
+            disabled={busy}
+          />
+        </Field>
+        <label className="checkbox">
+          <input type="checkbox" required disabled={busy} />
+          {t("確認刪除此模型", "Confirm deletion of this model")}
+        </label>
+        <ErrorNotice error={error} />
+        <div className="modal-actions">
+          <button
+            type="button"
+            className="button secondary"
+            onClick={onClose}
+            disabled={busy}
+          >
+            {t("取消", "Cancel")}
+          </button>
+          <button type="submit" className="button danger" disabled={busy}>
+            {busy
+              ? t("正在刪除…", "Deleting…")
+              : t("確認刪除", "Confirm deletion")}
+          </button>
+        </div>
+      </form>
     </Modal>
   );
 }

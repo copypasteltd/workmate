@@ -4,7 +4,12 @@ export type CapabilityDocument = {
   kernel: "codex";
   gateway_policy: "company_internal_only";
   model_alias: string;
-  upstream?: { id: string; base_url: string; key_configured: true; allow_private_network: boolean };
+  upstream?: {
+    id: string;
+    base_url: string;
+    key_configured: true;
+    allow_private_network: boolean;
+  };
 } & (
   | {
       profile_key: "internal-text-v1";
@@ -18,15 +23,26 @@ export type CapabilityDocument = {
     }
   | {
       profile_key: "internal-speech-v1";
-      reasoning_effort: null; rates: [number]; voices: string[]; locales: ("en" | "zh-HK" | "yue-HK")[];
+      reasoning_effort: null;
+      rates: [number];
+      voices: string[];
+      locales: ("en" | "zh-HK" | "yue-HK")[];
     }
   | {
       profile_key: "internal-transcription-v1";
-      reasoning_effort: null; rates: [number]; locales: ("en" | "zh-HK" | "yue-HK")[]; timestamps: boolean;
+      reasoning_effort: null;
+      rates: [number];
+      locales: ("en" | "zh-HK" | "yue-HK")[];
+      timestamps: boolean;
     }
 );
 export type CapabilityRelease = {
   id: string;
+  model_id: string;
+  management_revision: number;
+  model_current_release_id: string;
+  is_current: boolean;
+  deleted_at: string | null;
   profile_key: CapabilityDocument["profile_key"];
   data_mode: "simulated" | "configured_services";
   version: number;
@@ -34,14 +50,25 @@ export type CapabilityRelease = {
   definition_hash: string;
   runtime_profile_id: string;
   created_at: string;
-  state: "published" | "superseded" | "validated" | "rejected" | "draft";
+  state:
+    | "published"
+    | "superseded"
+    | "validated"
+    | "rejected"
+    | "draft"
+    | "deleted";
   validation_id: string | null;
   validation_state: string | null;
   validation_expires_at: string | null;
   validation_error_codes: string[];
   head_revision: number;
   current_publication_id: string | null;
-  audio_verification_plan?: { total_cases: number; plan_hash: string; quoted_micros: string; quality_scope: "protocol_only" };
+  audio_verification_plan?: {
+    total_cases: number;
+    plan_hash: string;
+    quoted_micros: string;
+    quality_scope: "protocol_only";
+  };
 };
 export type WorkspacePurge = {
   validation_id: string;
@@ -75,23 +102,90 @@ export type CapabilityValidation = {
   };
   workspace_cleanup: WorkspacePurge | null;
   audio_suite?: {
-    accounting: { confirmed_micros: string; unconfirmed_cases: number; capacity_held_cases: number; resolved: boolean; allocation_exceeded: boolean };
-    plan_hash: string; total_cases: number; verified_cases: number; quoted_micros: string; quality_scope: "protocol_only";
-    known_cost_micros: string; usage_known: boolean; cancel_requested: boolean; deadline_at: string; error_code: string | null;
-    cases: { id: string; ordinal: number; operation_id: string; state: string; kind: "speech" | "transcription";
-      locale: string; voice: string | null; speed: number | null; mime_type: string | null; timestamps: boolean | null;
-      quoted_micros: string; actual_micros: string | null; usage_known: boolean; verified: boolean; error_code: string | null;
-      response_sha256: string | null; source_sha256: string | null;
-      accounting: { confirmed_micros: string | null; cost_source: string; cost_state: string; capacity_held: boolean; accounting_resolved: boolean; allocation_exceeded: boolean };
-      media: { duration_ms?: number; fully_decoded?: boolean; segment_count?: number; utf8_json?: boolean;
-        input?: { fully_decoded: boolean; duration_ms: number } } | null }[];
+    accounting: {
+      confirmed_micros: string;
+      unconfirmed_cases: number;
+      capacity_held_cases: number;
+      resolved: boolean;
+      allocation_exceeded: boolean;
+    };
+    plan_hash: string;
+    total_cases: number;
+    verified_cases: number;
+    quoted_micros: string;
+    quality_scope: "protocol_only";
+    known_cost_micros: string;
+    usage_known: boolean;
+    cancel_requested: boolean;
+    deadline_at: string;
+    error_code: string | null;
+    cases: {
+      id: string;
+      ordinal: number;
+      operation_id: string;
+      state: string;
+      kind: "speech" | "transcription";
+      locale: string;
+      voice: string | null;
+      speed: number | null;
+      mime_type: string | null;
+      timestamps: boolean | null;
+      quoted_micros: string;
+      actual_micros: string | null;
+      usage_known: boolean;
+      verified: boolean;
+      error_code: string | null;
+      response_sha256: string | null;
+      source_sha256: string | null;
+      accounting: {
+        confirmed_micros: string | null;
+        cost_source: string;
+        cost_state: string;
+        capacity_held: boolean;
+        accounting_resolved: boolean;
+        allocation_exceeded: boolean;
+      };
+      media: {
+        duration_ms?: number;
+        fully_decoded?: boolean;
+        segment_count?: number;
+        utf8_json?: boolean;
+        input?: { fully_decoded: boolean; duration_ms: number };
+      } | null;
+    }[];
   } | null;
   video_suite?: {
-    plan_hash: string; total_cases: number; verified_cases: number; quoted_micros: string;
-    known_cost_micros: string; usage_known: boolean; cancel_requested: boolean; deadline_at: string; error_code: string | null;
-    cases: { id: string; ordinal: number; operation_id: string; state: string; size: string; seconds: number;
-      progress: number | null; usage_known: boolean; actual_micros: string | null; verified: boolean; error_code: string | null;
-      operations: string[]; media: { fully_decoded: boolean; sha256: string; bytes: number; width: number; height: number; duration_seconds: number } | null }[];
+    plan_hash: string;
+    total_cases: number;
+    verified_cases: number;
+    quoted_micros: string;
+    known_cost_micros: string;
+    usage_known: boolean;
+    cancel_requested: boolean;
+    deadline_at: string;
+    error_code: string | null;
+    cases: {
+      id: string;
+      ordinal: number;
+      operation_id: string;
+      state: string;
+      size: string;
+      seconds: number;
+      progress: number | null;
+      usage_known: boolean;
+      actual_micros: string | null;
+      verified: boolean;
+      error_code: string | null;
+      operations: string[];
+      media: {
+        fully_decoded: boolean;
+        sha256: string;
+        bytes: number;
+        width: number;
+        height: number;
+        duration_seconds: number;
+      } | null;
+    }[];
   } | null;
 };
 type ComparedRelease = Pick<CapabilityRelease, "version" | "document"> & {
@@ -135,8 +229,17 @@ function rate(value: FormDataEntryValue | null, allowZero: boolean) {
   // The API's bounded integer is exact in JavaScript; billing itself uses bigint.
   return Number(micros);
 }
-export type ModelConnectionDraft = { base_url: string; allow_private_network: boolean; api_key?: string; reuse_from_release_id?: string };
-export function capabilityDraft(form: FormData): { document: CapabilityDocument; reason: string; connection?: ModelConnectionDraft } {
+export type ModelConnectionDraft = {
+  base_url: string;
+  allow_private_network: boolean;
+  api_key?: string;
+  reuse_from_release_id?: string;
+};
+export function capabilityDraft(form: FormData): {
+  document: CapabilityDocument;
+  reason: string;
+  connection?: ModelConnectionDraft;
+} {
   const profile = form.get("profile"),
     model = String(form.get("model") ?? "").trim(),
     reason = String(form.get("reason") ?? "").trim();
@@ -163,40 +266,106 @@ export function capabilityDraft(form: FormData): { document: CapabilityDocument;
         rate(form.get("output_rate"), true),
       ],
     };
-  } else if (profile === "internal-image2-v1" || profile === "internal-video-v1") {
+  } else if (
+    profile === "internal-image2-v1" ||
+    profile === "internal-video-v1"
+  ) {
     document = {
       ...common,
       profile_key: profile,
       reasoning_effort: null,
-      rates: [rate(form.get(profile === "internal-video-v1" ? "video_rate" : "image_rate"), false)],
+      rates: [
+        rate(
+          form.get(
+            profile === "internal-video-v1" ? "video_rate" : "image_rate",
+          ),
+          false,
+        ),
+      ],
     };
-  } else if (profile === "internal-speech-v1" || profile === "internal-transcription-v1") {
-    const locales = String(form.get("locales") ?? "").split(/[\s,]+/).filter(Boolean);
-    if (!locales.length || locales.length > 3 || new Set(locales).size !== locales.length
-      || locales.some(value => !["en", "zh-HK", "yue-HK"].includes(value)))
-      throw new Error("請選擇不重複的支援語言 / Choose unique supported locales");
+  } else if (
+    profile === "internal-speech-v1" ||
+    profile === "internal-transcription-v1"
+  ) {
+    const locales = String(form.get("locales") ?? "")
+      .split(/[\s,]+/)
+      .filter(Boolean);
+    if (
+      !locales.length ||
+      locales.length > 3 ||
+      new Set(locales).size !== locales.length ||
+      locales.some((value) => !["en", "zh-HK", "yue-HK"].includes(value))
+    )
+      throw new Error(
+        "請選擇不重複的支援語言 / Choose unique supported locales",
+      );
     const price = rate(form.get("audio_rate"), false);
-    if (price > 1e9) throw new Error("音訊每單位費率最高 HK$1,000 / Audio rate is at most HK$1,000 per unit");
-    const audio = { ...common, reasoning_effort: null, rates: [price], locales };
+    if (price > 1e9)
+      throw new Error(
+        "音訊每單位費率最高 HK$1,000 / Audio rate is at most HK$1,000 per unit",
+      );
+    const audio = {
+      ...common,
+      reasoning_effort: null,
+      rates: [price],
+      locales,
+    };
     if (profile === "internal-speech-v1") {
-      const voices = String(form.get("voices") ?? "").split(/[\s,]+/).filter(Boolean);
-      if (!voices.length || voices.length > 8 || new Set(voices).size !== voices.length
-        || voices.some(value => !/^[a-zA-Z0-9_-]{1,80}$/.test(value)))
-        throw new Error("請提供一至八個不重複的聲音 ID / Enter one to eight unique voice IDs");
-      document = { ...audio, profile_key: profile, voices } as CapabilityDocument;
-    } else document = { ...audio, profile_key: profile, timestamps: form.get("timestamps") === "on" } as CapabilityDocument;
+      const voices = String(form.get("voices") ?? "")
+        .split(/[\s,]+/)
+        .filter(Boolean);
+      if (
+        !voices.length ||
+        voices.length > 8 ||
+        new Set(voices).size !== voices.length ||
+        voices.some((value) => !/^[a-zA-Z0-9_-]{1,80}$/.test(value))
+      )
+        throw new Error(
+          "請提供一至八個不重複的聲音 ID / Enter one to eight unique voice IDs",
+        );
+      document = {
+        ...audio,
+        profile_key: profile,
+        voices,
+      } as CapabilityDocument;
+    } else
+      document = {
+        ...audio,
+        profile_key: profile,
+        timestamps: form.get("timestamps") === "on",
+      } as CapabilityDocument;
   } else throw new Error("請選擇支援的能力 / Choose a supported capability");
   if (form.has("upstream_base_url")) {
     const base_url = String(form.get("upstream_base_url") ?? "").trim(),
       api_key = String(form.get("upstream_api_key") ?? "").trim(),
       reuse = String(form.get("upstream_reuse_from") ?? "").trim();
     let parsed: URL;
-    try { parsed = new URL(base_url); } catch { throw new Error("請填寫有效的 API Base URL / Enter a valid API Base URL"); }
-    if (!["https:", "http:"].includes(parsed.protocol) || parsed.username || parsed.password || parsed.search || parsed.hash)
-      throw new Error("API 地址不得包含帳密或查詢參數 / API URL cannot contain credentials or query parameters");
-    if (!api_key && !reuse) throw new Error("請填寫此模型的 API Key / Enter this model's API Key");
-    return { document, reason, connection: { base_url, allow_private_network: form.get("upstream_private") === "on",
-      ...(reuse ? { reuse_from_release_id: reuse } : { api_key }) } };
+    try {
+      parsed = new URL(base_url);
+    } catch {
+      throw new Error("請填寫有效的 API Base URL / Enter a valid API Base URL");
+    }
+    if (
+      !["https:", "http:"].includes(parsed.protocol) ||
+      parsed.username ||
+      parsed.password ||
+      parsed.search ||
+      parsed.hash
+    )
+      throw new Error(
+        "API 地址不得包含帳密或查詢參數 / API URL cannot contain credentials or query parameters",
+      );
+    if (!api_key && !reuse)
+      throw new Error("請填寫此模型的 API Key / Enter this model's API Key");
+    return {
+      document,
+      reason,
+      connection: {
+        base_url,
+        allow_private_network: form.get("upstream_private") === "on",
+        ...(reuse ? { reuse_from_release_id: reuse } : { api_key }),
+      },
+    };
   }
   return { document, reason };
 }
