@@ -1,3 +1,9 @@
+<!-- admin-directory-lifecycle-184 -->
+
+用户与企业管理已补齐新建、逐行删除、当页多选与批量状态／删除，统一预览、权限、原子执行和完整审计。
+
+[需求 / Requirements](requirements/184-admin-directory-lifecycle.md) · [开发与使用 / Implementation](development/184-admin-directory-lifecycle.md) · [变更 / Changes](changes/184-admin-directory-lifecycle.md) · [实际证据 / Evidence](quality/admin-directory-lifecycle-184.json)
+
 <!-- highest-admin-direct-182 -->
 
 最高管理员直接执行，其他角色按策略审批，完整保留审计。已验证线上 gpt-6-luna 直接发布、18项相关检查和6项实际页面检查。

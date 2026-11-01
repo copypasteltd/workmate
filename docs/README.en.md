@@ -1,3 +1,9 @@
+<!-- admin-directory-lifecycle-184 -->
+
+Users/workspaces now support creation, row deletion and selected bulk status/deletion with atomic previews, current authority and full audit.
+
+[需求 / Requirements](requirements/184-admin-directory-lifecycle.md) · [开发与使用 / Implementation](development/184-admin-directory-lifecycle.md) · [变更 / Changes](changes/184-admin-directory-lifecycle.md) · [实际证据 / Evidence](quality/admin-directory-lifecycle-184.json)
+
 <!-- highest-admin-direct-182 -->
 
 Highest administrators execute directly; other roles follow approval policy; every action retains audit. Production gpt-6-luna publication,18 focused checks and6 actual browser checks are verified.

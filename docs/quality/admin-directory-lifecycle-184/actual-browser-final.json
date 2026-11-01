@@ -1,0 +1,305 @@
+{
+  "stage": 184,
+  "at": "2026-11-01T18:50:09.042Z",
+  "checks": [
+    {
+      "name": "public administrator proxy serves the deployed directory lifecycle",
+      "status": "passed"
+    },
+    {
+      "name": "global highest role and current MFA recognized",
+      "status": "passed"
+    },
+    {
+      "name": "two ordinary accounts created through actual UI without invented email verification; admin-origin filter reads them",
+      "status": "passed"
+    },
+    {
+      "name": "users current-page selection bulk-freezes two accounts atomically",
+      "status": "passed"
+    },
+    {
+      "name": "selected users reactivate with fresh server versions",
+      "status": "passed"
+    },
+    {
+      "name": "two workspaces, owner memberships, billing accounts and first projects created through actual UI",
+      "status": "passed"
+    },
+    {
+      "name": "workspace list supports an explicit atomic bulk status change",
+      "status": "passed"
+    },
+    {
+      "name": "owned workspace bulk deletion fences admission and queues two distinct durable cleanup jobs",
+      "status": "passed"
+    },
+    {
+      "name": "two owned user identities deleted and removed from the live directory",
+      "status": "passed"
+    },
+    {
+      "name": "deleted fixtures absent from both directories and actual highest actor recorded in immutable audit",
+      "status": "passed"
+    }
+  ],
+  "media": [
+    {
+      "client": "admin",
+      "path": "assets/screenshots/184-create-user-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png"
+    },
+    {
+      "client": "admin",
+      "path": "assets/screenshots/184-users-bulk-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png"
+    },
+    {
+      "client": "admin",
+      "path": "assets/screenshots/184-create-workspace-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png"
+    },
+    {
+      "client": "admin",
+      "path": "assets/screenshots/184-workspaces-delete-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png"
+    },
+    {
+      "client": "admin",
+      "path": "assets/screenshots/184-cleanup-journal-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png"
+    }
+  ],
+  "network": {
+    "public_host": "agent-dashboard.copypaste.hk",
+    "selected_dns_address": "172.67.180.165",
+    "reason": "Other advertised IPv4 route timed out from this workstation",
+    "tls_verification": true,
+    "api_responses_mocked": false
+  },
+  "artifact_version": "ui-v2",
+  "fixture_prefix": "QA184-d9ef4972",
+  "users": [
+    {
+      "id": "bfd26ce9-0374-4c99-aa0b-bf17f7ad9187",
+      "name": "QA184-d9ef4972 User 1",
+      "state": "active",
+      "version": 1,
+      "email_verification": "required_on_sign_in"
+    },
+    {
+      "id": "a17cb37c-9699-4648-a41d-5658fddc0c7a",
+      "name": "QA184-d9ef4972 User 2",
+      "state": "active",
+      "version": 1,
+      "email_verification": "required_on_sign_in"
+    }
+  ],
+  "tenants": [
+    {
+      "id": "1f3607f8-cb9a-40f1-a0d8-318e41bd1af7",
+      "name": "QA184-d9ef4972 Workspace 1",
+      "state": "active",
+      "version": 1,
+      "owner_id": "bfd26ce9-0374-4c99-aa0b-bf17f7ad9187",
+      "project_id": "1ebcbc8a-f3ee-42e4-aac3-366afe11ad29",
+      "billing_account_id": "263970e0-4c89-4270-ad93-940bab4cf188"
+    },
+    {
+      "id": "27e7ed02-2cbc-48ec-a857-90e60c950cfa",
+      "name": "QA184-d9ef4972 Workspace 2",
+      "state": "active",
+      "version": 1,
+      "owner_id": "bfd26ce9-0374-4c99-aa0b-bf17f7ad9187",
+      "project_id": "808a97b2-efa3-4c2b-9528-c54500ee13dc",
+      "billing_account_id": "b09af835-dc35-4108-8f02-60d02199f71a"
+    }
+  ],
+  "operations": [
+    {
+      "id": "2c5e5142-7905-4855-9842-647716725d94",
+      "action": "directory.users.create",
+      "result": {
+        "items": [
+          {
+            "id": "bfd26ce9-0374-4c99-aa0b-bf17f7ad9187",
+            "name": "QA184-d9ef4972 User 1",
+            "state": "active",
+            "version": 1,
+            "email_verification": "required_on_sign_in"
+          }
+        ],
+        "total": 1,
+        "cleanup": null,
+        "acceptance": "atomic"
+      }
+    },
+    {
+      "id": "842df09c-2628-4bc8-9a74-6b79f51c07f0",
+      "action": "directory.users.create",
+      "result": {
+        "items": [
+          {
+            "id": "a17cb37c-9699-4648-a41d-5658fddc0c7a",
+            "name": "QA184-d9ef4972 User 2",
+            "state": "active",
+            "version": 1,
+            "email_verification": "required_on_sign_in"
+          }
+        ],
+        "total": 1,
+        "cleanup": null,
+        "acceptance": "atomic"
+      }
+    },
+    {
+      "id": "610b86a4-9071-4849-931a-0a010d5306eb",
+      "action": "directory.users.status",
+      "result": {
+        "items": [
+          {
+            "id": "a17cb37c-9699-4648-a41d-5658fddc0c7a",
+            "state": "frozen",
+            "version": 2
+          },
+          {
+            "id": "bfd26ce9-0374-4c99-aa0b-bf17f7ad9187",
+            "state": "frozen",
+            "version": 2
+          }
+        ],
+        "total": 2,
+        "cleanup": null,
+        "acceptance": "atomic"
+      }
+    },
+    {
+      "id": "e6b9b763-cf00-4633-82c8-51480a7a17e9",
+      "action": "directory.users.status",
+      "result": {
+        "items": [
+          {
+            "id": "a17cb37c-9699-4648-a41d-5658fddc0c7a",
+            "state": "active",
+            "version": 3
+          },
+          {
+            "id": "bfd26ce9-0374-4c99-aa0b-bf17f7ad9187",
+            "state": "active",
+            "version": 3
+          }
+        ],
+        "total": 2,
+        "cleanup": null,
+        "acceptance": "atomic"
+      }
+    },
+    {
+      "id": "4d235a49-7e3c-4c04-9d91-bc0e42f4975b",
+      "action": "directory.tenants.create",
+      "result": {
+        "items": [
+          {
+            "id": "1f3607f8-cb9a-40f1-a0d8-318e41bd1af7",
+            "name": "QA184-d9ef4972 Workspace 1",
+            "state": "active",
+            "version": 1,
+            "owner_id": "bfd26ce9-0374-4c99-aa0b-bf17f7ad9187",
+            "project_id": "1ebcbc8a-f3ee-42e4-aac3-366afe11ad29",
+            "billing_account_id": "263970e0-4c89-4270-ad93-940bab4cf188"
+          }
+        ],
+        "total": 1,
+        "cleanup": null,
+        "acceptance": "atomic"
+      }
+    },
+    {
+      "id": "e9699221-4d32-4085-8732-9da14f869198",
+      "action": "directory.tenants.create",
+      "result": {
+        "items": [
+          {
+            "id": "27e7ed02-2cbc-48ec-a857-90e60c950cfa",
+            "name": "QA184-d9ef4972 Workspace 2",
+            "state": "active",
+            "version": 1,
+            "owner_id": "bfd26ce9-0374-4c99-aa0b-bf17f7ad9187",
+            "project_id": "808a97b2-efa3-4c2b-9528-c54500ee13dc",
+            "billing_account_id": "b09af835-dc35-4108-8f02-60d02199f71a"
+          }
+        ],
+        "total": 1,
+        "cleanup": null,
+        "acceptance": "atomic"
+      }
+    },
+    {
+      "id": "7a75ee29-7598-4e23-9fc1-760ae338c72b",
+      "action": "directory.tenants.status",
+      "result": {
+        "items": [
+          {
+            "id": "1f3607f8-cb9a-40f1-a0d8-318e41bd1af7",
+            "state": "suspended",
+            "version": 2
+          },
+          {
+            "id": "27e7ed02-2cbc-48ec-a857-90e60c950cfa",
+            "state": "suspended",
+            "version": 2
+          }
+        ],
+        "total": 2,
+        "cleanup": null,
+        "acceptance": "atomic"
+      }
+    },
+    {
+      "id": "f553a6ad-9324-404b-bf5f-a5a06d4d2105",
+      "action": "directory.tenants.delete",
+      "result": {
+        "items": [
+          {
+            "id": "1f3607f8-cb9a-40f1-a0d8-318e41bd1af7",
+            "state": "deleting",
+            "version": 3,
+            "deletion_job_id": "2288c72d-3f11-456e-934a-06b83e471cdc"
+          },
+          {
+            "id": "27e7ed02-2cbc-48ec-a857-90e60c950cfa",
+            "state": "deleting",
+            "version": 3,
+            "deletion_job_id": "a4950378-6dd6-4a3c-b37a-19db9f7aa614"
+          }
+        ],
+        "total": 2,
+        "cleanup": "durable_background_jobs",
+        "acceptance": "atomic"
+      }
+    },
+    {
+      "id": "2a1993ef-f0b3-4207-9c23-05f08a7a2860",
+      "action": "directory.users.delete",
+      "result": {
+        "items": [
+          {
+            "id": "a17cb37c-9699-4648-a41d-5658fddc0c7a",
+            "state": "deleted",
+            "version": 4
+          },
+          {
+            "id": "bfd26ce9-0374-4c99-aa0b-bf17f7ad9187",
+            "state": "deleted",
+            "version": 4
+          }
+        ],
+        "total": 2,
+        "cleanup": null,
+        "acceptance": "atomic"
+      }
+    }
+  ],
+  "deletion_jobs": [
+    "2288c72d-3f11-456e-934a-06b83e471cdc",
+    "a4950378-6dd6-4a3c-b37a-19db9f7aa614"
+  ],
+  "browser_closed": true,
+  "status": "passed",
+  "finished_at": "2026-11-01T18:50:45.681Z"
+}

@@ -1,0 +1,207 @@
+{
+  "stage": 184,
+  "status": "deployed_and_qualified",
+  "at": "2026-11-01T18:58:42.085782+00:00",
+  "scope": "Administrative user/workspace create, permanent account deletion, durable enterprise cleanup and explicitly selected bulk status/deletion; other product acceptance retains its own scope.",
+  "schema_version": 161,
+  "native_checks": 13,
+  "actual_final_browser_checks": 10,
+  "production_operations": 18,
+  "production_direct_audit_facts": 18,
+  "owned_user_fixtures_cleaned": 4,
+  "owned_enterprise_fixtures_cleaned": 4,
+  "workspace_cleanup_completed": true,
+  "cleanup_retention": "Financial/audit facts, backups needing replay and customer-local copies are retained. All four root jobs have empty operational exception arrays.",
+  "original_attempts_preserved": {
+    "native_v1": "Fixture audit table and user-facing tenant DTO version mistakes;8 failed/3 passed. Original bytes retained.",
+    "native_v2": "11/11 passed after fixture corrections and response result implementation.",
+    "native_v3": "13/13 passed, including multiple workspaces, legacy bypass guard, batch caps, expiry and revoked authority.",
+    "deployment_postcheck": "Initial script reached live deployment then stopped on firmware daemon PID change. Follow-up verified preserved business services/configuration and recorded the observed firmware start.",
+    "first_cleanup_read": "Read before the second asynchronous cleanup completed. Subsequent durable-state verification confirms all four roots completed."
+  },
+  "browser_closed": true,
+  "ssh_closed": true,
+  "local_virtualization_used": false,
+  "tests": [
+    {
+      "path": "docs/quality/admin-directory-lifecycle-184/focused-tests-v2.log",
+      "sha256": "7e27cec62043f9e05cc5f768175683e172003b14775b577172e24a924f4d4f9d",
+      "tests": 11,
+      "pass": 11,
+      "fail": 0
+    },
+    {
+      "path": "docs/quality/admin-directory-lifecycle-184/focused-tests-v3.log",
+      "sha256": "22b2fbc241edfad1d6f0fe25eda8a0d893de62e6519c405f42a91748d82ec21f",
+      "tests": 13,
+      "pass": 13,
+      "fail": 0
+    }
+  ],
+  "sources": {
+    "dev/copypaste-platform/README.en.md": "b9a480db7b6a5f02ddf7853678bae0a531b952dddb73e1e1c6596e6ac761cdfd",
+    "dev/copypaste-platform/README.md": "1df4c7bb5cd3d74361ed002617cf179ab22327f71d82a1794af4f5192fccf5d7",
+    "dev/copypaste-platform/catalog/admin-permission-catalog.json": "7cd774e96fa9766bc23100bd8908b163e31a417ef971ebe6a0a8448e5ad4873e",
+    "dev/copypaste-platform/contracts/admin-directory-lifecycle-184.json": "b61a6a7fa87c34fc886b6d57c2901252026277faa7107f5c482593a205801223",
+    "dev/copypaste-platform/migrations/161-admin-directory-lifecycle.sql": "30d1b9e08d71d9c88238f4eefdc7c7b1a17971faf0a22c0423ba154fee8ff705",
+    "dev/copypaste-platform/src/admin-accounts.ts": "cc5ea8eb81617cf10511dc98c094e21aad3ba677344515533b8d98d99364fcc9",
+    "dev/copypaste-platform/src/admin-approvals.ts": "13ec4d6a168fc671ed01fbaa752d0300d3968dcfe4cab180c8e64e0e3c508fa6",
+    "dev/copypaste-platform/src/admin-directory-lifecycle.ts": "4b1fe350515256e3293d137a89e5b99a880f750cd664d7d86b30ddfe8872bd57",
+    "dev/copypaste-platform/src/admin-directory-operational.ts": "acbe8e682ff2b42034f5a70c2b2b5ecf3fea84515bcc76045a77a2111f9efc1b",
+    "dev/copypaste-platform/src/admin-directory.ts": "b2e266d7a8b2e5f19a7d1fb06c38f86123087d66760e35f1ace45dcbce7833c3",
+    "dev/copypaste-platform/src/schema-compatibility.ts": "5ef93dc72d4fa9f02842a9df3b5937e1bc5e00ff3ab57cec4bc4a22d933e4a8c",
+    "dev/copypaste-platform/src/scope-erasure.ts": "41d53f6b4a53816f3d633be24b2c57ed19bd61dcee98b6df9ed4c91edb18a4c0",
+    "dev/copypaste-platform/src/server.ts": "0171158ae39159652e85b397e13275f3a7b2b78b082ba9619545b26d5323e390",
+    "dev/copypaste-platform/tests/admin-directory-lifecycle-184-v1.test.ts": "ff423345e8e619afbab4813c46eddff46a9ecd7e4ed1e27933b5cbd001a912ae",
+    "dev/copypaste-platform/tests/admin-directory-lifecycle-184-v2.test.ts": "1fc59f24b78af337bbf423bbc3ae69885b4a8eac0074ef7d163260ea56e745df",
+    "dev/copypaste-platform/tests/admin-directory-lifecycle-184-v3.test.ts": "342e3a62d667007aa33e63ed9dcec86aebc5a418ff1c1e768633afc1aae54d65",
+    "dev/copypaste-admin/README.en.md": "33727f82c867509a7bec53bba02ab01f4cbf03ba207a134ae875085cb9d02eaa",
+    "dev/copypaste-admin/README.md": "86be14bc296d8eed09ff1201836cc5d45457aab9f180a333a33c19d65bf8a1ea",
+    "dev/copypaste-admin/assets/demos/184-admin-directory-lifecycle.gif": "0890700eb3fd0c528218b1cb0030531875720e3e12779883720ce535f86f9be7",
+    "dev/copypaste-admin/assets/demos/184-admin-directory-lifecycle.mp4": "3bc9c7b23e459d8508a50d3e66b4bdf8a182cb5ebe36d630b62afc50ca7d2936",
+    "dev/copypaste-admin/assets/screenshots/184-cleanup-journal-7afb6572-b1a7-451e-8293-cb36b09eac12.png": "3cfa7f19c22fbd20176ae62e7809ea713f9f924e0c9ba7a5c72d6ed73985f093",
+    "dev/copypaste-admin/assets/screenshots/184-cleanup-journal-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png": "3cfa7f19c22fbd20176ae62e7809ea713f9f924e0c9ba7a5c72d6ed73985f093",
+    "dev/copypaste-admin/assets/screenshots/184-create-user-preview-7afb6572-b1a7-451e-8293-cb36b09eac12.png": "10983fc15e5d5574253b2b8d7857d5041bfd502a3900056a6dcada0ccd475408",
+    "dev/copypaste-admin/assets/screenshots/184-create-user-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png": "3a7b03ed559d0db003c42e75ff9fce19ee0fad117e15664f5000297a23c954bb",
+    "dev/copypaste-admin/assets/screenshots/184-create-workspace-preview-7afb6572-b1a7-451e-8293-cb36b09eac12.png": "530ad528c4da2e13e5d8e45f8f93e185297248b3aa707f5e2d4f8dcb6772f316",
+    "dev/copypaste-admin/assets/screenshots/184-create-workspace-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png": "52636c4a0964eaa99d1fdaf9e7d279384d5771a8df5d82d240569d4e580288f5",
+    "dev/copypaste-admin/assets/screenshots/184-users-bulk-preview-7afb6572-b1a7-451e-8293-cb36b09eac12.png": "bf45672c4b4cb0c5fab02cd87be189f67a95730781dcd1e659535f32ee500bf2",
+    "dev/copypaste-admin/assets/screenshots/184-users-bulk-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png": "5496e64c7789497adbcf0fee5903706ba2a398205c1e844a615cde0d59e5c515",
+    "dev/copypaste-admin/assets/screenshots/184-workspaces-delete-preview-7afb6572-b1a7-451e-8293-cb36b09eac12.png": "8686ad58957ef18ed3f19d780f43719fe7893bb6b8347b63cf09dba8f822ea7d",
+    "dev/copypaste-admin/assets/screenshots/184-workspaces-delete-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png": "48f603cb65d59c564d843ccd060e407b24f42be3fb6dcb82318f7e484df64631",
+    "dev/copypaste-admin/src/approvals.tsx": "3d520f30a97efcae2b0288bbb9eec4aeea796e672eeec25fe2b15a6749dcec36",
+    "dev/copypaste-admin/src/deletions.tsx": "c90da4f610f88429a24a66e5d24f10b8f179d14896687be67b9db88d4cb2b35c",
+    "dev/copypaste-admin/src/directory-actions.tsx": "3c871cd9b3afd81321b31b9b4bf94ad80e2caaabad96da82a4f3266737fa4d69",
+    "dev/copypaste-admin/src/directory.tsx": "8d9711ba4ae496823d4563b6e867169520fbdfcc36afa347943f3c2a732035ef",
+    "dev/copypaste-admin/src/main.tsx": "cb89ed2c0913312a96882710dd3d0108659e2f7c024a6569666d180dbaa2996c",
+    "dev/copypaste-admin/src/style.css": "7090d256c75528b700e2eb1a21f9ac5d110f081ea4232a6913a9960575d17781",
+    "dev/copypaste-delivery/README.en.md": "a8d0a9bb8564db33d65b2d8911d3a570872330e0ed4c25ecfe71c28829a57901",
+    "dev/copypaste-delivery/README.md": "47d23bd91b80f0e8126c1e87a3fda6aa27b4639867403a9d0cf09dad13c2ace3",
+    "dev/copypaste-delivery/scripts/finalize-admin-directory-lifecycle-184-v1.sh": "5f14d8c55bd14a69848ab3e31aa845725eae932f0a425e53398973830d65804e",
+    "dev/copypaste-delivery/scripts/inspect-admin-directory-cleanup-184-v1.sh": "ac94af76ca8512ad01aaf5b28a1c314f1550f1d80878db53171df88b6cb8f49e",
+    "dev/copypaste-delivery/scripts/install-admin-directory-lifecycle-184-v1.sh": "897f57f8f4592fe1219dcbcb3cab2c07dfa0179147906f95d995c0bb2c82d88a",
+    "dev/copypaste-delivery/scripts/install-admin-directory-ui-184-v2.sh": "ecaee7390c5e0c2ee4f88e659a16bf98961486bd6d6b18a77abebde36b6b33bf",
+    "dev/copypaste-delivery/scripts/package-admin-directory-lifecycle-184-v1.py": "4fda6ce4871f9febb159eeb89a60f1735ef64caeb21dd19f96b301639ffd1f7a",
+    "dev/copypaste-delivery/scripts/qualify-admin-directory-lifecycle-184-v1.mjs": "ee03497a1ac51d04646e1238c92e3dc86222e344811cfa384bceba1d6c284d9f",
+    "dev/copypaste-delivery/scripts/qualify-admin-directory-lifecycle-184-v2.mjs": "4872fe2cbee9152deed1a6b6fcc9342d9181c409f7acbca5708f53c0eea83477",
+    "dev/copypaste-delivery/scripts/render-admin-directory-lifecycle-media-184-v1.py": "e82c884679e2a1a20e63c62fd13877e2e8a7ac3a7b06134b6793fda7f4394118",
+    "dev/copypaste-delivery/scripts/test-admin-directory-lifecycle-184-v1.mjs": "70a27ba6b56bd38db979471c01975bb6f7d02509eabb4bdcd41b7ce084a1bcbb",
+    "dev/copypaste-delivery/scripts/test-admin-directory-lifecycle-184-v2.mjs": "3f66af8d81ca5f35ad0046a0e2571bb9acc19ea035f664d0a179396a80083684",
+    "dev/copypaste-delivery/scripts/test-admin-directory-lifecycle-184-v3.mjs": "164aaab0c21c836757a0e9615ee9686cffc8c91994b505448d981a64b8dbb226",
+    "dev/copypaste-delivery/scripts/verify-admin-directory-lifecycle-184-v1.sh": "de8f829db359cc8df5481b777423eb96bc4d736716a7c633fda4e10502471d00",
+    "docs/README.en.md": "b29bdf20e24ca31ea1b55140cdbdc11962d9faf9f35a4a0523c1ca3327cd3d7c",
+    "docs/README.md": "e02d904e699a97eed4778a23f017bdfc50995b36aef836a1853ccdda51c00f2b",
+    "docs/assets/admin-directory-lifecycle-184/184-admin-directory-lifecycle.gif": "0890700eb3fd0c528218b1cb0030531875720e3e12779883720ce535f86f9be7",
+    "docs/assets/admin-directory-lifecycle-184/184-admin-directory-lifecycle.mp4": "3bc9c7b23e459d8508a50d3e66b4bdf8a182cb5ebe36d630b62afc50ca7d2936",
+    "docs/assets/admin-directory-lifecycle-184/cleanup-journal.png": "3cfa7f19c22fbd20176ae62e7809ea713f9f924e0c9ba7a5c72d6ed73985f093",
+    "docs/assets/admin-directory-lifecycle-184/create-user.png": "3a7b03ed559d0db003c42e75ff9fce19ee0fad117e15664f5000297a23c954bb",
+    "docs/assets/admin-directory-lifecycle-184/create-workspace.png": "52636c4a0964eaa99d1fdaf9e7d279384d5771a8df5d82d240569d4e580288f5",
+    "docs/assets/admin-directory-lifecycle-184/users-bulk.png": "5496e64c7789497adbcf0fee5903706ba2a398205c1e844a615cde0d59e5c515",
+    "docs/assets/admin-directory-lifecycle-184/workspaces-delete.png": "48f603cb65d59c564d843ccd060e407b24f42be3fb6dcb82318f7e484df64631",
+    "docs/changes/184-admin-directory-lifecycle.md": "e5fcf45ddee45d6167f1a0a26462a828ef37234f56553354f24336ee30f6f87f",
+    "docs/contracts/admin-directory-lifecycle-184.json": "b61a6a7fa87c34fc886b6d57c2901252026277faa7107f5c482593a205801223",
+    "docs/contracts/admin-permission-catalog.json": "7cd774e96fa9766bc23100bd8908b163e31a417ef971ebe6a0a8448e5ad4873e",
+    "docs/development/184-admin-directory-lifecycle.md": "58df687b91f6e395f0a576be248c82a9442c616457c49f58ae764631732d4fe4",
+    "docs/quality/admin-directory-lifecycle-184/actual-browser-final.json": "6e8db937d774793a728d998d4061e840a69c0ae3c4a6fdf4ea1cb9afaf9fd2f5",
+    "docs/quality/admin-directory-lifecycle-184/admin-build-v5.log": "1bf8b1eb97846feadbc9173eee168f2dc21d8faf1690a2e266d3bb30049bbfa5",
+    "docs/quality/admin-directory-lifecycle-184/backend-build-v4.log": "2f848ffdcab6f543bc0b0c2fd6fdd5bf41432da57614f912fe38c0283495dacf",
+    "docs/quality/admin-directory-lifecycle-184/browser-v1.log": "abfd26c8d68da0adc864748a70715522c42a5fc749bd22f46781d050d78d0157",
+    "docs/quality/admin-directory-lifecycle-184/browser-v2.log": "fbea244124e9b987b56d2a9414816a90e534a91535c12c772774dcd99d30d904",
+    "docs/quality/admin-directory-lifecycle-184/focused-tests-v1-failed.log": "a78362b2e78b84aae8526586f433d4a4b678556cca84abbf6a88fd90b2172387",
+    "docs/quality/admin-directory-lifecycle-184/focused-tests-v2.log": "7e27cec62043f9e05cc5f768175683e172003b14775b577172e24a924f4d4f9d",
+    "docs/quality/admin-directory-lifecycle-184/focused-tests-v3.log": "22b2fbc241edfad1d6f0fe25eda8a0d893de62e6519c405f42a91748d82ec21f",
+    "docs/quality/admin-directory-lifecycle-184/production-verification.json": "7b00b4a7451eae75283131bd9e3aec5cd45043bb699f7f0b70a72c8f3b9217cd",
+    "docs/quality/admin-directory-lifecycle-184/server-runtime.json": "b245a946aa19cb64101eb3aca809cd426041f25d10aefa99d50a1c1a95a59630",
+    "docs/requirements/184-admin-directory-lifecycle.md": "06a7a0f726beaf5311bdf09296b08bb4bfb0c6d2771bcc7fd385695fb77da235",
+    "docs/tools/prepare-admin-directory-lifecycle-184-v1.py": "047b8ead53f264e269cd0c0821a4947cbfcba0443188c5f58107ac88b1cc6536",
+    "docs/tools/publish-admin-directory-lifecycle-184-v1.py": "76360487f73cc6da82189c40fedbf27f0280616f48fc3c0bae37cb9638b8b2d5"
+  },
+  "media": [
+    {
+      "path": "dev/copypaste-admin/assets/demos/184-admin-directory-lifecycle.mp4",
+      "bytes": 1357611,
+      "sha256": "3bc9c7b23e459d8508a50d3e66b4bdf8a182cb5ebe36d630b62afc50ca7d2936",
+      "source_recording_sha256": "0a50794deaa4a7959a571c3669b2b2ce14f6b0bd81c1e0925aca3a0a1f8c4a8f",
+      "post_login_only": true
+    },
+    {
+      "path": "docs/assets/admin-directory-lifecycle-184/184-admin-directory-lifecycle.mp4",
+      "bytes": 1357611,
+      "sha256": "3bc9c7b23e459d8508a50d3e66b4bdf8a182cb5ebe36d630b62afc50ca7d2936",
+      "copy_of": "dev/copypaste-admin/assets/demos/184-admin-directory-lifecycle.mp4"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/demos/184-admin-directory-lifecycle.gif",
+      "bytes": 7038496,
+      "sha256": "0890700eb3fd0c528218b1cb0030531875720e3e12779883720ce535f86f9be7",
+      "source_recording_sha256": "0a50794deaa4a7959a571c3669b2b2ce14f6b0bd81c1e0925aca3a0a1f8c4a8f",
+      "post_login_only": true
+    },
+    {
+      "path": "docs/assets/admin-directory-lifecycle-184/184-admin-directory-lifecycle.gif",
+      "bytes": 7038496,
+      "sha256": "0890700eb3fd0c528218b1cb0030531875720e3e12779883720ce535f86f9be7",
+      "copy_of": "dev/copypaste-admin/assets/demos/184-admin-directory-lifecycle.gif"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/screenshots/184-create-user-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png",
+      "bytes": 262268,
+      "sha256": "3a7b03ed559d0db003c42e75ff9fce19ee0fad117e15664f5000297a23c954bb",
+      "actual_browser_capture": true
+    },
+    {
+      "path": "docs/assets/admin-directory-lifecycle-184/create-user.png",
+      "bytes": 262268,
+      "sha256": "3a7b03ed559d0db003c42e75ff9fce19ee0fad117e15664f5000297a23c954bb",
+      "copy_of": "dev/copypaste-admin/assets/screenshots/184-create-user-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/screenshots/184-users-bulk-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png",
+      "bytes": 225848,
+      "sha256": "5496e64c7789497adbcf0fee5903706ba2a398205c1e844a615cde0d59e5c515",
+      "actual_browser_capture": true
+    },
+    {
+      "path": "docs/assets/admin-directory-lifecycle-184/users-bulk.png",
+      "bytes": 225848,
+      "sha256": "5496e64c7789497adbcf0fee5903706ba2a398205c1e844a615cde0d59e5c515",
+      "copy_of": "dev/copypaste-admin/assets/screenshots/184-users-bulk-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/screenshots/184-create-workspace-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png",
+      "bytes": 236494,
+      "sha256": "52636c4a0964eaa99d1fdaf9e7d279384d5771a8df5d82d240569d4e580288f5",
+      "actual_browser_capture": true
+    },
+    {
+      "path": "docs/assets/admin-directory-lifecycle-184/create-workspace.png",
+      "bytes": 236494,
+      "sha256": "52636c4a0964eaa99d1fdaf9e7d279384d5771a8df5d82d240569d4e580288f5",
+      "copy_of": "dev/copypaste-admin/assets/screenshots/184-create-workspace-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/screenshots/184-workspaces-delete-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png",
+      "bytes": 219283,
+      "sha256": "48f603cb65d59c564d843ccd060e407b24f42be3fb6dcb82318f7e484df64631",
+      "actual_browser_capture": true
+    },
+    {
+      "path": "docs/assets/admin-directory-lifecycle-184/workspaces-delete.png",
+      "bytes": 219283,
+      "sha256": "48f603cb65d59c564d843ccd060e407b24f42be3fb6dcb82318f7e484df64631",
+      "copy_of": "dev/copypaste-admin/assets/screenshots/184-workspaces-delete-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/screenshots/184-cleanup-journal-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png",
+      "bytes": 146133,
+      "sha256": "3cfa7f19c22fbd20176ae62e7809ea713f9f924e0c9ba7a5c72d6ed73985f093",
+      "actual_browser_capture": true
+    },
+    {
+      "path": "docs/assets/admin-directory-lifecycle-184/cleanup-journal.png",
+      "bytes": 146133,
+      "sha256": "3cfa7f19c22fbd20176ae62e7809ea713f9f924e0c9ba7a5c72d6ed73985f093",
+      "copy_of": "dev/copypaste-admin/assets/screenshots/184-cleanup-journal-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png"
+    }
+  ]
+}
