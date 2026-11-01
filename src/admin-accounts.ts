@@ -1,3 +1,4 @@
+import { adminApprovalRequired, superAdminDirectActive } from "./admin-execution-policy.js";
 import { createApprovalRequest } from "./admin-approval-storage.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
@@ -411,7 +412,7 @@ export async function decideAccountOperation(
   await lockAdminAccess(tx);
   await lockAccountTarget(tx, a, target);
   await authority(tx, reviewer, a, target, "admin.approvals.decide");
-  if (reviewer.id === op.principal_id)
+  if (reviewer.id === op.principal_id && !(await superAdminDirectActive(tx, reviewer.id)))
     throw new Problem(
       403,
       "SELF_APPROVAL_FORBIDDEN",
@@ -503,7 +504,7 @@ export function registerAdminAccounts(app: FastifyInstance, db: Database) {
             command: b,
             before: checked.before,
             policy_version_id: policy.id,
-            approval: needsApproval(policy, action, b, checked.before),
+            approval: await adminApprovalRequired(tx, req.principal, needsApproval(policy, action, b, checked.before)),
             impact: await impact(tx, def.type, target),
           };
           const r = (
@@ -559,7 +560,7 @@ export function registerAdminAccounts(app: FastifyInstance, db: Database) {
             async () => {
               const checked = await inspect(tx, action, target, b),
                 policy = await accountPolicy(tx, action),
-                approval = needsApproval(policy, action, b, checked.before);
+                approval = await adminApprovalRequired(tx, req.principal, needsApproval(policy, action, b, checked.before));
               if (previewId) {
                 const preview = (
                   await tx.query(

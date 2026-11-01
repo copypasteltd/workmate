@@ -1,3 +1,4 @@
+import { adminApprovalRequired } from "./admin-execution-policy.js";
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { Database, Tx } from "./db.js";
@@ -423,7 +424,7 @@ async function inspect(
       "DURATION_LIMIT",
       "The requested grant or extension exceeds current policy",
     );
-  const approval =
+  const approval = await adminApprovalRequired(tx, actor,
     rules.vip_all_changes_require_approval ||
     hours > rules.vip_approval_hours ||
     (!old &&
@@ -431,7 +432,7 @@ async function inspect(
       rules.vip_replace_requires_approval) ||
     (!old &&
       (command as VipCreate).source === "paid" &&
-      rules.vip_paid_requires_approval);
+      rules.vip_paid_requires_approval));
   return {
     subject,
     holder,

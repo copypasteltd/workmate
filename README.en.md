@@ -1,3 +1,15 @@
+<!-- highest-admin-direct-182 -->
+
+## Highest-administrator direct execution · stage182
+
+Active global built-in super_admin executes protected administrative changes directly. Other roles keep policy-based approval and cannot approve their own protected requests. Sensitive operations retain MFA, business permissions, scope, limits and original evidence checks. Actual actors, reasons, command hashes and outcomes are audited atomically.
+
+Production gpt-6-luna was published directly through the real Admin UI. Operation `7d32d69d-5680-4199-bd04-1ebe2b1b4813`, audit `7174`; no pending review was created.18 focused checks and6 real browser checks passed. Existing model settings, encrypted keys, unknown holds and historical violations are preserved. Additive schema160 requires the matching API.
+
+[设计、使用和逻辑图 / Design, usage and diagram](https://github.com/copypasteltd/workmate/blob/docs/docs/development/182-highest-admin-direct.md)
+
+![实际交互 / Actual interaction](https://raw.githubusercontent.com/copypasteltd/workmate/docs/docs/assets/highest-admin-direct-182/182-highest-admin-direct.gif)
+
 # Workmate · backend
 
 <!-- model-tool-contract-181 -->

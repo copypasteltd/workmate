@@ -1,3 +1,5 @@
+import { commitApprovalDecision } from "./admin-approval-decision.js";
+import { enableSuperAdminDirect, isHighestAdmin } from "./admin-execution-policy.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
@@ -263,6 +265,7 @@ export function registerAdminApprovals(
           operation: adminOperationDTO(op),
           command: op.payload.command,
           before: op.payload.before ?? null,
+          can_direct_execute: await isHighestAdmin(tx, req.principal),
           expires_at: op.payload.expires_at,
         };
       },
@@ -291,7 +294,7 @@ export function registerAdminApprovals(
             throw new Problem(404, "NOT_FOUND", "Financial approval not found");
           await authority(tx, req.principal, op, "admin.approvals.decide");
           await authority(tx, req.principal, op, businessPermission(op));
-          if (req.principal.id === op.principal_id)
+          if (req.principal.id === op.principal_id && !(await enableSuperAdminDirect(tx, req.principal)))
             throw new Problem(
               403,
               "SELF_APPROVAL_FORBIDDEN",
@@ -333,6 +336,7 @@ export function registerAdminApprovals(
                   "OPERATION_EXPIRED",
                   "Approval expired; create a fresh preview",
                 );
+              await commitApprovalDecision(tx, req.principal, op, r, b, async () => {
               if (isProviderAdminOperation(op))
                 await decideProviderAdminOperation(
                   tx,
@@ -375,21 +379,7 @@ export function registerAdminApprovals(
                   b.reason,
                 );
               else await decideLegacyOperation(tx, req.principal, op, b);
-              await tx.query(
-                "INSERT INTO admin_approval_decisions(approval_id,reviewer_id,expected_version,payload_hash,decision,reason) VALUES($1,$2,$3,$4,$5,$6)",
-                [
-                  r.id,
-                  req.principal.id,
-                  r.version,
-                  b.payload_hash,
-                  b.decision,
-                  b.reason,
-                ],
-              );
-              await tx.query(
-                "UPDATE admin_approval_requests SET state=$2,version=version+1 WHERE id=$1",
-                [r.id, b.decision === "approve" ? "approved" : "rejected"],
-              );
+              });
               return { operation_id: op.id };
             },
           );

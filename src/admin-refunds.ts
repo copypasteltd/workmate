@@ -1,3 +1,4 @@
+import { enableSuperAdminDirect } from "./admin-execution-policy.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
@@ -207,7 +208,7 @@ export function registerAdminRefunds(app: FastifyInstance, db: Database) {
           "admin.billing.refund",
           BigInt(r.amount_micros),
         );
-        if (r.created_by === req.principal.id)
+        if (r.created_by === req.principal.id && !(await enableSuperAdminDirect(tx, req.principal)))
           throw new Problem(
             403,
             "INDEPENDENT_REFUND_REVIEW_REQUIRED",

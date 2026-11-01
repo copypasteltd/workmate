@@ -1,3 +1,4 @@
+import { enableSuperAdminDirect } from "./admin-execution-policy.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
@@ -335,7 +336,7 @@ export function registerAdminPayments(app: FastifyInstance, db: Database) {
           requestKey,
           b,
           async () => {
-            if (p.created_by === req.principal.id)
+            if (p.created_by === req.principal.id && !(await enableSuperAdminDirect(tx, req.principal)))
               throw new Problem(
                 403,
                 "PAYMENT_SELF_VERIFICATION",

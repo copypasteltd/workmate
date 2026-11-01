@@ -1,3 +1,4 @@
+import { adminApprovalRequired } from "./admin-execution-policy.js";
 import type { FastifyInstance } from "fastify";
 import {
   modelEntryJoins,
@@ -1542,7 +1543,9 @@ export function registerCapabilityReleases(
             async () => {
               const checked = await inspect(tx, db, catalog, id, b, rollback),
                 rules = await policy(tx),
+                approval = await adminApprovalRequired(tx, req.principal, true),
                 payload = {
+                  approval,
                   capability_command_version: 1,
                   target_id: id,
                   command: b,
@@ -1575,7 +1578,7 @@ export function registerCapabilityReleases(
                 payload_hash: preview.payload_hash,
                 before: checked.before,
                 expires_at: new Date(preview.expires_at).toISOString(),
-                decision: "independent_approval",
+                decision: approval ? "independent_approval" : "super_admin_direct",
                 creates_business_effect: false,
               };
             },
@@ -1629,8 +1632,9 @@ export function registerCapabilityReleases(
                   "Create a fresh preview of this exact capability change",
                 );
               const checked = await inspect(tx, db, catalog, id, b, rollback),
-                rules = await policy(tx);
-              if (rules.id !== p.payload.policy_version_id)
+                rules = await policy(tx),
+                approval = await adminApprovalRequired(tx, req.principal, true);
+              if (rules.id !== p.payload.policy_version_id || p.payload.approval !== approval)
                 throw new Problem(
                   409,
                   "POLICY_CHANGED",
@@ -1654,9 +1658,10 @@ export function registerCapabilityReleases(
                   before: checked.before,
                   expires_at: new Date(p.expires_at).toISOString(),
                 },
-                true,
+                approval,
               );
-              await createApprovalRequest(tx, op);
+              if (approval) await createApprovalRequest(tx, op);
+              else await publish(tx, req.principal, op, checked, rollback);
               await tx.query(
                 "UPDATE admin_previews SET consumed_at=now() WHERE id=$1",
                 [p.id],
@@ -1666,10 +1671,10 @@ export function registerCapabilityReleases(
                 req.principal,
                 actionPermission(action),
                 id,
-                "pending_approval",
+                approval ? "pending_approval" : "succeeded",
                 { operation_id: op.id, payload_hash: op.payload_hash },
               );
-              return adminOperationDTO(op);
+              return adminOperationDTO((await tx.query("SELECT * FROM admin_operations WHERE id=$1", [op.id])).rows[0]);
             },
           );
         },

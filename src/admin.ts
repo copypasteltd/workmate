@@ -1,3 +1,4 @@
+import { isHighestAdmin } from "./admin-execution-policy.js";
 import { planSchema, authorizeTaskPlan } from "./plans.js";
 import { guardLegacyClientContent } from "./client-content.js";
 import { freezeTaskSkills } from "./skill-lifecycle.js";
@@ -70,6 +71,7 @@ export function registerAdmin(
             name: req.principal.name,
           },
           bindings: bs,
+          highest_admin: await isHighestAdmin(tx, req.principal),
           permissions: [
             ...new Set(
               bs

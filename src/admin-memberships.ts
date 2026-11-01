@@ -1,3 +1,4 @@
+import { adminApprovalRequired, superAdminDirectActive } from "./admin-execution-policy.js";
 import { createApprovalRequest } from "./admin-approval-storage.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
@@ -273,6 +274,7 @@ export function adminOperationDTO(op: any) {
     target_ids: op.target_ids,
     actor_id: op.principal_id,
     state: op.state,
+
     payload_hash: op.payload_hash,
     policy_version_id: op.policy_version_id,
     version: op.version,
@@ -298,7 +300,7 @@ export async function decideMembershipOperation(
     "admin.approvals.decide",
   );
   await recentAdmin(tx, actor);
-  if (actor.id === op.principal_id)
+  if (actor.id === op.principal_id && !(await superAdminDirectActive(tx, actor.id)))
     throw new Problem(
       403,
       "SELF_APPROVAL_FORBIDDEN",
@@ -477,7 +479,7 @@ export function registerAdminMemberships(app: FastifyInstance, db: Database) {
             command: b,
             before: checked.before,
             policy_version_id: policy.id,
-            approval: approvalRequired(policy, b, checked.old),
+            approval: await adminApprovalRequired(tx, req.principal, approvalRequired(policy, b, checked.old)),
           };
           const r = (
             await tx.query(
@@ -529,7 +531,7 @@ export function registerAdminMemberships(app: FastifyInstance, db: Database) {
             async () => {
               const checked = await inspect(tx, tenant, b),
                 policy = await currentPolicy(tx);
-              const approval = approvalRequired(policy, b, checked.old);
+              const approval = await adminApprovalRequired(tx, req.principal, approvalRequired(policy, b, checked.old));
               if (previewId) {
                 const preview = (
                   await tx.query(

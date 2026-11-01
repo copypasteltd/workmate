@@ -1,3 +1,4 @@
+import { adminApprovalRequired } from "./admin-execution-policy.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
@@ -484,7 +485,7 @@ export function registerAdminPlans(
                 policy_version_id: rules.id,
                 actor_session_id: req.principal.sessionId,
                 actor_auth_version: req.principal.authVersion,
-                approval: rules.plan_publication_requires_approval,
+                approval: await adminApprovalRequired(tx, req.principal, rules.plan_publication_requires_approval),
               };
               const preview = (
                 await tx.query(
@@ -510,7 +511,7 @@ export function registerAdminPlans(
                 payload_hash: preview.payload_hash,
                 target_ids: [id],
                 policy_version_id: rules.id,
-                decision: rules.plan_publication_requires_approval
+                decision: (await adminApprovalRequired(tx, req.principal, rules.plan_publication_requires_approval))
                   ? "independent_approval"
                   : "recent_mfa",
                 missing_permission_keys: [],
@@ -632,7 +633,7 @@ export function registerAdminPlans(
                 );
               const checked = await inspect(tx, catalog, id, b),
                 rules = await policy(tx);
-              if (rules.id !== preview.payload.policy_version_id)
+              if (rules.id !== preview.payload.policy_version_id || preview.payload.approval !== await adminApprovalRequired(tx, req.principal, rules.plan_publication_requires_approval))
                 throw new Problem(
                   409,
                   "POLICY_CHANGED",
@@ -659,13 +660,13 @@ export function registerAdminPlans(
                   before: checked.before,
                   expires_at: new Date(preview.expires_at).toISOString(),
                 },
-                rules.plan_publication_requires_approval,
+                await adminApprovalRequired(tx, req.principal, rules.plan_publication_requires_approval),
               );
               await tx.query(
                 "UPDATE admin_previews SET consumed_at=now() WHERE id=$1",
                 [preview.id],
               );
-              if (rules.plan_publication_requires_approval) {
+              if (await adminApprovalRequired(tx, req.principal, rules.plan_publication_requires_approval)) {
                 await createApprovalRequest(tx, op);
                 await audit(
                   tx,

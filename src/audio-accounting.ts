@@ -1,3 +1,4 @@
+import { superAdminDirectActive } from "./admin-execution-policy.js";
 import type { Tx } from "./db.js";
 import { Problem } from "./lib.js";
 import { audioAccountingEvidenceDocument, type AudioAccountingChannel, type AudioAccountingCommand } from "./audio-accounting-model.js";
@@ -84,7 +85,7 @@ export async function inspectAudioAccountingCommand(tx: Tx, b: AudioAccountingCo
 }
 export async function applyAudioAccountingCommand(tx: Tx, op: any,
   c: Awaited<ReturnType<typeof inspectAudioAccountingCommand>>, reviewer: string) {
-  if (reviewer === c.evidence.actor_id)
+  if (reviewer === c.evidence.actor_id && !(await superAdminDirectActive(tx, reviewer)))
     throw new Problem(403, "SELF_EVIDENCE_REVIEW_FORBIDDEN", "The evidence author cannot approve its audio accounting consequences");
   const cost = op.action === "ai.cost.reconcile", r = c.request;
   const table = cost ? "ai_audio_cost_confirmations" : "ai_audio_termination_confirmations";

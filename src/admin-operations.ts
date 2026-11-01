@@ -1,3 +1,4 @@
+import { adminApprovalRequired } from "./admin-execution-policy.js";
 import { isPaymentOperation } from "./payment-records.js";
 import {
   isSupportOperation,
@@ -265,11 +266,11 @@ async function validate(tx: Tx, p: Principal, b: Command) {
     ...scope,
     policy_id: rules.id,
     approval_minutes: rules.approval_window_minutes,
-    approval:
+    approval: await adminApprovalRequired(tx, p,
       ("amount_micros" in b &&
         b.amount_micros >= rules.approval_threshold_micros) ||
       ("actual_micros" in b &&
-        b.actual_micros >= rules.approval_threshold_micros),
+        b.actual_micros >= rules.approval_threshold_micros)),
   };
 }
 async function execute(tx: Tx, b: Command, p: Principal, id: string) {

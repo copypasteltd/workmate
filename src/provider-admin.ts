@@ -1,3 +1,5 @@
+import { commitApprovalDecision } from "./admin-approval-decision.js";
+import { adminApprovalRequired, superAdminDirectActive } from "./admin-execution-policy.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
@@ -249,7 +251,7 @@ export async function decideProviderAdminOperation(
   op: any,
   b: { decision: "approve" | "reject"; reason: string },
 ) {
-  if (reviewer.id === op.principal_id)
+  if (reviewer.id === op.principal_id && !(await superAdminDirectActive(tx, reviewer.id)))
     throw new Problem(
       403,
       "SELF_APPROVAL_FORBIDDEN",
@@ -750,7 +752,9 @@ export function registerProviderAdmin(app: FastifyInstance, db: Database) {
           async () => {
             const before = await inspect(tx, db, b),
               policy = await rules(tx),
+              approval = await adminApprovalRequired(tx, req.principal, true),
               payload = {
+                approval,
                 provider_admin_command_version: 1,
                 data_mode: scope.data_mode,
                 scope,
@@ -780,7 +784,7 @@ export function registerProviderAdmin(app: FastifyInstance, db: Database) {
               policy_version_id: policy,
               before,
               command: b,
-              decision: "independent_approval",
+              decision: approval ? "independent_approval" : "super_admin_direct",
               expires_at: p.expires_at,
               creates_business_effect: false,
             };
@@ -827,7 +831,7 @@ export function registerProviderAdmin(app: FastifyInstance, db: Database) {
                 "PREVIEW_INVALID",
                 "Create a fresh preview of this exact provider command",
               );
-            if (p.payload.policy_version_id !== (await rules(tx)))
+            if (p.payload.policy_version_id !== (await rules(tx)) || p.payload.approval !== await adminApprovalRequired(tx, req.principal, true))
               throw new Problem(
                 409,
                 "POLICY_CHANGED",
@@ -857,7 +861,13 @@ export function registerProviderAdmin(app: FastifyInstance, db: Database) {
               "UPDATE admin_previews SET consumed_at=now() WHERE id=$1",
               [p.id],
             );
-            await createApprovalRequest(tx, op);
+            const approval = await createApprovalRequest(tx, op);
+            if (!(await adminApprovalRequired(tx, req.principal, true))) {
+              await commitApprovalDecision(tx, req.principal, op, approval,
+                {decision:"approve", reason:b.command.reason},
+                async()=>{ await decideProviderAdminOperation(tx,db,req.principal,op,{decision:"approve",reason:b.command.reason}); });
+              return adminOperationDTO((await tx.query("SELECT * FROM admin_operations WHERE id=$1",[op.id])).rows[0]);
+            }
             await audit(
               tx,
               req.principal,

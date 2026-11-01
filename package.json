@@ -28,7 +28,8 @@
     "setup:recovery-tools": "python -B scripts/setup-recovery-tools.py",
     "admin:enable-recovery": "node --env-file=.env --import tsx scripts/admin-enable-recovery.ts",
     "admin:enable-desktop-updates": "node --env-file=.env --import tsx scripts/admin-enable-desktop-updates.ts",
-    "desktop-update:sign": "node --import tsx scripts/sign-desktop-update.ts"
+    "desktop-update:sign": "node --import tsx scripts/sign-desktop-update.ts",
+    "test:admin-execution": "node --env-file=.env scripts/run-tests-owned.mjs tests/highest-admin-direct-182-v2.test.ts tests/highest-provider-direct-182-v1.test.ts tests/highest-capability-direct-182-v1.test.ts tests/highest-financial-direct-182-v2.test.ts tests/schema-compatibility.test.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1152.0",

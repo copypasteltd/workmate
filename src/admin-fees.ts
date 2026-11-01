@@ -1,3 +1,4 @@
+import { adminApprovalRequired, isHighestAdmin } from "./admin-execution-policy.js";
 import {
   confirmedPayment,
   isPaymentOperation,
@@ -491,7 +492,7 @@ export async function inspectCombinedGift(
   const checked = await inspect(tx, wallet, command),
     rules = await policy(tx);
   await daily(tx, actor, allowed, command, checked.risk, wallet.data_mode);
-  return { checked, rules, approval: approval(rules, checked) };
+  return { checked, rules, approval: await adminApprovalRequired(tx, actor, approval(rules, checked)) };
 }
 export async function applyCombinedGift(
   tx: Tx,
@@ -543,7 +544,7 @@ export function registerAdminFees(app: FastifyInstance, db: Database) {
               command: b,
               before: checked.before,
               policy_version_id: rules.id,
-              approval: approval(rules, checked),
+              approval: await adminApprovalRequired(tx, req.principal, approval(rules, checked)),
             };
             const row = (
               await tx.query(
@@ -650,7 +651,7 @@ export function registerAdminFees(app: FastifyInstance, db: Database) {
                 pv.payload.billing_account_id !== id ||
                 pv.payload_hash !== payloadHash(id, b) ||
                 pv.payload.policy_version_id !== rules.id ||
-                pv.payload.approval !== approval(rules, checked) ||
+                pv.payload.approval !== await adminApprovalRequired(tx, req.principal, approval(rules, checked)) ||
                 canonical(pv.payload.before) !== canonical(checked.before)
               )
                 throw new Problem(
@@ -679,7 +680,7 @@ export function registerAdminFees(app: FastifyInstance, db: Database) {
                     payloadHash(id, b),
                     payload,
                     `fee:${hash(canonical([id, b.action, key(req.headers)]))}`,
-                    approval(rules, checked) ? "pending_approval" : "running",
+                    await adminApprovalRequired(tx, req.principal, approval(rules, checked)) ? "pending_approval" : "running",
                     rules.id,
                     [id],
                   ],
@@ -765,6 +766,7 @@ export function registerAdminFees(app: FastifyInstance, db: Database) {
           ).rows[0];
           return {
             operation: adminOperationDTO(op),
+            can_direct_execute: await isHighestAdmin(tx, req.principal),
             billing_account_id: op.payload.billing_account_id,
             command: op.payload.command,
             before: op.payload.before,
