@@ -437,6 +437,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       model_connections: "per_model",
       model_management: "editable",
       model_transport: "http_and_https",
+      codex_tool_contract: "scoped_code_mode_v1",
       email_delivery: c.DEV_MAILBOX ? "local_development" : "smtp",
       storage: c.S3_BUCKET ? "s3" : "native_filesystem",
       data_mode: c.DEMO_MODE ? "simulated" : "configured_services",
@@ -452,6 +453,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     model_connections: "per_model",
     model_management: "editable",
     model_transport: "http_and_https",
+    codex_tool_contract: "scoped_code_mode_v1",
     device_command_public_key: commandPublicKey(c.MASTER_KEY!),
     mail_mode:
       c.NODE_ENV === "production"

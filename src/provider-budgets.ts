@@ -76,6 +76,8 @@ export async function validationProviderBudgetReceipt(
         await tx.query(
           `SELECT count(*)::integer AS requests,
       count(*) FILTER(WHERE dispatched_at IS NOT NULL)::integer AS dispatched,
+      (SELECT coalesce(sum(input_tokens) FILTER(WHERE usage_known),0)::text FROM ai_gateway_requests WHERE validation_id=$1) AS input_tokens,
+      (SELECT coalesce(sum(output_tokens) FILTER(WHERE usage_known),0)::text FROM ai_gateway_requests WHERE validation_id=$1) AS output_tokens,
       coalesce(sum(effective_numerator) FILTER(WHERE cost_state<>'unknown'),0)::text AS numerator,
       coalesce(bool_or(state='dispatched' OR (state='unknown' AND cost_state='unknown')),false) AS uncertain,
       EXISTS(SELECT 1 FROM ai_request_budget_violations x JOIN ai_gateway_requests g ON g.id=x.provider_request_id WHERE g.validation_id=$1) AS violation
@@ -86,7 +88,10 @@ export async function validationProviderBudgetReceipt(
       const charge = Number((BigInt(r.numerator) + 999_999n) / 1_000_000n);
       if (!Number.isSafeInteger(charge))
         throw new Error("Verification cost exceeds safe billing amounts");
-      return { ...r, knownChargeMicros: charge };
+      const inputTokens = Number(r.input_tokens), outputTokens = Number(r.output_tokens);
+      if (!Number.isSafeInteger(inputTokens) || !Number.isSafeInteger(outputTokens))
+        throw new Error("Verification usage exceeds safe token amounts");
+      return { ...r, knownChargeMicros: charge, inputTokens, outputTokens };
     },
     undefined,
     true,

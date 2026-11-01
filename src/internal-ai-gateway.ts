@@ -7,6 +7,7 @@ import { hash } from "./lib.js";
 import { listenLoopbackHTTP } from "./loopback-http.js";
 import { desktopToolDeclarations, desktopCustomTool, type DesktopCompanyToolSchema } from "./desktop-tool-policy.js";
 import { speechLimits, wellFormedAudioText } from "./audio-production-model.js";
+import { cloudToolDeclarations, cloudProgrammaticCall, CloudToolContractError, type CloudToolRegistration } from "./cloud-tool-contract.js";
 
 export type AIOperation =
   | "responses"
@@ -44,6 +45,8 @@ export interface AIRequestInfo extends AIRequestIdentity {
   generationHash?: string;
   inputCountId?: string;
   maxOutputTokens?: number;
+  /** Server-derived, pre-funded ceiling for pinned native code-mode context. */
+  inputTokensCeiling?: number;
 }
 export interface AIRequestAuthority extends AIRequestIdentity {
   budgeted?: true;
@@ -77,6 +80,7 @@ interface ToolPolicyFacts {
   registered_tool_count: number;
   namespace_present: boolean;
   builtin_tools: string[];
+  contract_reason?: string;
 }
 export class AIRequestFailure extends Error {
   toolPolicy?: ToolPolicyFacts;
@@ -91,13 +95,18 @@ export class AIRequestFailure extends Error {
 }
 const denied = (code: string, status = 400) =>
   new AIRequestFailure(code, status);
+const cloudContractFailure = (error: CloudToolContractError, registered: number) => {
+  const failure = denied(error.message);
+  failure.toolPolicy = { tool_count: 0, registered_tool_count: registered, namespace_present: true, builtin_tools: [], contract_reason: error.reason };
+  return failure;
+};
 
-function endpoint(c: Config, operation: AIOperation, resource?: VideoRequestResource) {
+function endpoint(c: Config, operation: AIOperation, resource?: VideoRequestResource, perModel = false) {
   if (!c.AI_BASE_URL || !c.AI_API_KEY) throw denied("AI_SETUP_REQUIRED", 503);
   const u = new URL(c.AI_BASE_URL);
   if (
     !["http:", "https:"].includes(u.protocol) ||
-    (c.NODE_ENV === "production" && u.protocol !== "https:") ||
+    (c.NODE_ENV === "production" && !perModel && u.protocol !== "https:") ||
     u.username ||
     u.password ||
     u.search ||
@@ -181,6 +190,7 @@ function responseFields(
   stripKernelQuestionTool: boolean,
   nativeDesktop = false,
   nativeCompanyTools: readonly DesktopCompanyToolSchema[] = [],
+  cloudTools?: readonly CloudToolRegistration[],
 ) {
   const reasoning = body.reasoning as Record<string, unknown> | undefined;
   if (
@@ -202,6 +212,10 @@ function responseFields(
     throw denied("AI_PROTOCOL_NOT_ALLOWED");
   if (body.tools !== undefined && !Array.isArray(body.tools))
     throw denied("AI_TOOL_NOT_ALLOWED");
+  if (!nativeDesktop && (cloudTools || (Array.isArray(body.input) && body.input.some((item: any) => item?.type === "additional_tools")))) {
+    try { body = cloudToolDeclarations(body, tools, cloudTools).body; }
+    catch (error) { if (error instanceof CloudToolContractError) throw cloudContractFailure(error, tools.length); throw error; }
+  }
   // This pinned Codex always declares a question control tool even when no
   // interactive client is attached. It is not a business capability. Remove
   // this one known declaration; all other unregistered tools are rejected.
@@ -281,6 +295,7 @@ export interface InternalAIRequest {
   /** Trusted server placement, never selected by a provider payload. */
   nativeDesktop?: boolean;
   nativeCompanyTools?: readonly DesktopCompanyToolSchema[];
+  cloudTools?: readonly CloudToolRegistration[];
 }
 
 /** The only provider fetch entry point: no caller-supplied URL or headers. */
@@ -289,7 +304,7 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
     capabilityVersionId: request.authority.capabilityVersionId, model: request.model, operation: request.operation });
   if (connection) c = { ...c, AI_BASE_URL: connection.baseURL, AI_API_KEY: connection.apiKey,
     AI_ALLOWED_HOSTS: new URL(connection.baseURL).hostname };
-  const url = endpoint(c, request.operation, request.videoResource);
+  const url = endpoint(c, request.operation, request.videoResource, !!connection);
   const video = request.operation.startsWith("videos.");
   const transcription = request.operation === "audio.transcriptions";
   if (video && (!request.model.trim() || request.model.length > 200)) throw denied("AI_VIDEO_SPECIFICATION_CHANGED");
@@ -341,6 +356,7 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
             request.stripKernelQuestionTool ?? false,
             request.nativeDesktop ?? false,
             request.nativeCompanyTools ?? [],
+            request.cloudTools,
           )
         : request.operation === "responses.input_tokens"
           ? request.body
@@ -447,13 +463,20 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
       });
       info.inputCountId = proof;
       info.maxOutputTokens = Number(normalized!.max_output_tokens);
+      if (!request.nativeDesktop && request.cloudTools &&
+          cloudToolDeclarations(normalized!, request.tools ?? [], request.cloudTools).programmatic) {
+        // Some compatible upstream counters omit additional_tools context.
+        // Fund the full serialized request before sending; retain its count
+        // proof, original hash, output cap and final monetary enforcement.
+        info.inputTokensCeiling = Math.max(count.input_tokens, bytes.length);
+      }
     } catch (error) {
-      await countResponse.body?.cancel().catch(() => {});
       await finishInternalAIRequest(countResponse, {
         state: "unknown",
-        code: "AI_INPUT_COUNT_FAILED",
+        code: error instanceof AIRequestFailure ? error.code : "AI_INPUT_COUNT_INVALID",
         httpStatus: countResponse.status,
       });
+      await countResponse.body?.cancel().catch(() => {});
       if (error instanceof AIRequestFailure) throw error;
       throw new AIRequestFailure("AI_INPUT_COUNT_INVALID", 502, true);
     }
@@ -580,7 +603,7 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
           await permit
             ?.finish({
               state: "unknown",
-              code: "AI_STREAM_INTERRUPTED",
+              code: error instanceof AIRequestFailure ? error.code : "AI_STREAM_INTERRUPTED",
               httpStatus,
             })
             .catch(() => {});
@@ -646,6 +669,7 @@ export async function startScopedInferenceGateway(
     signal: AbortSignal;
     nativeDesktop?: boolean;
     nativeCompanyTools?: readonly DesktopCompanyToolSchema[];
+    cloudTools?: readonly CloudToolRegistration[];
     onRejected?(event: {
       code: string;
       dispatched: boolean;
@@ -653,7 +677,7 @@ export async function startScopedInferenceGateway(
     }): Promise<void>;
   },
 ) {
-  endpoint(c, "responses");
+  endpoint(c, "responses", undefined, !!c.MODEL_CONNECTION_RESOLVER);
   const secret = randomBytes(32).toString("hex"),
     grant = randomUUID();
   const expected = Buffer.from(`Bearer ${secret}`);
@@ -722,6 +746,11 @@ export async function startScopedInferenceGateway(
       }
       if (!body || typeof body !== "object" || Array.isArray(body))
         throw denied("AI_INVALID_JSON");
+      let cloudContract = { programmatic: false, wait: false };
+      if (!options.nativeDesktop && options.cloudTools) {
+        try { cloudContract = cloudToolDeclarations(body, options.tools, options.cloudTools); }
+        catch (error) { if (error instanceof CloudToolContractError) throw cloudContractFailure(error, options.tools.length); throw error; }
+      }
       const response = (upstream = await internalAIRequest(c, {
         operation: "responses",
         model: options.model,
@@ -730,6 +759,7 @@ export async function startScopedInferenceGateway(
         stripKernelQuestionTool: true,
         nativeDesktop: options.nativeDesktop,
         nativeCompanyTools: options.nativeCompanyTools,
+        cloudTools: options.cloudTools,
         authority: options.authority,
         body,
         signal: AbortSignal.any([
@@ -748,6 +778,7 @@ export async function startScopedInferenceGateway(
           response.headers.get("content-type") ?? "",
         )
       ) {
+        await finishInternalAIRequest(response, { state: "unknown", code: "AI_RESPONSE_PROTOCOL_INVALID", httpStatus: response.status });
         await response.body?.cancel().catch(() => {});
         throw new AIRequestFailure("AI_RESPONSE_PROTOCOL_INVALID", 502, true);
       }
@@ -773,13 +804,24 @@ export async function startScopedInferenceGateway(
       const terminalFrames: Buffer[] = [];
       let terminalBytes = 0;
       const knownCalls = new Set<string>();
+      const customCalls = new Set<string>();
+      const callIdentities = new Map<string, string>();
       const inspectItem = (item: any) => {
         if (!item) return;
         if (
-          (item.type === "function_call" || (options.nativeDesktop && item.type === "custom_tool_call" && desktopCustomTool(item.name))) &&
-          options.tools.includes(options.nativeDesktop && item.namespace ? item.namespace + "." + item.name : item.name)
+          ((item.type === "function_call" || (options.nativeDesktop && item.type === "custom_tool_call" && desktopCustomTool(item.name))) &&
+          (options.nativeDesktop || item.namespace == null) &&
+          options.tools.includes(options.nativeDesktop && item.namespace ? item.namespace + "." + item.name : item.name)) ||
+          (!options.nativeDesktop && cloudProgrammaticCall(item, cloudContract))
         ) {
-          if (typeof item.id === "string") knownCalls.add(item.id);
+          if (typeof item.id !== "string" || !item.id.length)
+            throw new AIRequestFailure("AI_RESPONSE_PROTOCOL_INVALID", 502, true);
+          const identity = JSON.stringify([item.type, item.namespace ?? null, item.name, item.call_id ?? null]);
+          if (callIdentities.has(item.id) && callIdentities.get(item.id) !== identity)
+            throw new AIRequestFailure("AI_TOOL_CALL_NOT_ALLOWED", 502, true);
+          callIdentities.set(item.id, identity);
+          knownCalls.add(item.id);
+          if (item.type === "custom_tool_call") customCalls.add(item.id);
           return;
         }
         if (!["message", "reasoning"].includes(item.type))
@@ -815,13 +857,13 @@ export async function startScopedInferenceGateway(
           typeof event.type === "string" &&
           /^response\.(?:custom_tool|web_search|file_search|computer|image_generation|code_interpreter|tool_search|shell|apply_patch)_call/.test(
             event.type,
-          ) && !(options.nativeDesktop && event.type.startsWith("response.custom_tool_call_input.") && knownCalls.has(event.item_id))
+          ) && !(event.type.startsWith("response.custom_tool_call_input.") && customCalls.has(event.item_id))
         )
           throw new AIRequestFailure("AI_TOOL_CALL_NOT_ALLOWED", 502, true);
         if (
           typeof event.type === "string" &&
           event.type.startsWith("response.function_call_arguments.") &&
-          !knownCalls.has(event.item_id)
+          (!knownCalls.has(event.item_id) || customCalls.has(event.item_id))
         )
           throw new AIRequestFailure("AI_TOOL_CALL_NOT_ALLOWED", 502, true);
         if (
@@ -904,6 +946,15 @@ export async function startScopedInferenceGateway(
           if (pending.length || frameLines.length)
             throw new AIRequestFailure("AI_STREAM_INCOMPLETE", 502, true);
         }
+      } catch (error) {
+        // Preserve the actual rejection before cancel() finalizes the bounded
+        // reader. A policy/protocol failure is not a generic user cancellation.
+        await finishInternalAIRequest(response, {
+          state: "unknown",
+          code: error instanceof AIRequestFailure ? error.code : "AI_GATEWAY_FAILED",
+          httpStatus: response.status,
+        }).catch(() => {});
+        throw error;
       } finally {
         await reader?.cancel().catch(() => {});
       }

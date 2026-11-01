@@ -348,12 +348,13 @@ export function providerRequestPermit(
           if (admitted.channel !== "input_count") {
             const budget = (
               await tx.query(
-                "SELECT allocate_ai_generation_budget($1,$2,$3,$4) AS result",
+                "SELECT allocate_ai_generation_budget($1,$2,$3,$4,$5) AS result",
                 [
                   id,
                   nonce,
                   request?.inputCountId ?? null,
                   request?.maxOutputTokens ?? null,
+                  request?.inputTokensCeiling ?? null,
                 ],
               )
             ).rows[0].result;

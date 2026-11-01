@@ -49,6 +49,7 @@ export interface RuntimeResult {
   thread: string;
   turn: string;
   status: string;
+  errorCode?: string;
 }
 export class RuntimeFailure extends Error {
   constructor(
@@ -252,16 +253,21 @@ export class CodexRuntimeAdapter {
       await writeFile(file, s.content);
       skills.push({ type: "skill", name: s.key, path: file });
     }
+    let gatewayError: string | undefined;
     const gateway = await startScopedInferenceGateway(c, {
       model: c.AI_MODEL,
       reasoningEffort: c.AI_REASONING_EFFORT,
       tools: ctx.tools.map((tool) => tool.name),
+      cloudTools: ctx.tools.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })),
       authority: ctx.requestAuthority ?? {
         taskId: ctx.taskId,
         authorize: async () => {},
       },
       signal: ctx.signal,
-      onRejected: (body) => ctx.onEvent("gateway.request_rejected", body),
+      onRejected: (body) => {
+        gatewayError ??= body.code;
+        return ctx.onEvent("gateway.request_rejected", body);
+      },
     });
     try {
       const quote = (s: string) => JSON.stringify(s);
@@ -689,6 +695,7 @@ export class CodexRuntimeAdapter {
           thread,
           turn,
           status,
+          ...(status !== "completed" ? { errorCode: gatewayError ?? "CODEX_TURN_FAILED" } : {}),
         };
         return completedResult;
       } catch (e) {

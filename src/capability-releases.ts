@@ -1199,6 +1199,8 @@ export function registerCapabilityReleases(
       );
       outcome.evidence.accepted = budgetReceipt.dispatched > 0;
       outcome.evidence.usage_known = !budgetReceipt.uncertain;
+      outcome.evidence.input_tokens = budgetReceipt.inputTokens;
+      outcome.evidence.output_tokens = budgetReceipt.outputTokens;
       if (budgetReceipt.uncertain || budgetReceipt.violation) {
         outcome.state = "reconciling";
         if (budgetReceipt.violation)

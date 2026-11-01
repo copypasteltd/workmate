@@ -180,7 +180,14 @@ export async function verifyCapability(
           skills: [],
           signal,
           requestAuthority,
-          onEvent: async () => {},
+          onEvent: async (kind, event) => {
+            if (kind === "gateway.request_rejected" && !evidence.gateway_error_code) {
+              // The gateway emits fixed codes/counts only. Never persist raw
+              // upstream errors, prompts, arguments, credentials or stderr.
+              evidence.gateway_error_code = event.code;
+              evidence.gateway_dispatched = event.dispatched === true;
+            }
+          },
           tools: [
             {
               name: "capability_probe",
@@ -215,13 +222,14 @@ export async function verifyCapability(
               ...document.rates,
             ),
           );
-        if (
-          result.status !== "completed" ||
-          !result.usageKnown ||
-          !result.text.trim() ||
-          toolCalls !== 1
-        )
-          throw new Error("Protocol or usage verification incomplete");
+        if (result.status !== "completed")
+          throw new RuntimeFailure(result.errorCode ?? "CODEX_TURN_FAILED", result.accepted, result.usageKnown, result.inputTokens, result.outputTokens);
+        if (!result.usageKnown)
+          throw new Error("Usage verification incomplete");
+        if (!result.text.trim())
+          throw new Problem(502, "CAPABILITY_OUTPUT_MISSING", "Codex did not return a completed response");
+        if (toolCalls !== 1)
+          throw new Problem(502, "CAPABILITY_TOOL_RECEIPT_MISSING", "The registered verification tool did not complete exactly once");
         evidence.checks = [
           "pinned_codex",
           "requested_model_and_effort",
