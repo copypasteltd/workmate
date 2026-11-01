@@ -18,7 +18,7 @@ const denied = (code: string) => new Problem(409, code, "The frozen audio verifi
 const mode = (db: Database) => db.config.DEMO_MODE ? "simulated" : "configured_services";
 
 export async function prepareCapabilityAudioSuite(tx: Tx, db: Database, v: any, release: any, p: Principal) {
-  if (!db.config.AI_BASE_URL || !db.config.AI_API_KEY) throw denied("AI_SETUP_REQUIRED");
+  if ((!db.config.AI_BASE_URL || !db.config.AI_API_KEY) && !db.config.MODEL_CONNECTION_RESOLVER) throw denied("AI_SETUP_REQUIRED");
   const plan = capabilityAudioPlan(capabilityDocument.parse(release.definition));
   const envelope = (await tx.query("SELECT * FROM ai_request_budget_envelopes WHERE validation_id=$1", [v.id])).rows[0];
   if (!envelope || BigInt(plan.quoted_micros) > BigInt(envelope.amount_micros)) throw denied("VERIFICATION_BUDGET_EXHAUSTED");

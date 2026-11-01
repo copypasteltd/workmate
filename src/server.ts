@@ -18,6 +18,8 @@ import { registerPublications } from "./publication-routes.js";
 import { registerPublicationAdmin } from "./publication-admin.js";
 import { startPublicationFixture } from "./publication-fixture.js";
 import { registerCapabilityReleases } from "./capability-releases.js";
+import { gatewayFingerprint } from "./capability-bindings.js";
+import { installModelConnectionResolver } from "./model-connections.js";
 import { registerAdminVip } from "./admin-vip.js";
 import { registerAdminVipCredit } from "./admin-vip-credit.js";
 import { registerUserEntitlements } from "./user-entitlements.js";
@@ -138,6 +140,8 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     ? await startPublicationFixture(c) : undefined;
   if (publicationFixture) c = publicationFixture.config;
   const db = new Database(c);
+  c = installModelConnectionResolver(c, db);
+  db.config = c;
   const catalog = new Catalog();
   try {
     await catalog.load();
@@ -393,12 +397,27 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     service: "copypaste-platform",
     version: "0.5.1",
   }));
+  async function modelServices() {
+    return db.tx(async tx => {
+      const capabilities = await catalog.currentCapabilities(tx);
+      const ready = (profile: string, verified: boolean) => {
+        const value = capabilities.get(profile);
+        return !!(value?.ready && !value.revoked && (value.publication_id || verified)
+          && value.body.gateway_fingerprint === gatewayFingerprint(c));
+      };
+      return { text: ready("internal-text-v1", c.AI_VERIFIED), image: ready("internal-image2-v1", c.AI_IMAGE_VERIFIED),
+        video: ready("internal-video-v1", c.AI_VIDEO_VERIFIED), speech: ready("internal-speech-v1", c.AI_SPEECH_VERIFIED),
+        transcription: ready("internal-transcription-v1", c.AI_TRANSCRIPTION_VERIFIED) };
+    }, undefined, true);
+  }
   app.get("/health/ready", async () => {
     await db.app.query("SELECT 1");
+    const services = await modelServices();
     return {
       ok: true,
       kernel: "codex",
-      ai_ready: !!(c.AI_VERIFIED && c.AI_BASE_URL && c.AI_MODEL),
+      ai_ready: services.text,
+      model_connections: "per_model",
       email_delivery: c.DEV_MAILBOX ? "local_development" : "smtp",
       storage: c.S3_BUCKET ? "s3" : "native_filesystem",
       data_mode: c.DEMO_MODE ? "simulated" : "configured_services",
@@ -410,17 +429,8 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     locales: ["zh-HK", "en"],
     retention: retentionPolicy,
     auth: { email_code: true, enterprise_sso: true },
-    services: {
-      text: !!(c.AI_VERIFIED && c.AI_BASE_URL && c.AI_MODEL),
-      image: !!(c.AI_IMAGE_VERIFIED && c.AI_IMAGE_MODEL),
-      video: !!(
-        c.AI_VIDEO_VERIFIED &&
-        c.AI_BASE_URL &&
-        c.AI_API_KEY &&
-        c.AI_VIDEO_MODEL &&
-        c.AI_VIDEO_HKD_MICROS_PER_SECOND
-      ),
-    },
+    services: await modelServices(),
+    model_connections: "per_model",
     device_command_public_key: commandPublicKey(c.MASTER_KEY!),
     mail_mode:
       c.NODE_ENV === "production"

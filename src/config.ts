@@ -163,7 +163,12 @@ const schema = z.object({
   S3_ACCESS_KEY: z.string().optional(),
   S3_SECRET_KEY: z.string().optional(),
 });
-export type Config = z.infer<typeof schema>;
+export type ModelConnectionIdentity = { taskId: string; capabilityVersionId?: string; model: string; operation: string };
+export type ResolvedModelConnection = { id: string; baseURL: string; apiKey: string; allowPrivateNetwork: boolean };
+export type Config = z.infer<typeof schema> & {
+  /** Server-only resolver; never accepted from environment, HTTP or a model. */
+  MODEL_CONNECTION_RESOLVER?: (identity: ModelConnectionIdentity) => Promise<ResolvedModelConnection | undefined>;
+};
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const c = schema.parse(env);
   if (

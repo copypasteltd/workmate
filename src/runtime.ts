@@ -180,7 +180,7 @@ export class CodexRuntimeAdapter {
     await this.version();
     if (ctx.signal.aborted)
       throw new RuntimeFailure("CODEX_CANCELLED", false, true);
-    if (!c.AI_BASE_URL || !c.AI_MODEL || !c.AI_API_KEY || !c.AI_VERIFIED)
+    if (((!c.AI_BASE_URL || !c.AI_API_KEY) && !c.MODEL_CONNECTION_RESOLVER) || !c.AI_MODEL || !c.AI_VERIFIED)
       throw new RuntimeFailure("AI_SETUP_REQUIRED", false, true);
     await mkdir(ctx.workspace, { recursive: true });
     const home = path.join(ctx.workspace, ".codex");

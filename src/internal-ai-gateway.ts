@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 import { randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { once } from "node:events";
 import type { Config } from "./config.js";
+import { modelConnectionFetch } from "./model-connection-http.js";
 import { hash } from "./lib.js";
 import { listenLoopbackHTTP } from "./loopback-http.js";
 import { desktopToolDeclarations, desktopCustomTool, type DesktopCompanyToolSchema } from "./desktop-tool-policy.js";
@@ -33,6 +34,7 @@ export interface AIRequestIdentity {
   fencingToken?: string;
 }
 export interface AIRequestInfo extends AIRequestIdentity {
+  modelConnectionId?: string;
   requestId: string;
   operation: AIOperation;
   model: string;
@@ -283,6 +285,10 @@ export interface InternalAIRequest {
 
 /** The only provider fetch entry point: no caller-supplied URL or headers. */
 export async function internalAIRequest(c: Config, request: InternalAIRequest) {
+  const connection = await c.MODEL_CONNECTION_RESOLVER?.({ taskId: request.authority.taskId,
+    capabilityVersionId: request.authority.capabilityVersionId, model: request.model, operation: request.operation });
+  if (connection) c = { ...c, AI_BASE_URL: connection.baseURL, AI_API_KEY: connection.apiKey,
+    AI_ALLOWED_HOSTS: new URL(connection.baseURL).hostname };
   const url = endpoint(c, request.operation, request.videoResource);
   const video = request.operation.startsWith("videos.");
   const transcription = request.operation === "audio.transcriptions";
@@ -350,6 +356,7 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
   const { authorize, budgeted, ...identity } = request.authority;
   const info: AIRequestInfo = {
     ...identity,
+    ...(connection ? { modelConnectionId: connection.id } : {}),
     requestId: request.operationId ?? randomUUID(),
     operation: request.operation,
     model: request.model,
@@ -525,7 +532,10 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
     if (signal.aborted) throw denied("AI_REQUEST_CANCELLED", 409);
     fetchInvoked = true;
     request.onDispatch?.();
-    const response = await fetch(url, {
+    const response = connection ? await modelConnectionFetch(new URL(url), {
+      method, headers, ...(method === "POST" ? { body: bytes } : {}), signal,
+      allowPrivate: connection.allowPrivateNetwork, test: c.NODE_ENV === "test",
+    }) : await fetch(url, {
       method,
       headers,
       ...(method === "POST" ? { body: new Uint8Array(bytes) } : {}),

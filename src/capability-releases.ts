@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
+import { modelConnectionInput, connectionCommand, storeModelConnection, checkModelConnection } from "./model-connections.js";
 import type { Database, Tx } from "./db.js";
 import type { Catalog } from "./catalog.js";
 import type { Principal } from "./auth.js";
@@ -42,7 +43,7 @@ const reason = z.string().trim().min(3).max(1000),
   command = z
     .object({ expected_version: z.number().int().positive(), reason })
     .strict();
-const draftSchema = z.object({ document: capabilityDocument, reason }).strict();
+const draftSchema = z.object({ document: capabilityDocument, reason, connection: modelConnectionInput.optional() }).strict();
 const page = z
   .object({
     cursor: z.string().min(1).max(4096).optional(),
@@ -514,7 +515,11 @@ export function registerCapabilityReleases(
     );
   });
   app.post(root + "/drafts", auth, async (req, reply) => {
-    const b = draftSchema.parse(req.body);
+    const input = draftSchema.parse(req.body);
+    if (input.document.upstream)
+      throw new Problem(422, "MODEL_CONNECTION_SERVER_OWNED", "Supply connection fields; the server creates the immutable upstream binding");
+    const b = { document: input.document, reason: input.reason,
+      ...(input.connection ? { connection: connectionCommand(db.config, input.connection) } : {}) };
     reply.code(202);
     return db.tx(
       async (tx) => {
@@ -550,6 +555,10 @@ export function registerCapabilityReleases(
                 {},
                 false,
               );
+            const document = { ...b.document, ...(input.connection ? { upstream: {
+              id, base_url: b.connection!.base_url, key_configured: true as const,
+              allow_private_network: input.connection.allow_private_network,
+            } } : {}) };
             await tx.query(
               "INSERT INTO capability_releases(id,profile_key,data_mode,version,definition,definition_hash,runtime_profile_id,gateway_fingerprint,created_by,reason) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
               [
@@ -557,14 +566,15 @@ export function registerCapabilityReleases(
                 b.document.profile_key,
                 mode(db),
                 n,
-                b.document,
-                hash(canonical(b.document)),
+                document,
+                hash(canonical(document)),
                 runtime.id,
                 gatewayFingerprint(db.config),
                 req.principal.id,
                 b.reason,
               ],
             );
+            if (input.connection) await storeModelConnection(tx, db.config, id, input.connection);
             await tx.query(
               "UPDATE admin_operations SET state='succeeded',version=version+1,result_ids=ARRAY[$2::uuid],result=$3 WHERE id=$1",
               [op.id, id, { release_id: id }],
@@ -578,7 +588,7 @@ export function registerCapabilityReleases(
               {
                 reason: b.reason,
                 operation_id: op.id,
-                definition_hash: hash(canonical(b.document)),
+                definition_hash: hash(canonical(document)),
               },
             );
             return adminOperationDTO(
@@ -594,6 +604,20 @@ export function registerCapabilityReleases(
       undefined,
       true,
     );
+  });
+  app.post(root + "/:id/connection-test", auth, async (req, reply) => {
+    const id = uuid.parse((req.params as any).id);
+    const b = command.parse(req.body);
+    reply.header("Cache-Control", "no-store");
+    return db.tx(async tx => {
+      await capabilityAuthority(tx, req.principal, "admin.catalog.publish");
+      const row = await release(tx, db, id);
+      if (row.version !== b.expected_version) throw new Problem(409, "VERSION_CHANGED", "Reload the model configuration");
+      const result = await checkModelConnection(tx, db.config, id, req.principal.id);
+      await audit(tx, req.principal, "admin.catalog.connection_test", id, result.reachable ? "succeeded" : "failed",
+        { reason: b.reason, ...result });
+      return result;
+    }, undefined, true, req.principal.id);
   });
   app.post(root + "/:id/validations", auth, async (req, reply) => {
     const id = uuid.parse((req.params as any).id),

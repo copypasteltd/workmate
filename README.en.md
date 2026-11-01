@@ -1,5 +1,36 @@
 # Workmate · backend
 
+<!-- per-model-connections-178 -->
+## Per-model API configuration · stage178
+
+Open [Admin → Model capabilities](https://agent-dashboard.copypaste.hk/catalog?view=capabilities) → **Create configuration**. Enter `gpt-6-luna` (or the actual upstream alias), its **API Base URL** and **API Key** in the same form. Each model owns its address and key. Text models require the OpenAI Responses API.
+
+Save draft → test connection → run full capability validation → independent approval/publication → assign the published capability to roles/templates. A connection test reads `/models`; it does not publish a model. Validation and real use consume actual upstream credit, including in the current trial-accounting environment.
+
+The server encrypts keys and never returns them. Version changes preserve frozen task connections. Retain an existing key explicitly when copying a version; changing the URL or network scope requires a new key. Missing explicit connections fail closed. No real supplier key was configured for this deployment.
+
+Storage: `capability_model_connections`, migration157, cp_control-only encrypted credentials. Draft: `POST /v1/admin/capability-releases/drafts` with `connection: {base_url, api_key, allow_private_network}`. Probe: `POST /v1/admin/capability-releases/:id/connection-test`. Both use existing `admin.catalog.publish` authorization. Task execution resolves credentials by the frozen capability version and verifies model/operation; clients cannot override that identity. Build: `npm run build`. Related native PostgreSQL checks: `../copypaste-delivery/scripts/test-model-connections-178-v4.mjs`.
+
+```mermaid
+flowchart LR
+ A[Model, URL and API Key] --> D[Immutable model configuration]
+ D --> C[Connection check]
+ C --> V[Validation and independent publication]
+ V --> T[Task freezes model version]
+ T --> G[Company gateway]
+ G --> U[That model upstream]
+```
+
+[使用细则 / Usage and operations](https://github.com/copypasteltd/workmate/blob/docs/docs/releases/model-connections-178.md) · [Source/runtime increment](https://agent.copypaste.hk/downloads/workmate-model-configuration-178.zip)
+
+![Actual model form](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/screenshots/178-model-form-cdb03034-7f0f-4f3b-b68c-da666853b1c2.png)
+
+![Actual save and connection test](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/demos/178-model-connections.gif)
+
+Earlier deployment/release records follow; their synthetic-service descriptions describe their original scope. 以下历史记录保留原部署范围。
+
+---
+
 <!-- public-domains-177 -->
 ## Public HTTPS deployment · stage177
 

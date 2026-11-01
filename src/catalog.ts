@@ -634,7 +634,7 @@ export class Catalog {
       )
     )
       return { available: false, reason: "MEDIA_CAPABILITY_SETUP_REQUIRED" };
-    if (!c.AI_BASE_URL || !c.AI_API_KEY || !c.AI_MODEL || !c.AI_VERIFIED)
+    if (((!c.AI_BASE_URL || !c.AI_API_KEY) && !c.MODEL_CONNECTION_RESOLVER) || !c.AI_MODEL || !c.AI_VERIFIED)
       return { available: false, reason: "AI_SETUP_REQUIRED" };
     if (
       c.AI_INPUT_HKD_MICROS_PER_MILLION === undefined ||

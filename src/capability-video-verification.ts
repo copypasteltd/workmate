@@ -20,7 +20,7 @@ const mode = (db: Database) => db.config.DEMO_MODE ? "simulated" : "configured_s
 const terminal = (state: string) => ["completed", "failed", "cancelled"].includes(state);
 
 export async function prepareCapabilityVideoSuite(tx: Tx, db: Database, v: any, release: any, p: Principal) {
-  if (!db.config.AI_BASE_URL || !db.config.AI_API_KEY) throw denied("AI_SETUP_REQUIRED");
+  if ((!db.config.AI_BASE_URL || !db.config.AI_API_KEY) && !db.config.MODEL_CONNECTION_RESOLVER) throw denied("AI_SETUP_REQUIRED");
   const document = capabilityDocument.parse(release.definition);
   if (document.profile_key !== "internal-video-v1") throw denied("VIDEO_VERIFICATION_PROFILE_INVALID");
   const plan = capabilityVideoPlan(), quote = BigInt(plan.seconds) * BigInt(document.rates[0]);

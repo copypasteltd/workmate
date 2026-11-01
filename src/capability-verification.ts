@@ -2,6 +2,7 @@ import { readFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
+import { modelUpstream } from "./model-connections.js";
 import type { Config } from "./config.js";
 import { canonical, hash, Problem } from "./lib.js";
 import { gatewayFingerprint } from "./capability-bindings.js";
@@ -23,6 +24,7 @@ const common = {
   kernel: z.literal("codex"),
   gateway_policy: z.literal("company_internal_only"),
   model_alias: z.string().trim().min(1).max(200),
+  upstream: modelUpstream.optional(),
 };
 const audioLocales = z.array(z.enum(["en", "zh-HK", "yue-HK"])).min(1).max(3)
   .refine(values => new Set(values).size === values.length);
@@ -58,11 +60,12 @@ export function capabilityBody(
   c: Config,
   document: z.infer<typeof capabilityDocument>,
 ) {
+  const binding = document.upstream ? { model_connection_id: document.upstream.id } : {};
   const text = document.profile_key === "internal-text-v1";
   if (document.profile_key === "internal-speech-v1" || document.profile_key === "internal-transcription-v1") {
     const speech = document.profile_key === "internal-speech-v1";
     return {
-      profile_key: document.profile_key, model_alias: document.model_alias, ready: true,
+      ...binding, profile_key: document.profile_key, model_alias: document.model_alias, ready: true,
       rates: document.rates, schema_version: 2, reasoning_effort: null,
       wire_protocol: speech ? speechProtocol : transcriptionProtocol,
       supported_operations: [speech ? "audio.speech" : "audio.transcriptions"],
@@ -74,13 +77,14 @@ export function capabilityBody(
     };
   }
   if (document.profile_key === "internal-video-v1") return {
-    profile_key: document.profile_key, model_alias: document.model_alias, ready: true,
+    ...binding, profile_key: document.profile_key, model_alias: document.model_alias, ready: true,
     rates: document.rates, schema_version: 2, wire_protocol: videoJobProtocol,
     reasoning_effort: null, supported_operations: [...videoJobOperations], limits: { ...videoJobLimits },
     gateway_policy: "company_internal_only", gateway_fingerprint: gatewayFingerprint(c),
     data_mode: c.DEMO_MODE ? "simulated" : "configured_services",
   };
   return {
+    ...binding,
     profile_key: document.profile_key,
     model_alias: document.model_alias,
     ready: true,
@@ -124,7 +128,7 @@ export async function verifyCapability(
     throw new Problem(409, "ASYNC_VIDEO_VERIFICATION_REQUIRED", "Video verification uses its durable worker suite");
   if (document.profile_key === "internal-speech-v1" || document.profile_key === "internal-transcription-v1")
     throw new Problem(409, "ASYNC_AUDIO_VERIFICATION_REQUIRED", "Audio verification uses its durable worker suite");
-  if (!c.AI_BASE_URL || !c.AI_API_KEY)
+  if ((!c.AI_BASE_URL || !c.AI_API_KEY) && !c.MODEL_CONNECTION_RESOLVER)
     throw new Problem(
       409,
       "AI_SETUP_REQUIRED",

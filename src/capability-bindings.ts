@@ -13,6 +13,7 @@ const rate = z.number().int().nonnegative().safe();
 const definition = z
   .object({
     schema_version: z.literal(2),
+    model_connection_id: z.string().uuid().optional(),
     profile_key: z.enum([
       "internal-text-v1",
       "internal-image2-v1",
@@ -227,8 +228,7 @@ async function resolve(
       : new Set<string>();
   if (
     usable &&
-    (!c.AI_BASE_URL ||
-      !c.AI_API_KEY ||
+    (((!c.AI_BASE_URL || !c.AI_API_KEY) && !c.MODEL_CONNECTION_RESOLVER) ||
       (!c.AI_VERIFIED && !published.has(text.id)) ||
       (usesImage &&
         (!image?.ready || (!c.AI_IMAGE_VERIFIED && !published.has(image.id)))))
