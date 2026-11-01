@@ -1,3 +1,9 @@
+<!-- highest-admin-direct-182 -->
+
+Highest administrators execute directly; other roles follow approval policy; every action retains audit. Production gpt-6-luna publication,18 focused checks and6 actual browser checks are verified.
+
+[需求 / Requirements](requirements/182-highest-admin-direct.md) · [开发及逻辑图 / Implementation](development/182-highest-admin-direct.md) · [变更 / Changes](changes/182-highest-admin-direct.md) · [实际证据 / Evidence](quality/highest-admin-direct-182.json)
+
 <!-- model-tool-contract-181 -->
 ## Codex 完整模型验证 / Complete Codex model validation
 

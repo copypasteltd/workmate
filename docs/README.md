@@ -1,3 +1,9 @@
+<!-- highest-admin-direct-182 -->
+
+最高管理员直接执行，其他角色按策略审批，完整保留审计。已验证线上 gpt-6-luna 直接发布、18项相关检查和6项实际页面检查。
+
+[需求 / Requirements](requirements/182-highest-admin-direct.md) · [开发及逻辑图 / Implementation](development/182-highest-admin-direct.md) · [变更 / Changes](changes/182-highest-admin-direct.md) · [实际证据 / Evidence](quality/highest-admin-direct-182.json)
+
 <!-- model-tool-contract-181 -->
 ## Codex 完整模型验证 / Complete Codex model validation
 
