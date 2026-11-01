@@ -1,5 +1,24 @@
 # Workmate · delivery
 
+<!-- model-tool-contract-181 -->
+## Codex 完整模型验证修复 · 阶段181
+
+当前保存的 **gpt-6-luna** 已在正式后台通过完整验证：固定 Codex、指定模型与推理强度、注册工具调用及结果返回、最终文字回复、用量记录均完成。保留每模型接口和 Key，兼容普通 function 与原生 code mode 工具格式，并继续执行原业务权限检查。
+
+实际回执 `b8c8c28a-1df1-4ef7-af55-91d9d51b4bcc`；输入／输出 tokens 为 `20230/139`。旧待对账记录保留。未自定义发布的初始策略中，管理员／验证总名额由2调整为4，保留旧占位2个并恢复可用名额2个；费用上限及其他限制不变。原生工具上下文按完整请求字节预留输入额度，再按实际 tokens 结算；输入、输出或费用超额仍会拦截。
+
+Package V3/install V4 with the181 scripts; qualify using `qualify-model-tool-contract-181-v4.mjs` with `PLAYWRIGHT_BROWSERS_PATH=.data/browsers`. The bounded bootstrap recovery refuses to replace a published Admin policy. Forward migration159 pre-funds native context from complete request bytes; historical exact-count allocations and frozen installers remain intact.
+
+[Implementation, workflow and evidence / 方案、逻辑图与回执](https://github.com/copypasteltd/workmate/blob/docs/docs/development/181-model-tool-contract.md)
+
+![Actual full Codex validation](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/screenshots/181-codex-validation-passed-03f66d6b-a57b-4554-a7ab-1dca62712999.png)
+
+![Actual Admin interaction recording](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/demos/181-model-tool-contract.gif)
+
+Earlier records follow. 以下为历史记录。
+
+---
+
 <!-- model-http-180 -->
 ## 模型接口支持 HTTP 和 HTTPS · 阶段180
 
