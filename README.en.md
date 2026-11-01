@@ -1,5 +1,33 @@
 # Workmate · delivery
 
+<!-- model-management-179 -->
+## Edit and delete existing models · stage179
+
+Open [Model capabilities](https://agent-dashboard.copypaste.hk/catalog?view=capabilities). Each current model has **Edit model** and **Delete model** actions in both the list and detail view. Edit preloads the existing model/API/rates; its masked API Key field accepts a replacement directly. Keep the saved key with the same URL/network scope, or enter a new key after changing that scope.
+
+**Save changes** updates the current model entry. Validate and publish the updated configuration before using it for new customer work. **Delete model → Confirm deletion** removes the model family from new selection, including pinned new-agent/task paths; a deleted default cannot reactivate a bootstrap fallback. Existing tasks and billing keep exact historical versions and encrypted connections. Current/history/deleted views expose the retained records.
+
+Focused native checks: `node scripts/test-model-management-179-v5.mjs` (21 cases: 10 model-management cases plus 11 existing model-connection cases). Runtime: `package-model-management-179-v1.py` and `install-model-management-179-v1.sh`. Overlay `/opt/workmate/overlays/model-management-179/`, schema158. Existing credentials and unrelated services remain unchanged; any frontend rollback must retain a schema158-compatible API. Native PostgreSQL only; no local Docker/WSL. Browser scripts close their own contexts and browser in finally blocks.
+
+```mermaid
+flowchart LR
+ E[Edit existing model] --> C[Same model entry, updated configuration]
+ C --> V[Validate and publish for new work]
+ D[Confirm deletion] --> X[Remove future availability]
+ C --> H[Preserve original task and billing bindings]
+ X --> H
+```
+
+[Usage and implementation / 使用细则](https://github.com/copypasteltd/workmate/blob/docs/docs/development/179-model-management.md)
+
+![Actual editing of an existing model](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/screenshots/179-edit-model-087bfaac-ff46-480c-ae08-dc1b2aea04ea.png)
+
+![Actual save and deletion](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/demos/179-model-management.gif)
+
+Earlier implementation and deployment records follow. 以下为原有版本记录。
+
+---
+
 <!-- per-model-connections-178 -->
 ## Per-model API configuration · stage178
 
