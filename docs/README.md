@@ -1,3 +1,20 @@
+<!-- model-management-179 -->
+## 已有模型可编辑和删除 / Edit and delete existing models
+
+[正式后台 / Admin](https://agent-dashboard.copypaste.hk/catalog?view=capabilities) · [需求 / Requirements](requirements/179-model-management.md) · [操作和开发 / Usage and implementation](development/179-model-management.md) · [变更 / Changes](changes/179-model-management.md) · [核查 / Evidence](quality/model-management-179.json)
+
+列表及详情提供直接编辑、保存更改、确认删除。当前模型显示更新后的配置；已删除模型移出可用目录，新工作不能选择，原任务和账务保留。API Key 可直接输入替换，原 Key 不回显。
+
+Existing models now have explicit Edit/Delete actions. Saving updates the current entry; deletion blocks future selection and bootstrap fallback while preserving old task/accounting facts. Keys remain encrypted and are never returned.
+
+![实际编辑已有模型 / Actual existing-model edit](assets/model-management-179/model-form.png)
+
+![实际保存和删除 / Actual save and delete](assets/model-management-179/179-model-management.gif)
+
+Earlier records follow. 以下为历史记录。
+
+---
+
 <!-- per-model-connections-178 -->
 ## 每个模型独立配置上游 / Per-model upstream configuration
 
