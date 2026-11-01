@@ -1,3 +1,18 @@
+<!-- model-http-180 -->
+## 模型 HTTP/HTTPS 上游 / Model HTTP/HTTPS upstreams
+
+公网模型 HTTP 不再被拦截，也不需要勾选内网选项。当前 gpt-6-luna 已在真实后台完成连接测试，认证成功且模型列表包含此模型。该结果不代替 Codex 完整验证或发布。
+
+Public model HTTP is accepted without a private-network override. The real Admin connection test authenticates and lists the current gpt-6-luna model. Full Codex validation and publication remain separate.
+
+[需求 / Requirements](requirements/180-model-http.md) · [开发 / Implementation](development/180-model-http.md) · [变更 / Changes](changes/180-model-http.md) · [实际证据 / Evidence](quality/model-http-180.json)
+
+![实际连接成功 / Actual successful connection](assets/model-http-180/connected.png)
+
+![实际操作 / Actual recording](assets/model-http-180/180-model-http.gif)
+
+---
+
 <!-- model-management-179 -->
 ## 已有模型可编辑和删除 / Edit and delete existing models
 
