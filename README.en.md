@@ -1,5 +1,24 @@
 # Workmate · backend
 
+<!-- model-http-180 -->
+## HTTP and HTTPS model upstreams · stage180
+
+Model API base URLs accept **HTTP and HTTPS**. Public HTTP does not need the private-network checkbox. Saving, connection tests, Codex capability verification and inference use the same transport. Existing addresses and encrypted keys are retained.
+
+The deployed gpt-6-luna connection was tested through the real Admin UI: authentication succeeded and the model list contains gpt-6-luna. This is a connection check, not full Codex capability qualification or automatic publication.
+
+Build: `npm run build`. The per-model normalizer and shared transport support both schemes. Private address access still uses its explicit setting; the Admin label reflects this meaning.
+
+[Usage and implementation / 使用与开发](https://github.com/copypasteltd/workmate/blob/docs/docs/development/180-model-http.md)
+
+![Actual HTTP model connection](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/screenshots/180-http-model-connected-f49d8316-fe59-4bea-beca-07a1668315f1.png)
+
+![Actual connection test recording](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/demos/180-model-http.gif)
+
+Earlier records follow. 以下为历史记录。
+
+---
+
 <!-- model-management-179 -->
 ## Edit and delete existing models · stage179
 

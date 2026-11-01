@@ -1,5 +1,24 @@
 # Workmate · backend
 
+<!-- model-http-180 -->
+## 模型接口支持 HTTP 和 HTTPS · 阶段180
+
+每模型 API 基础地址支持 **HTTP 和 HTTPS**；公网上游使用 HTTP 无须勾选内网选项。保存、连接测试、Codex 完整能力验证及推理使用同一传输规则。原模型地址及加密 Key 保留。
+
+已在正式后台使用当前 gpt-6-luna 配置进行连接测试，接口及 Key 认证成功，返回列表包含该模型。这是实际连接结果，不代替 Codex 完整能力验证，也不自动发布模型。
+
+Build: `npm run build`. The per-model normalizer and shared transport support both schemes. Private address access still uses its explicit setting; the Admin label reflects this meaning.
+
+[Usage and implementation / 使用与开发](https://github.com/copypasteltd/workmate/blob/docs/docs/development/180-model-http.md)
+
+![Actual HTTP model connection](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/screenshots/180-http-model-connected-f49d8316-fe59-4bea-beca-07a1668315f1.png)
+
+![Actual connection test recording](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/demos/180-model-http.gif)
+
+Earlier records follow. 以下为历史记录。
+
+---
+
 <!-- model-management-179 -->
 ## 已有模型可直接编辑和删除 · 阶段179
 
