@@ -1,3 +1,15 @@
+<!-- highest-admin-direct-182 -->
+
+## 最高管理员直接执行 · 阶段182
+
+有效的全局内置 super_admin 可直接执行管理变更；其他角色按业务策略审批，不能审批自己的受控申请。敏感操作继续核对 MFA、业务权限、范围、限额和原始证据，真实操作者、原因、命令摘要及结果与业务效果一并保存审计。
+
+当前 gpt-6-luna 已通过真实后台直接发布：操作 `7d32d69d-5680-4199-bd04-1ebe2b1b4813`、审计 `7174`，未生成待审批申请。18项相关检查、6项真实页面检查通过。原模型配置、加密 Key、未知费用预留及旧违规记录保持原样。追加迁移160须搭配对应 API。
+
+[设计、使用和逻辑图 / Design, usage and diagram](https://github.com/copypasteltd/workmate/blob/docs/docs/development/182-highest-admin-direct.md)
+
+![实际交互 / Actual interaction](https://raw.githubusercontent.com/copypasteltd/workmate/docs/docs/assets/highest-admin-direct-182/182-highest-admin-direct.gif)
+
 # Workmate · delivery
 
 <!-- model-tool-contract-181 -->
