@@ -18,8 +18,8 @@ export function DataModeNotice() {
       </strong>
       <span>
         {t(
-          "AI 回覆、生成圖片和用量均為模擬資料；檔案與工作記錄會實際保存。",
-          "AI responses, generated images and usage are simulated. Files and task records are actually saved.",
+          "試用額度及未接入服務使用模擬資料；已獨立設定的模型會呼叫實際上游。檔案與工作記錄會保存。",
+          "Trial credit and unconfigured services are simulated. Independently configured models use their actual upstream. Files and task records are saved.",
         )}
       </span>
       {membership?.role === "owner" && membership.data_mode === "simulated" && (
