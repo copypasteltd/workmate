@@ -1,3 +1,34 @@
+<!-- admin-directory-lifecycle-184 -->
+
+## 用户／企业新建、删除及批量管理 · 阶段184
+
+用户管理与企业管理已增加新建、逐行永久删除、当页多选、批量状态变更及批量删除。提交绑定原因、明确目标、版本、五分钟预览及幂等键。最高管理员直接执行，其他角色按发布策略审批。新建用户登录时仍须验证邮箱；新建企业同时配置擁有人、账务账户及首个项目。
+
+勾选需要处理的记录，选择动作，填写原因后预览并确认；删除须输入 DELETE 加准确数量并确认保留范围。任一记录变化或不符合条件时整批不执行。删除用户撤销登录并移除联系和显示资料，同时保留共用企业内容及账务／审计引用；删除企业立即停止新操作，后台永久清理进度在内容管理查看。接口上限100条，界面不会隐含选取其他页。
+
+```mermaid
+flowchart LR
+ A[Directory / 目录] --> B[Create or select / 新建或多选]
+ B --> C[Authority and frozen preview / 权限与预览]
+ C --> D[Confirm or policy review / 确认或策略审批]
+ D --> E[Atomic effects and audit / 原子操作与审计]
+ E --> F[Result and cleanup tracking / 结果与清理追踪]
+```
+
+[完整使用方案、接口、权限、保留规则及部署说明](https://github.com/copypasteltd/workmate/blob/docs/docs/development/184-admin-directory-lifecycle.md)
+
+13项相关原生检查和10项最终真实页面检查通过。两轮专用页面验证已创建并清理4个用户及4个企业，18项操作均保存对应直接执行审计；4项企业根清理已完成，实际异常数组为空，必要保留项有记录。服务器配置、模型 API/Key 和未知费用预留保持原样。
+
+![实际页面 / Actual page](assets/screenshots/184-create-user-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png)
+
+![实际页面 / Actual page](assets/screenshots/184-workspaces-delete-preview-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png)
+
+![实际页面 / Actual page](assets/screenshots/184-cleanup-journal-d9ef4972-6bc4-49ef-ba30-3632d9df500e.png)
+
+![真实交互 / Actual interaction](assets/demos/184-admin-directory-lifecycle.gif)
+
+[完整录屏 / Full recording](assets/demos/184-admin-directory-lifecycle.mp4)
+
 <!-- highest-admin-direct-182 -->
 
 ## 最高管理员直接执行 · 阶段182

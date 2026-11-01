@@ -195,6 +195,7 @@ export function AdminDirectoryFilters({
             <Field label={t("註冊來源", "Registration source")}><select name="registration_source" defaultValue={filters.registration_source ?? ""}>
               <option value="">{t("全部來源", "All sources")}</option>
               <option value="email_otp">{t("工作郵箱驗證碼", "Email verification")}</option>
+              <option value="admin">{t("管理員建立", "Created by administrator")}</option>
               <option value="unknown">{t("舊來源未知", "Unknown legacy source")}</option>
             </select></Field>
           </div>

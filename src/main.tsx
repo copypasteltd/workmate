@@ -97,6 +97,7 @@ import { AdminMembershipManager, MembershipChangeFacts } from "./memberships";
 import { AdminResources } from "./resources";
 import { AdminAccountManager, AccountChangeFacts } from "./accounts";
 import { AdminDeletions } from "./deletions";
+import { DirectoryCommandDialog, type DirectoryAction } from "./directory-actions";
 import {
   AdminBilling,
   CanonicalFeeModal,
@@ -1046,6 +1047,8 @@ function SectionContent({ section }: { section: string }) {
   const subjectId = resourceUser(section, location.search);
   const hasSubject = subjectId !== null;
   const [cursors, setCursors] = useState<(string | null)[]>([null]);
+  const [directoryAction, setDirectoryAction] = useState<DirectoryAction | null>(null);
+  const [selection, setSelection] = useState<{ context: string; ids: string[] }>({ context: "", ids: [] });
   const filters: DirectoryFilters =
     section === "users" ? readDirectoryFilters(location.search) : {};
   const [refresh, setRefresh] = useState(0),
@@ -1119,6 +1122,12 @@ function SectionContent({ section }: { section: string }) {
         ? { items: [rawData], next_cursor: null }
         : null
       : rawData;
+  const selectionContext = active + ":" + directoryQuery.toString() + ":" + refresh;
+  const selected = selection.context === selectionContext && !loading && !error ?
+    (data?.items ?? []).filter((r: any) => selection.ids.includes(r.id)) : [];
+  const selectable = directory ? (data?.items ?? []).filter((r: any) => Number.isInteger(r.version)) : [];
+  const chooseRows = (ids: string[]) => setSelection({ context: selectionContext, ids });
+  useEffect(() => { setDirectoryAction(null); }, [selectionContext]);
   const entry = nav.find((n) => n[0] === section)!;
   const bump = () => {
     if (cursorPaged) {
@@ -1189,6 +1198,7 @@ function SectionContent({ section }: { section: string }) {
         }
         action={
           <div className="row-actions">
+            {directory && a.has(`admin.${active}.create`) && <button className="button primary" onClick={() => setDirectoryAction({ type: active as "users" | "tenants", action: "create" })}><Plus size={16} />{active === "users" ? t("新建用戶", "Create user") : t("新建企業", "Create workspace")}</button>}
             {section === "jobs" &&
               a.has("admin.jobs.create") &&
               a.has("admin.users.status.write") && (
@@ -1405,6 +1415,14 @@ function SectionContent({ section }: { section: string }) {
         />
       )}
       <ErrorNotice error={error ?? err} />
+      {directory && <div className="directory-batch-bar" aria-label={t("列表批次操作", "List bulk actions")}>
+        <span>{t("已選", "Selected")} <strong>{selected.length}</strong> {t("項（僅當前頁）", "(current page only)")}</span>
+        <div className="row-actions">
+          <button className="button" disabled={!selected.length} onClick={() => chooseRows([])}>{t("取消選取", "Clear selection")}</button>
+          {a.has(`admin.${active}.status.write`) && <button className="button" disabled={!selected.length} onClick={() => setDirectoryAction({ type: active as "users" | "tenants", action: "status", targets: selected })}>{t("批次變更狀態", "Change statuses")}</button>}
+          {a.has(`admin.${active}.delete`) && <button className="button danger" disabled={!selected.length} onClick={() => setDirectoryAction({ type: active as "users" | "tenants", action: "delete", targets: selected })}>{t("批次刪除", "Delete selected")}</button>}
+        </div>
+      </div>}
       {loading && !data ? (
         <Loading />
       ) : data?.items.length ? (
@@ -1413,6 +1431,7 @@ function SectionContent({ section }: { section: string }) {
             <table>
               <thead>
                 <tr>
+                  {directory && <th><input type="checkbox" aria-label={t("全選當前頁", "Select current page")} checked={!!selectable.length && selected.length === selectable.length} ref={el => { if (el) el.indeterminate = selected.length > 0 && selected.length < selectable.length; }} disabled={loading || !selectable.length} onChange={e => chooseRows(e.target.checked ? selectable.map((r: any) => r.id) : [])} /></th>}
                   {columns[active].map((f) => (
                     <th key={f}>{headers[f] ? t(...headers[f]) : f}</th>
                   ))}
@@ -1422,6 +1441,7 @@ function SectionContent({ section }: { section: string }) {
               <tbody>
                 {data.items.map((r: any, i: number) => (
                   <tr key={r.id ?? i}>
+                    {directory && <td><input type="checkbox" aria-label={t("選取", "Select") + " " + (r.display_name ?? r.name)} checked={selected.some((s: any) => s.id === r.id)} disabled={loading || !Number.isInteger(r.version)} onChange={e => chooseRows(e.target.checked ? [...selected.map((s: any) => s.id), r.id] : selected.filter((s: any) => s.id !== r.id).map((s: any) => s.id))} /></td>}
                     {columns[active].map((f, j) => (
                       <td key={f}>
                         {active === "users" && f === "display_name" ? (
@@ -1446,6 +1466,7 @@ function SectionContent({ section }: { section: string }) {
                     ))}
                     <td>
                       <div className="table-actions">
+                        {directory && a.has(`admin.${active}.delete`) && <button title={t("永久刪除", "Permanently delete")} aria-label={t("永久刪除", "Permanently delete") + " " + (r.display_name ?? r.name)} onClick={() => setDirectoryAction({ type: active as "users" | "tenants", action: "delete", targets: [r] })}><Ban size={16} /></button>}
                         {active === "users" ? (
                           <button
                             onClick={() =>
@@ -1798,6 +1819,7 @@ function SectionContent({ section }: { section: string }) {
           }}
         />
       )}
+      {directoryAction && <DirectoryCommandDialog key={JSON.stringify(directoryAction)} chosen={directoryAction} account={a.me.user.id} onClose={() => setDirectoryAction(null)} onDone={() => { setDirectoryAction(null); chooseRows([]); bump(); }} />}
       {dialog === "data-export" &&
         ["users", "usage", "billing", "audit"].includes(active) && (
           <AdminDataComposer
@@ -1884,7 +1906,7 @@ type AdminDirectoryUser = {
   registered_at: string;
   last_login_at: string | null;
   last_active_at?: string | null;
-  registration_source?: "email_otp" | null;
+  registration_source?: "email_otp" | "admin" | null;
   confirmed_customer_charges?: unknown;
 };
 type AdminUserMembership = {
@@ -2393,7 +2415,7 @@ function UserDetailContent({ id }: { id: string }) {
               <dt>{t("最近帳戶訪問", "Last account access")}</dt>
               <dd>{data.user.last_active_at ? <DateText value={data.user.last_active_at} /> : t("未記錄", "Not recorded")}</dd>
               <dt>{t("註冊來源", "Registration source")}</dt>
-              <dd>{data.user.registration_source === "email_otp" ? t("工作郵箱驗證碼", "Email verification") : t("未知", "Unknown")}</dd>
+              <dd>{data.user.registration_source === "admin" ? t("管理員建立", "Created by administrator") : data.user.registration_source === "email_otp" ? t("工作郵箱驗證碼", "Email verification") : t("未知", "Unknown")}</dd>
               <dt>{t("確認扣費", "Confirmed charges")}</dt>
               <dd>
                 <Value

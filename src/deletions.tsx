@@ -1,6 +1,6 @@
 import { ScopeErasureDialog, type ErasureTarget } from "./scope-erasure-dialog";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { post } from "./api";
 import {
@@ -136,10 +136,11 @@ export function AdminDeletions({
         )}
       </p>
       {canRetry && <form className="deletion-filters" onSubmit={e => {e.preventDefault();setErasure({kind:scopeKind,id:scopeId,endpoint:`/v1/admin/scopes/${scopeKind}/${scopeId}/erasure`});}}>
-        <Field label={t("永久清理範圍", "Permanent cleanup scope")}><select value={scopeKind} onChange={e=>setScopeKind(e.target.value as any)}><option value="projects">{t("完整專案", "Entire project")}</option><option value="tenants">{t("企業工作空間", "Company workspace")}</option></select></Field>
+        <Field label={t("永久清理範圍", "Permanent cleanup scope")}><select value={scopeKind} onChange={e=>setScopeKind(e.target.value as any)}><option value="projects">{t("完整專案", "Entire project")}</option></select></Field>
         <Field label={t("目標 ID", "Target ID")}><input required value={scopeId} onChange={e=>setScopeId(e.target.value)} pattern="[a-fA-F0-9]{8}(-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}" /></Field>
         <button className="button secondary" type="submit">{t("預覽永久清理", "Preview permanent cleanup")}</button>
       </form>}
+      <p className="muted"><Link to="/tenants">{t("企業刪除與批次操作請前往企業管理；此處追蹤背景清理。", "Use Company management for workspace deletion and bulk actions; track background cleanup here.")}</Link></p>
       {erasure && canRetry && <ScopeErasureDialog key={erasure.endpoint} account={account} target={erasure} onClose={()=>setErasure(null)} onAccepted={()=>{setErasure(null);setRefresh(v=>v+1);}} />}
       <div className="deletion-filters">
         <Field label={t("搜尋清理 ID", "Search cleanup IDs")}>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { api } from "./api";
 import { operationKey, completeOperation } from "./operation-key";
 import { AccountChangeFacts } from "./accounts";
+import { DirectoryCommandFacts } from "./directory-actions";
 import { MembershipChangeFacts } from "./memberships";
 import { PlanPublicationFacts } from "./plans";
 import { CapabilityPublicationFacts } from "./capabilities";
@@ -53,7 +54,7 @@ export function ApprovalReview({
     approval = data?.approval,
     command = data?.command;
   const permission = operation
-    ? operation.action === "entitlements.grant_with_credit"
+    ? operation.action.startsWith("directory.") ? "admin." + operation.action.slice(10).replace(/\.status$/, ".status.write") : operation.action === "entitlements.grant_with_credit"
       ? "admin.entitlements.grant"
       : operation.action.startsWith("entitlements.")
         ? vipPermission(operation.action)
@@ -110,7 +111,9 @@ export function ApprovalReview({
               <DateText value={approval.expires_at} />
             </dd>
           </dl>
-          {operation.action.startsWith("ai.") ? (
+          {operation.action.startsWith("directory.") ? (
+            <DirectoryCommandFacts command={command} before={data.before} />
+          ) : operation.action.startsWith("ai.") ? (
             <ProviderReviewFacts before={data.before} command={command} />
           ) : operation.action === "plans.publish" ? (
             <PlanPublicationFacts before={data.before} />
