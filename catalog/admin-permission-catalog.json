@@ -644,6 +644,39 @@
         "global"
       ],
       "audit_required": true
+    },
+    {
+      "key": "admin.users.create",
+      "sensitive_field_access": true,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.users.delete",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.tenants.create",
+      "sensitive_field_access": true,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.tenants.delete",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant"
+      ],
+      "audit_required": true
     }
   ],
   "roles": [
@@ -717,7 +750,11 @@
         "admin.users.profile.write",
         "admin.users.read",
         "admin.users.sessions.revoke",
-        "admin.users.status.write"
+        "admin.users.status.write",
+        "admin.users.create",
+        "admin.users.delete",
+        "admin.tenants.create",
+        "admin.tenants.delete"
       ],
       "status": "proposed",
       "grant_requires_explicit_scope": true

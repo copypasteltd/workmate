@@ -212,6 +212,7 @@ async function inspect(tx: Tx, a: AccountAction, target: string, b: any) {
     ])
   ).rows[0];
   if (!row) throw new Problem(404, "NOT_FOUND", "Account not found");
+  if (row.deleted_at) throw new Problem(410, "ACCOUNT_DELETED", "Deleted accounts cannot be modified or restored");
   if (b.expected_version !== undefined && row.version !== b.expected_version)
     throw new Problem(
       409,

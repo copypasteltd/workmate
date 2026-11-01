@@ -1,4 +1,5 @@
 import { commitApprovalDecision } from "./admin-approval-decision.js";
+import { isDirectoryOperation, directoryAuthority, directoryPermission, decideDirectoryOperation } from "./admin-directory-lifecycle.js";
 import { enableSuperAdminDirect, isHighestAdmin } from "./admin-execution-policy.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
@@ -75,7 +76,7 @@ export const approvalDecision = z
   })
   .strict();
 const businessPermission = (op: any) =>
-  isVipCreditOperation(op)
+  isDirectoryOperation(op) ? directoryPermission(op.payload.command) : isVipCreditOperation(op)
     ? "combination.write"
     : isVipOperation(op)
       ? vipPermission(op.action)
@@ -85,7 +86,9 @@ const businessPermission = (op: any) =>
           : op.action);
 
 async function authority(tx: Tx, p: Principal, op: any, permission: string) {
-  if (isProviderAdminOperation(op))
+  if (isDirectoryOperation(op))
+    await directoryAuthority(tx, p, op.payload.command, permission);
+  else if (isProviderAdminOperation(op))
     await providerOperationAuthority(tx, p, op, permission);
   else if (isVipCreditOperation(op))
     await vipCreditOperationAuthority(tx, p, op, permission);
@@ -105,7 +108,8 @@ async function authority(tx: Tx, p: Principal, op: any, permission: string) {
   await requireSensitiveAdmin(tx, p);
 }
 function visibility(s: ReadScope, db: Database) {
-  return `(CASE WHEN o.payload->>'provider_admin_command_version'='1' THEN ${providerApprovalVisibility(s, db)} ELSE ${legacyVisibility(s, db)} END)`;
+  const directoryVisible = s.global("admin.approvals.read") && s.global("admin.users.read") && s.global("admin.tenants.read") && !s.bs.some(b => b.effect === "deny" && b.permissions.some((p: string) => ["admin.approvals.read","admin.users.read","admin.tenants.read"].includes(p)));
+  return `(CASE WHEN o.payload->>'directory_command_version'='1' THEN ${s.arg(directoryVisible)}::boolean WHEN o.payload->>'provider_admin_command_version'='1' THEN ${providerApprovalVisibility(s, db)} ELSE ${legacyVisibility(s, db)} END)`;
 }
 function legacyVisibility(s: ReadScope, db: Database) {
   const permission = "admin.approvals.read";
@@ -337,7 +341,9 @@ export function registerAdminApprovals(
                   "Approval expired; create a fresh preview",
                 );
               await commitApprovalDecision(tx, req.principal, op, r, b, async () => {
-              if (isProviderAdminOperation(op))
+              if (isDirectoryOperation(op))
+                await decideDirectoryOperation(db, tx, req.principal, op, b.decision);
+              else if (isProviderAdminOperation(op))
                 await decideProviderAdminOperation(
                   tx,
                   db,

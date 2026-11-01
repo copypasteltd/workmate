@@ -50,7 +50,7 @@ async function preview(tx: Tx, row: any, kind: ScopeKind) {
     inflight: "Cancellation is requested. Unknown external charges or unverified computer cleanup remain pending; no funds are released by the erasure request." };
 }
 
-async function request(tx: Tx, p: Principal, kind: ScopeKind, row: any, b: z.infer<typeof body>) {
+export async function requestScopeErasure(tx: Tx, p: Principal, kind: ScopeKind, row: any, b: z.infer<typeof body>) {
   // Only first acceptance needs the root lock. Never wait on an existing job
   // while holding its root: the worker finishes in the opposite direction.
   if (!row.erasure_requested_at) row = (await tx.query(`SELECT * FROM ${kind} WHERE id=$1 FOR UPDATE`, [row.id])).rows[0];
@@ -91,7 +91,7 @@ export function registerScopeErasure(app: FastifyInstance, db: Database) {
         await authorizeUser(tx, req.principal, tenant, kind);
         const row = await scope(tx, kind, id);
         if (kind === "projects" && row.tenant_id !== tenant) throw new Problem(404, "NOT_FOUND", "Project not found");
-        await replay(tx, req.principal.id, `scope.erasure:${kind}:${id}`, key(req), b, () => request(tx, req.principal, kind, row, b));
+        await replay(tx, req.principal.id, `scope.erasure:${kind}:${id}`, key(req), b, () => requestScopeErasure(tx, req.principal, kind, row, b));
         return safeJob((await tx.query("SELECT * FROM deletion_jobs WHERE target_type=$1 AND target_id=$2", [kind, id])).rows[0]);
       }, tenant, true, req.principal.id);
       return reply.code(202).send(result);
@@ -114,6 +114,8 @@ export function registerScopeErasure(app: FastifyInstance, db: Database) {
   for (const method of ["get", "post"] as const) app[method]("/v1/admin/scopes/:kind/:id/erasure" + (method === "get" ? "-preview" : ""), { preHandler: requireAdmin(db) }, async (req, reply) => {
     reply.header("Cache-Control", "no-store");
     const { kind, id } = z.object({ kind: z.enum(scopeKinds), id: uuid }).parse(req.params), b = method === "post" ? body.parse(req.body) : null;
+    if (kind === "tenants" && method === "post")
+      throw new Problem(409, "DIRECTORY_PREVIEW_REQUIRED", "Delete the workspace from Company management using the reviewed directory preview");
     const result = await db.tx(async tx => {
       await requireSensitiveAdmin(tx, req.principal);
       const row = await scope(tx, kind, id), tenant = kind === "tenants" ? id : row.tenant_id;
@@ -121,7 +123,7 @@ export function registerScopeErasure(app: FastifyInstance, db: Database) {
       if (kind === "tenants") for (const child of (await tx.query("SELECT id FROM projects WHERE tenant_id=$1 ORDER BY id", [tenant])).rows)
         await permit(tx, req.principal, "admin.content.delete", { tenant, project: child.id });
       if (!b) return preview(tx, row, kind);
-      await replay(tx, req.principal.id, `admin.scope.erasure:${kind}:${id}`, key(req), b, () => request(tx, req.principal, kind, row, b));
+      await replay(tx, req.principal.id, `admin.scope.erasure:${kind}:${id}`, key(req), b, () => requestScopeErasure(tx, req.principal, kind, row, b));
       return safeJob((await tx.query("SELECT * FROM deletion_jobs WHERE target_type=$1 AND target_id=$2", [kind, id])).rows[0]);
     }, undefined, true);
     return reply.code(method === "post" ? 202 : 200).send(result);

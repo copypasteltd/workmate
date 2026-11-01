@@ -1,3 +1,24 @@
+<!-- admin-directory-lifecycle-184 -->
+
+## User/workspace creation, deletion and bulk management · stage184
+
+User and Company management now provide Create, permanent row deletion, current-page selection, bulk status changes and bulk deletion. Reasons, explicit targets, versions, five-minute previews and idempotency are mandatory. Highest administrators execute directly; other roles follow the published approval policy. Ordinary user creation still requires OTP at first sign-in; workspace creation includes its owner, billing account and first project.
+
+Select only the records you intend to change, choose an action, enter a reason, preview and confirm. For deletion, type DELETE followed by the exact count and acknowledge retention. A changed or ineligible record rejects the entire selection. User deletion revokes sign-in and removes contact/profile data while preserving shared workspace content and billing/audit references. Workspace deletion immediately fences new work and queues permanent cleanup; track the actual cleanup status in Content management. API maximum100; the UI never silently selects other pages.
+
+```mermaid
+flowchart LR
+ A[Directory / 目录] --> B[Create or select / 新建或多选]
+ B --> C[Authority and frozen preview / 权限与预览]
+ C --> D[Confirm or policy review / 确认或策略审批]
+ D --> E[Atomic effects and audit / 原子操作与审计]
+ E --> F[Result and cleanup tracking / 结果与清理追踪]
+```
+
+[Detailed design, API, permissions, retention and deployment](https://github.com/copypasteltd/workmate/blob/docs/docs/development/184-admin-directory-lifecycle.md)
+
+13 focused native checks and10 final actual-browser checks passed. Two owned UI runs created and cleaned4 users and4 workspaces; all18 operations have matching direct-execution audit facts. The four root cleanup jobs finished with empty operational exception arrays and documented retained facts. Server configuration, model API/key settings and unknown financial holds are preserved.
+
 <!-- highest-admin-direct-182 -->
 
 ## Highest-administrator direct execution · stage182

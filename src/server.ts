@@ -62,6 +62,7 @@ import { registerAdmin } from "./admin.js";
 import { registerAdminOperations } from "./admin-operations.js";
 import { registerAdminMemberships } from "./admin-memberships.js";
 import { registerAdminAccounts } from "./admin-accounts.js";
+import { registerAdminDirectoryLifecycle } from "./admin-directory-lifecycle.js";
 import { registerAdminBilling } from "./admin-billing.js";
 import { registerAdminPayments } from "./admin-payments.js";
 import { registerAdminRefunds } from "./admin-refunds.js";
@@ -544,6 +545,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAdminOperations(app, db);
   registerAdminMemberships(app, db);
   registerAdminAccounts(app, db);
+  registerAdminDirectoryLifecycle(app, db);
   registerAdminBilling(app, db);
   registerAdminFees(app, db);
   registerAdminPayments(app, db);

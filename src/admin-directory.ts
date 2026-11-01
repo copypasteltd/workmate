@@ -457,7 +457,7 @@ export function registerAdminDirectory(app: FastifyInstance, db: Database) {
             "The selected filter requires its field permission",
           );
         const bounds = await pageBounds(tx, db, req.principal, s, q, "users");
-        let where = s.user("admin.users.read");
+        let where = `(${s.user("admin.users.read")}) AND u.deleted_at IS NULL`;
         if (q.user_id) where += ` AND u.id=${s.arg(q.user_id)}::uuid`;
         if (q.tenant_id || q.project_id)
           where += ` AND EXISTS(SELECT 1 FROM memberships m WHERE m.user_id=u.id AND ${memberFilter(s, q)})`;
@@ -650,7 +650,7 @@ export function registerAdminDirectory(app: FastifyInstance, db: Database) {
         async (tx) => {
           const s = await readScope(tx, req.principal, "admin.tenants.read"),
             bounds = await pageBounds(tx, db, req.principal, s, q, "tenants");
-          let where = `(${s.scope("admin.tenants.read", "t.id")} OR EXISTS(SELECT 1 FROM projects p WHERE p.tenant_id=t.id AND ${s.scope("admin.tenants.read", "p.tenant_id", "p.id")}))`;
+          let where = `t.erasure_requested_at IS NULL AND (${s.scope("admin.tenants.read", "t.id")} OR EXISTS(SELECT 1 FROM projects p WHERE p.tenant_id=t.id AND ${s.scope("admin.tenants.read", "p.tenant_id", "p.id")}))`;
           if (q.q) where += ` AND t.name ILIKE ${s.arg(escaped(q.q))}`;
           where += ` AND t.created_at<=${s.arg(bounds.asof)}::timestamptz`;
           if (bounds.after)

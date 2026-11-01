@@ -11,7 +11,7 @@ export const operationalDirectoryFields = {
   active_from: time,
   active_to: time,
   activity: z.enum(["known", "unknown"]).optional(),
-  registration_source: z.enum(["email_otp", "unknown"]).optional(),
+  registration_source: z.enum(["email_otp", "admin", "unknown"]).optional(),
   vip_plan: z.string().trim().min(1).max(160).optional(),
   vip_status: z.enum(["effective", "scheduled", "expired", "suspended", "revoked"]).optional(),
   vip_expiry_from: time,
