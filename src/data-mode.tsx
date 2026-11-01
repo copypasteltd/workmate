@@ -9,8 +9,8 @@ export function DataModeNotice() {
       </strong>
       <span>
         {t(
-          "模型、素材和消耗是模擬資料；管理員操作及審計會實際保存。",
-          "Model content, media and usage are simulated. Administrator changes and audit records are actually saved.",
+          "試用額度及未接入服務使用模擬資料；獨立設定的模型會呼叫實際上游並消耗其額度。管理操作及審計會保存。",
+          "Trial credit and unconfigured services are simulated. Independently configured models call their actual upstream and consume its credit. Admin changes and audits are saved.",
         )}
       </span>
     </aside>

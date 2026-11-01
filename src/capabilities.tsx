@@ -35,6 +35,7 @@ import {
   type WorkspacePurge,
 } from "./capability-model";
 import "./capabilities.css";
+import { ModelConnectionFields, ModelConnectionCheck } from "./model-connection";
 
 function ProfileName({ value }: { value: CapabilityDocument["profile_key"] }) {
   const { t } = useI18n();
@@ -94,6 +95,10 @@ export function CapabilityFacts({
         <dd>Codex</dd>
         <dt>{t("請求路由", "Request routing")}</dt>
         <dd>{t("公司內部伺服器", "Company internal server")}</dd>
+        {document.upstream && <>
+          <dt>API Base URL</dt><dd className="model-upstream-url">{document.upstream.base_url}</dd>
+          <dt>API Key</dt><dd>{t("已加密保存 · 不回顯", "Encrypted · never returned")}</dd>
+        </>}
         <dt>{t("推理強度", "Reasoning effort")}</dt>
         <dd>{document.reasoning_effort ?? t("不適用", "Not applicable")}</dd>
         {text ? (
@@ -489,6 +494,7 @@ function DraftModal({
               autoComplete="off"
             />
           </Field>
+          <ModelConnectionFields from={from} />
           {profile === "internal-text-v1" ? (
             <>
               <Field label={t("推理強度", "Reasoning effort")}>
@@ -658,6 +664,7 @@ function DetailModal({
             document={release.data.document}
             version={release.data.version}
           />
+          <ModelConnectionCheck key={release.data.id} release={release.data} access={access} />
           {release.data.audio_verification_plan && <p className="notice" role="status">
             {t("完整驗證", "Complete validation")} {release.data.audio_verification_plan.total_cases} {t("個案例，最高報價", "cases; maximum quote")}{" "}
             <strong>{formatHKD(release.data.audio_verification_plan.quoted_micros)}</strong>.{" "}

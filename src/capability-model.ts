@@ -4,6 +4,7 @@ export type CapabilityDocument = {
   kernel: "codex";
   gateway_policy: "company_internal_only";
   model_alias: string;
+  upstream?: { id: string; base_url: string; key_configured: true; allow_private_network: boolean };
 } & (
   | {
       profile_key: "internal-text-v1";
@@ -134,7 +135,8 @@ function rate(value: FormDataEntryValue | null, allowZero: boolean) {
   // The API's bounded integer is exact in JavaScript; billing itself uses bigint.
   return Number(micros);
 }
-export function capabilityDraft(form: FormData) {
+export type ModelConnectionDraft = { base_url: string; allow_private_network: boolean; api_key?: string; reuse_from_release_id?: string };
+export function capabilityDraft(form: FormData): { document: CapabilityDocument; reason: string; connection?: ModelConnectionDraft } {
   const profile = form.get("profile"),
     model = String(form.get("model") ?? "").trim(),
     reason = String(form.get("reason") ?? "").trim();
@@ -184,5 +186,17 @@ export function capabilityDraft(form: FormData) {
       document = { ...audio, profile_key: profile, voices } as CapabilityDocument;
     } else document = { ...audio, profile_key: profile, timestamps: form.get("timestamps") === "on" } as CapabilityDocument;
   } else throw new Error("請選擇支援的能力 / Choose a supported capability");
+  if (form.has("upstream_base_url")) {
+    const base_url = String(form.get("upstream_base_url") ?? "").trim(),
+      api_key = String(form.get("upstream_api_key") ?? "").trim(),
+      reuse = String(form.get("upstream_reuse_from") ?? "").trim();
+    let parsed: URL;
+    try { parsed = new URL(base_url); } catch { throw new Error("請填寫有效的 API Base URL / Enter a valid API Base URL"); }
+    if (!["https:", "http:"].includes(parsed.protocol) || parsed.username || parsed.password || parsed.search || parsed.hash)
+      throw new Error("API 地址不得包含帳密或查詢參數 / API URL cannot contain credentials or query parameters");
+    if (!api_key && !reuse) throw new Error("請填寫此模型的 API Key / Enter this model's API Key");
+    return { document, reason, connection: { base_url, allow_private_network: form.get("upstream_private") === "on",
+      ...(reuse ? { reuse_from_release_id: reuse } : { api_key }) } };
+  }
   return { document, reason };
 }
