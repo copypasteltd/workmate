@@ -1,12 +1,26 @@
+import { assertNewModelSelection } from "./model-entry-management.js";
 import { z } from "zod";
 import type { Config } from "./config.js";
 import type { Tx } from "./db.js";
 import type { Catalog } from "./catalog.js";
 import type { RuntimeSelection } from "./runtime.js";
 import { canonical, hash, Problem } from "./lib.js";
-import { desktopRuntime, desktopRuntimeFingerprint, desktopRuntimeId } from "./desktop-runtime.js";
-import { videoJobLimits, videoJobOperations, videoJobProtocol } from "./video-job-protocol.js";
-import { speechProtocol, transcriptionProtocol, speechLimits, transcriptionLimits } from "./audio-production-model.js";
+import {
+  desktopRuntime,
+  desktopRuntimeFingerprint,
+  desktopRuntimeId,
+} from "./desktop-runtime.js";
+import {
+  videoJobLimits,
+  videoJobOperations,
+  videoJobProtocol,
+} from "./video-job-protocol.js";
+import {
+  speechProtocol,
+  transcriptionProtocol,
+  speechLimits,
+  transcriptionLimits,
+} from "./audio-production-model.js";
 
 const effort = z.enum(["low", "medium", "high", "xhigh", "max"]);
 const rate = z.number().int().nonnegative().safe();
@@ -27,10 +41,26 @@ const definition = z
     gateway_policy: z.literal("company_internal_only"),
     gateway_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
     data_mode: z.enum(["simulated", "configured_services"]),
-    wire_protocol: z.enum(["responses", "images", "unimplemented", videoJobProtocol, speechProtocol, transcriptionProtocol]),
+    wire_protocol: z.enum([
+      "responses",
+      "images",
+      "unimplemented",
+      videoJobProtocol,
+      speechProtocol,
+      transcriptionProtocol,
+    ]),
     reasoning_effort: effort.nullable(),
     supported_operations: z
-      .array(z.enum(["responses", "images.generate", "images.edit", ...videoJobOperations, "audio.speech", "audio.transcriptions"]))
+      .array(
+        z.enum([
+          "responses",
+          "images.generate",
+          "images.edit",
+          ...videoJobOperations,
+          "audio.speech",
+          "audio.transcriptions",
+        ]),
+      )
       .max(8),
     limits: z.record(z.string(), z.unknown()),
   })
@@ -60,8 +90,12 @@ export type TaskCapabilities = {
   video?: Capability & {
     body: Definition & { model_alias: string; rates: number[] };
   };
-  speech?: Capability & { body: Definition & { model_alias: string; rates: number[] } };
-  transcription?: Capability & { body: Definition & { model_alias: string; rates: number[] } };
+  speech?: Capability & {
+    body: Definition & { model_alias: string; rates: number[] };
+  };
+  transcription?: Capability & {
+    body: Definition & { model_alias: string; rates: number[] };
+  };
 };
 
 export function gatewayFingerprint(c: Config) {
@@ -111,7 +145,8 @@ async function resolve(
     (usable &&
       (profile.state !== "enabled" ||
         (task.execution_location === "desktop"
-          ? profile.fingerprint !== desktopRuntimeFingerprint || profile.pinned_version !== desktopRuntime.pinned_version
+          ? profile.fingerprint !== desktopRuntimeFingerprint ||
+            profile.pinned_version !== desktopRuntime.pinned_version
           : profile.pinned_version !== c.CODEX_VERSION)))
   )
     throw invalid("TASK_RUNTIME_PROFILE_UNAVAILABLE");
@@ -163,31 +198,90 @@ async function resolve(
     throw invalid();
   const image = capabilities.get("internal-image2-v1");
   const video = capabilities.get("internal-video-v1");
-  const speech = capabilities.get("internal-speech-v1"), transcription = capabilities.get("internal-transcription-v1");
+  const speech = capabilities.get("internal-speech-v1"),
+    transcription = capabilities.get("internal-transcription-v1");
   for (const [audio, protocol, operation, limits] of [
-    [speech, speechProtocol, "audio.speech", speechLimits({ ...c,
-      AI_SPEECH_LOCALES: Array.isArray(speech?.body.limits.locales) ? (speech.body.limits.locales as string[]).join(",") : "",
-      AI_SPEECH_VOICES: Array.isArray(speech?.body.limits.voices) ? (speech.body.limits.voices as string[]).join(",") : "" })],
-    [transcription, transcriptionProtocol, "audio.transcriptions", transcriptionLimits({ ...c,
-      AI_TRANSCRIPTION_LOCALES: Array.isArray(transcription?.body.limits.locales) ? (transcription.body.limits.locales as string[]).join(",") : "",
-      AI_TRANSCRIPTION_TIMESTAMPS: Array.isArray(transcription?.body.limits.response_formats)
-      && transcription.body.limits.response_formats.includes("verbose_json") })],
+    [
+      speech,
+      speechProtocol,
+      "audio.speech",
+      speechLimits({
+        ...c,
+        AI_SPEECH_LOCALES: Array.isArray(speech?.body.limits.locales)
+          ? (speech.body.limits.locales as string[]).join(",")
+          : "",
+        AI_SPEECH_VOICES: Array.isArray(speech?.body.limits.voices)
+          ? (speech.body.limits.voices as string[]).join(",")
+          : "",
+      }),
+    ],
+    [
+      transcription,
+      transcriptionProtocol,
+      "audio.transcriptions",
+      transcriptionLimits({
+        ...c,
+        AI_TRANSCRIPTION_LOCALES: Array.isArray(
+          transcription?.body.limits.locales,
+        )
+          ? (transcription.body.limits.locales as string[]).join(",")
+          : "",
+        AI_TRANSCRIPTION_TIMESTAMPS:
+          Array.isArray(transcription?.body.limits.response_formats) &&
+          transcription.body.limits.response_formats.includes("verbose_json"),
+      }),
+    ],
   ] as const) {
-    if (audio?.ready && (!Array.isArray(audio.body.limits.locales) || !audio.body.limits.locales.length
-      || audio.body.limits.locales.length > 3 || new Set(audio.body.limits.locales).size !== audio.body.limits.locales.length
-      || audio.body.limits.locales.some(value => !["en", "zh-HK", "yue-HK"].includes(String(value))))) throw invalid();
-    if (audio?.ready && (!audio.body.model_alias || audio.body.wire_protocol !== protocol
-      || audio.body.reasoning_effort !== null || audio.body.rates.length !== 1 || !audio.body.rates[0]
-      || audio.body.rates[0] > 1000000000 || canonical(audio.body.supported_operations) !== canonical([operation])
-      || canonical(audio.body.limits) !== canonical(limits))) throw invalid();
+    if (
+      audio?.ready &&
+      (!Array.isArray(audio.body.limits.locales) ||
+        !audio.body.limits.locales.length ||
+        audio.body.limits.locales.length > 3 ||
+        new Set(audio.body.limits.locales).size !==
+          audio.body.limits.locales.length ||
+        audio.body.limits.locales.some(
+          (value) => !["en", "zh-HK", "yue-HK"].includes(String(value)),
+        ))
+    )
+      throw invalid();
+    if (
+      audio?.ready &&
+      (!audio.body.model_alias ||
+        audio.body.wire_protocol !== protocol ||
+        audio.body.reasoning_effort !== null ||
+        audio.body.rates.length !== 1 ||
+        !audio.body.rates[0] ||
+        audio.body.rates[0] > 1000000000 ||
+        canonical(audio.body.supported_operations) !== canonical([operation]) ||
+        canonical(audio.body.limits) !== canonical(limits))
+    )
+      throw invalid();
   }
-  if (speech?.ready && (!Array.isArray(speech.body.limits.voices) || !speech.body.limits.voices.length
-    || speech.body.limits.voices.length > 32 || new Set(speech.body.limits.voices).size !== speech.body.limits.voices.length
-    || speech.body.limits.voices.some(value => typeof value !== "string" || !/^[a-zA-Z0-9_-]{1,80}$/.test(value)))) throw invalid();
-  if (video?.ready && (!video.body.model_alias || video.body.wire_protocol !== videoJobProtocol
-    || video.body.reasoning_effort !== null || video.body.rates.length !== 1 || !video.body.rates[0]
-    || canonical(video.body.supported_operations) !== canonical(videoJobOperations)
-    || canonical(video.body.limits) !== canonical(videoJobLimits))) throw invalid();
+  if (
+    speech?.ready &&
+    (!Array.isArray(speech.body.limits.voices) ||
+      !speech.body.limits.voices.length ||
+      speech.body.limits.voices.length > 32 ||
+      new Set(speech.body.limits.voices).size !==
+        speech.body.limits.voices.length ||
+      speech.body.limits.voices.some(
+        (value) =>
+          typeof value !== "string" || !/^[a-zA-Z0-9_-]{1,80}$/.test(value),
+      ))
+  )
+    throw invalid();
+  if (
+    video?.ready &&
+    (!video.body.model_alias ||
+      video.body.wire_protocol !== videoJobProtocol ||
+      video.body.reasoning_effort !== null ||
+      video.body.rates.length !== 1 ||
+      !video.body.rates[0] ||
+      canonical(video.body.supported_operations) !==
+        canonical(videoJobOperations) ||
+      canonical(video.body.limits) !== canonical(videoJobLimits))
+  )
+    throw invalid();
   const usesImage =
     usable &&
     task.mode === "execute" &&
@@ -215,8 +309,12 @@ async function resolve(
   )
     throw invalid();
   const published =
-    usable && (!c.AI_VERIFIED || (usesImage && !c.AI_IMAGE_VERIFIED) || (video?.ready && !c.AI_VIDEO_VERIFIED)
-      || (speech?.ready && !c.AI_SPEECH_VERIFIED) || (transcription?.ready && !c.AI_TRANSCRIPTION_VERIFIED))
+    usable &&
+    (!c.AI_VERIFIED ||
+      (usesImage && !c.AI_IMAGE_VERIFIED) ||
+      (video?.ready && !c.AI_VIDEO_VERIFIED) ||
+      (speech?.ready && !c.AI_SPEECH_VERIFIED) ||
+      (transcription?.ready && !c.AI_TRANSCRIPTION_VERIFIED))
       ? new Set(
           (
             await tx.query(
@@ -240,9 +338,18 @@ async function resolve(
     versionIds: [...ids],
     text: text as TaskCapabilities["text"],
     ...(image?.ready ? { image: image as TaskCapabilities["image"] } : {}),
-    ...(video?.ready && (!usable || c.AI_VIDEO_VERIFIED || published.has(video.id)) ? { video: video as TaskCapabilities["video"] } : {}),
-    ...(speech?.ready && (!usable || c.AI_SPEECH_VERIFIED || published.has(speech.id)) ? { speech: speech as TaskCapabilities["speech"] } : {}),
-    ...(transcription?.ready && (!usable || c.AI_TRANSCRIPTION_VERIFIED || published.has(transcription.id)) ? { transcription: transcription as TaskCapabilities["transcription"] } : {}),
+    ...(video?.ready &&
+    (!usable || c.AI_VIDEO_VERIFIED || published.has(video.id))
+      ? { video: video as TaskCapabilities["video"] }
+      : {}),
+    ...(speech?.ready &&
+    (!usable || c.AI_SPEECH_VERIFIED || published.has(speech.id))
+      ? { speech: speech as TaskCapabilities["speech"] }
+      : {}),
+    ...(transcription?.ready &&
+    (!usable || c.AI_TRANSCRIPTION_VERIFIED || published.has(transcription.id))
+      ? { transcription: transcription as TaskCapabilities["transcription"] }
+      : {}),
   };
 }
 
@@ -253,6 +360,7 @@ export async function confirmedAgentCapabilities(
   catalog: Catalog,
   body: any,
 ) {
+  await assertNewModelSelection(tx, body.capability_version_ids);
   return resolve(
     tx,
     c,
@@ -343,6 +451,7 @@ export async function freezeTaskCapabilities(
   if (task.execution_location === "desktop") {
     runtimeId = await desktopRuntimeId(tx);
   }
+  if (!task.parent_id) await assertNewModelSelection(tx, ids);
   const selected = await resolve(tx, c, task, catalog, runtimeId, ids, true);
   await tx.query(
     "INSERT INTO task_runtime_bindings(task_id,tenant_id,runtime_profile_id,capability_version_ids) VALUES($1,$2,$3,$4)",
@@ -376,7 +485,8 @@ export async function boundTaskAvailability(
   if (binding.image) versions.set("internal-image2-v1", binding.image);
   if (binding.video) versions.set("internal-video-v1", binding.video);
   if (binding.speech) versions.set("internal-speech-v1", binding.speech);
-  if (binding.transcription) versions.set("internal-transcription-v1", binding.transcription);
+  if (binding.transcription)
+    versions.set("internal-transcription-v1", binding.transcription);
   return {
     binding,
     availability: catalog.available(

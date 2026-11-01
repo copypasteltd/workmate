@@ -83,7 +83,7 @@ import { registerAudioProduction } from "./audio-production-routes.js";
 import { registerPersistentWork } from "./persistent-work.js";
 import { registerProjectConfiguration } from "./project-configuration.js";
 import { registerAgentAdoption } from "./agent-adoption.js";
-import {registerConversationDirectory} from "./conversation-directory.js";
+import { registerConversationDirectory } from "./conversation-directory.js";
 import { registerAgentCopy } from "./agent-copy.js";
 import { registerAdminIdentities } from "./admin-identities.js";
 import { registerSchedules } from "./schedules.js";
@@ -136,8 +136,10 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       SEO_FIXTURE_ORIGIN: seoFixture.origin,
       SEO_FIXTURE_KEY: seoFixture.key,
     };
-  const publicationFixture = c.DEMO_MODE && !c.PUBLICATION_FIXTURE_ORIGIN
-    ? await startPublicationFixture(c) : undefined;
+  const publicationFixture =
+    c.DEMO_MODE && !c.PUBLICATION_FIXTURE_ORIGIN
+      ? await startPublicationFixture(c)
+      : undefined;
   if (publicationFixture) c = publicationFixture.config;
   const db = new Database(c);
   c = installModelConnectionResolver(c, db);
@@ -398,17 +400,32 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     version: "0.5.1",
   }));
   async function modelServices() {
-    return db.tx(async tx => {
-      const capabilities = await catalog.currentCapabilities(tx);
-      const ready = (profile: string, verified: boolean) => {
-        const value = capabilities.get(profile);
-        return !!(value?.ready && !value.revoked && (value.publication_id || verified)
-          && value.body.gateway_fingerprint === gatewayFingerprint(c));
-      };
-      return { text: ready("internal-text-v1", c.AI_VERIFIED), image: ready("internal-image2-v1", c.AI_IMAGE_VERIFIED),
-        video: ready("internal-video-v1", c.AI_VIDEO_VERIFIED), speech: ready("internal-speech-v1", c.AI_SPEECH_VERIFIED),
-        transcription: ready("internal-transcription-v1", c.AI_TRANSCRIPTION_VERIFIED) };
-    }, undefined, true);
+    return db.tx(
+      async (tx) => {
+        const capabilities = await catalog.currentCapabilities(tx);
+        const ready = (profile: string, verified: boolean) => {
+          const value = capabilities.get(profile);
+          return !!(
+            value?.ready &&
+            !value.revoked &&
+            (value.publication_id || verified) &&
+            value.body.gateway_fingerprint === gatewayFingerprint(c)
+          );
+        };
+        return {
+          text: ready("internal-text-v1", c.AI_VERIFIED),
+          image: ready("internal-image2-v1", c.AI_IMAGE_VERIFIED),
+          video: ready("internal-video-v1", c.AI_VIDEO_VERIFIED),
+          speech: ready("internal-speech-v1", c.AI_SPEECH_VERIFIED),
+          transcription: ready(
+            "internal-transcription-v1",
+            c.AI_TRANSCRIPTION_VERIFIED,
+          ),
+        };
+      },
+      undefined,
+      true,
+    );
   }
   app.get("/health/ready", async () => {
     await db.app.query("SELECT 1");
@@ -418,6 +435,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       kernel: "codex",
       ai_ready: services.text,
       model_connections: "per_model",
+      model_management: "editable",
       email_delivery: c.DEV_MAILBOX ? "local_development" : "smtp",
       storage: c.S3_BUCKET ? "s3" : "native_filesystem",
       data_mode: c.DEMO_MODE ? "simulated" : "configured_services",
@@ -431,6 +449,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     auth: { email_code: true, enterprise_sso: true },
     services: await modelServices(),
     model_connections: "per_model",
+    model_management: "editable",
     device_command_public_key: commandPublicKey(c.MASTER_KEY!),
     mail_mode:
       c.NODE_ENV === "production"
@@ -484,7 +503,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerPersistentWork(app, db, catalog);
   registerProjectConfiguration(app, db, catalog);
   registerAgentAdoption(app, db, catalog);
-  registerConversationDirectory(app,db);
+  registerConversationDirectory(app, db);
   registerAgentCopy(app, db, catalog);
   registerAgentTemplates(app, db, catalog);
   registerSolutions(app, db, catalog);

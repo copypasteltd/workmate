@@ -1,7 +1,17 @@
 import type { FastifyInstance } from "fastify";
+import {
+  modelEntryJoins,
+  modelEntryColumns,
+  assertModelManageable,
+} from "./model-entry-management.js";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { modelConnectionInput, connectionCommand, storeModelConnection, checkModelConnection } from "./model-connections.js";
+import {
+  modelConnectionInput,
+  connectionCommand,
+  storeModelConnection,
+  checkModelConnection,
+} from "./model-connections.js";
 import type { Database, Tx } from "./db.js";
 import type { Catalog } from "./catalog.js";
 import type { Principal } from "./auth.js";
@@ -10,15 +20,24 @@ import { key, replay, projectAccess, tenantAccess } from "./access.js";
 import { canonical, hash, hmac, equal, Problem, uuid } from "./lib.js";
 import { gatewayFingerprint } from "./capability-bindings.js";
 import { videoJobProtocol } from "./video-job-protocol.js";
-import { speechProtocol, transcriptionProtocol } from "./audio-production-model.js";
+import {
+  speechProtocol,
+  transcriptionProtocol,
+} from "./audio-production-model.js";
 import {
   admitProviderRequest,
   providerRequestPermit,
 } from "./provider-request-control.js";
 import { activeRuntimeProfile } from "./runtime-profiles.js";
 import { validationProviderBudgetReceipt } from "./provider-budgets.js";
-import { prepareCapabilityVideoSuite, capabilityVideoDTO } from "./capability-video-verification.js";
-import { prepareCapabilityAudioSuite, capabilityAudioDTO } from "./capability-audio-verification.js";
+import {
+  prepareCapabilityVideoSuite,
+  capabilityVideoDTO,
+} from "./capability-video-verification.js";
+import {
+  prepareCapabilityAudioSuite,
+  capabilityAudioDTO,
+} from "./capability-audio-verification.js";
 import { capabilityAudioPlan } from "./capability-audio-plan.js";
 import { globalPlanAuthority } from "./admin-plans.js";
 import {
@@ -43,10 +62,17 @@ const reason = z.string().trim().min(3).max(1000),
   command = z
     .object({ expected_version: z.number().int().positive(), reason })
     .strict();
-const draftSchema = z.object({ document: capabilityDocument, reason, connection: modelConnectionInput.optional() }).strict();
+const draftSchema = z
+  .object({
+    document: capabilityDocument,
+    reason,
+    connection: modelConnectionInput.optional(),
+  })
+  .strict();
 const page = z
   .object({
     cursor: z.string().min(1).max(4096).optional(),
+    view: z.enum(["active", "history", "deleted"]).default("active"),
     limit: z.coerce.number().int().min(1).max(100).default(50),
   })
   .strict();
@@ -55,10 +81,18 @@ const mode = (db: Database) =>
 const actionPermission = (action: string) =>
   action === "catalog.rollback"
     ? "admin.catalog.rollback"
-    : "admin.catalog.publish";
+    : ["catalog.draft", "catalog.edit"].includes(action)
+      ? "admin.catalog.draft"
+      : "admin.catalog.publish";
 export const isCapabilityOperation = (op: any) =>
   op?.payload?.capability_command_version === 1 &&
-  ["catalog.draft", "catalog.publish", "catalog.rollback"].includes(op.action);
+  [
+    "catalog.draft",
+    "catalog.edit",
+    "catalog.delete",
+    "catalog.publish",
+    "catalog.rollback",
+  ].includes(op.action);
 export async function capabilityAuthority(
   tx: Tx,
   p: Principal,
@@ -107,17 +141,27 @@ async function policy(tx: Tx) {
     minutes: 5,
   };
 }
-const releaseSelect = `SELECT r.*,v.id AS validation_id,v.state AS validation_state,v.result AS validation_result,v.expires_at AS validation_expires_at,v.expires_at>now() AS validation_current,
+const releaseSelect = `SELECT r.*,${modelEntryColumns}v.id AS validation_id,v.state AS validation_state,v.result AS validation_result,v.expires_at AS validation_expires_at,v.expires_at>now() AS validation_current,
  h.publication_id AS current_publication_id,h.revision AS head_revision,
  EXISTS(SELECT 1 FROM capability_publications p WHERE p.release_id=r.id) AS was_published
  FROM capability_releases r LEFT JOIN LATERAL(SELECT * FROM capability_validations WHERE release_id=r.id ORDER BY created_at DESC,id DESC LIMIT 1) v ON true
  LEFT JOIN capability_heads h ON h.profile_key=r.profile_key AND h.data_mode=r.data_mode
- LEFT JOIN capability_publications current_p ON current_p.id=h.publication_id`;
+ LEFT JOIN capability_publications current_p ON current_p.id=h.publication_id${modelEntryJoins}`;
 function releaseDTO(row: any) {
-  const audio = ["internal-speech-v1", "internal-transcription-v1"].includes(row.profile_key)
-    ? capabilityAudioPlan(capabilityDocument.parse(row.definition)) : null;
+  const audio = ["internal-speech-v1", "internal-transcription-v1"].includes(
+    row.profile_key,
+  )
+    ? capabilityAudioPlan(capabilityDocument.parse(row.definition))
+    : null;
   return {
     id: row.id,
+    model_id: row.model_id,
+    management_revision: row.management_revision,
+    model_current_release_id: row.model_current_release_id,
+    is_current: row.model_current_release_id === row.id,
+    deleted_at: row.model_deleted_at
+      ? new Date(row.model_deleted_at).toISOString()
+      : null,
     kind: "model_capability",
     profile_key: row.profile_key,
     data_mode: row.data_mode,
@@ -126,8 +170,9 @@ function releaseDTO(row: any) {
     definition_hash: row.definition_hash,
     runtime_profile_id: row.runtime_profile_id,
     created_at: new Date(row.created_at).toISOString(),
-    state:
-      row.current_release_id === row.id
+    state: row.model_deleted_at
+      ? "deleted"
+      : row.current_release_id === row.id
         ? "published"
         : row.was_published
           ? "superseded"
@@ -146,8 +191,16 @@ function releaseDTO(row: any) {
       : [],
     head_revision: row.head_revision ?? 0,
     current_publication_id: row.current_publication_id ?? null,
-    ...(audio ? { audio_verification_plan: { total_cases: audio.cases.length, plan_hash: audio.hash,
-      quoted_micros: audio.quoted_micros, quality_scope: audio.quality_scope } } : {}),
+    ...(audio
+      ? {
+          audio_verification_plan: {
+            total_cases: audio.cases.length,
+            plan_hash: audio.hash,
+            quoted_micros: audio.quoted_micros,
+            quality_scope: audio.quality_scope,
+          },
+        }
+      : {}),
   };
 }
 async function release(tx: Tx, db: Database, id: string) {
@@ -203,6 +256,7 @@ async function inspect(
     "capability-heads:" + mode(db),
   ]);
   const row = await release(tx, db, id);
+  assertModelManageable(row, !rollback);
   if (row.version !== b.expected_version)
     throw new Problem(
       409,
@@ -444,6 +498,151 @@ export async function decideCapabilityOperation(
   await publish(tx, actor, op, checked, op.action === "catalog.rollback");
 }
 
+type ModelDraft = z.infer<typeof draftSchema>;
+function draftCommand(db: Database, input: ModelDraft) {
+  if (input.document.upstream)
+    throw new Problem(
+      422,
+      "MODEL_CONNECTION_SERVER_OWNED",
+      "Use the upstream URL and API key fields",
+    );
+  return {
+    document: input.document,
+    reason: input.reason,
+    ...(input.connection
+      ? { connection: connectionCommand(db.config, input.connection) }
+      : {}),
+  };
+}
+async function ensureModelEntry(tx: Tx, row: any, actor: string, why: string) {
+  await tx.query(
+    "INSERT INTO capability_model_entries(id,current_release_id,updated_by,reason) VALUES($1,$2,$3,$4) ON CONFLICT(id) DO NOTHING",
+    [row.model_id, row.model_current_release_id, actor, why],
+  );
+  await tx.query(
+    "INSERT INTO capability_model_revisions(release_id,model_id) VALUES($1,$2) ON CONFLICT(release_id) DO NOTHING",
+    [row.id, row.model_id],
+  );
+}
+async function saveModelDraft(
+  tx: Tx,
+  db: Database,
+  catalog: Catalog,
+  principal: Principal,
+  input: ModelDraft,
+  b: any,
+  idemKey: string,
+  from?: any,
+) {
+  if (from && !input.connection)
+    throw new Problem(
+      422,
+      "MODEL_CONNECTION_REQUIRED",
+      "Provide this model's upstream URL and key or retain its saved key",
+    );
+  await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
+    `capability-document:${mode(db)}:${b.document.profile_key}`,
+  ]);
+  const runtime = await activeRuntimeProfile(tx, catalog),
+    n = (
+      await tx.query(
+        "SELECT coalesce(max(version),0)+1 AS n FROM capability_releases WHERE profile_key=$1 AND data_mode=$2",
+        [b.document.profile_key, mode(db)],
+      )
+    ).rows[0].n,
+    id = randomUUID(),
+    rules = await policy(tx),
+    op = await makeOperation(
+      tx,
+      principal,
+      from ? "catalog.edit" : "catalog.draft",
+      id,
+      b,
+      idemKey,
+      rules.id,
+      {},
+      false,
+    );
+  const document = {
+    ...b.document,
+    ...(input.connection
+      ? {
+          upstream: {
+            id,
+            base_url: b.connection!.base_url,
+            key_configured: true as const,
+            allow_private_network: input.connection.allow_private_network,
+          },
+        }
+      : {}),
+  };
+  await tx.query(
+    "INSERT INTO capability_releases(id,profile_key,data_mode,version,definition,definition_hash,runtime_profile_id,gateway_fingerprint,created_by,reason) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
+    [
+      id,
+      b.document.profile_key,
+      mode(db),
+      n,
+      document,
+      hash(canonical(document)),
+      runtime.id,
+      gatewayFingerprint(db.config),
+      principal.id,
+      b.reason,
+    ],
+  );
+  if (input.connection)
+    await storeModelConnection(tx, db.config, id, input.connection);
+  if (from) {
+    await ensureModelEntry(tx, from, principal.id, input.reason);
+    await tx.query(
+      "INSERT INTO capability_model_revisions(release_id,model_id) VALUES($1,$2)",
+      [id, from.model_id],
+    );
+    await tx.query(
+      "UPDATE capability_model_entries SET current_release_id=$2,revision=revision+1,updated_by=$3,reason=$4,updated_at=now() WHERE id=$1",
+      [from.model_id, id, principal.id, input.reason],
+    );
+  } else {
+    await tx.query(
+      "INSERT INTO capability_model_entries(id,current_release_id,updated_by,reason) VALUES($1,$1,$2,$3)",
+      [id, principal.id, input.reason],
+    );
+    await tx.query(
+      "INSERT INTO capability_model_revisions(release_id,model_id) VALUES($1,$1)",
+      [id],
+    );
+  }
+  await tx.query(
+    "UPDATE admin_operations SET state='succeeded',version=version+1,result_ids=ARRAY[$2::uuid],result=$3 WHERE id=$1",
+    [
+      op.id,
+      id,
+      {
+        release_id: id,
+        model_id: from?.model_id ?? id,
+        ...(from ? { replaces_release_id: from.id } : {}),
+      },
+    ],
+  );
+  await audit(
+    tx,
+    principal,
+    from ? "admin.catalog.edit" : "admin.catalog.draft",
+    id,
+    "succeeded",
+    {
+      reason: b.reason,
+      operation_id: op.id,
+      definition_hash: hash(canonical(document)),
+    },
+  );
+  return adminOperationDTO(
+    (await tx.query("SELECT * FROM admin_operations WHERE id=$1", [op.id]))
+      .rows[0],
+  );
+}
+
 export function registerCapabilityReleases(
   app: FastifyInstance,
   db: Database,
@@ -468,6 +667,13 @@ export function registerCapabilityReleases(
             "capability_releases",
           );
         let where = `r.data_mode=${s.arg(mode(db))} AND r.created_at<=${s.arg(bounds.asof)}::timestamptz`;
+        where +=
+          q.view === "deleted"
+            ? " AND model_entry.deleted_at IS NOT NULL AND model_entry.current_release_id=r.id"
+            : " AND model_entry.deleted_at IS NULL" +
+              (q.view === "active"
+                ? " AND coalesce(model_entry.current_release_id,r.id)=r.id"
+                : "");
         if (bounds.after)
           where += ` AND (r.created_at,r.id)<(${s.arg(bounds.after.at)}::timestamptz,${s.arg(bounds.after.id)}::uuid)`;
         const rows = (
@@ -515,12 +721,9 @@ export function registerCapabilityReleases(
     );
   });
   app.post(root + "/drafts", auth, async (req, reply) => {
-    const input = draftSchema.parse(req.body);
-    if (input.document.upstream)
-      throw new Problem(422, "MODEL_CONNECTION_SERVER_OWNED", "Supply connection fields; the server creates the immutable upstream binding");
-    const b = { document: input.document, reason: input.reason,
-      ...(input.connection ? { connection: connectionCommand(db.config, input.connection) } : {}) };
-    reply.code(202);
+    const input = draftSchema.parse(req.body),
+      b = draftCommand(db, input);
+    reply.code(202).header("Cache-Control", "no-store");
     return db.tx(
       async (tx) => {
         await capabilityAuthority(tx, req.principal, "admin.catalog.draft");
@@ -530,24 +733,125 @@ export function registerCapabilityReleases(
           "capability.draft",
           key(req),
           b,
+          () =>
+            saveModelDraft(tx, db, catalog, req.principal, input, b, key(req)),
+        );
+      },
+      undefined,
+      true,
+      req.principal.id,
+    );
+  });
+  app.post(root + "/:id/edits", auth, async (req, reply) => {
+    const id = uuid.parse((req.params as any).id);
+    const input = draftSchema
+      .extend({
+        expected_version: z.number().int().positive(),
+        expected_revision: z.number().int().positive(),
+      })
+      .parse(req.body);
+    const b = {
+      ...draftCommand(db, input),
+      source_release_id: id,
+      expected_version: input.expected_version,
+      expected_revision: input.expected_revision,
+    };
+    reply.code(202).header("Cache-Control", "no-store");
+    return db.tx(
+      async (tx) => {
+        await capabilityAuthority(tx, req.principal, "admin.catalog.draft");
+        return replay(
+          tx,
+          req.principal.id,
+          "capability.edit:" + id,
+          key(req),
+          b,
           async () => {
             await tx.query(
               "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
-              [`capability-document:${mode(db)}:${b.document.profile_key}`],
+              ["capability-heads:" + mode(db)],
             );
-            const runtime = await activeRuntimeProfile(tx, catalog),
-              n = (
-                await tx.query(
-                  "SELECT coalesce(max(version),0)+1 AS n FROM capability_releases WHERE profile_key=$1 AND data_mode=$2",
-                  [b.document.profile_key, mode(db)],
-                )
-              ).rows[0].n,
-              id = randomUUID(),
-              rules = await policy(tx),
+            const row = await release(tx, db, id);
+            assertModelManageable(row);
+            if (
+              row.version !== input.expected_version ||
+              row.management_revision !== input.expected_revision
+            )
+              throw new Problem(
+                409,
+                "MODEL_VERSION_CHANGED",
+                "Reload the model before saving changes",
+              );
+            if (row.profile_key !== input.document.profile_key)
+              throw new Problem(
+                422,
+                "MODEL_TYPE_CHANGED",
+                "Create a separate model to change its capability type",
+              );
+            return saveModelDraft(
+              tx,
+              db,
+              catalog,
+              req.principal,
+              input,
+              b,
+              key(req),
+              row,
+            );
+          },
+        );
+      },
+      undefined,
+      true,
+      req.principal.id,
+    );
+  });
+  app.post(root + "/:id/deletions", auth, async (req, reply) => {
+    const id = uuid.parse((req.params as any).id);
+    const b = command
+      .extend({
+        expected_revision: z.number().int().positive(),
+        confirm_model: z.string().min(1).max(200),
+      })
+      .parse(req.body);
+    reply.code(202).header("Cache-Control", "no-store");
+    return db.tx(
+      async (tx) => {
+        await capabilityAuthority(tx, req.principal, "admin.catalog.publish");
+        return replay(
+          tx,
+          req.principal.id,
+          "capability.delete:" + id,
+          key(req),
+          b,
+          async () => {
+            await tx.query(
+              "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
+              ["capability-heads:" + mode(db)],
+            );
+            const row = await release(tx, db, id);
+            assertModelManageable(row);
+            if (
+              row.version !== b.expected_version ||
+              row.management_revision !== b.expected_revision
+            )
+              throw new Problem(
+                409,
+                "MODEL_VERSION_CHANGED",
+                "Reload the model before deleting it",
+              );
+            if (b.confirm_model !== row.definition.model_alias)
+              throw new Problem(
+                422,
+                "MODEL_CONFIRMATION_MISMATCH",
+                "Confirm the exact model being removed",
+              );
+            await ensureModelEntry(tx, row, req.principal.id, b.reason);
+            const rules = await policy(tx),
               op = await makeOperation(
                 tx,
                 req.principal,
-                "catalog.draft",
+                "catalog.delete",
                 id,
                 b,
                 key(req),
@@ -555,41 +859,30 @@ export function registerCapabilityReleases(
                 {},
                 false,
               );
-            const document = { ...b.document, ...(input.connection ? { upstream: {
-              id, base_url: b.connection!.base_url, key_configured: true as const,
-              allow_private_network: input.connection.allow_private_network,
-            } } : {}) };
             await tx.query(
-              "INSERT INTO capability_releases(id,profile_key,data_mode,version,definition,definition_hash,runtime_profile_id,gateway_fingerprint,created_by,reason) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
-              [
-                id,
-                b.document.profile_key,
-                mode(db),
-                n,
-                document,
-                hash(canonical(document)),
-                runtime.id,
-                gatewayFingerprint(db.config),
-                req.principal.id,
-                b.reason,
-              ],
+              "UPDATE capability_model_entries SET deleted_at=now(),revision=revision+1,updated_by=$2,reason=$3,updated_at=now() WHERE id=$1",
+              [row.model_id, req.principal.id, b.reason],
             );
-            if (input.connection) await storeModelConnection(tx, db.config, id, input.connection);
             await tx.query(
               "UPDATE admin_operations SET state='succeeded',version=version+1,result_ids=ARRAY[$2::uuid],result=$3 WHERE id=$1",
-              [op.id, id, { release_id: id }],
+              [
+                op.id,
+                id,
+                {
+                  release_id: id,
+                  model_id: row.model_id,
+                  deleted: true,
+                  history_retained: true,
+                },
+              ],
             );
             await audit(
               tx,
               req.principal,
-              "admin.catalog.draft",
+              "admin.catalog.delete",
               id,
               "succeeded",
-              {
-                reason: b.reason,
-                operation_id: op.id,
-                definition_hash: hash(canonical(document)),
-              },
+              { reason: b.reason, operation_id: op.id, model_id: row.model_id },
             );
             return adminOperationDTO(
               (
@@ -603,21 +896,44 @@ export function registerCapabilityReleases(
       },
       undefined,
       true,
+      req.principal.id,
     );
   });
   app.post(root + "/:id/connection-test", auth, async (req, reply) => {
     const id = uuid.parse((req.params as any).id);
     const b = command.parse(req.body);
     reply.header("Cache-Control", "no-store");
-    return db.tx(async tx => {
-      await capabilityAuthority(tx, req.principal, "admin.catalog.publish");
-      const row = await release(tx, db, id);
-      if (row.version !== b.expected_version) throw new Problem(409, "VERSION_CHANGED", "Reload the model configuration");
-      const result = await checkModelConnection(tx, db.config, id, req.principal.id);
-      await audit(tx, req.principal, "admin.catalog.connection_test", id, result.reachable ? "succeeded" : "failed",
-        { reason: b.reason, ...result });
-      return result;
-    }, undefined, true, req.principal.id);
+    return db.tx(
+      async (tx) => {
+        await capabilityAuthority(tx, req.principal, "admin.catalog.publish");
+        const row = await release(tx, db, id);
+        assertModelManageable(row);
+        if (row.version !== b.expected_version)
+          throw new Problem(
+            409,
+            "VERSION_CHANGED",
+            "Reload the model configuration",
+          );
+        const result = await checkModelConnection(
+          tx,
+          db.config,
+          id,
+          req.principal.id,
+        );
+        await audit(
+          tx,
+          req.principal,
+          "admin.catalog.connection_test",
+          id,
+          result.reachable ? "succeeded" : "failed",
+          { reason: b.reason, ...result },
+        );
+        return result;
+      },
+      undefined,
+      true,
+      req.principal.id,
+    );
   });
   app.post(root + "/:id/validations", auth, async (req, reply) => {
     const id = uuid.parse((req.params as any).id),
@@ -631,6 +947,7 @@ export function registerCapabilityReleases(
         await capabilityAuthority(tx, req.principal, "admin.catalog.publish");
         await expireVerifications(tx);
         const row = await release(tx, db, id);
+        assertModelManageable(row);
         if (row.version !== b.expected_version)
           throw new Problem(
             409,
@@ -678,11 +995,23 @@ export function registerCapabilityReleases(
             "CAPABILITY_VERIFICATION_RUNNING",
             "The current verification is still running; inspect its receipt",
           );
-        if (["internal-speech-v1", "internal-transcription-v1"].includes(row.profile_key) &&
-          (await tx.query(`SELECT 1 FROM current_audio_accounting_requests WHERE release_id=$1
-            AND state='unknown' AND (NOT accounting_resolved OR allocation_exceeded) LIMIT 1`, [id])).rowCount)
-          throw new Problem(409, "AUDIO_RECONCILIATION_REQUIRED",
-            "Resolve the original audio cost and capacity before explicitly starting another verification");
+        if (
+          ["internal-speech-v1", "internal-transcription-v1"].includes(
+            row.profile_key,
+          ) &&
+          (
+            await tx.query(
+              `SELECT 1 FROM current_audio_accounting_requests WHERE release_id=$1
+            AND state='unknown' AND (NOT accounting_resolved OR allocation_exceeded) LIMIT 1`,
+              [id],
+            )
+          ).rowCount
+        )
+          throw new Problem(
+            409,
+            "AUDIO_RECONCILIATION_REQUIRED",
+            "Resolve the original audio cost and capacity before explicitly starting another verification",
+          );
         v = (
           await tx.query(
             "INSERT INTO capability_validations(release_id,principal_id,session_id,idempotency_hash,payload_hash,execution_nonce,lease_until) VALUES($1,$2,$3,$4,$5,$6,now()+CASE WHEN $7 THEN interval '2 hours' ELSE interval '4 minutes' END) RETURNING *",
@@ -693,7 +1022,11 @@ export function registerCapabilityReleases(
               k,
               payloadHash,
               nonce,
-              ["internal-video-v1", "internal-speech-v1", "internal-transcription-v1"].includes(row.profile_key),
+              [
+                "internal-video-v1",
+                "internal-speech-v1",
+                "internal-transcription-v1",
+              ].includes(row.profile_key),
             ],
           )
         ).rows[0];
@@ -712,7 +1045,11 @@ export function registerCapabilityReleases(
         await tx.query("SELECT register_validation_ai_budget($1)", [v.id]);
         if (row.profile_key === "internal-video-v1")
           await prepareCapabilityVideoSuite(tx, db, v, row, req.principal);
-        if (["internal-speech-v1", "internal-transcription-v1"].includes(row.profile_key))
+        if (
+          ["internal-speech-v1", "internal-transcription-v1"].includes(
+            row.profile_key,
+          )
+        )
           await prepareCapabilityAudioSuite(tx, db, v, row, req.principal);
         return { row, v };
       },
@@ -720,7 +1057,14 @@ export function registerCapabilityReleases(
       true,
       req.principal.id,
     );
-    if (prepared.v.execution_nonce !== nonce || ["internal-video-v1", "internal-speech-v1", "internal-transcription-v1"].includes(prepared.row.profile_key))
+    if (
+      prepared.v.execution_nonce !== nonce ||
+      [
+        "internal-video-v1",
+        "internal-speech-v1",
+        "internal-transcription-v1",
+      ].includes(prepared.row.profile_key)
+    )
       return db.tx(
         async (tx) => {
           await capabilityAuthority(tx, req.principal, "admin.catalog.publish");
@@ -774,10 +1118,10 @@ export function registerCapabilityReleases(
                 request.taskId !== current.id ||
                 request.actorId !== req.principal.id ||
                 request.model !== document.model_alias ||
-                !(capabilityBody(
-                  db.config,
-                  document,
-                ).supported_operations as readonly string[]).includes(
+                !(
+                  capabilityBody(db.config, document)
+                    .supported_operations as readonly string[]
+                ).includes(
                   request.operation === "responses.input_tokens"
                     ? "responses"
                     : request.operation,
@@ -945,52 +1289,144 @@ export function registerCapabilityReleases(
     if (denied) throw denied;
     return result;
   });
-  app.post(root + "/validations/:validation/audio-cancellations", auth, async (req, reply) => {
-    const id = uuid.parse((req.params as any).validation), b = command.parse(req.body);
-    reply.code(202).header("Cache-Control", "no-store");
-    return db.tx(async tx => {
-      await capabilityAuthority(tx, req.principal, "admin.catalog.publish");
-      const v = (await tx.query(`SELECT v.* FROM capability_validations v JOIN capability_releases r ON r.id=v.release_id
-        JOIN capability_audio_suites s ON s.validation_id=v.id WHERE v.id=$1 AND r.data_mode=$2 FOR UPDATE OF v`, [id, mode(db)])).rows[0];
-      if (!v) throw new Problem(404, "NOT_FOUND", "Audio validation not found");
-      const r = await release(tx, db, v.release_id);
-      if (r.version !== b.expected_version) throw new Problem(409, "VERSION_CONFLICT", "Reload the exact capability document");
-      return replay(tx, req.principal.id, "capability.audio-cancellation:" + id, key(req), b, async () => {
-        if (v.state !== "running") throw new Problem(409, "CAPABILITY_VERIFICATION_TERMINAL", "A completed receipt cannot be cancelled or reopened");
-        await tx.query(`UPDATE capability_audio_suites SET cancel_requested_at=coalesce(cancel_requested_at,clock_timestamp()),
-          next_poll_at=clock_timestamp() WHERE validation_id=$1`, [id]);
-        await audit(tx, req.principal, "admin.catalog.publish", v.release_id, "audio-cancellation", { validation_id: id, reason: b.reason });
-        return validationDTO(tx, v);
-      });
-    }, undefined, true, req.principal.id);
-  });
+  app.post(
+    root + "/validations/:validation/audio-cancellations",
+    auth,
+    async (req, reply) => {
+      const id = uuid.parse((req.params as any).validation),
+        b = command.parse(req.body);
+      reply.code(202).header("Cache-Control", "no-store");
+      return db.tx(
+        async (tx) => {
+          await capabilityAuthority(tx, req.principal, "admin.catalog.publish");
+          const v = (
+            await tx.query(
+              `SELECT v.* FROM capability_validations v JOIN capability_releases r ON r.id=v.release_id
+        JOIN capability_audio_suites s ON s.validation_id=v.id WHERE v.id=$1 AND r.data_mode=$2 FOR UPDATE OF v`,
+              [id, mode(db)],
+            )
+          ).rows[0];
+          if (!v)
+            throw new Problem(404, "NOT_FOUND", "Audio validation not found");
+          const r = await release(tx, db, v.release_id);
+          if (r.version !== b.expected_version)
+            throw new Problem(
+              409,
+              "VERSION_CONFLICT",
+              "Reload the exact capability document",
+            );
+          return replay(
+            tx,
+            req.principal.id,
+            "capability.audio-cancellation:" + id,
+            key(req),
+            b,
+            async () => {
+              if (v.state !== "running")
+                throw new Problem(
+                  409,
+                  "CAPABILITY_VERIFICATION_TERMINAL",
+                  "A completed receipt cannot be cancelled or reopened",
+                );
+              await tx.query(
+                `UPDATE capability_audio_suites SET cancel_requested_at=coalesce(cancel_requested_at,clock_timestamp()),
+          next_poll_at=clock_timestamp() WHERE validation_id=$1`,
+                [id],
+              );
+              await audit(
+                tx,
+                req.principal,
+                "admin.catalog.publish",
+                v.release_id,
+                "audio-cancellation",
+                { validation_id: id, reason: b.reason },
+              );
+              return validationDTO(tx, v);
+            },
+          );
+        },
+        undefined,
+        true,
+        req.principal.id,
+      );
+    },
+  );
   for (const action of ["video-cancellations", "video-rechecks"] as const) {
-    app.post(root + "/validations/:validation/" + action, auth, async (req, reply) => {
-      const id = uuid.parse((req.params as any).validation), b = command.parse(req.body);
-      reply.code(202);
-      return db.tx(async tx => {
-        await capabilityAuthority(tx, req.principal, "admin.catalog.publish");
-        const v = (await tx.query(`SELECT v.* FROM capability_validations v JOIN capability_releases r ON r.id=v.release_id
-          JOIN capability_video_suites s ON s.validation_id=v.id WHERE v.id=$1 AND r.data_mode=$2 FOR UPDATE OF v`, [id, mode(db)])).rows[0];
-        if (!v) throw new Problem(404, "NOT_FOUND", "Video validation not found");
-        const r = await release(tx, db, v.release_id);
-        if (r.version !== b.expected_version) throw new Problem(409, "VERSION_CONFLICT", "Reload the exact capability document");
-        return replay(tx, req.principal.id, "capability." + action + ":" + id, key(req), b, async () => {
-          if (action === "video-cancellations") {
-            if (v.state !== "running") throw new Problem(409, "CAPABILITY_VERIFICATION_TERMINAL", "A completed eligibility receipt cannot be cancelled or reopened");
-            await tx.query(`UPDATE capability_video_suites SET cancel_requested_at=coalesce(cancel_requested_at,clock_timestamp()),
-              next_poll_at=clock_timestamp() WHERE validation_id=$1`, [id]);
-          } else {
-            // An explicit recheck only wakes the original resource poll; it
-            // never creates another probe or reopens immutable eligibility.
-            await tx.query("UPDATE capability_video_suites SET next_poll_at=clock_timestamp() WHERE validation_id=$1", [id]);
-          }
-          await audit(tx, req.principal, "admin.catalog.publish", v.release_id, action,
-            { validation_id: id, reason: b.reason });
-          return validationDTO(tx, v);
-        });
-      }, undefined, true, req.principal.id);
-    });
+    app.post(
+      root + "/validations/:validation/" + action,
+      auth,
+      async (req, reply) => {
+        const id = uuid.parse((req.params as any).validation),
+          b = command.parse(req.body);
+        reply.code(202);
+        return db.tx(
+          async (tx) => {
+            await capabilityAuthority(
+              tx,
+              req.principal,
+              "admin.catalog.publish",
+            );
+            const v = (
+              await tx.query(
+                `SELECT v.* FROM capability_validations v JOIN capability_releases r ON r.id=v.release_id
+          JOIN capability_video_suites s ON s.validation_id=v.id WHERE v.id=$1 AND r.data_mode=$2 FOR UPDATE OF v`,
+                [id, mode(db)],
+              )
+            ).rows[0];
+            if (!v)
+              throw new Problem(404, "NOT_FOUND", "Video validation not found");
+            const r = await release(tx, db, v.release_id);
+            if (r.version !== b.expected_version)
+              throw new Problem(
+                409,
+                "VERSION_CONFLICT",
+                "Reload the exact capability document",
+              );
+            return replay(
+              tx,
+              req.principal.id,
+              "capability." + action + ":" + id,
+              key(req),
+              b,
+              async () => {
+                if (action === "video-cancellations") {
+                  if (v.state !== "running")
+                    throw new Problem(
+                      409,
+                      "CAPABILITY_VERIFICATION_TERMINAL",
+                      "A completed eligibility receipt cannot be cancelled or reopened",
+                    );
+                  await tx.query(
+                    `UPDATE capability_video_suites SET cancel_requested_at=coalesce(cancel_requested_at,clock_timestamp()),
+              next_poll_at=clock_timestamp() WHERE validation_id=$1`,
+                    [id],
+                  );
+                } else {
+                  // An explicit recheck only wakes the original resource poll; it
+                  // never creates another probe or reopens immutable eligibility.
+                  await tx.query(
+                    "UPDATE capability_video_suites SET next_poll_at=clock_timestamp() WHERE validation_id=$1",
+                    [id],
+                  );
+                }
+                await audit(
+                  tx,
+                  req.principal,
+                  "admin.catalog.publish",
+                  v.release_id,
+                  action,
+                  { validation_id: id, reason: b.reason },
+                );
+                return validationDTO(tx, v);
+              },
+            );
+          },
+          undefined,
+          true,
+          req.principal.id,
+        );
+      },
+    );
   }
   app.get(root + "/validations/:validation", auth, async (req, reply) => {
     reply.header("Cache-Control", "no-store");
@@ -1351,43 +1787,45 @@ export function registerCapabilityReleases(
               );
             }
           }
-          const items = versions.slice(offset, offset + q.limit).map((v, index) => {
-            const b = v.body,
-              state = availability[offset + index];
-            const dto = {
-              id: v.profile_key,
-              version: v.id,
-              kind:
-                b.profile_key === "internal-text-v1"
-                  ? "llm"
-                  : b.profile_key === "internal-image2-v1"
-                    ? "image"
-                    : b.profile_key === "internal-video-v1"
-                      ? "video"
-                      : "audio",
-              state,
-              supported_operations: b.supported_operations ?? [],
-              ...(b.model_alias ? { model_alias: b.model_alias } : {}),
-              ...(b.wire_protocol ? { wire_protocol: b.wire_protocol } : {}),
-              ...(b.reasoning_effort
-                ? { reasoning_effort: b.reasoning_effort }
-                : {}),
-              limits: b.limits ?? {},
-              ...(v.verified_at
-                ? { verified_at: new Date(v.verified_at).toISOString() }
-                : {}),
-            };
-            return detailed
-              ? {
-                  ...dto,
-                  data_mode: v.data_mode,
-                  rates: b.rates,
-                  publication_id: v.publication_id ?? null,
-                  release_id: v.release_id ?? null,
-                  head_revision: v.head_revision ?? 0,
-                }
-              : dto;
-          });
+          const items = versions
+            .slice(offset, offset + q.limit)
+            .map((v, index) => {
+              const b = v.body,
+                state = availability[offset + index];
+              const dto = {
+                id: v.profile_key,
+                version: v.id,
+                kind:
+                  b.profile_key === "internal-text-v1"
+                    ? "llm"
+                    : b.profile_key === "internal-image2-v1"
+                      ? "image"
+                      : b.profile_key === "internal-video-v1"
+                        ? "video"
+                        : "audio",
+                state,
+                supported_operations: b.supported_operations ?? [],
+                ...(b.model_alias ? { model_alias: b.model_alias } : {}),
+                ...(b.wire_protocol ? { wire_protocol: b.wire_protocol } : {}),
+                ...(b.reasoning_effort
+                  ? { reasoning_effort: b.reasoning_effort }
+                  : {}),
+                limits: b.limits ?? {},
+                ...(v.verified_at
+                  ? { verified_at: new Date(v.verified_at).toISOString() }
+                  : {}),
+              };
+              return detailed
+                ? {
+                    ...dto,
+                    data_mode: v.data_mode,
+                    rates: b.rates,
+                    publication_id: v.publication_id ?? null,
+                    release_id: v.release_id ?? null,
+                    head_revision: v.head_revision ?? 0,
+                  }
+                : dto;
+            });
           let next_cursor: string | null = null;
           if (offset + q.limit < versions.length) {
             const value = Buffer.from(
