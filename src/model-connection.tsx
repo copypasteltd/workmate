@@ -27,8 +27,8 @@ export function ModelConnectionFields({ from }: { from?: CapabilityRelease }) {
       <Field
         label="API Base URL"
         hint={t(
-          "填寫完整基礎地址，例如 https://gateway.example/v1；不要填入 /responses。",
-          "Enter the complete base URL, such as https://gateway.example/v1; omit /responses.",
+          "支援 HTTP 和 HTTPS。填寫完整基礎地址，例如 http://gateway.example:9841/v1；不要填入 /responses。",
+          "HTTP and HTTPS are supported. Enter the complete base URL, such as http://gateway.example:9841/v1; omit /responses.",
         )}
       >
         <input
@@ -104,8 +104,8 @@ export function ModelConnectionFields({ from }: { from?: CapabilityRelease }) {
           }}
         />
         {t(
-          "允許公司內網地址／內網 HTTP",
-          "Allow company private-network addresses / internal HTTP",
+          "允許公司內網地址（公網 HTTP 無須勾選）",
+          "Allow company private-network addresses (not required for public HTTP)",
         )}
       </label>
       <p className="muted">
