@@ -1,0 +1,1044 @@
+{
+  "stage": 181,
+  "at": "2026-11-01T17:28:33.965112+00:00",
+  "status": "deployed_and_qualified",
+  "scope": "Actual full gpt-6-luna Codex tool/result verification, safe failure attribution, Admin text retry and bounded bootstrap headroom and pre-funded native input ceilings",
+  "sources": {
+    "dev/copypaste-platform/.gitattributes": "d24cbfc811c752c0fbe730918efa4882dc8ed10497a855e78455f7123d5bd157",
+    "dev/copypaste-platform/README.en.md": "3f02885e603a6be18c2f6b220853eac2067a1ee92df4ae8609cee75393a02059",
+    "dev/copypaste-platform/README.md": "cb6d4d00250d024f9238b87727bba69f894c96df612ca90b8d26b2d7c35724b4",
+    "dev/copypaste-platform/migrations/159-native-context-input-ceiling.sql": "03c5616ca3f34eb957c56dcde8e690260e4cc03b8affd2dc0cb0eee054f2dbda",
+    "dev/copypaste-platform/src/capability-releases.ts": "0128650b4fee2685dcf6eefa9a8f8d0bd53e0d7e503e774ed5e11387759a8232",
+    "dev/copypaste-platform/src/capability-verification.ts": "e0ce4df5987913cb544c18e26c797ff544fcdd2760d8b7edfd85b752751a4b18",
+    "dev/copypaste-platform/src/cloud-tool-contract.ts": "339fa6f6b374b3a63f7699946014155ebeb5be8daa1d642081159e62c33cffd8",
+    "dev/copypaste-platform/src/internal-ai-gateway.ts": "d6e01ee75a2b577b4b4e03699de7f5cfbe1a2f26a7e20302ab05c0506347cd43",
+    "dev/copypaste-platform/src/provider-budgets.ts": "96bd8a594baefa63aa34512bcbe59d57f173ab6fe15325f89c10df0a124de5b1",
+    "dev/copypaste-platform/src/provider-request-control.ts": "4357fa5e8a861115282c02e2987a11ed42e8c5cf6580daf1fc7ada1df8b83fa3",
+    "dev/copypaste-platform/src/runtime.ts": "a2dfc889b64f4e4bdef7ef39a99432e24dc9e408b4f543fdeb4f6844a985aee6",
+    "dev/copypaste-platform/src/schema-compatibility.ts": "2e27852d469bd619539038f0ae659ef3ad77e10ed92eee2d7e6d31d26fb18411",
+    "dev/copypaste-platform/src/server.ts": "bacc8ce4722b8729c1d684cf602aef611732417c9ca66404e988042737e34582",
+    "dev/copypaste-platform/tests/model-http-runtime-181-v1.test.ts": "ebdef7e4be0421e051b6554e4a7f27f968d246a78e6ea138275911bfe9517cfe",
+    "dev/copypaste-platform/tests/model-tool-contract-181-v1.test.ts": "9e88786a3341f8492a812fce825d943fb4a3b67b5e3f7667232219b48be412e4",
+    "dev/copypaste-platform/tests/model-tool-contract-181-v2.test.ts": "b8ca3997e0f60b68d921e45dce964d8d2423f609bc8e5cac581d81ceb3b1d708",
+    "dev/copypaste-platform/tests/model-tool-contract-181-v3.test.ts": "1ac9498e62d63daa284f570121b465b42b6a1c45d344f276b33609f110cb058d",
+    "dev/copypaste-platform/tests/model-tool-contract-181-v4.test.ts": "4cd39b53493ba02efe0048ae3e3d2e5473bd9319840c410f152299486dfd96f2",
+    "dev/copypaste-platform/tests/model-tool-contract-181-v5.test.ts": "0f697e61a062b2011a2ea0b83493c824ef29ea09101f00fd2609ad3161491288",
+    "dev/copypaste-platform/tests/native-input-ceiling-181-v1.test.ts": "347edc2cfc9f21d4b4b4fd88e9cf5a495093de3155ab93ec17f3f0040865d715",
+    "dev/copypaste-platform/tests/native-input-ceiling-181-v2.test.ts": "3dcd6186d02f16f552ddd05e1d177e605ef50e566f87589518e3712a4b0c9e0b",
+    "dev/copypaste-platform/tests/request-failure-181-v1.test.ts": "16d76b70b5e4f424fdecd4fe46634dbaeee81ecdfa33d813dd84d10276213f77",
+    "dev/copypaste-platform/tsconfig.json": "bbf6e2b85d1ff08f2ae79e35ddcd59cbfe08fc277f53bb5987a31a283a3eebf4",
+    "dev/copypaste-admin/README.en.md": "53201e2349f6fad6dfc8352cf5e167c13e754065ac4696bfbf0064bb08d4e573",
+    "dev/copypaste-admin/README.md": "6f485a57244c2e234c3f0e5be35d048b6d2a2c179542c9e7be16a7214844fbd9",
+    "dev/copypaste-admin/assets/demos/181-model-tool-contract.gif": "c5cdde88bfba4448adcad6f6e9523e00a14cc5ee41204d4941add4e9ec7794c6",
+    "dev/copypaste-admin/assets/demos/181-model-tool-contract.mp4": "4bbec346089b934ddd49d704ef2b34764b2aa98e9717435635e5f719d3a2bd85",
+    "dev/copypaste-admin/assets/screenshots/180-codex-before-validation-96b61af0-cc71-4901-8559-91e63719d084.png": "60e275b98eaeb84cb7f70d0903f48aca67d4ab23582c33b55093b4425d3e580e",
+    "dev/copypaste-admin/assets/screenshots/180-codex-before-validation-b6e090fe-4881-4c0f-b597-5cf248230e82.png": "8a82ac9cbbebae73476d1b851011024a81459cb4038defcdd94155b3879a1562",
+    "dev/copypaste-admin/assets/screenshots/180-model-connected-96b61af0-cc71-4901-8559-91e63719d084.png": "93005e3b5a62bc9c8fc61db99c53ee32641f8c5ab1918c47004ab292bc92ddd6",
+    "dev/copypaste-admin/assets/screenshots/180-model-connected-b6e090fe-4881-4c0f-b597-5cf248230e82.png": "b11ace9ed94851b0ab3ea8ec6f0529c4a0a76f79a2e26c2629da31109f1953a5",
+    "dev/copypaste-admin/assets/screenshots/181-codex-before-validation-03f66d6b-a57b-4554-a7ab-1dca62712999.png": "60e275b98eaeb84cb7f70d0903f48aca67d4ab23582c33b55093b4425d3e580e",
+    "dev/copypaste-admin/assets/screenshots/181-codex-validation-passed-03f66d6b-a57b-4554-a7ab-1dca62712999.png": "9f5b6f58fb8de3b9a756ea3fc3880d57193f35287430cb04634d352442600b8c",
+    "dev/copypaste-admin/assets/screenshots/181-model-connected-03f66d6b-a57b-4554-a7ab-1dca62712999.png": "6fbaeaa5eee404de7d433b58d0c08092ff595c187222eee524c47ddaa1c43b31",
+    "dev/copypaste-admin/src/capabilities.tsx": "0b72301b8a65c30b31bab209266aa440b31192c7f9c6d1df9dba49e018375fd6",
+    "dev/copypaste-admin/src/capability-validation-ui.ts": "56ecafafde919225f64dcc92048fb543d3ede457a921d56f8cb202bd7d2e95c0",
+    "dev/copypaste-admin/tests/capability-validation-ui-181-v1.test.ts": "c35bf44b2c9eb8f037cce280e8e92405a52194479713e74812532350d97b683a",
+    "dev/copypaste-delivery/.gitattributes": "86142c7b3212f881429db475e309112383042855282db23ebb62a3f99f680a11",
+    "dev/copypaste-delivery/README.en.md": "edf1bf7891671ba2598088e1bb4b477966e9dc511ef34f0d49284fe67e9785a4",
+    "dev/copypaste-delivery/README.md": "3351afeb1827575e86b7634c3a0037fef2f19913bb26b46d392747847e6c62ec",
+    "dev/copypaste-delivery/scripts/diagnose-model-contract-181-v1.sh": "a29bb39b1be35bd39a7fe2fe58f580f557f6c75f3b903fd1a8452613b4961882",
+    "dev/copypaste-delivery/scripts/inspect-model-validation-181-v1.sh": "2bccc5286e12bcc01b0cf33dee77985cde7b06ea7b8176eb6309d2515591c0f3",
+    "dev/copypaste-delivery/scripts/install-model-tool-contract-181-v1.sh": "ce319418b09bacb269b21584fc7887b198ffbadd34b113e45da0f40d2a251459",
+    "dev/copypaste-delivery/scripts/install-model-tool-contract-181-v2.sh": "f41f68680fffaee96268fe38749220f7513070593a22c312d5a00149b4ad0f3f",
+    "dev/copypaste-delivery/scripts/install-model-tool-contract-181-v3.sh": "7636e64a1f3049e98747fa9de05d70fe4bdd8c8dd77a0d737c6e99f275c4cba1",
+    "dev/copypaste-delivery/scripts/install-model-tool-contract-181-v4.sh": "3c9dee6a051ed53a4eaa14aab4adec31f061bebfa033141fb70ce80413ca8089",
+    "dev/copypaste-delivery/scripts/package-model-tool-contract-181-v1.py": "d5ecaf85306fa2eed62f572299b6a183f441b078ac8bf8816f5e70508138663c",
+    "dev/copypaste-delivery/scripts/package-model-tool-contract-181-v2.py": "a4ff0ee16552110b1264484340db5cb6f82b8782fa305ac369502981287f2cd0",
+    "dev/copypaste-delivery/scripts/package-model-tool-contract-181-v3.py": "c2556f7e644920f6674732af9d92061b428b06604dfe4d42b5b7264296ad78f0",
+    "dev/copypaste-delivery/scripts/qualify-model-tool-contract-181-v1.mjs": "3f18e6c82d9955044ac6bdf822e8bb2bd9fffaf691cc8c38c3fc8da127f7a45e",
+    "dev/copypaste-delivery/scripts/qualify-model-tool-contract-181-v2.mjs": "e8326a79facb1a220153fecdd96a1272f531b4c5fd3071caa47f305c612908ce",
+    "dev/copypaste-delivery/scripts/qualify-model-tool-contract-181-v3.mjs": "8875918b3d942e64d049bf7418183735e54adaeeeced5e81b3348c21640b760a",
+    "dev/copypaste-delivery/scripts/qualify-model-tool-contract-181-v4.mjs": "3c02d6a4af3e175581b91d690e9c75c095b561b747339eaed4902504d1df079f",
+    "dev/copypaste-delivery/scripts/render-model-tool-contract-media-181-v1.py": "9431e71b3ca9479c74b45b52f73668a8a0386ae4fac4584ec8d97a27aa8b41ec",
+    "dev/copypaste-delivery/scripts/restore-validation-headroom-181-v1.sh": "5f8fbb2109cc9c4d17756017abe88cd5a637269e166e47889b2a3517b1d67e78",
+    "dev/copypaste-delivery/scripts/test-model-tool-contract-181-v1.mjs": "600089a71efc886c28d0e403845867b6aa1753d2207f13ed74686a19b8a004be",
+    "dev/copypaste-delivery/scripts/test-model-tool-contract-181-v2.mjs": "bec5127797aa1cb0d71d2016ce1b64c25710da02059a430a663e87f0c97b9e1c",
+    "dev/copypaste-delivery/scripts/test-model-tool-contract-181-v3.mjs": "bec5127797aa1cb0d71d2016ce1b64c25710da02059a430a663e87f0c97b9e1c",
+    "dev/copypaste-delivery/scripts/test-model-tool-contract-181-v4.mjs": "e73ebe8b92461a0333fad16596344a22449c4f934f2ed1ca1c68a0d21702338f",
+    "dev/copypaste-delivery/scripts/test-model-tool-contract-181-v5.mjs": "d0b0c2e3e9a7e789f0d82192a997f1640197be29dbc39ca8508f83bb7994ef99",
+    "dev/copypaste-delivery/scripts/verify-model-accounting-181-v1.sh": "15b292eae8aefc60f6af23c948d3cd8f52c4be870414ed4c062448ce3c88c50b",
+    ".gitattributes": "2f30e02459adfb8f437a749642f4a5dc4742bb7752c3cbbcf5898fa4b2149a6b",
+    "docs/README.en.md": "002103fe4e2006409efa8028edac4ed216eced7867b65ba819841f626dc132cc",
+    "docs/README.md": "002103fe4e2006409efa8028edac4ed216eced7867b65ba819841f626dc132cc",
+    "docs/assets/model-tool-contract-181/181-model-tool-contract.gif": "c5cdde88bfba4448adcad6f6e9523e00a14cc5ee41204d4941add4e9ec7794c6",
+    "docs/assets/model-tool-contract-181/181-model-tool-contract.mp4": "4bbec346089b934ddd49d704ef2b34764b2aa98e9717435635e5f719d3a2bd85",
+    "docs/assets/model-tool-contract-181/before-validation.png": "60e275b98eaeb84cb7f70d0903f48aca67d4ab23582c33b55093b4425d3e580e",
+    "docs/assets/model-tool-contract-181/connected.png": "6fbaeaa5eee404de7d433b58d0c08092ff595c187222eee524c47ddaa1c43b31",
+    "docs/assets/model-tool-contract-181/validation-passed.png": "9f5b6f58fb8de3b9a756ea3fc3880d57193f35287430cb04634d352442600b8c",
+    "docs/changes/181-model-tool-contract.md": "5dc16756b76161a8a70179837b15f1e57a54f99146b73bd37fab6470edce5f64",
+    "docs/development/181-model-tool-contract.md": "79d27f1f77042ccddffbe1cb1aaeddebe8531f9bb36b015a38b37347a925ac68",
+    "docs/quality/model-tool-contract-181/admin-build-v1.log": "dc41163377be39eebe756055ccd509ca2e2bd6f7e2e374944d8fb5d8ef7d5115",
+    "docs/quality/model-tool-contract-181/admin-build-v2.log": "2ece5446f3b0415f9b992cd38b2457763e144984a1f607ebf6aa7b39903fcb5a",
+    "docs/quality/model-tool-contract-181/admin-build-v3.log": "d546e3ae0140057e87ff0bdffe126ea215e71f2d6ccfc274291a81229382b989",
+    "docs/quality/model-tool-contract-181/admin-validation-final-v2.log": "2616a0c544901065c60aa8c58cb1184140af202b95c3e88c97e24c248c579c39",
+    "docs/quality/model-tool-contract-181/admin-validation-final.log": "7a51975e29934a017caa76d84197f6fc308f92d6bcfafc30b5cacf5a1d045d0b",
+    "docs/quality/model-tool-contract-181/admin-validation-tests-v1.log": "056f6c342e457dab647ed4c6d7c17caf0c1a9361ea2d3221ca3f2176405c0f5e",
+    "docs/quality/model-tool-contract-181/backend-build-final.log": "2f848ffdcab6f543bc0b0c2fd6fdd5bf41432da57614f912fe38c0283495dacf",
+    "docs/quality/model-tool-contract-181/backend-build-v1.log": "2f848ffdcab6f543bc0b0c2fd6fdd5bf41432da57614f912fe38c0283495dacf",
+    "docs/quality/model-tool-contract-181/backend-build-v2.log": "2f848ffdcab6f543bc0b0c2fd6fdd5bf41432da57614f912fe38c0283495dacf",
+    "docs/quality/model-tool-contract-181/backend-build-v3.log": "2f848ffdcab6f543bc0b0c2fd6fdd5bf41432da57614f912fe38c0283495dacf",
+    "docs/quality/model-tool-contract-181/backend-build-v4.log": "2f848ffdcab6f543bc0b0c2fd6fdd5bf41432da57614f912fe38c0283495dacf",
+    "docs/quality/model-tool-contract-181/browser-output-v1-attempt2.log": "37aee8c0dddbbe19fa42954bc12762aea381418b1b36b1bd919c2f6c7699d953",
+    "docs/quality/model-tool-contract-181/browser-output-v1.log": "35750cf1ace64a2994479bf14508b3f48c724706a58059e37c981818cdedfd68",
+    "docs/quality/model-tool-contract-181/browser-output-v2.log": "b84cf6b46a5979bbbd306ebf651538c363e74c98475b9f44ad238dca4200b3f1",
+    "docs/quality/model-tool-contract-181/browser-output-v3.log": "670b011e8763c33e35e29cab92f0f1a7787f3fd26cc6f357cfc3c68e85669ce1",
+    "docs/quality/model-tool-contract-181/browser-qualification-v4.log": "8879ca89a6d6a25506fa3315c525a6692d5f42ca1b56dbb7ccd23403198df209",
+    "docs/quality/model-tool-contract-181/budget-test-output-v1.log": "3869e4f5dffac759bdbf18b77d8502dfe2c4125c9915ee363c465ce4981d2246",
+    "docs/quality/model-tool-contract-181/budget-test-output-v2.log": "2483de3544c1cccf5d8b2d818a71cf1f0c949519f095b321ceaba9270c812ed2",
+    "docs/quality/model-tool-contract-181/budget-test-output-v3.log": "109cf22d1e6b3376d1c27bdeac3b634907601f5bd651d1e08aa5ea92f8f1c9ec",
+    "docs/quality/model-tool-contract-181/budget-test-output-v4.log": "631fb84dce72419848f06fdb1b01e7e52d3000a6abafb8e7d3789b1fa414ac07",
+    "docs/quality/model-tool-contract-181/budget-test-output-v5.log": "cffc2cb231c4151d009bcb1872789aa0fc5270a79b499883f76fd570e6f8ec2a",
+    "docs/quality/model-tool-contract-181/focused-final-v1.log": "7b3d9301fb66290817d039946fd58e583d9a627e72b5a7ba55b000d8f92abfee",
+    "docs/quality/model-tool-contract-181/focused-final-v2.log": "a7ff7b4a709f05879cdf957b23e877537d2612d25fc398a18302fcb93b23070f",
+    "docs/quality/model-tool-contract-181/focused-final-v3.log": "e9a5088ec56229f2e2daee00f73f8d5e8164db336e46e79e0946dfe8a17aca20",
+    "docs/quality/model-tool-contract-181/gateway-native-tests-v2.log": "7980e9d056c715745a1073363ebf24e861c0472aa56bc6e177cc87bf468b3864",
+    "docs/quality/model-tool-contract-181/gateway-native-tests-v3.log": "5460f1f3ef30e316ae0e9cb39a79782e738664b93900f595124220dfdcabe72b",
+    "docs/quality/model-tool-contract-181/gateway-native-tests-v4.log": "5fb78b1fd25e211d386c5a6ca0efda17c060d620e0ffbdcf4cc4367e36cc68e1",
+    "docs/quality/model-tool-contract-181/gateway-native-tests-v5.log": "896509b2011d6e96a5ce47e5c7d9234bffbbd73aba88bfa41de86899e73b514f",
+    "docs/requirements/181-model-tool-contract.md": "aff5ae0b3710b722cacd7ac5fa4bf2019e6596f0a0742ea0e7507e38acf5f905",
+    "docs/tools/prepare-model-tool-contract-181-v1.py": "7b0dda23130766544fe065cd49697a5ac4271e4c9bd823b8bff5c3391dc28f44",
+    "docs/tools/publish-model-tool-contract-181-v1.py": "4d206e53bf8c753acc3b8493ee769fcda86cc8a5852efc2ea97e77f4651a9832"
+  },
+  "media": [
+    {
+      "path": "dev/copypaste-admin/assets/demos/181-model-tool-contract.mp4",
+      "bytes": 487379,
+      "sha256": "4bbec346089b934ddd49d704ef2b34764b2aa98e9717435635e5f719d3a2bd85",
+      "source_recording_sha256": "e4dd6647933af2d37a145fba49dba1ccd9a2c56b5042b33f06456664e954523b",
+      "post_login_only": true
+    },
+    {
+      "path": "docs/assets/model-tool-contract-181/181-model-tool-contract.mp4",
+      "bytes": 487379,
+      "sha256": "4bbec346089b934ddd49d704ef2b34764b2aa98e9717435635e5f719d3a2bd85",
+      "copy_of": "dev/copypaste-admin/assets/demos/181-model-tool-contract.mp4"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/demos/181-model-tool-contract.gif",
+      "bytes": 2790134,
+      "sha256": "c5cdde88bfba4448adcad6f6e9523e00a14cc5ee41204d4941add4e9ec7794c6",
+      "source_recording_sha256": "e4dd6647933af2d37a145fba49dba1ccd9a2c56b5042b33f06456664e954523b",
+      "post_login_only": true
+    },
+    {
+      "path": "docs/assets/model-tool-contract-181/181-model-tool-contract.gif",
+      "bytes": 2790134,
+      "sha256": "c5cdde88bfba4448adcad6f6e9523e00a14cc5ee41204d4941add4e9ec7794c6",
+      "copy_of": "dev/copypaste-admin/assets/demos/181-model-tool-contract.gif"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/screenshots/181-codex-before-validation-03f66d6b-a57b-4554-a7ab-1dca62712999.png",
+      "bytes": 294508,
+      "sha256": "60e275b98eaeb84cb7f70d0903f48aca67d4ab23582c33b55093b4425d3e580e",
+      "actual_browser_capture": true
+    },
+    {
+      "path": "docs/assets/model-tool-contract-181/before-validation.png",
+      "bytes": 294508,
+      "sha256": "60e275b98eaeb84cb7f70d0903f48aca67d4ab23582c33b55093b4425d3e580e",
+      "copy_of": "dev/copypaste-admin/assets/screenshots/181-codex-before-validation-03f66d6b-a57b-4554-a7ab-1dca62712999.png"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/screenshots/181-model-connected-03f66d6b-a57b-4554-a7ab-1dca62712999.png",
+      "bytes": 297594,
+      "sha256": "6fbaeaa5eee404de7d433b58d0c08092ff595c187222eee524c47ddaa1c43b31",
+      "actual_browser_capture": true
+    },
+    {
+      "path": "docs/assets/model-tool-contract-181/connected.png",
+      "bytes": 297594,
+      "sha256": "6fbaeaa5eee404de7d433b58d0c08092ff595c187222eee524c47ddaa1c43b31",
+      "copy_of": "dev/copypaste-admin/assets/screenshots/181-model-connected-03f66d6b-a57b-4554-a7ab-1dca62712999.png"
+    },
+    {
+      "path": "dev/copypaste-admin/assets/screenshots/181-codex-validation-passed-03f66d6b-a57b-4554-a7ab-1dca62712999.png",
+      "bytes": 309630,
+      "sha256": "9f5b6f58fb8de3b9a756ea3fc3880d57193f35287430cb04634d352442600b8c",
+      "actual_browser_capture": true
+    },
+    {
+      "path": "docs/assets/model-tool-contract-181/validation-passed.png",
+      "bytes": 309630,
+      "sha256": "9f5b6f58fb8de3b9a756ea3fc3880d57193f35287430cb04634d352442600b8c",
+      "copy_of": "dev/copypaste-admin/assets/screenshots/181-codex-validation-passed-03f66d6b-a57b-4554-a7ab-1dca62712999.png"
+    }
+  ],
+  "deployment": {
+    "stage": 181,
+    "at": "2026-11-01T17:24:50.590034+00:00",
+    "status": "deployed",
+    "schema_version": 159,
+    "overlay": "/opt/workmate/overlays/model-tool-contract-181-v3",
+    "archive_sha256": "9590df338a9b7d8c335423afde8d6a56f2678f9b833a7db2b5873f0c23623072",
+    "model_transport": "http_and_https",
+    "codex_tool_contract": "scoped_code_mode_v1",
+    "credentials_unchanged": true,
+    "model_configuration_unchanged": true,
+    "foreign_configuration_unchanged": true,
+    "foreign_service_pids_unchanged": true,
+    "model_and_hold_hashes_unchanged": true,
+    "private_migration_backup": true,
+    "virtualization_invoked": false
+  },
+  "previous_deployment": {
+    "stage": 181,
+    "at": "2026-11-01T16:41:52.525584+00:00",
+    "status": "deployed",
+    "schema_version": 158,
+    "overlay": "/opt/workmate/overlays/model-tool-contract-181",
+    "archive_sha256": "7f3a217470ac6476b127277fb4eab4748455056d430fb1a61f2286d8d8cba3bc",
+    "model_transport": "http_and_https",
+    "codex_tool_contract": "scoped_code_mode_v1",
+    "credentials_unchanged": true,
+    "model_configuration_unchanged": true,
+    "foreign_configuration_unchanged": true,
+    "foreign_service_pids_unchanged": true,
+    "virtualization_invoked": false
+  },
+  "headroom": {
+    "stage": 181,
+    "status": "bootstrap_headroom_restored",
+    "at": "2026-11-01T16:57:15.714Z",
+    "operator": "server_operator/carzygod",
+    "scope": "unpublished bootstrap policy in simulated deployment mode",
+    "before_policy_id": "539ed02e-6d6d-459c-a694-0f2df035b190",
+    "after_policy_id": "d195bfc6-6a47-4337-b649-054e3cda6346",
+    "before": {
+      "actor_slots": 2,
+      "verification_slots": 2
+    },
+    "after": {
+      "actor_slots": 4,
+      "verification_slots": 4
+    },
+    "historical_unknown_holds": 2,
+    "historical_holds_sha256": "8c4f0df703cae617b2a16bd5c6826708d352efde3608255d2dda3be7ab4ab8d8",
+    "historical_holds_unchanged": true,
+    "budget_policy_unchanged": true,
+    "other_limits_unchanged": true,
+    "admin_policy_overridden": false,
+    "reason": "Stage181 server operator carzygod: retain two historical unknown verification holds; restore two available verification slots after Codex tool-contract repair. Budget ceilings and billing evidence unchanged."
+  },
+  "real_model_accounting": {
+    "stage": 181,
+    "status": "real_model_accounting_verified",
+    "at": "2026-11-01T17:27:55.626Z",
+    "validation": {
+      "id": "b8c8c28a-1df1-4ef7-af55-91d9d51b4bcc",
+      "release_id": "786d90e0-8d36-4f8a-a7d7-93e9b7176015",
+      "state": "passed",
+      "result": {
+        "checks": [
+          "pinned_codex",
+          "requested_model_and_effort",
+          "tool_call_and_result",
+          "completed_output",
+          "known_usage"
+        ],
+        "accepted": true,
+        "data_mode": "simulated",
+        "model_alias": "gpt-6-luna",
+        "usage_known": true,
+        "input_tokens": 20230,
+        "codex_version": "0.163.0-alpha.11",
+        "output_tokens": 139,
+        "definition_hash": "c61ce86957ae09eb0732554daa5b76f2a80532bfba23f7a0a588de73cce066f5",
+        "reasoning_effort": "max",
+        "known_cost_micros": "20369",
+        "codex_binary_sha256": "61b0194f3bb6534439c8d26a3ed57d0805f84b884588b761795323eeb92fcf70",
+        "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+        "supported_operations": [
+          "responses"
+        ],
+        "workspace_cleanup_completed": true
+      },
+      "finished_at": "2026-11-01T17:26:22.845Z"
+    },
+    "requests": [
+      {
+        "id": "e6cc890f-5c2e-415b-aa87-081c9da013df",
+        "state": "completed",
+        "usage_known": true,
+        "http_status": 200,
+        "input_tokens": "10028",
+        "output_tokens": "122",
+        "known_charge_micros": "10150",
+        "request_bytes": 29985,
+        "input_bound_mode": "serialized_ceiling",
+        "input_tokens_bound": "29985",
+        "max_output_tokens": 16384,
+        "counted_input_tokens": "5194"
+      },
+      {
+        "id": "6a2d6da1-fe29-41b1-a5b1-1f0399b4e711",
+        "state": "completed",
+        "usage_known": true,
+        "http_status": 200,
+        "input_tokens": "10202",
+        "output_tokens": "17",
+        "known_charge_micros": "10219",
+        "request_bytes": 33251,
+        "input_bound_mode": "serialized_ceiling",
+        "input_tokens_bound": "33251",
+        "max_output_tokens": 16384,
+        "counted_input_tokens": "5437"
+      }
+    ],
+    "external_upstream": "http://43.160.221.28:9841/v1",
+    "current_validation_violations": 0,
+    "historical_unknown_holds": [
+      {
+        "id": "ac175832-67a7-4c5f-8c89-5ec3c0beaf85",
+        "state": "unknown",
+        "cost_state": "unknown",
+        "capacity_held": true
+      },
+      {
+        "id": "e8f0473b-4e81-4358-b60d-1472447da917",
+        "state": "unknown",
+        "cost_state": "unknown",
+        "capacity_held": true
+      }
+    ],
+    "historical_count_violation": [
+      {
+        "code": "INPUT_COUNT_MISMATCH",
+        "input_tokens": "10032",
+        "output_tokens": "74",
+        "known_charge_micros": "10106"
+      }
+    ],
+    "business_data_context": "simulated",
+    "validation_transport": "actual saved external model connection",
+    "credentials_printed": false
+  },
+  "browser": {
+    "stage": 181,
+    "at": "2026-11-01T17:25:07.499Z",
+    "run": "browser-03f66d6b-a57b-4554-a7ab-1dca62712999",
+    "checks": [
+      {
+        "name": "public administrator proxy serves editable model management",
+        "status": "passed"
+      },
+      {
+        "name": "existing uncertain text receipt permits a separate budgeted validation without clearing its history",
+        "status": "passed"
+      },
+      {
+        "name": "current gpt-6-luna public HTTP connection authenticates and lists the requested model",
+        "status": "passed"
+      },
+      {
+        "name": "real saved gpt-6-luna passes pinned Codex, requested model/effort, tool round trip, completed output and measured usage",
+        "status": "passed"
+      },
+      {
+        "name": "validation receipt is durably attached to the unchanged current model configuration",
+        "status": "passed"
+      },
+      {
+        "name": "earlier uncertain validation history remains preserved",
+        "status": "passed"
+      }
+    ],
+    "media": [
+      {
+        "client": "admin",
+        "path": "assets/screenshots/181-codex-before-validation-03f66d6b-a57b-4554-a7ab-1dca62712999.png"
+      },
+      {
+        "client": "admin",
+        "path": "assets/screenshots/181-model-connected-03f66d6b-a57b-4554-a7ab-1dca62712999.png"
+      },
+      {
+        "client": "admin",
+        "path": "assets/screenshots/181-codex-validation-passed-03f66d6b-a57b-4554-a7ab-1dca62712999.png"
+      }
+    ],
+    "network": {
+      "public_host": "agent-dashboard.copypaste.hk",
+      "selected_dns_address": "172.67.180.165",
+      "reason": "Other advertised IPv4 route timed out from this workstation",
+      "tls_verification": true,
+      "api_responses_mocked": false
+    },
+    "release_id": "786d90e0-8d36-4f8a-a7d7-93e9b7176015",
+    "model_alias": "gpt-6-luna",
+    "base_url": "http://43.160.221.28:9841/v1",
+    "connection_result": {
+      "reachable": true,
+      "model_available": true,
+      "models_count": 29,
+      "checked_at": "2026-11-01T17:26:09.254Z"
+    },
+    "validation_http_status": 202,
+    "validation": {
+      "id": "b8c8c28a-1df1-4ef7-af55-91d9d51b4bcc",
+      "release_id": "786d90e0-8d36-4f8a-a7d7-93e9b7176015",
+      "state": "passed",
+      "capability_version_id": "399f2cb9-5731-4bd0-9bbe-7419c3c86205",
+      "created_at": "2026-11-01T17:26:10.123Z",
+      "finished_at": "2026-11-01T17:26:22.845Z",
+      "expires_at": "2026-11-02T17:26:22.845Z",
+      "result": {
+        "checks": [
+          "pinned_codex",
+          "requested_model_and_effort",
+          "tool_call_and_result",
+          "completed_output",
+          "known_usage"
+        ],
+        "accepted": true,
+        "data_mode": "simulated",
+        "model_alias": "gpt-6-luna",
+        "usage_known": true,
+        "input_tokens": 20230,
+        "codex_version": "0.163.0-alpha.11",
+        "output_tokens": 139,
+        "definition_hash": "c61ce86957ae09eb0732554daa5b76f2a80532bfba23f7a0a588de73cce066f5",
+        "reasoning_effort": "max",
+        "known_cost_micros": "20369",
+        "codex_binary_sha256": "61b0194f3bb6534439c8d26a3ed57d0805f84b884588b761795323eeb92fcf70",
+        "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+        "supported_operations": [
+          "responses"
+        ],
+        "workspace_cleanup_completed": true
+      },
+      "workspace_cleanup": null
+    },
+    "prior_validation": {
+      "id": "2fdd635b-0dfd-4d27-9cc8-c376dfe588d7",
+      "release_id": "786d90e0-8d36-4f8a-a7d7-93e9b7176015",
+      "state": "reconciling",
+      "capability_version_id": null,
+      "created_at": "2026-11-01T15:50:28.598Z",
+      "finished_at": "2026-11-01T15:50:32.595Z",
+      "expires_at": null,
+      "result": {
+        "checks": [],
+        "accepted": true,
+        "data_mode": "simulated",
+        "error_code": "CAPABILITY_VERIFICATION_FAILED",
+        "model_alias": "gpt-6-luna",
+        "usage_known": false,
+        "input_tokens": 0,
+        "codex_version": "0.163.0-alpha.11",
+        "output_tokens": 0,
+        "definition_hash": "c61ce86957ae09eb0732554daa5b76f2a80532bfba23f7a0a588de73cce066f5",
+        "reasoning_effort": "max",
+        "known_cost_micros": "0",
+        "codex_binary_sha256": "61b0194f3bb6534439c8d26a3ed57d0805f84b884588b761795323eeb92fcf70",
+        "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+        "supported_operations": [
+          "responses"
+        ],
+        "workspace_cleanup_completed": true
+      },
+      "workspace_cleanup": null
+    },
+    "browser_closed": true,
+    "status": "passed",
+    "finished_at": "2026-11-01T17:26:26.182Z"
+  },
+  "browser_attempts": [
+    {
+      "stage": 181,
+      "at": "2026-11-01T17:25:07.499Z",
+      "run": "browser-03f66d6b-a57b-4554-a7ab-1dca62712999",
+      "checks": [
+        {
+          "name": "public administrator proxy serves editable model management",
+          "status": "passed"
+        },
+        {
+          "name": "existing uncertain text receipt permits a separate budgeted validation without clearing its history",
+          "status": "passed"
+        },
+        {
+          "name": "current gpt-6-luna public HTTP connection authenticates and lists the requested model",
+          "status": "passed"
+        },
+        {
+          "name": "real saved gpt-6-luna passes pinned Codex, requested model/effort, tool round trip, completed output and measured usage",
+          "status": "passed"
+        },
+        {
+          "name": "validation receipt is durably attached to the unchanged current model configuration",
+          "status": "passed"
+        },
+        {
+          "name": "earlier uncertain validation history remains preserved",
+          "status": "passed"
+        }
+      ],
+      "media": [
+        {
+          "client": "admin",
+          "path": "assets/screenshots/181-codex-before-validation-03f66d6b-a57b-4554-a7ab-1dca62712999.png"
+        },
+        {
+          "client": "admin",
+          "path": "assets/screenshots/181-model-connected-03f66d6b-a57b-4554-a7ab-1dca62712999.png"
+        },
+        {
+          "client": "admin",
+          "path": "assets/screenshots/181-codex-validation-passed-03f66d6b-a57b-4554-a7ab-1dca62712999.png"
+        }
+      ],
+      "network": {
+        "public_host": "agent-dashboard.copypaste.hk",
+        "selected_dns_address": "172.67.180.165",
+        "reason": "Other advertised IPv4 route timed out from this workstation",
+        "tls_verification": true,
+        "api_responses_mocked": false
+      },
+      "release_id": "786d90e0-8d36-4f8a-a7d7-93e9b7176015",
+      "model_alias": "gpt-6-luna",
+      "base_url": "http://43.160.221.28:9841/v1",
+      "connection_result": {
+        "reachable": true,
+        "model_available": true,
+        "models_count": 29,
+        "checked_at": "2026-11-01T17:26:09.254Z"
+      },
+      "validation_http_status": 202,
+      "validation": {
+        "id": "b8c8c28a-1df1-4ef7-af55-91d9d51b4bcc",
+        "release_id": "786d90e0-8d36-4f8a-a7d7-93e9b7176015",
+        "state": "passed",
+        "capability_version_id": "399f2cb9-5731-4bd0-9bbe-7419c3c86205",
+        "created_at": "2026-11-01T17:26:10.123Z",
+        "finished_at": "2026-11-01T17:26:22.845Z",
+        "expires_at": "2026-11-02T17:26:22.845Z",
+        "result": {
+          "checks": [
+            "pinned_codex",
+            "requested_model_and_effort",
+            "tool_call_and_result",
+            "completed_output",
+            "known_usage"
+          ],
+          "accepted": true,
+          "data_mode": "simulated",
+          "model_alias": "gpt-6-luna",
+          "usage_known": true,
+          "input_tokens": 20230,
+          "codex_version": "0.163.0-alpha.11",
+          "output_tokens": 139,
+          "definition_hash": "c61ce86957ae09eb0732554daa5b76f2a80532bfba23f7a0a588de73cce066f5",
+          "reasoning_effort": "max",
+          "known_cost_micros": "20369",
+          "codex_binary_sha256": "61b0194f3bb6534439c8d26a3ed57d0805f84b884588b761795323eeb92fcf70",
+          "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+          "supported_operations": [
+            "responses"
+          ],
+          "workspace_cleanup_completed": true
+        },
+        "workspace_cleanup": null
+      },
+      "prior_validation": {
+        "id": "2fdd635b-0dfd-4d27-9cc8-c376dfe588d7",
+        "release_id": "786d90e0-8d36-4f8a-a7d7-93e9b7176015",
+        "state": "reconciling",
+        "capability_version_id": null,
+        "created_at": "2026-11-01T15:50:28.598Z",
+        "finished_at": "2026-11-01T15:50:32.595Z",
+        "expires_at": null,
+        "result": {
+          "checks": [],
+          "accepted": true,
+          "data_mode": "simulated",
+          "error_code": "CAPABILITY_VERIFICATION_FAILED",
+          "model_alias": "gpt-6-luna",
+          "usage_known": false,
+          "input_tokens": 0,
+          "codex_version": "0.163.0-alpha.11",
+          "output_tokens": 0,
+          "definition_hash": "c61ce86957ae09eb0732554daa5b76f2a80532bfba23f7a0a588de73cce066f5",
+          "reasoning_effort": "max",
+          "known_cost_micros": "0",
+          "codex_binary_sha256": "61b0194f3bb6534439c8d26a3ed57d0805f84b884588b761795323eeb92fcf70",
+          "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+          "supported_operations": [
+            "responses"
+          ],
+          "workspace_cleanup_completed": true
+        },
+        "workspace_cleanup": null
+      },
+      "browser_closed": true,
+      "status": "passed",
+      "finished_at": "2026-11-01T17:26:26.182Z"
+    },
+    {
+      "stage": 181,
+      "at": "2026-11-01T16:57:23.019Z",
+      "run": "browser-93b9a6c7-1e2b-4615-91e6-1863e8c90bb6",
+      "checks": [
+        {
+          "name": "public administrator proxy serves editable model management",
+          "status": "passed"
+        }
+      ],
+      "media": [],
+      "release_id": "786d90e0-8d36-4f8a-a7d7-93e9b7176015",
+      "model_alias": "gpt-6-luna",
+      "base_url": "http://43.160.221.28:9841/v1",
+      "failure": {
+        "stage": "check current gpt-6-luna",
+        "type": "TimeoutError",
+        "message": "locator.click: Timeout 20000ms exceeded."
+      },
+      "browser_closed": true,
+      "status": "failed",
+      "finished_at": "2026-11-01T16:58:39.255Z"
+    },
+    {
+      "stage": 181,
+      "at": "2026-11-01T16:43:44.411Z",
+      "run": "browser-96b61af0-cc71-4901-8559-91e63719d084",
+      "checks": [
+        {
+          "name": "public administrator proxy serves editable model management",
+          "status": "passed"
+        },
+        {
+          "name": "existing uncertain text receipt permits a separate budgeted validation without clearing its history",
+          "status": "passed"
+        },
+        {
+          "name": "current gpt-6-luna public HTTP connection authenticates and lists the requested model",
+          "status": "passed"
+        }
+      ],
+      "media": [
+        {
+          "client": "admin",
+          "path": "assets/screenshots/180-codex-before-validation-96b61af0-cc71-4901-8559-91e63719d084.png"
+        },
+        {
+          "client": "admin",
+          "path": "assets/screenshots/180-model-connected-96b61af0-cc71-4901-8559-91e63719d084.png"
+        }
+      ],
+      "release_id": "786d90e0-8d36-4f8a-a7d7-93e9b7176015",
+      "model_alias": "gpt-6-luna",
+      "base_url": "http://43.160.221.28:9841/v1",
+      "connection_result": {
+        "reachable": true,
+        "model_available": true,
+        "models_count": 29,
+        "checked_at": "2026-11-01T16:45:16.881Z"
+      },
+      "failure": {
+        "stage": "complete real Codex validation",
+        "type": "AssertionError",
+        "message": "Expected values to be strictly equal:"
+      },
+      "browser_closed": true,
+      "status": "failed",
+      "finished_at": "2026-11-01T16:45:19.718Z"
+    },
+    {
+      "stage": 181,
+      "at": "2026-11-01T17:02:04.662Z",
+      "run": "browser-b6e090fe-4881-4c0f-b597-5cf248230e82",
+      "checks": [
+        {
+          "name": "public administrator proxy serves editable model management",
+          "status": "passed"
+        },
+        {
+          "name": "existing uncertain text receipt permits a separate budgeted validation without clearing its history",
+          "status": "passed"
+        },
+        {
+          "name": "current gpt-6-luna public HTTP connection authenticates and lists the requested model",
+          "status": "passed"
+        }
+      ],
+      "media": [
+        {
+          "client": "admin",
+          "path": "assets/screenshots/180-codex-before-validation-b6e090fe-4881-4c0f-b597-5cf248230e82.png"
+        },
+        {
+          "client": "admin",
+          "path": "assets/screenshots/180-model-connected-b6e090fe-4881-4c0f-b597-5cf248230e82.png"
+        }
+      ],
+      "network": {
+        "public_host": "agent-dashboard.copypaste.hk",
+        "selected_dns_address": "172.67.180.165",
+        "reason": "Other advertised IPv4 route timed out from this workstation",
+        "tls_verification": true,
+        "api_responses_mocked": false
+      },
+      "release_id": "786d90e0-8d36-4f8a-a7d7-93e9b7176015",
+      "model_alias": "gpt-6-luna",
+      "base_url": "http://43.160.221.28:9841/v1",
+      "connection_result": {
+        "reachable": true,
+        "model_available": true,
+        "models_count": 29,
+        "checked_at": "2026-11-01T17:02:42.948Z"
+      },
+      "validation_http_status": 202,
+      "validation": {
+        "id": "5efb8dc8-7efb-4edb-867a-d7f88def6f5b",
+        "release_id": "786d90e0-8d36-4f8a-a7d7-93e9b7176015",
+        "state": "reconciling",
+        "capability_version_id": null,
+        "created_at": "2026-11-01T17:02:43.715Z",
+        "finished_at": "2026-11-01T17:02:49.842Z",
+        "expires_at": null,
+        "result": {
+          "checks": [],
+          "accepted": true,
+          "data_mode": "simulated",
+          "error_code": "AI_REQUEST_BUDGET_VIOLATION",
+          "model_alias": "gpt-6-luna",
+          "usage_known": true,
+          "input_tokens": 0,
+          "codex_version": "0.163.0-alpha.11",
+          "output_tokens": 0,
+          "definition_hash": "c61ce86957ae09eb0732554daa5b76f2a80532bfba23f7a0a588de73cce066f5",
+          "reasoning_effort": "max",
+          "known_cost_micros": "10106",
+          "gateway_dispatched": true,
+          "gateway_error_code": "AI_REQUEST_BUDGET_VIOLATION",
+          "codex_binary_sha256": "61b0194f3bb6534439c8d26a3ed57d0805f84b884588b761795323eeb92fcf70",
+          "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+          "supported_operations": [
+            "responses"
+          ],
+          "workspace_cleanup_completed": true
+        },
+        "workspace_cleanup": null
+      },
+      "failure": {
+        "stage": "complete real Codex validation",
+        "type": "AssertionError",
+        "message": "Expected values to be strictly equal:"
+      },
+      "browser_closed": true,
+      "status": "failed",
+      "finished_at": "2026-11-01T17:02:52.958Z"
+    },
+    {
+      "stage": 181,
+      "at": "2026-11-01T16:42:16.321Z",
+      "run": "browser-ebbfaac7-055b-481d-9b62-ee2ace416c4e",
+      "checks": [
+        {
+          "name": "public administrator proxy serves editable model management",
+          "status": "passed"
+        }
+      ],
+      "media": [],
+      "failure": {
+        "stage": "independent administrator MFA",
+        "type": "Error",
+        "message": "browserContext.newPage: Executable doesn't exist at C:\\Users\\carzy\\AppData\\Local\\ms-playwright\\ffmpeg-1013\\ffmpeg-win64.exe"
+      },
+      "browser_closed": true,
+      "status": "failed",
+      "finished_at": "2026-11-01T16:42:47.375Z"
+    }
+  ],
+  "focused_checks": [
+    {
+      "path": "docs/quality/model-tool-contract-181/focused-final-v3.log",
+      "sha256": "e9a5088ec56229f2e2daee00f73f8d5e8164db336e46e79e0946dfe8a17aca20",
+      "tests": 33,
+      "pass": 33,
+      "fail": 0
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/budget-test-output-v5.log",
+      "sha256": "cffc2cb231c4151d009bcb1872789aa0fc5270a79b499883f76fd570e6f8ec2a",
+      "tests": 7,
+      "pass": 7,
+      "fail": 0
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/admin-validation-final-v2.log",
+      "sha256": "2616a0c544901065c60aa8c58cb1184140af202b95c3e88c97e24c248c579c39",
+      "tests": 2,
+      "pass": 2,
+      "fail": 0
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/budget-test-output-v4.log",
+      "sha256": "631fb84dce72419848f06fdb1b01e7e52d3000a6abafb8e7d3789b1fa414ac07",
+      "tests": 28,
+      "pass": 28,
+      "fail": 0,
+      "scope": "Selected original accounting and HTTP cases only; original failed new fixture is retained, corrected and rerun in V5",
+      "whole_attempt_failures": 1,
+      "selected_cases": [
+        {
+          "id": 1,
+          "name": "production model configuration accepts public HTTP without a private-network override",
+          "status": "passed"
+        },
+        {
+          "id": 2,
+          "name": "production public HTTP reaches the configured model transport with authorization and the exact request body",
+          "status": "passed"
+        },
+        {
+          "id": 3,
+          "name": "public HTTP support retains private-network and metadata restrictions",
+          "status": "passed"
+        },
+        {
+          "id": 9,
+          "name": "actual worker request commits frozen attribution, dispatch and validated usage without recording private input or charging twice",
+          "status": "passed"
+        },
+        {
+          "id": 10,
+          "name": "terminal frames wait for durable usage and hand off to the next request without an asynchronous busy gap",
+          "status": "passed"
+        },
+        {
+          "id": 11,
+          "name": "the database rejects missing usage, inconsistent prices and unsuccessful HTTP outcomes without releasing a dispatched request",
+          "status": "passed"
+        },
+        {
+          "id": 12,
+          "name": "fractional per-request costs retain an exact numerator for one aggregate rounding without posting duplicate ledger charges",
+          "status": "passed"
+        },
+        {
+          "id": 13,
+          "name": "prepared rate promises serialize before any HTTP dispatch and cancellation returns only unused promises",
+          "status": "passed"
+        },
+        {
+          "id": 14,
+          "name": "new policy is enforced again at dispatch without silently applying an old permit's limits",
+          "status": "passed"
+        },
+        {
+          "id": 15,
+          "name": "revocation after admission is rechecked before fetch and retains known zero spend",
+          "status": "passed"
+        },
+        {
+          "id": 16,
+          "name": "cancellation after durable dispatch intent but before fetch is proven zero and releases both capacity and rate promise",
+          "status": "passed"
+        },
+        {
+          "id": 17,
+          "name": "unterminated response remains unknown and consumes actor capacity across a fresh runtime",
+          "status": "passed"
+        },
+        {
+          "id": 18,
+          "name": "an orphaned dispatch intent becomes unknown once and retains shared capacity without replay or zero-spend fabrication",
+          "status": "passed"
+        },
+        {
+          "id": 19,
+          "name": "expired prepared permits are reclaimed with immutable zero-spend events and cannot later dispatch",
+          "status": "passed"
+        },
+        {
+          "id": 20,
+          "name": "a completed provider request keeps its rolling-minute rate charge after freeing concurrency",
+          "status": "passed"
+        },
+        {
+          "id": 21,
+          "name": "one operation can never be replayed into another provider request even after a known cancellation",
+          "status": "passed"
+        },
+        {
+          "id": 22,
+          "name": "request and policy history cannot be rewritten and ordinary RLS cannot expose another actor's or tenant's request",
+          "status": "passed"
+        },
+        {
+          "id": 23,
+          "name": "four actual Node workers share the database admission ceiling across two tenants",
+          "status": "passed"
+        },
+        {
+          "id": 24,
+          "name": "exact counting includes the normalized context and binds one proof to the actual generation bytes",
+          "status": "passed"
+        },
+        {
+          "id": 25,
+          "name": "unverified or unpriced input counting makes zero provider calls and never guesses a token count",
+          "status": "passed"
+        },
+        {
+          "id": 26,
+          "name": "malformed exact count retains its platform commitment and blocks a new attempt without generation",
+          "status": "passed"
+        },
+        {
+          "id": 27,
+          "name": "text and image share one original reservation and an over-budget image is blocked before HTTP",
+          "status": "passed"
+        },
+        {
+          "id": 28,
+          "name": "concurrent requests serialize one task budget while task counting is funded only by the platform",
+          "status": "passed"
+        },
+        {
+          "id": 29,
+          "name": "input count mismatch preserves actual spend then blocks the next call and final settlement for reconciliation",
+          "status": "passed"
+        },
+        {
+          "id": 30,
+          "name": "output above its explicit bound is recorded as real usage and cannot widen the customer budget",
+          "status": "passed"
+        },
+        {
+          "id": 31,
+          "name": "the platform counting pool is shared across tasks and cannot draw from a customer wallet",
+          "status": "passed"
+        },
+        {
+          "id": 32,
+          "name": "one count proof cannot authorize a different generation hash or be consumed twice",
+          "status": "passed"
+        },
+        {
+          "id": 33,
+          "name": "unsupported context fields are rejected before counting rather than omitting part of a paid model input",
+          "status": "passed"
+        }
+      ]
+    }
+  ],
+  "total_passing_checks": 70,
+  "builds": {
+    "backend": "passed",
+    "admin": "passed"
+  },
+  "attempt_logs": [
+    {
+      "path": "docs/quality/model-tool-contract-181/admin-build-v1.log",
+      "sha256": "dc41163377be39eebe756055ccd509ca2e2bd6f7e2e374944d8fb5d8ef7d5115"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/admin-build-v2.log",
+      "sha256": "2ece5446f3b0415f9b992cd38b2457763e144984a1f607ebf6aa7b39903fcb5a"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/admin-validation-final.log",
+      "sha256": "7a51975e29934a017caa76d84197f6fc308f92d6bcfafc30b5cacf5a1d045d0b"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/admin-validation-tests-v1.log",
+      "sha256": "056f6c342e457dab647ed4c6d7c17caf0c1a9361ea2d3221ca3f2176405c0f5e"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/backend-build-final.log",
+      "sha256": "2f848ffdcab6f543bc0b0c2fd6fdd5bf41432da57614f912fe38c0283495dacf"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/backend-build-v1.log",
+      "sha256": "2f848ffdcab6f543bc0b0c2fd6fdd5bf41432da57614f912fe38c0283495dacf"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/backend-build-v2.log",
+      "sha256": "2f848ffdcab6f543bc0b0c2fd6fdd5bf41432da57614f912fe38c0283495dacf"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/backend-build-v3.log",
+      "sha256": "2f848ffdcab6f543bc0b0c2fd6fdd5bf41432da57614f912fe38c0283495dacf"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/browser-output-v1-attempt2.log",
+      "sha256": "37aee8c0dddbbe19fa42954bc12762aea381418b1b36b1bd919c2f6c7699d953"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/browser-output-v1.log",
+      "sha256": "35750cf1ace64a2994479bf14508b3f48c724706a58059e37c981818cdedfd68"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/browser-output-v2.log",
+      "sha256": "b84cf6b46a5979bbbd306ebf651538c363e74c98475b9f44ad238dca4200b3f1"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/browser-output-v3.log",
+      "sha256": "670b011e8763c33e35e29cab92f0f1a7787f3fd26cc6f357cfc3c68e85669ce1"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/browser-qualification-v4.log",
+      "sha256": "8879ca89a6d6a25506fa3315c525a6692d5f42ca1b56dbb7ccd23403198df209"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/budget-test-output-v1.log",
+      "sha256": "3869e4f5dffac759bdbf18b77d8502dfe2c4125c9915ee363c465ce4981d2246"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/budget-test-output-v2.log",
+      "sha256": "2483de3544c1cccf5d8b2d818a71cf1f0c949519f095b321ceaba9270c812ed2"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/budget-test-output-v3.log",
+      "sha256": "109cf22d1e6b3376d1c27bdeac3b634907601f5bd651d1e08aa5ea92f8f1c9ec"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/focused-final-v1.log",
+      "sha256": "7b3d9301fb66290817d039946fd58e583d9a627e72b5a7ba55b000d8f92abfee"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/focused-final-v2.log",
+      "sha256": "a7ff7b4a709f05879cdf957b23e877537d2612d25fc398a18302fcb93b23070f"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/gateway-native-tests-v2.log",
+      "sha256": "7980e9d056c715745a1073363ebf24e861c0472aa56bc6e177cc87bf468b3864"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/gateway-native-tests-v3.log",
+      "sha256": "5460f1f3ef30e316ae0e9cb39a79782e738664b93900f595124220dfdcabe72b"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/gateway-native-tests-v4.log",
+      "sha256": "5fb78b1fd25e211d386c5a6ca0efda17c060d620e0ffbdcf4cc4367e36cc68e1"
+    },
+    {
+      "path": "docs/quality/model-tool-contract-181/gateway-native-tests-v5.log",
+      "sha256": "896509b2011d6e96a5ce47e5c7d9234bffbbd73aba88bfa41de86899e73b514f"
+    }
+  ],
+  "attempt_notes": [
+    "V1 test module had an incorrect cleanup import; retained and superseded. First migration159 attempt failed before commit due to an unparenthesized SQL CASE expression; a later run exposed a missing schema-version advance. Both unsuccessful logs are retained, and neither touched production. A new native fixture initially omitted the explicit reasoning effort; its original failure is retained and the corrected V2 fixture passes in V5. The V4 deployment script fixes the Windows shell line ending before any database change.",
+    "V2-V4 fixtures corrected metric shape, reset timing, native model-specific tool selection and missing Responses total_tokens; all original attempts retained.",
+    "First browser attempt lacked the configured recorder dependency path. A later V1 assertion expected200 instead of this route's202 response; server inspection also identified two original capacity holds. Neither attempt is reported as successful.",
+    "V3 production qualification preserved a real INPUT_COUNT_MISMATCH: upstream estimated5218 input tokens but measured10032. Forward migration159 adds an independently pre-funded serialized input ceiling for validated native code mode; exact legacy allocations and historical violations remain unchanged. V4 production qualification uses the real saved model after this repair."
+  ],
+  "prior_evidence_sha256": "72fe1136bea86197c64ee13aa2776ac52c62de56d0850566b611a8e77fa08be8",
+  "limitations": [
+    "This focused repair and full model verification do not establish complete-product acceptance",
+    "Earlier unknown spending and capacity holds remain pending their original evidence/reconciliation process",
+    "Forward-only schema159 requires its matching API; private migration-object backup is retained and no automatic database downgrade is attempted",
+    "No automatic model publication or new native installers",
+    "The bootstrap headroom change affects only the unpublished simulated-mode deployment policy; all other limits and budget amounts are retained"
+  ],
+  "virtualization_invoked": false
+}

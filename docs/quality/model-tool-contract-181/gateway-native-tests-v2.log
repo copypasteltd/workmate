@@ -1,0 +1,232 @@
+# owned_fixture_owner {"path":".data/test-fixture-reclamation/8ecabfca-2615-424c-a1db-8e98ee59da71","owner_pid":11372}
+TAP version 13
+# Subtest: unread aborts, cancelled media and rejected response protocols release all owned process resources
+    # Subtest: abort-unread-image
+    ok 1 - abort-unread-image
+      ---
+      duration_ms: 455.5071
+      ...
+    # Subtest: cancel-image
+    ok 2 - cancel-image
+      ---
+      duration_ms: 460.3634
+      ...
+    # Subtest: invalid-response-protocol
+    ok 3 - invalid-response-protocol
+      ---
+      duration_ms: 459.9135
+      ...
+    1..3
+ok 1 - unread aborts, cancelled media and rejected response protocols release all owned process resources
+  ---
+  duration_ms: 1376.7676
+  ...
+# Subtest: scoped Responses forwards only trusted attribution, uses a separate opaque key and reauthorizes each request
+ok 2 - scoped Responses forwards only trusted attribution, uses a separate opaque key and reauthorizes each request
+  ---
+  duration_ms: 49.0939
+  ...
+# Subtest: authority revocation between responses blocks the next provider call and does not expose callback errors
+ok 3 - authority revocation between responses blocks the next provider call and does not expose callback errors
+  ---
+  duration_ms: 23.1899
+  ...
+# Subtest: credentials cannot cross runs and cannot authorize other paths, origins, methods or query endpoints
+ok 4 - credentials cannot cross runs and cannot authorize other paths, origins, methods or query endpoints
+  ---
+  duration_ms: 18.9507
+  ...
+# Subtest: model, effort, hosted state, unregistered tools and output-limit overrides are rejected before authorization or dispatch
+ok 5 - model, effort, hosted state, unregistered tools and output-limit overrides are rejected before authorization or dispatch
+  ---
+  duration_ms: 30.1894
+  ...
+# Subtest: declared and streamed oversized request bodies never reach the provider
+ok 6 - declared and streamed oversized request bodies never reach the provider
+  ---
+  duration_ms: 8.1519
+  ...
+# Subtest: a run has one in-flight request and a hard forwarded-request ceiling
+ok 7 - a run has one in-flight request and a hard forwarded-request ceiling
+  ---
+  duration_ms: 12.0887
+  ...
+# Subtest: expiry and explicit cancellation revoke a scoped credential without a provider request
+ok 8 - expiry and explicit cancellation revoke a scoped credential without a provider request
+  ---
+  duration_ms: 69.1053
+  ...
+# Subtest: redirects are not followed and an uncertain dispatched request cannot be replayed
+ok 9 - redirects are not followed and an uncertain dispatched request cannot be replayed
+  ---
+  duration_ms: 9.1866
+  ...
+# Subtest: truncated streams, absent terminal usage and upstream failures keep the grant unusable for replay
+ok 10 - truncated streams, absent terminal usage and upstream failures keep the grant unusable for replay
+  ---
+  duration_ms: 29.0483
+  ...
+# Subtest: split UTF-8, CRLF and multiline SSE data preserve raw bytes and legitimate terminal usage
+ok 11 - split UTF-8, CRLF and multiline SSE data preserve raw bytes and legitimate terminal usage
+  ---
+  duration_ms: 3521.7186
+  ...
+# Subtest: an unterminated SSE tool frame is never forwarded or treated as a known terminal result
+ok 12 - an unterminated SSE tool frame is never forwarded or treated as a known terminal result
+  ---
+  duration_ms: 8.8891
+  ...
+# Subtest: the kernel question declaration is suppressed and unregistered response calls are blocked before Codex receives them
+ok 13 - the kernel question declaration is suppressed and unregistered response calls are blocked before Codex receives them
+  ---
+  duration_ms: 182.7422
+  ...
+# Subtest: registered function-call frames and arguments are streamed unchanged after validation
+ok 14 - registered function-call frames and arguments are streamed unchanged after validation
+  ---
+  duration_ms: 11.1879
+  ...
+# Subtest: malformed or oversized SSE frames are rejected before forwarding an event
+ok 15 - malformed or oversized SSE frames are rejected before forwarding an event
+  ---
+  duration_ms: 18.1273
+  ...
+# Subtest: stream idle timeout aborts an accepted provider request and prevents another dispatch
+ok 16 - stream idle timeout aborts an accepted provider request and prevents another dispatch
+  ---
+  duration_ms: 53.6332
+  ...
+# Subtest: request deadline aborts even a non-idle stream and a response with no first byte
+ok 17 - request deadline aborts even a non-idle stream and a response with no first byte
+  ---
+  duration_ms: 151.0899
+  ...
+# Subtest: declared and chunked oversized responses are bounded and never automatically replayed
+ok 18 - declared and chunked oversized responses are bounded and never automatically replayed
+  ---
+  duration_ms: 44.8667
+  ...
+# Subtest: image generation and multipart editing use the same trusted authorization and exact frozen specification
+ok 19 - image generation and multipart editing use the same trusted authorization and exact frozen specification
+  ---
+  duration_ms: 11.0465
+  ...
+# Subtest: invalid gateway settings, malformed scope and pre-dispatch denial fail closed without a provider call
+not ok 20 - invalid gateway settings, malformed scope and pre-dispatch denial fail closed without a provider call
+  ---
+  duration_ms: 10.038
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\internal-ai-gateway.test.ts:10:4361'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected rejection.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\internal-ai-gateway.test.ts:822:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: native additional_tools is scoped to trusted registrations; controls and foreign declarations cannot create authority
+ok 21 - native additional_tools is scoped to trusted registrations; controls and foreign declarations cannot create authority
+  ---
+  duration_ms: 11.2978
+  ...
+# Subtest: registered native V8 calls and input fragments pass unchanged with measured usage
+not ok 22 - registered native V8 calls and input fragments pass unchanged with measured usage
+  ---
+  duration_ms: 53.5839
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\model-tool-contract-181-v2.test.ts:4:4198'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      {
+        allResponsesKnown: true,
+        inputTokens: 17,
+        outputTokens: 5,
+    +   responses: 1
+      }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    inputTokens: 17
+    outputTokens: 5
+    allResponsesKnown: true
+  actual:
+    allResponsesKnown: true
+    responses: 1
+    inputTokens: 17
+    outputTokens: 5
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\model-tool-contract-181-v2.test.ts:89:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: unregistered: reject before unsafe frame and retain specific accounting cause
+ok 23 - unregistered: reject before unsafe frame and retain specific accounting cause
+  ---
+  duration_ms: 18.9696
+  ...
+# Subtest: foreign namespace: reject before unsafe frame and retain specific accounting cause
+ok 24 - foreign namespace: reject before unsafe frame and retain specific accounting cause
+  ---
+  duration_ms: 12.059
+  ...
+# Subtest: orphan delta: reject before unsafe frame and retain specific accounting cause
+ok 25 - orphan delta: reject before unsafe frame and retain specific accounting cause
+  ---
+  duration_ms: 13.7164
+  ...
+# Subtest: rebound identity: reject before unsafe frame and retain specific accounting cause
+not ok 26 - rebound identity: reject before unsafe frame and retain specific accounting cause
+  ---
+  duration_ms: 12.6536
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\model-tool-contract-181-v2.test.ts:4:5159'
+  failureType: 'testCodeFailure'
+  error: 'fetch failed'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    node:internal/deps/undici/undici:13502:13
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\model-tool-contract-181-v2.test.ts:101:22)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: actual pinned Codex completes a business tool round trip through code mode; OS and delegation tools stay absent
+not ok 27 - actual pinned Codex completes a business tool round trip through code mode; OS and delegation tools stay absent
+  ---
+  duration_ms: 12600.3226
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\model-tool-contract-181-v2.test.ts:4:6273'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'failed'
+    - 'completed'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'completed'
+  actual: 'failed'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\model-tool-contract-181-v2.test.ts:114:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+1..27
+# tests 30
+# suites 0
+# pass 26
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 24345.1063
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/8ecabfca-2615-424c-a1db-8e98ee59da71/result.json","sha256":"c17f0feb204a163355575f5c4f8acae75bd39c1c00e86e18618b2b6d6696d5ae","exit_code":0}

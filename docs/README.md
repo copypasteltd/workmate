@@ -1,3 +1,12 @@
+<!-- model-tool-contract-181 -->
+## Codex 完整模型验证 / Complete Codex model validation
+
+修复原生工具协议兼容、错误归因、原生上下文预算和后台文字重试；保留旧待对账记录，恢复初始策略中的可用验证名额。当前 gpt-6-luna 已在正式后台通过完整 Codex 验证，附实际截图和交互录制。本轮70项针对性检查通过。
+
+The current gpt-6-luna passed real production Codex validation after repairing the native tool contract, specific errors, text retry, bounded bootstrap headroom and native input budgeting. Historical uncertain records remain intact. Actual captures and70 passing focused checks are recorded.
+
+[需求 / Requirements](requirements/181-model-tool-contract.md) · [开发及逻辑图 / Implementation](development/181-model-tool-contract.md) · [变更 / Changes](changes/181-model-tool-contract.md) · [实际证据 / Evidence](quality/model-tool-contract-181.json)
+
 <!-- model-http-180 -->
 ## 模型 HTTP/HTTPS 上游 / Model HTTP/HTTPS upstreams
 
