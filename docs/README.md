@@ -1,3 +1,20 @@
+<!-- per-model-connections-178 -->
+## 每个模型独立配置上游 / Per-model upstream configuration
+
+[正式后台 / Admin](https://agent-dashboard.copypaste.hk/catalog?view=capabilities) · [使用 / Usage](releases/model-connections-178.md) · [需求 / Requirements](requirements/178-per-model-connections.md) · [开发 / Implementation](development/178-per-model-connections.md) · [变更 / Changes](changes/178-per-model-connections.md) · [核查 / Evidence](quality/model-connections-178.json)
+
+新增模型时填写该模型的 API 地址和 API Key；保存、连接测试、能力验证及独立审批发布后使用。每个模型版本保留独立连接；明确配置的上游会实际请求。
+
+Each model owns its URL and encrypted key. Connection checks and full validation precede independent publication. Existing task versions keep their original upstream. No real supplier key was supplied for this deployment.
+
+![实际模型配置 / Actual model form](assets/model-connections-178/model-form.png)
+
+![实际交互 / Actual interaction](assets/model-connections-178/178-model-connections.gif)
+
+Earlier deployment records follow. 以下为历史记录。
+
+---
+
 <!-- public-domains-177 -->
 ## 正式域名已上线 / Public HTTPS deployment
 
