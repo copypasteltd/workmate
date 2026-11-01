@@ -1,5 +1,24 @@
 # Workmate · admin
 
+<!-- model-tool-contract-181 -->
+## Complete Codex model validation · stage181
+
+The current saved **gpt-6-luna** passed real production Admin validation: pinned Codex, requested model/effort, a registered tool/result round trip, completed text and known usage. Per-model API URLs/keys are retained. Both flat function tools and native code-mode additional_tools are supported, with business permissions enforced.
+
+Receipt `b8c8c28a-1df1-4ef7-af55-91d9d51b4bcc`; input/output tokens `20230/139`. Earlier uncertain requests remain intact. The unpublished bootstrap policy moves actor/verification ceilings from2 to4 to retain two old holds and restore two available slots; all budget amounts and other limits stay intact. Native code-mode context is pre-funded from complete serialized bytes, then settled using measured tokens; exceeding input, output or monetary bounds still fails.
+
+Open Model capabilities → Configuration & validation → Test connection → Run validation. Text retries create separately budgeted receipts. The panel explains specific tool/protocol/capacity failures.
+
+[Implementation, workflow and evidence / 方案、逻辑图与回执](https://github.com/copypasteltd/workmate/blob/docs/docs/development/181-model-tool-contract.md)
+
+![Actual full Codex validation](assets/screenshots/181-codex-validation-passed-03f66d6b-a57b-4554-a7ab-1dca62712999.png)
+
+![Actual Admin interaction recording](assets/demos/181-model-tool-contract.gif)
+
+Earlier records follow. 以下为历史记录。
+
+---
+
 <!-- model-http-180 -->
 ## HTTP and HTTPS model upstreams · stage180
 

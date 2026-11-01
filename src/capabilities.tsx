@@ -12,6 +12,7 @@ import {
 import { api } from "./api";
 import { operationKey, completeOperation } from "./operation-key";
 import { formatHKD } from "./financial-money";
+import { validationBlocksRetry, validationErrorMessages } from "./capability-validation-ui";
 import {
   Badge,
   DateText,
@@ -978,16 +979,7 @@ function DetailModal({
                   className="button primary"
                   disabled={
                     busy ||
-                    (receipt.data?.state ?? release.data.validation_state) ===
-                      "running" ||
-                    ((receipt.data?.state ?? release.data.validation_state) ===
-                      "reconciling" &&
-                      (receipt.data?.audio_suite
-                        ? !receipt.data.audio_suite.accounting.resolved ||
-                          receipt.data.audio_suite.accounting
-                            .allocation_exceeded
-                        : !receipt.data?.video_suite ||
-                          !receipt.data.video_suite.usage_known))
+                    validationBlocksRetry(receipt.data, release.data.validation_state)
                   }
                   type="submit"
                 >
@@ -1127,6 +1119,9 @@ function ValidationReceipt({
       {r.error_code && (
         <p className="notice error" role="alert">
           {t("驗證錯誤", "Validation error")}: <code>{r.error_code}</code>
+          {validationErrorMessages[r.error_code] && (
+            <span className="block"> {t(...validationErrorMessages[r.error_code])}</span>
+          )}
         </p>
       )}
       {value.state === "reconciling" &&
