@@ -1,3 +1,9 @@
+<!-- system-recheck-190 -->
+
+The current recheck retains14 numbered fault/configuration/delivery/acceptance groups. Origins are healthy; public timeouts, unavailable Linux executors, actual Desktop completion and external integrations remain open. Fresh OTP logins worked;18 of19 browser checks passed, with one timeout retained.
+
+[Numbered report](quality/190-system-recheck.md) · [Machine evidence](quality/190-system-recheck.json) · [Changes](changes/190-system-recheck.md)
+
 <!-- live-acceptance-189 -->
 
 Actualgpt-image-2 generation/editing and Web Designer downloads passed and are deployed. Exact originals, frozen per-model routing and image failure status are repaired. Full regression and targeted follow-ups remain separate; Desktop and external integrations retain explicit gaps.

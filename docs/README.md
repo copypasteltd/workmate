@@ -1,3 +1,9 @@
+<!-- system-recheck-190 -->
+
+当前体系复测保留14组编号问题及配置/交付/验收边界；源站健康，公网仍有超时，Linux云端执行器不可用，Desktop真实闭环及外部接入仍未全部完成。新的验证码登录正常，19项浏览器检查18通过、1次超时。
+
+[编号报告](quality/190-system-recheck.md) · [机器证据](quality/190-system-recheck.json) · [更新说明](changes/190-system-recheck.md)
+
 <!-- live-acceptance-189 -->
 
 真实gpt-image-2生成、编辑和Web设计师图片交付已通过并上线；原图保留、逐模型连接和失败状态已修复。完整回归及其单项复验分开记录，Desktop与外部服务仍有明确验收缺口。

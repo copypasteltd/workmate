@@ -1,0 +1,197 @@
+{
+  "stage": 190,
+  "at": "2026-11-02T17:36:16.504Z",
+  "scope": "Fresh protected-mailbox OTP/customer login, administrator OTP/TOTP, real public config/catalog and read-only management resources. Canonical HTTPS via existing owned application-host CONNECT; this is distinct from direct public connectivity checks.",
+  "checks": [
+    {
+      "name": "https://agent.copypaste.hk readiness",
+      "status": "passed",
+      "http_status": 200,
+      "data_mode": "configured_services",
+      "kernel": "codex"
+    },
+    {
+      "name": "https://agent-dashboard.copypaste.hk readiness",
+      "status": "failed",
+      "error_class": "TimeoutError",
+      "message": "apiRequestContext.get: Timeout 12000ms exceeded."
+    },
+    {
+      "name": "Fresh administrator OTP plus TOTP and highest-admin identity",
+      "status": "passed"
+    },
+    {
+      "name": "Admin GET /v1/admin/overview",
+      "status": "passed",
+      "http_status": 200
+    },
+    {
+      "name": "Admin GET /v1/admin/users",
+      "status": "passed",
+      "http_status": 200
+    },
+    {
+      "name": "Admin GET /v1/admin/tenants",
+      "status": "passed",
+      "http_status": 200
+    },
+    {
+      "name": "Admin GET /v1/admin/capability-releases",
+      "status": "passed",
+      "http_status": 200
+    },
+    {
+      "name": "Admin GET /v1/admin/approvals/summary",
+      "status": "passed",
+      "http_status": 200
+    },
+    {
+      "name": "Admin GET /v1/admin/quality",
+      "status": "passed",
+      "http_status": 200
+    },
+    {
+      "name": "Admin actual page /users",
+      "status": "passed",
+      "visible_alert_count": 0
+    },
+    {
+      "name": "Admin actual page /tenants",
+      "status": "passed",
+      "visible_alert_count": 0
+    },
+    {
+      "name": "Admin actual page /catalog",
+      "status": "passed",
+      "visible_alert_count": 0
+    },
+    {
+      "name": "Admin actual page /provider-control",
+      "status": "passed",
+      "visible_alert_count": 0
+    },
+    {
+      "name": "Fresh customer OTP received in protected test mailbox and login completed",
+      "status": "passed"
+    },
+    {
+      "name": "Public configured-services mode",
+      "status": "passed",
+      "http_status": 200,
+      "data_mode": "configured_services",
+      "services": {
+        "text": true,
+        "image": true,
+        "video": false,
+        "speech": false,
+        "transcription": false
+      }
+    },
+    {
+      "name": "Preset specialist catalog",
+      "status": "passed",
+      "http_status": 200,
+      "role_count": 19,
+      "availability": [
+        {
+          "role_key": "fullstack",
+          "available": true
+        },
+        {
+          "role_key": "frontend",
+          "available": true
+        },
+        {
+          "role_key": "backend-api",
+          "available": true
+        },
+        {
+          "role_key": "software-qa",
+          "available": true
+        },
+        {
+          "role_key": "ui-ux",
+          "available": true
+        },
+        {
+          "role_key": "designer",
+          "available": true
+        },
+        {
+          "role_key": "brand-visual",
+          "available": true
+        },
+        {
+          "role_key": "ad-creative",
+          "available": true
+        },
+        {
+          "role_key": "ecommerce",
+          "available": true
+        },
+        {
+          "role_key": "social-content",
+          "available": true
+        },
+        {
+          "role_key": "illustration-ip",
+          "available": true
+        },
+        {
+          "role_key": "typography-layout",
+          "available": true
+        },
+        {
+          "role_key": "presentation",
+          "available": true
+        },
+        {
+          "role_key": "landing-page",
+          "available": true
+        },
+        {
+          "role_key": "information-design",
+          "available": true
+        },
+        {
+          "role_key": "video-motion",
+          "available": true
+        },
+        {
+          "role_key": "marketing-analyst",
+          "available": true
+        },
+        {
+          "role_key": "workflow-consultant",
+          "available": true
+        },
+        {
+          "role_key": "computer-operator",
+          "available": true
+        }
+      ]
+    },
+    {
+      "name": "Existing real image task remains succeeded with unchanged measured charge",
+      "status": "passed",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "charged_micros": "39961"
+    },
+    {
+      "name": "Web actual page /app/roles",
+      "status": "passed",
+      "visible_alert_count": 0
+    },
+    {
+      "name": "Web actual page /app/assets",
+      "status": "passed",
+      "visible_alert_count": 0
+    }
+  ],
+  "javascript_errors": [],
+  "new_paid_tasks": 0,
+  "owned_browsers_closed": true,
+  "finished_at": "2026-11-02T17:37:44.932Z",
+  "status": "failed"
+}
