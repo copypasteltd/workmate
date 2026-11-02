@@ -1,3 +1,4 @@
+import { NativeTaskNotice } from "./native-task-notice";
 import { AdminCloudComputers } from "./cloud-computers";
 import { AdminUsageReports } from "./usage-reports";
 import { resourceUser, userResourceLink, userResourceReturn } from "./user-resources";
@@ -1462,6 +1463,7 @@ function SectionContent({ section }: { section: string }) {
                             }
                           />
                         )}
+                        {active === "execution" && f === "error_code" && r.client_error_code !== r.error_code && <NativeTaskNotice code={r.client_error_code} />}
                       </td>
                     ))}
                     <td>

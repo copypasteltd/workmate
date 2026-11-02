@@ -1,3 +1,4 @@
+import { NativeTaskNotice } from "./native-task-notice";
 import { useEffect, useRef, useState } from "react";
 import { ShieldCheck, Search, RefreshCw, Eye, X } from "lucide-react";
 import { api, post } from "./api";
@@ -366,6 +367,7 @@ function SupportWorkspace({
                   <span>
                     {task.state} {task.error_code ? `· ${task.error_code}` : ""}
                   </span>
+                  {task.client_error_code !== task.error_code && <NativeTaskNotice code={task.client_error_code} />}
                   <DateText value={task.updated_at} />
                   {task.body_available && (
                     <button
