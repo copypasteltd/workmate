@@ -1,0 +1,50 @@
+{
+  "stage": 188,
+  "status": "repaired",
+  "root_cause": "Dedicated non-root Nginx temporary directories belonged to nobody with mode0700. Large native Codex POST bodies failed before reaching the API.",
+  "directories": [
+    {
+      "path": "/var/lib/workmate/run/nginx-body",
+      "before_uid": 65534,
+      "before_mode": "0o700"
+    },
+    {
+      "path": "/var/lib/workmate/run/nginx-proxy",
+      "before_uid": 65534,
+      "before_mode": "0o700"
+    },
+    {
+      "path": "/var/lib/workmate/run/nginx-fastcgi",
+      "before_uid": 65534,
+      "before_mode": "0o700"
+    },
+    {
+      "path": "/var/lib/workmate/run/nginx-uwsgi",
+      "before_uid": 65534,
+      "before_mode": "0o700"
+    },
+    {
+      "path": "/var/lib/workmate/run/nginx-scgi",
+      "before_uid": 65534,
+      "before_mode": "0o700"
+    }
+  ],
+  "configured_worker_user": "workmate",
+  "mode": "0700",
+  "original_config_sha256": "d92b223f11b451ff9e47b81fc52778675bc87d666c72c37e1e814fc434aa040c",
+  "updated_config_sha256": "93ba5b56279ae81d133207da06d3205947f0ef4fa9981a9a842157cc77193e19",
+  "master_api_database_pids_preserved": true,
+  "nginx_root_validation_preserves_correct_ownership": true,
+  "health": {
+    "ok": true,
+    "kernel": "codex",
+    "ai_ready": true,
+    "model_connections": "per_model",
+    "model_management": "editable",
+    "model_transport": "http_and_https",
+    "codex_tool_contract": "scoped_code_mode_v1",
+    "email_delivery": "local_development",
+    "storage": "native_filesystem",
+    "data_mode": "configured_services"
+  }
+}

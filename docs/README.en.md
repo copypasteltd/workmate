@@ -1,3 +1,9 @@
+<!-- live-acceptance-188 -->
+
+Real text service and acceptance fixes are deployed. Web/Extension delivery and admin operations passed actual checks; real-supplier Desktop, public reliability and external integrations retain explicit gaps.
+
+[需求 / Requirements](requirements/188-live-acceptance.md) · [报告 / Report](development/188-live-acceptance.md) · [变更 / Changes](changes/188-live-acceptance.md) · [证据 / Evidence](quality/live-acceptance-188.json)
+
 <!-- web-scroll-187 -->
 
 Web now hides outer rails, styles necessary inner rails consistently and contains narrow-layout overflow. Deployed with ten final actual LAN browser checks passed.

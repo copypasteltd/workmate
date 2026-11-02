@@ -1,3 +1,9 @@
+<!-- live-acceptance-188 -->
+
+真实文本服务及本轮修复已上线；Web／Extension交付和后台操作通过实测，Desktop真实模型、公网稳定性及外部服务仍有明确验收缺口。
+
+[需求 / Requirements](requirements/188-live-acceptance.md) · [报告 / Report](development/188-live-acceptance.md) · [变更 / Changes](changes/188-live-acceptance.md) · [证据 / Evidence](quality/live-acceptance-188.json)
+
 <!-- web-scroll-187 -->
 
 Web 已隐藏外层滚动条并统一内部细款样式；窄屏换行、表格在容器内滚动。已部署，最终10项实际内网浏览器检查通过。
