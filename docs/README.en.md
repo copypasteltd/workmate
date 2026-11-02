@@ -1,3 +1,9 @@
+<!-- test-mailbox-185 -->
+
+The test inbox now sorts real dates correctly and refreshes automatically. Fresh public OTP delivery and actual OTP/TOTP administrator sign-in are verified.
+
+[需求 / Requirements](requirements/185-test-mailbox.md) · [开发与使用 / Implementation](development/185-test-mailbox.md) · [变更 / Changes](changes/185-test-mailbox.md) · [证据 / Evidence](quality/test-mailbox-185.json)
+
 <!-- admin-directory-lifecycle-184 -->
 
 Users/workspaces now support creation, row deletion and selected bulk status/deletion with atomic previews, current authority and full audit.

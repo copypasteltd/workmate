@@ -1,3 +1,9 @@
+<!-- test-mailbox-185 -->
+
+测试收件箱已修复跨星期排序导致新验证码被隐藏的问题；支持自动刷新，已用新验证码和TOTP实际登录。
+
+[需求 / Requirements](requirements/185-test-mailbox.md) · [开发与使用 / Implementation](development/185-test-mailbox.md) · [变更 / Changes](changes/185-test-mailbox.md) · [证据 / Evidence](quality/test-mailbox-185.json)
+
 <!-- admin-directory-lifecycle-184 -->
 
 用户与企业管理已补齐新建、逐行删除、当页多选与批量状态／删除，统一预览、权限、原子执行和完整审计。

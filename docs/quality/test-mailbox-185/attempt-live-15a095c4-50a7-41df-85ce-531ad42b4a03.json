@@ -1,0 +1,37 @@
+{
+  "stage": 185,
+  "status": "failed",
+  "at": "2026-11-02T00:29:17.127Z",
+  "scope": "actual public mailbox and administrator OTP sign-in; no mocked API responses",
+  "checks": [
+    {
+      "name": "public page and mail listing retain independent credentials",
+      "status": "passed"
+    },
+    {
+      "name": "public HTTPS serves the source-verified mailbox plus an identified edge analytics beacon, with no-store",
+      "status": "passed"
+    },
+    {
+      "name": "both previously hidden real administrator emails are visible in chronological order",
+      "status": "passed"
+    }
+  ],
+  "network_retries": [
+    {
+      "stage": "public health",
+      "attempt": 1,
+      "error": "The operation was aborted"
+    }
+  ],
+  "network": {
+    "public_host": "agent-dashboard.copypaste.hk",
+    "selected_current_dns_address": "172.67.180.165",
+    "tls_verification": true
+  },
+  "source_sha256": "dd444af28ffcf4b784a8a5d1795f8a297e19008076a224a0536b364a2d541102",
+  "edge_transform": "Known Cloudflare analytics beacon removed for source comparison; origin bytes match exactly",
+  "failure_stage": "fresh OTP request",
+  "error": "locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Administrator email')\u001b[22m\n",
+  "browser_closed": true
+}
