@@ -1,3 +1,30 @@
+<!-- live-acceptance-188 -->
+
+## Real-service acceptance and deployment · 188
+
+Real text service is deployed. Web and the native Chrome right Side Panel completed email sign-in, authorized file upload, actual cloud Codex analysis, file delivery/download and measured billing. Actual admin checks cover user/workspace creation and deletion, atomic bulk changes, per-model API/key editing and deletion, VIP grants/revocation and audit records. See the [complete evidence and usage guide](https://github.com/copypasteltd/workmate/blob/docs/docs/development/188-live-acceptance.md).
+
+Desktop runs pinned Codex on the customer's computer with explicit folder and full-access consent. Recognized GPT model exec compatibility is repaired; actual local command/file/company-tool operations passed a labelled protocol fixture. Final real-supplier Desktop acceptance remains blocked by intermittent public connectivity. The original full backend regression recorded 1,936 tests: 1,834 passed, 101 failed and one skipped. Subsequent targeted checks are separate evidence, not a replacement full-pass certificate.
+
+To configure service, administrators enter each model's upstream URL, API key, alias and rates in Model capabilities, then qualify and publish its version. Users verify email, select a real workspace/project and submit bounded work. The protected test mailbox remains enabled. Actual image generation returned403; video/audio and Google/Meta credentials are absent and remain unqualified.
+
+```mermaid
+flowchart LR
+ A[Email verification] --> B[Workspace and project]
+ B --> C[Web and Extension: cloud Codex]
+ B --> D[Desktop: explicit local permission]
+ D --> E[Customer-local Codex]
+ C --> F[Company service and per-model connection]
+ E --> F
+ F --> G[File delivery, measured usage and audit]
+```
+
+![实际原生侧栏结果 / Actual native Side Panel result](assets/screenshots/188-extension-real-answer.png)
+
+Actual read-only scrolling through the completed Web task, not new inference or a certificate for every client:
+
+![Actual Web result interaction](assets/demos/188-actual-cloud-result.gif)
+
 # Workmate · extension · v0.1.0
 
 <!-- public-domains-177 -->
