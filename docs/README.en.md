@@ -1,3 +1,9 @@
+<!-- selected-repairs-191 -->
+
+Selected02/03/04/05/07 are repaired and verified with native and real supplier-backed workflows. Desktop passed the actual workflow using the route recorded in the evidence; long-term public reliability remains open. The owner excluded12. Desktop0.7.4 is a new unsigned manual build; unknown finances, public reliability and other gaps are retained. Older status entries below are historical.
+
+[Scope](requirements/191-selected-repairs.md) · [Implementation, checks and rollback](development/191-native-execution-and-capacity.md) · [Changes](changes/191-selected-repairs.md) · [Machine evidence](quality/191-selected-repairs.json)
+
 <!-- system-recheck-190 -->
 
 The current recheck retains14 numbered fault/configuration/delivery/acceptance groups. Origins are healthy; public timeouts, unavailable Linux executors, actual Desktop completion and external integrations remain open. Fresh OTP logins worked;18 of19 browser checks passed, with one timeout retained.

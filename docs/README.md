@@ -1,3 +1,9 @@
+<!-- selected-repairs-191 -->
+
+指定02/03/04/05/07已修复上线并取得本轮原生/真实任务证据；12按用户要求移出。Desktop0.7.4为新的未签名手动安装版本；Desktop实际任务按记录通道通过；默认公网长期稳定性及未知财务等其他范围继续保留。下方旧版本状态为历史。
+
+[需求](requirements/191-selected-repairs.md) · [方案、实测和回滚](development/191-native-execution-and-capacity.md) · [更新](changes/191-selected-repairs.md) · [机器证据](quality/191-selected-repairs.json)
+
 <!-- system-recheck-190 -->
 
 当前体系复测保留14组编号问题及配置/交付/验收边界；源站健康，公网仍有超时，Linux云端执行器不可用，Desktop真实闭环及外部接入仍未全部完成。新的验证码登录正常，19项浏览器检查18通过、1次超时。

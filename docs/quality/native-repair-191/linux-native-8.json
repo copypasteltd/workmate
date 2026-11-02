@@ -1,0 +1,1766 @@
+{
+  "stage": 191,
+  "scope": "Actual native Linux runtime, no AI inference simulation",
+  "checks": [
+    {
+      "name": "Actual program read/write; outside-file, subprocess and host-network denial; cleanup",
+      "status": "passed",
+      "receipt": {
+        "schema": 1,
+        "execution_id": "6b8c0dcb-1774-4292-a8ac-1d1493bbfe09",
+        "program": "node",
+        "entry": "main.cjs",
+        "args": [],
+        "timeout_ms": 15000,
+        "started_at": "2026-11-02T19:49:32.830Z",
+        "finished_at": "2026-11-02T19:49:33.501Z",
+        "source_manifest": [
+          {
+            "path": "main.cjs",
+            "bytes": 1038,
+            "sha256": "add61b6576edb973c8ffd1f3c1bdea414e3f781acb0ad0531d5d91ae96f6ac0d"
+          }
+        ],
+        "source_digest": "e6722700e6d20b1edb80cb3b17255e799c4e15d255362dc4873a3cf066b4a4d0",
+        "output_manifest": [
+          {
+            "path": "main.cjs",
+            "bytes": 1038,
+            "sha256": "add61b6576edb973c8ffd1f3c1bdea414e3f781acb0ad0531d5d91ae96f6ac0d"
+          },
+          {
+            "path": "result.json",
+            "bytes": 65,
+            "sha256": "84add3f966d292778d40d66791709e0a09574be9558a733e1e6ae4107b63f501"
+          }
+        ],
+        "exit_code": 0,
+        "passed": true,
+        "stop_reason": null,
+        "stdout": "ISOLATION_VERIFIED\n",
+        "stderr": "(node:2) ExperimentalWarning: process.execve is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+        "output_truncated": false,
+        "runtime": {
+          "id": "node24-linux-native-v1",
+          "node_version": "v24.22.2",
+          "node_sha256": "904a6d3484241d466989f9df9ba3aab822b1496191bdb28230eb491a55c32a52",
+          "host_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "host_source_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "boundary": "linux-userns-seccomp-cgroup-v1"
+        },
+        "host": {
+          "schema": 1,
+          "boundary": "linux-userns-seccomp-cgroup-v1",
+          "execution_id": "6b8c0dcb-1774-4292-a8ac-1d1493bbfe09",
+          "controller_pid": 327137,
+          "host_pid": 327224,
+          "process_id": 327225,
+          "job_name": "cgroup:6b8c0dcb-1774-4292-a8ac-1d1493bbfe09",
+          "processes": [],
+          "running": false,
+          "resumed": true,
+          "failure": null,
+          "exit_code": 0,
+          "job_empty": true,
+          "kill_on_close": true,
+          "no_network_capabilities": true,
+          "child_processes_prohibited": true,
+          "stdin_channel": false,
+          "profile_created": true,
+          "profile_deleted": true,
+          "timed_out": false,
+          "cancelled": false,
+          "parent_gone": false,
+          "native_linux": true,
+          "memory_limit_bytes": 536870912
+        },
+        "workspace_deleted": true
+      }
+    },
+    {
+      "name": "Failing built-in tests retain their failing exit",
+      "status": "passed",
+      "receipt": {
+        "schema": 1,
+        "execution_id": "d64625c2-9861-48e1-ab0d-d09fc5a5618a",
+        "program": "node_test",
+        "entry": "suite.cjs",
+        "args": [],
+        "timeout_ms": 15000,
+        "started_at": "2026-11-02T19:49:35.578Z",
+        "finished_at": "2026-11-02T19:49:35.999Z",
+        "source_manifest": [
+          {
+            "path": "suite.cjs",
+            "bytes": 93,
+            "sha256": "a1d84b12e6c3e06f2c713e28c1e242c626a3b0d40e5edf6165dd138b933e9163"
+          }
+        ],
+        "source_digest": "b7b11bb805a606d19583e9f5d7d111c9a637b65347948357f15d00258e9c568f",
+        "output_manifest": [
+          {
+            "path": "suite.cjs",
+            "bytes": 93,
+            "sha256": "a1d84b12e6c3e06f2c713e28c1e242c626a3b0d40e5edf6165dd138b933e9163"
+          }
+        ],
+        "exit_code": 1,
+        "passed": false,
+        "stop_reason": null,
+        "stdout": "✖ failure remains failure (2.826713ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 13.454868\n\n✖ failing tests:\n\ntest at suite.cjs:1:21\n✖ failure remains failure (2.826713ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  1 !== 2\n  \n      at TestContext.<anonymous> (/work/suite.cjs:1:82)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.start (node:internal/test_runner/test:1262:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 1,\n    expected: 2,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n",
+        "stderr": "",
+        "output_truncated": false,
+        "runtime": {
+          "id": "node24-linux-native-v1",
+          "node_version": "v24.22.2",
+          "node_sha256": "904a6d3484241d466989f9df9ba3aab822b1496191bdb28230eb491a55c32a52",
+          "host_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "host_source_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "boundary": "linux-userns-seccomp-cgroup-v1"
+        },
+        "host": {
+          "schema": 1,
+          "boundary": "linux-userns-seccomp-cgroup-v1",
+          "execution_id": "d64625c2-9861-48e1-ab0d-d09fc5a5618a",
+          "controller_pid": 327137,
+          "host_pid": 327234,
+          "process_id": 327235,
+          "job_name": "cgroup:d64625c2-9861-48e1-ab0d-d09fc5a5618a",
+          "processes": [],
+          "running": false,
+          "resumed": true,
+          "failure": null,
+          "exit_code": 1,
+          "job_empty": true,
+          "kill_on_close": true,
+          "no_network_capabilities": true,
+          "child_processes_prohibited": true,
+          "stdin_channel": false,
+          "profile_created": true,
+          "profile_deleted": true,
+          "timed_out": false,
+          "cancelled": false,
+          "parent_gone": false,
+          "native_linux": true,
+          "memory_limit_bytes": 536870912
+        },
+        "workspace_deleted": true
+      }
+    },
+    {
+      "name": "Deadline kills owned native execution and empties cgroup",
+      "status": "passed",
+      "receipt": {
+        "schema": 1,
+        "execution_id": "c098f62e-c90d-4942-acb4-a74d729e7495",
+        "program": "node",
+        "entry": "main.cjs",
+        "args": [],
+        "timeout_ms": 200,
+        "started_at": "2026-11-02T19:49:37.843Z",
+        "finished_at": "2026-11-02T19:49:38.456Z",
+        "source_manifest": [
+          {
+            "path": "main.cjs",
+            "bytes": 13,
+            "sha256": "2855affb89580b3e5eb6efa91a86e168cc24730878d704c5028775c19477fa6d"
+          }
+        ],
+        "source_digest": "12ec8a3f3dce3f7c774b3f1412e62875046d1bb3e6cd13c3c632aacacf6fc8e8",
+        "output_manifest": [
+          {
+            "path": "main.cjs",
+            "bytes": 13,
+            "sha256": "2855affb89580b3e5eb6efa91a86e168cc24730878d704c5028775c19477fa6d"
+          }
+        ],
+        "exit_code": 137,
+        "passed": false,
+        "stop_reason": "timeout",
+        "stdout": "",
+        "stderr": "",
+        "output_truncated": false,
+        "runtime": {
+          "id": "node24-linux-native-v1",
+          "node_version": "v24.22.2",
+          "node_sha256": "904a6d3484241d466989f9df9ba3aab822b1496191bdb28230eb491a55c32a52",
+          "host_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "host_source_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "boundary": "linux-userns-seccomp-cgroup-v1"
+        },
+        "host": {
+          "schema": 1,
+          "boundary": "linux-userns-seccomp-cgroup-v1",
+          "execution_id": "c098f62e-c90d-4942-acb4-a74d729e7495",
+          "controller_pid": 327137,
+          "host_pid": 327243,
+          "process_id": 327244,
+          "job_name": "cgroup:c098f62e-c90d-4942-acb4-a74d729e7495",
+          "processes": [],
+          "running": false,
+          "resumed": true,
+          "failure": null,
+          "exit_code": 137,
+          "job_empty": true,
+          "kill_on_close": true,
+          "no_network_capabilities": true,
+          "child_processes_prohibited": true,
+          "stdin_channel": false,
+          "profile_created": true,
+          "profile_deleted": true,
+          "timed_out": true,
+          "cancelled": false,
+          "parent_gone": false,
+          "native_linux": true,
+          "memory_limit_bytes": 536870912
+        },
+        "workspace_deleted": true
+      }
+    },
+    {
+      "name": "Actual isolated Chromium fill/click/assert/screenshot, renderer sandbox and cleanup",
+      "status": "passed",
+      "receipt": {
+        "schema": 1,
+        "execution_id": "ef103ab2-29fa-44c6-bb81-51914d3d1a14",
+        "program": "browser_preview",
+        "entry": "index.html",
+        "args": [],
+        "timeout_ms": 20000,
+        "cleanup_timeout_ms": 6000,
+        "started_at": "2026-11-02T19:49:38.503Z",
+        "finished_at": "2026-11-02T19:49:41.955Z",
+        "source_manifest": [
+          {
+            "path": "index.html",
+            "bytes": 182,
+            "sha256": "eaaf9993e70ea5ddfee6e79fd8034d7319538ab0e3581aa0ea7559d0f75d5b12"
+          }
+        ],
+        "source_digest": "517eadbdd9698d28c2914d7fded0d94c939278bd4093204ee35a22f02d02c6c6",
+        "output_manifest": [
+          {
+            "path": "browser-checks.json",
+            "bytes": 608,
+            "sha256": "2563f0659b03623e9a72381324b707668eede3f83c6a152089d571f6c978cc89"
+          },
+          {
+            "path": "browser-preview.png",
+            "bytes": 8671,
+            "sha256": "e944c31742002edfeb6cc82dc04b742e97eefbf4d0cde4c717d76af0a606a7b7"
+          },
+          {
+            "path": "page-dom.html",
+            "bytes": 230,
+            "sha256": "0d67efb999d349c4acf59e21ec68943439c3da29af03faa29dd07c02b2b794dc"
+          },
+          {
+            "path": "page-text.txt",
+            "bytes": 20,
+            "sha256": "22187b3e5badb90978ed9e895a283ea937e04abab8084052580cfd75034dc680"
+          },
+          {
+            "path": "sources/index.html",
+            "bytes": 182,
+            "sha256": "eaaf9993e70ea5ddfee6e79fd8034d7319538ab0e3581aa0ea7559d0f75d5b12"
+          }
+        ],
+        "exit_code": 0,
+        "passed": true,
+        "stop_reason": null,
+        "stdout": "",
+        "stderr": "",
+        "output_truncated": false,
+        "check_result": {
+          "kind": "browser",
+          "passed": true,
+          "checks": [
+            {
+              "name": "Actual click response",
+              "expected": {
+                "text": "Hello CopyPaste"
+              },
+              "actual": "Hello CopyPaste",
+              "passed": true
+            }
+          ]
+        },
+        "check_input": {
+          "entry": "index.html",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "actions": [
+            {
+              "action": "fill",
+              "selector": "#name",
+              "value": "CopyPaste"
+            },
+            {
+              "action": "click",
+              "selector": "#go"
+            }
+          ],
+          "checks": [
+            {
+              "name": "Actual click response",
+              "selector": "#result",
+              "expect": {
+                "text": "Hello CopyPaste"
+              }
+            }
+          ],
+          "timeout_ms": 20000,
+          "fail_on_page_error": true
+        },
+        "harness_sha256": "3bda599bc4d71386c29990b1d2f261867670556c4f7a80152d4dd43379a950b4",
+        "browser": {
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "actions_completed": 2,
+          "page_errors": [],
+          "blocked_requests": [],
+          "frame_isolation": {
+            "controller_origin": "http://preview-controller.invalid",
+            "task_origin": "http://preview.invalid",
+            "sandbox": "allow-scripts allow-same-origin allow-forms"
+          },
+          "sandbox_before": {
+            "native": {
+              "schema": 1,
+              "boundary": "chromium-linux-userns-cgroup-v1",
+              "execution_id": "ef103ab2-29fa-44c6-bb81-51914d3d1a14",
+              "controller_pid": 327137,
+              "host_pid": 327252,
+              "process_id": 327253,
+              "job_name": "cgroup:ef103ab2-29fa-44c6-bb81-51914d3d1a14",
+              "processes": [
+                {
+                  "host_pid": 327253,
+                  "pid": 327253,
+                  "namespace_pids": [
+                    327253
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327254,
+                  "pid": 1,
+                  "namespace_pids": [
+                    327254,
+                    1
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327255,
+                  "pid": 2,
+                  "namespace_pids": [
+                    327255,
+                    2
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327257,
+                  "pid": 4,
+                  "namespace_pids": [
+                    327257,
+                    4
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327259,
+                  "pid": 6,
+                  "namespace_pids": [
+                    327259,
+                    6
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327263,
+                  "pid": 10,
+                  "namespace_pids": [
+                    327263,
+                    10
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327264,
+                  "pid": 11,
+                  "namespace_pids": [
+                    327264,
+                    11,
+                    1
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327266,
+                  "pid": 13,
+                  "namespace_pids": [
+                    327266,
+                    13,
+                    3
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327287,
+                  "pid": 34,
+                  "namespace_pids": [
+                    327287,
+                    34
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327289,
+                  "pid": 36,
+                  "namespace_pids": [
+                    327289,
+                    36
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327308,
+                  "pid": 55,
+                  "namespace_pids": [
+                    327308,
+                    55,
+                    4,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327343,
+                  "pid": 90,
+                  "namespace_pids": [
+                    327343,
+                    90,
+                    14,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327354,
+                  "pid": 101,
+                  "namespace_pids": [
+                    327354,
+                    101,
+                    25,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327355,
+                  "pid": 102,
+                  "namespace_pids": [
+                    327355,
+                    102,
+                    26,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                }
+              ],
+              "running": true,
+              "resumed": true,
+              "failure": null,
+              "exit_code": null,
+              "job_empty": false,
+              "kill_on_close": true,
+              "no_network_capabilities": true,
+              "child_processes_prohibited": false,
+              "stdin_channel": false,
+              "profile_created": true,
+              "profile_deleted": false,
+              "timed_out": false,
+              "cancelled": false,
+              "parent_gone": false,
+              "native_linux": true,
+              "memory_limit_bytes": 1073741824
+            },
+            "chromium_processes": [
+              {
+                "type": "browser",
+                "pid": 2
+              },
+              {
+                "type": "renderer",
+                "pid": 101
+              },
+              {
+                "type": "renderer",
+                "pid": 102
+              },
+              {
+                "type": "renderer",
+                "pid": 90
+              },
+              {
+                "type": "GPU",
+                "pid": 34
+              },
+              {
+                "type": "network.mojom.NetworkService",
+                "pid": 36
+              },
+              {
+                "type": "storage.mojom.StorageService",
+                "pid": 55
+              }
+            ],
+            "renderers_seccomp_and_no_new_privileges": true
+          },
+          "sandbox_after": {
+            "native": {
+              "schema": 1,
+              "boundary": "chromium-linux-userns-cgroup-v1",
+              "execution_id": "ef103ab2-29fa-44c6-bb81-51914d3d1a14",
+              "controller_pid": 327137,
+              "host_pid": 327252,
+              "process_id": 327253,
+              "job_name": "cgroup:ef103ab2-29fa-44c6-bb81-51914d3d1a14",
+              "processes": [
+                {
+                  "host_pid": 327253,
+                  "pid": 327253,
+                  "namespace_pids": [
+                    327253
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327254,
+                  "pid": 1,
+                  "namespace_pids": [
+                    327254,
+                    1
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327255,
+                  "pid": 2,
+                  "namespace_pids": [
+                    327255,
+                    2
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327257,
+                  "pid": 4,
+                  "namespace_pids": [
+                    327257,
+                    4
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327259,
+                  "pid": 6,
+                  "namespace_pids": [
+                    327259,
+                    6
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327263,
+                  "pid": 10,
+                  "namespace_pids": [
+                    327263,
+                    10
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327264,
+                  "pid": 11,
+                  "namespace_pids": [
+                    327264,
+                    11,
+                    1
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327266,
+                  "pid": 13,
+                  "namespace_pids": [
+                    327266,
+                    13,
+                    3
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327287,
+                  "pid": 34,
+                  "namespace_pids": [
+                    327287,
+                    34
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327289,
+                  "pid": 36,
+                  "namespace_pids": [
+                    327289,
+                    36
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327308,
+                  "pid": 55,
+                  "namespace_pids": [
+                    327308,
+                    55,
+                    4,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327343,
+                  "pid": 90,
+                  "namespace_pids": [
+                    327343,
+                    90,
+                    14,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327354,
+                  "pid": 101,
+                  "namespace_pids": [
+                    327354,
+                    101,
+                    25,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327355,
+                  "pid": 102,
+                  "namespace_pids": [
+                    327355,
+                    102,
+                    26,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                }
+              ],
+              "running": true,
+              "resumed": true,
+              "failure": null,
+              "exit_code": null,
+              "job_empty": false,
+              "kill_on_close": true,
+              "no_network_capabilities": true,
+              "child_processes_prohibited": false,
+              "stdin_channel": false,
+              "profile_created": true,
+              "profile_deleted": false,
+              "timed_out": false,
+              "cancelled": false,
+              "parent_gone": false,
+              "native_linux": true,
+              "memory_limit_bytes": 1073741824
+            },
+            "chromium_processes": [
+              {
+                "type": "browser",
+                "pid": 2
+              },
+              {
+                "type": "renderer",
+                "pid": 101
+              },
+              {
+                "type": "renderer",
+                "pid": 102
+              },
+              {
+                "type": "renderer",
+                "pid": 90
+              },
+              {
+                "type": "GPU",
+                "pid": 34
+              },
+              {
+                "type": "network.mojom.NetworkService",
+                "pid": 36
+              },
+              {
+                "type": "storage.mojom.StorageService",
+                "pid": 55
+              }
+            ],
+            "renderers_seccomp_and_no_new_privileges": true
+          }
+        },
+        "runtime": {
+          "id": "chromium1248-linux-native-v1",
+          "browser_sha256": "377a9fc07b495c3b8d0ab8ec1fdfd153641759f9756fea34d8dfce4de82f5025",
+          "profile_sha256": "0ba82225275f04044a7b3fce3b36d6c0bfb724609d883491f631c094964140b3",
+          "host_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "host_source_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "boundary": "chromium-linux-userns-cgroup-v1"
+        },
+        "host": {
+          "schema": 1,
+          "boundary": "chromium-linux-userns-cgroup-v1",
+          "execution_id": "ef103ab2-29fa-44c6-bb81-51914d3d1a14",
+          "controller_pid": 327137,
+          "host_pid": 327252,
+          "process_id": 327253,
+          "job_name": "cgroup:ef103ab2-29fa-44c6-bb81-51914d3d1a14",
+          "processes": [],
+          "running": false,
+          "resumed": true,
+          "failure": null,
+          "exit_code": 0,
+          "job_empty": true,
+          "kill_on_close": true,
+          "no_network_capabilities": true,
+          "child_processes_prohibited": false,
+          "stdin_channel": false,
+          "profile_created": true,
+          "profile_deleted": true,
+          "timed_out": false,
+          "cancelled": false,
+          "parent_gone": false,
+          "native_linux": true,
+          "memory_limit_bytes": 1073741824
+        },
+        "workspace_deleted": true
+      }
+    },
+    {
+      "name": "Actual Linux API module requests and response assertions through bounded stdin channel",
+      "status": "passed",
+      "receipt": {
+        "schema": 1,
+        "execution_id": "33811f79-7d6c-4ec7-99d8-2b902701913f",
+        "program": "api_test",
+        "entry": "api.cjs",
+        "args": [],
+        "timeout_ms": 15000,
+        "started_at": "2026-11-02T19:49:43.791Z",
+        "finished_at": "2026-11-02T19:49:44.308Z",
+        "source_manifest": [
+          {
+            "path": "api.cjs",
+            "bytes": 128,
+            "sha256": "d8623183108342a7a733d6bb123acd6dee271528dd1ec51359f25953189dd64e"
+          }
+        ],
+        "source_digest": "a5262bc3fc653effb7f5048e627db07022956c3e0d8efe8b56d0f6278ff35b39",
+        "output_manifest": [
+          {
+            "path": "api.cjs",
+            "bytes": 128,
+            "sha256": "d8623183108342a7a733d6bb123acd6dee271528dd1ec51359f25953189dd64e"
+          }
+        ],
+        "exit_code": 0,
+        "passed": true,
+        "stop_reason": null,
+        "stdout": "{\"ready\":true}\n{\"id\":\"c1\",\"data\":\"SFRUUC8xLjEgMjAwIE9LDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24NCkRhdGU6IE1vbiwgMDIgTm92IDIwMjYgMTk6NDk6NDQgR01UDQpDb25uZWN0aW9uOiBjbG9zZQ0KQ29udGVudC1MZW5ndGg6IDExDQoNCnsib2siOnRydWV9\"}\n{\"id\":\"c1\",\"end\":true}\n{\"id\":\"c1\",\"end\":true}\n",
+        "stderr": "",
+        "output_truncated": false,
+        "check_result": {
+          "kind": "api",
+          "passed": true,
+          "checks": [
+            {
+              "name": "Real API response",
+              "passed": true,
+              "expected": {
+                "status": 200,
+                "json": {
+                  "ok": true
+                }
+              },
+              "actual": {
+                "status": 200,
+                "headers": {
+                  "content-type": "application/json",
+                  "date": "Mon, 02 Nov 2026 19:49:44 GMT",
+                  "connection": "close",
+                  "content-length": "11"
+                },
+                "text": "{\"ok\":true}",
+                "json": {
+                  "ok": true
+                }
+              }
+            }
+          ]
+        },
+        "check_input": {
+          "entry": "api.cjs",
+          "export_name": "default",
+          "requests": [
+            {
+              "name": "Real API response",
+              "method": "GET",
+              "path": "/actual",
+              "headers": {},
+              "expect": {
+                "status": 200,
+                "json": {
+                  "ok": true
+                }
+              }
+            }
+          ],
+          "timeout_ms": 15000
+        },
+        "harness_sha256": "2edf3bbf4196701a332300b33d96933228e229f4c5d3cb88ad26687586977435",
+        "runtime": {
+          "id": "node24-linux-native-v1",
+          "node_version": "v24.22.2",
+          "node_sha256": "904a6d3484241d466989f9df9ba3aab822b1496191bdb28230eb491a55c32a52",
+          "host_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "host_source_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "boundary": "linux-userns-seccomp-cgroup-v1"
+        },
+        "host": {
+          "schema": 1,
+          "boundary": "linux-userns-seccomp-cgroup-v1",
+          "execution_id": "33811f79-7d6c-4ec7-99d8-2b902701913f",
+          "controller_pid": 327137,
+          "host_pid": 327395,
+          "process_id": 327397,
+          "job_name": "cgroup:33811f79-7d6c-4ec7-99d8-2b902701913f",
+          "processes": [],
+          "running": false,
+          "resumed": true,
+          "failure": null,
+          "exit_code": 0,
+          "job_empty": true,
+          "kill_on_close": true,
+          "no_network_capabilities": true,
+          "child_processes_prohibited": true,
+          "stdin_channel": true,
+          "profile_created": true,
+          "profile_deleted": true,
+          "timed_out": false,
+          "cancelled": false,
+          "parent_gone": false,
+          "native_linux": true,
+          "memory_limit_bytes": 536870912
+        },
+        "workspace_deleted": true
+      }
+    },
+    {
+      "name": "Actual Linux SQLite execution and exact query result",
+      "status": "passed",
+      "receipt": {
+        "schema": 1,
+        "execution_id": "fc233af6-a67a-4fb7-89bc-637876384fd6",
+        "program": "database_sqlite",
+        "entry": "schema.sql",
+        "args": [],
+        "timeout_ms": 15000,
+        "started_at": "2026-11-02T19:49:46.010Z",
+        "finished_at": "2026-11-02T19:49:46.442Z",
+        "source_manifest": [
+          {
+            "path": "schema.sql",
+            "bytes": 97,
+            "sha256": "6a3fb3110cc11a769065fd5726c16bb20508d8d6c65243c463d6eda212824607"
+          }
+        ],
+        "source_digest": "3437d91b6e8cce5ffe2c36c451557609dd547b380235a3e7712a18feb5fb5f2e",
+        "output_manifest": [
+          {
+            "path": "copypaste-database-check-5f01365e-897f-4553-8c88-b4b4e7ac4016/database.sqlite",
+            "bytes": 8192,
+            "sha256": "19b4d33806f07d5c8f6b51e78f9e3fa2a8d101b93fc90cd5c970627e6897dd88"
+          },
+          {
+            "path": "copypaste-database-check-5f01365e-897f-4553-8c88-b4b4e7ac4016/results.json",
+            "bytes": 352,
+            "sha256": "042722efa34badebac57e4e6fba2a8097cf173d9cebc63d2cc163d58c65d814c"
+          },
+          {
+            "path": "schema.sql",
+            "bytes": 97,
+            "sha256": "6a3fb3110cc11a769065fd5726c16bb20508d8d6c65243c463d6eda212824607"
+          }
+        ],
+        "exit_code": 0,
+        "passed": true,
+        "stop_reason": null,
+        "stdout": "{\"kind\":\"sqlite\",\"passed\":true,\"checks\":[{\"name\":\"Real SQLite query\",\"passed\":true,\"expected\":{\"rows\":[{\"value\":\"original\"}]},\"actual\":{\"rows\":[{\"value\":\"original\"}]}}]}\n",
+        "stderr": "",
+        "output_truncated": false,
+        "check_result": {
+          "kind": "sqlite",
+          "passed": true,
+          "checks": [
+            {
+              "name": "Real SQLite query",
+              "passed": true,
+              "expected": {
+                "rows": [
+                  {
+                    "value": "original"
+                  }
+                ]
+              },
+              "actual": {
+                "rows": [
+                  {
+                    "value": "original"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "check_input": {
+          "engine": "sqlite",
+          "entry": "schema.sql",
+          "checks": [
+            {
+              "name": "Real SQLite query",
+              "sql": "SELECT value FROM example WHERE id=?",
+              "params": [
+                1
+              ],
+              "expect": {
+                "rows": [
+                  {
+                    "value": "original"
+                  }
+                ]
+              }
+            }
+          ],
+          "timeout_ms": 15000,
+          "output_directory": "copypaste-database-check-5f01365e-897f-4553-8c88-b4b4e7ac4016"
+        },
+        "harness_sha256": "2a900f2d85e9df1bf2bfaf600d5e99fca684486566ce17c8f5f654a4b956f3b1",
+        "runtime": {
+          "id": "node24-linux-native-v1",
+          "node_version": "v24.22.2",
+          "node_sha256": "904a6d3484241d466989f9df9ba3aab822b1496191bdb28230eb491a55c32a52",
+          "host_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "host_source_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "boundary": "linux-userns-seccomp-cgroup-v1"
+        },
+        "host": {
+          "schema": 1,
+          "boundary": "linux-userns-seccomp-cgroup-v1",
+          "execution_id": "fc233af6-a67a-4fb7-89bc-637876384fd6",
+          "controller_pid": 327137,
+          "host_pid": 327406,
+          "process_id": 327407,
+          "job_name": "cgroup:fc233af6-a67a-4fb7-89bc-637876384fd6",
+          "processes": [],
+          "running": false,
+          "resumed": true,
+          "failure": null,
+          "exit_code": 0,
+          "job_empty": true,
+          "kill_on_close": true,
+          "no_network_capabilities": true,
+          "child_processes_prohibited": true,
+          "stdin_channel": false,
+          "profile_created": true,
+          "profile_deleted": true,
+          "timed_out": false,
+          "cancelled": false,
+          "parent_gone": false,
+          "native_linux": true,
+          "memory_limit_bytes": 536870912
+        },
+        "workspace_deleted": true
+      }
+    },
+    {
+      "name": "Customer browser cannot reach the service host; actual denial and cleanup",
+      "status": "passed",
+      "receipt": {
+        "schema": 1,
+        "execution_id": "4be0a751-2a0d-462e-beaa-d75c5c527245",
+        "program": "browser_preview",
+        "entry": "index.html",
+        "args": [],
+        "timeout_ms": 15000,
+        "cleanup_timeout_ms": 6000,
+        "started_at": "2026-11-02T19:49:46.481Z",
+        "finished_at": "2026-11-02T19:49:49.570Z",
+        "source_manifest": [
+          {
+            "path": "index.html",
+            "bytes": 208,
+            "sha256": "acc5f6014c8fe38a150ee415ad22d2a17f66a6e74c2ae89f29082dde4f9273d7"
+          }
+        ],
+        "source_digest": "677676229d40851b65a253c236bb91632f29c5798f7d2903089ccdbe2dfa2f38",
+        "output_manifest": [
+          {
+            "path": "browser-checks.json",
+            "bytes": 1005,
+            "sha256": "f66297274366c6565d67fd80969eb5f26259b22508b421e0d2f8cda36d1162e1"
+          },
+          {
+            "path": "browser-preview.png",
+            "bytes": 5726,
+            "sha256": "126a3694957f54ff9c6fb142866ad9ef7717d5cf668849b23a20c62658d6e1e2"
+          },
+          {
+            "path": "page-dom.html",
+            "bytes": 253,
+            "sha256": "1b81fc85823d14ff3183666a3becd8d87dca7dbecd6a2f1c745e45138233b505"
+          },
+          {
+            "path": "page-text.txt",
+            "bytes": 6,
+            "sha256": "fc2efd7036582a0827d74e346366df1c1330d284f94d0db97e252aff1efdf1fa"
+          },
+          {
+            "path": "sources/index.html",
+            "bytes": 208,
+            "sha256": "acc5f6014c8fe38a150ee415ad22d2a17f66a6e74c2ae89f29082dde4f9273d7"
+          }
+        ],
+        "exit_code": 0,
+        "passed": true,
+        "stop_reason": null,
+        "stdout": "",
+        "stderr": "",
+        "output_truncated": false,
+        "check_result": {
+          "kind": "browser",
+          "passed": true,
+          "checks": [
+            {
+              "name": "External host access is blocked",
+              "expected": {
+                "text": "DENIED"
+              },
+              "actual": "DENIED",
+              "passed": true
+            }
+          ]
+        },
+        "check_input": {
+          "entry": "index.html",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "actions": [],
+          "checks": [
+            {
+              "name": "External host access is blocked",
+              "selector": "#result",
+              "expect": {
+                "text": "DENIED"
+              }
+            }
+          ],
+          "timeout_ms": 15000,
+          "fail_on_page_error": true
+        },
+        "harness_sha256": "3bda599bc4d71386c29990b1d2f261867670556c4f7a80152d4dd43379a950b4",
+        "browser": {
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "actions_completed": 0,
+          "page_errors": [],
+          "blocked_requests": [],
+          "frame_isolation": {
+            "controller_origin": "http://preview-controller.invalid",
+            "task_origin": "http://preview.invalid",
+            "sandbox": "allow-scripts allow-same-origin allow-forms"
+          },
+          "sandbox_before": {
+            "native": {
+              "schema": 1,
+              "boundary": "chromium-linux-userns-cgroup-v1",
+              "execution_id": "4be0a751-2a0d-462e-beaa-d75c5c527245",
+              "controller_pid": 327137,
+              "host_pid": 327415,
+              "process_id": 327416,
+              "job_name": "cgroup:4be0a751-2a0d-462e-beaa-d75c5c527245",
+              "processes": [
+                {
+                  "host_pid": 327416,
+                  "pid": 327416,
+                  "namespace_pids": [
+                    327416
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327417,
+                  "pid": 1,
+                  "namespace_pids": [
+                    327417,
+                    1
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327418,
+                  "pid": 2,
+                  "namespace_pids": [
+                    327418,
+                    2
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327420,
+                  "pid": 4,
+                  "namespace_pids": [
+                    327420,
+                    4
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327422,
+                  "pid": 6,
+                  "namespace_pids": [
+                    327422,
+                    6
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327426,
+                  "pid": 10,
+                  "namespace_pids": [
+                    327426,
+                    10
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327427,
+                  "pid": 11,
+                  "namespace_pids": [
+                    327427,
+                    11,
+                    1
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327429,
+                  "pid": 13,
+                  "namespace_pids": [
+                    327429,
+                    13,
+                    3
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327450,
+                  "pid": 34,
+                  "namespace_pids": [
+                    327450,
+                    34
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327453,
+                  "pid": 37,
+                  "namespace_pids": [
+                    327453,
+                    37
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327472,
+                  "pid": 56,
+                  "namespace_pids": [
+                    327472,
+                    56,
+                    4,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327506,
+                  "pid": 90,
+                  "namespace_pids": [
+                    327506,
+                    90,
+                    13,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327518,
+                  "pid": 102,
+                  "namespace_pids": [
+                    327518,
+                    102,
+                    25,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327519,
+                  "pid": 103,
+                  "namespace_pids": [
+                    327519,
+                    103,
+                    26,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                }
+              ],
+              "running": true,
+              "resumed": true,
+              "failure": null,
+              "exit_code": null,
+              "job_empty": false,
+              "kill_on_close": true,
+              "no_network_capabilities": true,
+              "child_processes_prohibited": false,
+              "stdin_channel": false,
+              "profile_created": true,
+              "profile_deleted": false,
+              "timed_out": false,
+              "cancelled": false,
+              "parent_gone": false,
+              "native_linux": true,
+              "memory_limit_bytes": 1073741824
+            },
+            "chromium_processes": [
+              {
+                "type": "browser",
+                "pid": 2
+              },
+              {
+                "type": "renderer",
+                "pid": 102
+              },
+              {
+                "type": "renderer",
+                "pid": 103
+              },
+              {
+                "type": "renderer",
+                "pid": 90
+              },
+              {
+                "type": "GPU",
+                "pid": 34
+              },
+              {
+                "type": "network.mojom.NetworkService",
+                "pid": 37
+              },
+              {
+                "type": "storage.mojom.StorageService",
+                "pid": 56
+              }
+            ],
+            "renderers_seccomp_and_no_new_privileges": true
+          },
+          "sandbox_after": {
+            "native": {
+              "schema": 1,
+              "boundary": "chromium-linux-userns-cgroup-v1",
+              "execution_id": "4be0a751-2a0d-462e-beaa-d75c5c527245",
+              "controller_pid": 327137,
+              "host_pid": 327415,
+              "process_id": 327416,
+              "job_name": "cgroup:4be0a751-2a0d-462e-beaa-d75c5c527245",
+              "processes": [
+                {
+                  "host_pid": 327416,
+                  "pid": 327416,
+                  "namespace_pids": [
+                    327416
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327417,
+                  "pid": 1,
+                  "namespace_pids": [
+                    327417,
+                    1
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327418,
+                  "pid": 2,
+                  "namespace_pids": [
+                    327418,
+                    2
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327420,
+                  "pid": 4,
+                  "namespace_pids": [
+                    327420,
+                    4
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327422,
+                  "pid": 6,
+                  "namespace_pids": [
+                    327422,
+                    6
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327426,
+                  "pid": 10,
+                  "namespace_pids": [
+                    327426,
+                    10
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327427,
+                  "pid": 11,
+                  "namespace_pids": [
+                    327427,
+                    11,
+                    1
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327429,
+                  "pid": 13,
+                  "namespace_pids": [
+                    327429,
+                    13,
+                    3
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327450,
+                  "pid": 34,
+                  "namespace_pids": [
+                    327450,
+                    34
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327453,
+                  "pid": 37,
+                  "namespace_pids": [
+                    327453,
+                    37
+                  ],
+                  "seccomp": 0,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327472,
+                  "pid": 56,
+                  "namespace_pids": [
+                    327472,
+                    56,
+                    4,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327506,
+                  "pid": 90,
+                  "namespace_pids": [
+                    327506,
+                    90,
+                    13,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327518,
+                  "pid": 102,
+                  "namespace_pids": [
+                    327518,
+                    102,
+                    25,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                },
+                {
+                  "host_pid": 327519,
+                  "pid": 103,
+                  "namespace_pids": [
+                    327519,
+                    103,
+                    26,
+                    1
+                  ],
+                  "seccomp": 2,
+                  "no_new_privs": true,
+                  "uid": 992
+                }
+              ],
+              "running": true,
+              "resumed": true,
+              "failure": null,
+              "exit_code": null,
+              "job_empty": false,
+              "kill_on_close": true,
+              "no_network_capabilities": true,
+              "child_processes_prohibited": false,
+              "stdin_channel": false,
+              "profile_created": true,
+              "profile_deleted": false,
+              "timed_out": false,
+              "cancelled": false,
+              "parent_gone": false,
+              "native_linux": true,
+              "memory_limit_bytes": 1073741824
+            },
+            "chromium_processes": [
+              {
+                "type": "browser",
+                "pid": 2
+              },
+              {
+                "type": "renderer",
+                "pid": 102
+              },
+              {
+                "type": "renderer",
+                "pid": 103
+              },
+              {
+                "type": "renderer",
+                "pid": 90
+              },
+              {
+                "type": "GPU",
+                "pid": 34
+              },
+              {
+                "type": "network.mojom.NetworkService",
+                "pid": 37
+              },
+              {
+                "type": "storage.mojom.StorageService",
+                "pid": 56
+              }
+            ],
+            "renderers_seccomp_and_no_new_privileges": true
+          }
+        },
+        "runtime": {
+          "id": "chromium1248-linux-native-v1",
+          "browser_sha256": "377a9fc07b495c3b8d0ab8ec1fdfd153641759f9756fea34d8dfce4de82f5025",
+          "profile_sha256": "0ba82225275f04044a7b3fce3b36d6c0bfb724609d883491f631c094964140b3",
+          "host_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "host_source_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "boundary": "chromium-linux-userns-cgroup-v1"
+        },
+        "host": {
+          "schema": 1,
+          "boundary": "chromium-linux-userns-cgroup-v1",
+          "execution_id": "4be0a751-2a0d-462e-beaa-d75c5c527245",
+          "controller_pid": 327137,
+          "host_pid": 327415,
+          "process_id": 327416,
+          "job_name": "cgroup:4be0a751-2a0d-462e-beaa-d75c5c527245",
+          "processes": [],
+          "running": false,
+          "resumed": true,
+          "failure": null,
+          "exit_code": 0,
+          "job_empty": true,
+          "kill_on_close": true,
+          "no_network_capabilities": true,
+          "child_processes_prohibited": false,
+          "stdin_channel": false,
+          "profile_created": true,
+          "profile_deleted": true,
+          "timed_out": false,
+          "cancelled": false,
+          "parent_gone": false,
+          "native_linux": true,
+          "memory_limit_bytes": 1073741824
+        },
+        "workspace_deleted": true
+      }
+    },
+    {
+      "name": "Infinite page script is stopped without false success or retained browser process",
+      "status": "passed",
+      "receipt": {
+        "schema": 1,
+        "execution_id": "fb71d25e-647a-4fea-9ff2-1fb8aaaf901a",
+        "program": "browser_preview",
+        "entry": "index.html",
+        "args": [],
+        "timeout_ms": 1500,
+        "cleanup_timeout_ms": 6000,
+        "started_at": "2026-11-02T19:49:49.633Z",
+        "finished_at": "2026-11-02T19:49:51.226Z",
+        "source_manifest": [
+          {
+            "path": "index.html",
+            "bytes": 30,
+            "sha256": "8684ab4e27d9231fd8ca8098d51f1e08d319005f81f72eff14d2a5d52fd6f66a"
+          }
+        ],
+        "source_digest": "43c37a6afa36c90680f6a655907fcffd7dc8925eadf62fb8358848996227d100",
+        "output_manifest": [
+          {
+            "path": "browser-checks.json",
+            "bytes": 1830,
+            "sha256": "3b14ea5f0af04bbb5c0a688151468a42ee2d0b7b808abb59f3d7c8d8162429fa"
+          },
+          {
+            "path": "sources/index.html",
+            "bytes": 30,
+            "sha256": "8684ab4e27d9231fd8ca8098d51f1e08d319005f81f72eff14d2a5d52fd6f66a"
+          }
+        ],
+        "exit_code": 137,
+        "passed": false,
+        "stop_reason": "timeout",
+        "stdout": "",
+        "stderr": "",
+        "output_truncated": false,
+        "check_result": {
+          "kind": "browser",
+          "passed": false,
+          "checks": [],
+          "error": "Error: browserType.launchPersistentContext: Target page, context or browser has been closed\nBrowser logs:\n\n<launching> [approved native browser]\n<launched> pid=327555\n[pid=327555][err] [2:24:1102/194950.603315:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory\n[pid=327555][err] [2:24:1102/194950.603361:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[pid=327555][err] [2:24:1102/194950.734433:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory\n[pid=327555][err] [2:24:1102/194950.735067:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory\n[pid=327555][err] [2:24:1102/194950.735110:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory\n[pid=327555][err] [2:24:1102/194950.735126:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[pid=327555][err] [2:24:1102/194950.735135:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[pid="
+        },
+        "check_input": {
+          "entry": "index.html",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "actions": [],
+          "checks": [
+            {
+              "name": "No false passing result",
+              "selector": "h1",
+              "expect": {
+                "text": "Never"
+              }
+            }
+          ],
+          "timeout_ms": 1500,
+          "fail_on_page_error": true
+        },
+        "harness_sha256": "3bda599bc4d71386c29990b1d2f261867670556c4f7a80152d4dd43379a950b4",
+        "browser": {
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "actions_completed": 0,
+          "page_errors": [],
+          "blocked_requests": [],
+          "frame_isolation": {
+            "controller_origin": "http://preview-controller.invalid",
+            "task_origin": "http://preview.invalid",
+            "sandbox": "allow-scripts allow-same-origin allow-forms"
+          }
+        },
+        "runtime": {
+          "id": "chromium1248-linux-native-v1",
+          "browser_sha256": "377a9fc07b495c3b8d0ab8ec1fdfd153641759f9756fea34d8dfce4de82f5025",
+          "profile_sha256": "0ba82225275f04044a7b3fce3b36d6c0bfb724609d883491f631c094964140b3",
+          "host_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "host_source_sha256": "4e98fe3f1f899f4247fa714d85f3042841027428a606217f3cf4f0f90c6e514e",
+          "boundary": "chromium-linux-userns-cgroup-v1"
+        },
+        "host": {
+          "schema": 1,
+          "boundary": "chromium-linux-userns-cgroup-v1",
+          "execution_id": "fb71d25e-647a-4fea-9ff2-1fb8aaaf901a",
+          "controller_pid": 327137,
+          "host_pid": 327555,
+          "process_id": 327557,
+          "job_name": "cgroup:fb71d25e-647a-4fea-9ff2-1fb8aaaf901a",
+          "processes": [],
+          "running": false,
+          "resumed": true,
+          "failure": null,
+          "exit_code": 137,
+          "job_empty": true,
+          "kill_on_close": true,
+          "no_network_capabilities": true,
+          "child_processes_prohibited": false,
+          "stdin_channel": false,
+          "profile_created": true,
+          "profile_deleted": true,
+          "timed_out": false,
+          "cancelled": true,
+          "parent_gone": false,
+          "native_linux": true,
+          "memory_limit_bytes": 1073741824
+        },
+        "workspace_deleted": true
+      }
+    }
+  ],
+  "status": "passed",
+  "started_at": "2026-11-02T19:49:17.074Z",
+  "finished_at": "2026-11-02T19:49:51.259Z"
+}
