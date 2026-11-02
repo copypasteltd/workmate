@@ -1,3 +1,9 @@
+<!-- web-scroll-187 -->
+
+Web now hides outer rails, styles necessary inner rails consistently and contains narrow-layout overflow. Deployed with ten final actual LAN browser checks passed.
+
+[需求 / Requirements](requirements/187-web-scroll-surfaces.md) · [开发与使用 / Implementation](development/187-web-scroll-surfaces.md) · [变更 / Changes](changes/187-web-scroll-surfaces.md) · [证据 / Evidence](quality/web-scroll-surfaces-187.json)
+
 <!-- test-mailbox-185 -->
 
 The test inbox now sorts real dates correctly and refreshes automatically. Fresh public OTP delivery and actual OTP/TOTP administrator sign-in are verified.

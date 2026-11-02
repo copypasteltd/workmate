@@ -1,3 +1,9 @@
+<!-- web-scroll-187 -->
+
+Web 已隐藏外层滚动条并统一内部细款样式；窄屏换行、表格在容器内滚动。已部署，最终10项实际内网浏览器检查通过。
+
+[需求 / Requirements](requirements/187-web-scroll-surfaces.md) · [开发与使用 / Implementation](development/187-web-scroll-surfaces.md) · [变更 / Changes](changes/187-web-scroll-surfaces.md) · [证据 / Evidence](quality/web-scroll-surfaces-187.json)
+
 <!-- test-mailbox-185 -->
 
 测试收件箱已修复跨星期排序导致新验证码被隐藏的问题；支持自动刷新，已用新验证码和TOTP实际登录。
