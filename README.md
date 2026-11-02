@@ -1,3 +1,26 @@
+<!-- test-mailbox-185 -->
+
+## 测试收件箱验证码修复 · 阶段185
+
+已修复跨星期日期排序与30封限制共同隐藏新验证码的问题。打开[测试收件箱](https://agent-dashboard.copypaste.hk/ops/mailbox/)，使用既有独立收件箱凭证；新邮件置顶，每5秒自动检查，也可手动刷新。过期验证码须重新申请，后台继续要求既有 TOTP。
+
+7项相关回归和6项最终公网检查通过；新验证码约3秒自动出现，并实际完成后台登录。此轮更新静态收件箱页面，保留测试投递模式、既有凭证及服务配置。
+
+```mermaid
+flowchart LR
+ A[要求验证码] --> B[本地邮件文件]
+ B --> C[独立认证收件箱]
+ C --> D[按时间排序后取最新30封]
+ D --> E[自动显示新验证码]
+ E --> F[验证码与TOTP登录]
+```
+
+[使用、实现、回滚与验证](https://github.com/copypasteltd/workmate/blob/docs/docs/development/185-test-mailbox.md)
+
+![实际收件箱，敏感内容已遮蔽](https://raw.githubusercontent.com/copypasteltd/workmate/delivery/assets/screenshots/185-test-mailbox-fresh.png)
+
+![实际刷新交互，敏感内容已遮蔽](https://raw.githubusercontent.com/copypasteltd/workmate/delivery/assets/demos/185-test-mailbox.gif)
+
 <!-- admin-directory-lifecycle-184 -->
 
 ## 用户／企业新建、删除及批量管理 · 阶段184

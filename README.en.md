@@ -1,3 +1,26 @@
+<!-- test-mailbox-185 -->
+
+## Test inbox OTP repair · stage185
+
+New codes were hidden by lexical weekday ordering followed by a30-message cap. Open the [test inbox](https://agent-dashboard.copypaste.hk/ops/mailbox/) with its existing independent operator credentials. Mail now sorts newest first and checks automatically every5 seconds; manual refresh remains available. Request a fresh code if the old one expired. Administrator sign-in still requires the existing TOTP.
+
+Seven focused regression checks and six final public checks passed. A fresh real OTP appeared automatically in about3 seconds and completed actual administrator sign-in. This static-page update retains test delivery, existing credentials and service configuration.
+
+```mermaid
+flowchart LR
+ A[Request code] --> B[Local message file]
+ B --> C[Protected test inbox]
+ C --> D[Parse time, then select latest30]
+ D --> E[Automatic newest-code display]
+ E --> F[OTP and TOTP sign-in]
+```
+
+[Usage, implementation, rollback and evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/development/185-test-mailbox.md)
+
+![Actual inbox with sensitive content hidden](https://raw.githubusercontent.com/copypasteltd/workmate/delivery/assets/screenshots/185-test-mailbox-fresh.png)
+
+![Actual refresh recording with sensitive content hidden](https://raw.githubusercontent.com/copypasteltd/workmate/delivery/assets/demos/185-test-mailbox.gif)
+
 <!-- admin-directory-lifecycle-184 -->
 
 ## User/workspace creation, deletion and bulk management · stage184
