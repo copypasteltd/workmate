@@ -1,3 +1,19 @@
+<!-- native-recheck-192 -->
+
+## 再次复查与错误可见性 · 192
+
+待对账任务同时显示费用原因与本机回报原因。真实直连浏览器核验页面、原始错误和无横向溢出；云端程序、浏览器检查和交付下载使用实际结果验收。
+
+本轮常规回归：后端91、Web30、后台22、扩展89、桌面控制器74；Linux原生8项通过。普通浏览器直连三域名均200，Python脚本直连仍403；不能宣称全产品零错误。12已移出，视频/音频、Google/Meta、Linux Office及完整矩阵等未选范围保留。
+
+[方案 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/192-native-error-observability.md) · [复查 / Recheck](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/192-native-recheck.md)
+
+![本机原始原因 / Reported local cause](assets/screenshots/192-web-local-cause.png)
+
+![实际桌面结果 / Actual Desktop result](assets/screenshots/192-desktop-local-result.png)
+
+![实际云端下载录像 / Actual cloud download recording](assets/screenshots/192-actual-cloud-download.gif)
+
 <!-- selected-repairs-191 -->
 
 ## 指定问题修复与本机交付 · 191

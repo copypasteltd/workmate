@@ -1,3 +1,4 @@
+import { NativeTaskNotice } from "./native-task-notice";
 import { browserCrypto as crypto } from "./browser-crypto";
 import { WorkspaceCreationForm } from "./workspace-creation-form";
 import { ScopeCleanupPage } from "./scope-cleanup";
@@ -1488,6 +1489,9 @@ function TaskDetail() {
               )}
               {data.error_code && (
                 <div className="notice error">{data.error_code}</div>
+              )}
+              {data.client_error_code && data.client_error_code !== data.error_code && (
+                <div className="notice error"><NativeTaskNotice code={data.client_error_code} /></div>
               )}
               {data.role_key === "video-motion" && (
                 <EffectDelivery key={"effects:" + w.base + id} taskId={id!} />
