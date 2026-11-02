@@ -1,3 +1,4 @@
+import { desktopClientErrorSql } from "./desktop-errors.js";
 import { isHighestAdmin } from "./admin-execution-policy.js";
 import { planSchema, authorizeTaskPlan } from "./plans.js";
 import { guardLegacyClientContent } from "./client-content.js";
@@ -147,7 +148,7 @@ export function registerAdmin(
               entitlements:
                 "SELECT e.*,t.name AS tenant_name,u.name AS user_name,(e.state='active' AND e.starts_at<=now() AND e.ends_at>now()) AS effective FROM entitlement_access e LEFT JOIN tenants t ON t.id=e.tenant_id LEFT JOIN users u ON u.id=e.user_id",
               execution:
-                "SELECT id,tenant_id,project_id,created_by,title,role_key,status,execution_class,capacity_wait_reason,acceptance,charged_micros,budget_micros,cancel_requested,error_code,version,created_at FROM tasks",
+                `SELECT id,tenant_id,project_id,created_by,title,role_key,status,execution_class,capacity_wait_reason,acceptance,charged_micros,budget_micros,cancel_requested,error_code,version,created_at,${desktopClientErrorSql("tasks.id")} AS client_error_code FROM tasks`,
               connections:
                 "SELECT id,tenant_id,project_id,provider,name,state,scopes,created_at FROM connections",
               devices:

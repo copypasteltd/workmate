@@ -1,3 +1,19 @@
+<!-- native-recheck-192 -->
+
+## Recheck and native error visibility · 192
+
+Adds a separate bounded client_error_code to native receipts, task reads, administrator execution lists and authorized support metadata. Rejects trailing whitespace, retains source restrictions and never exposes the whole native report. Settlement and reservations keep their original authority.
+
+Final regressions: backend91, Web30, Admin22, Extension89, Desktop controller74; native Linux8 passed. Ordinary direct-browser GETs returned200 on all three domains; direct Python GETs returned403. This does not certify a zero-defect complete product. Item12 is excluded; unselected video/audio, Google/Meta, Linux Office and full-matrix scope remains open.
+
+[方案 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/192-native-error-observability.md) · [复查 / Recheck](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/192-native-recheck.md)
+
+![本机原始原因 / Reported local cause](assets/screenshots/192-web-local-cause.png)
+
+![实际桌面结果 / Actual Desktop result](assets/screenshots/192-desktop-local-result.png)
+
+![实际云端下载录像 / Actual cloud download recording](assets/screenshots/192-actual-cloud-download.gif)
+
 <!-- selected-repairs-191 -->
 
 ## Selected execution repairs and Desktop handoff · 191

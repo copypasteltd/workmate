@@ -1,3 +1,4 @@
+import { desktopClientErrorSql, isDesktopClientErrorCode } from "./desktop-errors.js";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
@@ -473,6 +474,7 @@ function taskDTO(row: any) {
       /^[A-Z][A-Z0-9_]{0,79}$/.test(row.error_code)
         ? row.error_code
         : null,
+    client_error_code: !row.source_unavailable && isDesktopClientErrorCode(row.client_error_code) ? row.client_error_code : null,
     created_at: iso(row.created_at),
     updated_at: iso(row.updated_at),
     source_unavailable: !!row.source_unavailable,
@@ -975,6 +977,7 @@ export function registerSupport(app: FastifyInstance, db: Database) {
         ), sourced AS MATERIALIZED (
           SELECT scoped.*,content_source_manifest($1::uuid,project_id,ARRAY[id],'{}'::uuid[]) AS sources FROM scoped
         ) SELECT id,project_id,title,status,private_owner,error_code,created_at,updated_at,
+          ${desktopClientErrorSql("sourced.id")} AS client_error_code,
           sources IS NULL AS source_unavailable,
           CASE WHEN private_owner IS NULL AND sources IS NOT NULL THEN
             encode(sha256(convert_to(jsonb_build_array(id,version,moderation_version,prompt,output,sources)::text,'UTF8')),'hex')

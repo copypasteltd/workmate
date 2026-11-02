@@ -1,3 +1,4 @@
+import { desktopClientError, isDesktopClientErrorCode } from "./desktop-errors.js";
 import { lockCurrentScopeSession } from "./scope-closure-authority.js";
 import { lockMemberships } from "./membership.js";
 import type { FastifyInstance, FastifyRequest } from "fastify";
@@ -97,7 +98,7 @@ const reportBody = z
     output: z.string().max(100000),
     thread_id: z.string().min(1).max(128),
     turn_id: z.string().min(1).max(128),
-    error_code: z.string().regex(/^[A-Z][A-Z0-9_]{2,79}$/).optional(),
+    error_code: z.string().max(80).refine(isDesktopClientErrorCode).optional(),
   })
   .strict()
   .refine(b => b.status !== "completed" || b.error_code === undefined, "A completed execution cannot report an error");
@@ -567,6 +568,7 @@ export async function registerDesktopExecutions(
     output: t.output,
     result_origin: d.client_report ? "desktop_client_report" : null,
     error_code: t.error_code,
+    client_error_code: desktopClientError(d.client_report),
     startup: desktopStartupState(d, t),
   });
 
@@ -1230,6 +1232,7 @@ export async function registerDesktopExecutions(
           provider_usage: "company_server_receipt",
           charged_micros: String(cost.knownChargeMicros),
           usage_known: !uncertain,
+          client_error_code: desktopClientError(report),
           error_code: uncertain ? "USAGE_RECONCILIATION_REQUIRED" : status === "failed" ? report.error_code ?? "DESKTOP_LOCAL_EXECUTION_FAILED" : null,
         });
         await audit(

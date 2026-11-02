@@ -571,11 +571,16 @@ test("a timely native heartbeat blocked by its actual company tool survives the 
 
 test("native failure code persists on the task and immutable client receipt, including duplicate finish",async()=>{
  const f=await fixture(),r=await start(f),report={...complete,status:"failed",error_code:"LOCAL_CODEX_STREAM_DISCONNECTED"};
+ const invalid=await call(f.c,"POST",r.url+"/finish",{...report,error_code:report.error_code+"\n"});assert.equal(invalid.status,400);
  const result=await ok(f.c,"POST",r.url+"/finish",report);
- assert.equal(result.status,"failed");assert.equal((await taskRow(r.created.task_id)).error_code,report.error_code);
+ assert.equal(result.status,"failed");assert.equal(result.client_error_code,report.error_code);assert.equal((await taskRow(r.created.task_id)).error_code,report.error_code);
+ const taskUrl=`/v1/tenants/${f.tenant}/projects/${f.project}/tasks/${r.created.task_id}`;
+ assert.equal((await ok(f.web,"GET",taskUrl)).client_error_code,report.error_code);
+ assert.equal((await ok(f.c,"GET",r.url)).client_error_code,report.error_code);
+ assert.equal((await ok(f.web,"GET",taskUrl.slice(0,-37))).items.find((t:any)=>t.id===r.created.task_id).client_error_code,report.error_code);
  const saved=(await s.db.control.query("SELECT client_report FROM desktop_executions WHERE task_id=$1",[r.created.task_id])).rows[0];
  assert.equal(saved.client_report.error_code,report.error_code);
- assert.equal((await ok(f.c,"POST",r.url+"/finish",report)).status,"failed");
+ const duplicate=await ok(f.c,"POST",r.url+"/finish",report);assert.equal(duplicate.status,"failed");assert.equal(duplicate.client_error_code,report.error_code);
  assert.equal((await call(f.c,"POST",r.url+"/finish",{...report,error_code:"LOCAL_CODEX_TURN_FAILED"})).status,409);
  assert.equal((await call(f.c,"POST",r.url+"/finish",{...complete,error_code:"LOCAL_CODEX_TURN_FAILED"})).status,400);
 });
@@ -597,7 +602,11 @@ test("terminal local outcomes free execution slots while retaining every reconci
 
 test("an unreleased unknown upstream still occupies its slot after local finish, without invented cost",async()=>{
  const f=await fixture(),r=await start(f);mode="unknown";await inference(r.begun.credential.token);
- await ok(f.c,"POST",r.url+"/finish",{...complete,status:"failed",error_code:"LOCAL_CODEX_STREAM_DISCONNECTED"});
+ const ended=await ok(f.c,"POST",r.url+"/finish",{...complete,status:"failed",error_code:"LOCAL_CODEX_STREAM_DISCONNECTED"});
+ assert.equal(ended.status,"reconciling");assert.equal(ended.error_code,"USAGE_RECONCILIATION_REQUIRED");assert.equal(ended.client_error_code,"LOCAL_CODEX_STREAM_DISCONNECTED");
+ const taskUrl=`/v1/tenants/${f.tenant}/projects/${f.project}/tasks/${r.created.task_id}`;
+ for(const result of [await ok(f.web,"GET",taskUrl),await ok(f.c,"GET",r.url)]){assert.equal(result.error_code,"USAGE_RECONCILIATION_REQUIRED");assert.equal(result.client_error_code,"LOCAL_CODEX_STREAM_DISCONNECTED");assert.ok(!("client_report" in result));}
+ const other=await fixture();assert.ok([403,404].includes((await call(other.web,"GET",taskUrl)).status));
  assert.equal((await s.db.control.query("SELECT task_occupies_execution_slot(t) occupied FROM tasks t WHERE id=$1",[r.created.task_id])).rows[0].occupied,true);
  const original=(await s.db.control.query("SELECT state,usage_known,released_at FROM ai_gateway_requests WHERE task_id=$1",[r.created.task_id])).rows[0];
  assert.equal(original.state,"unknown");assert.equal(original.usage_known,false);assert.equal(original.released_at,null);mode="known";

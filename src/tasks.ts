@@ -1,3 +1,4 @@
+import { desktopClientErrorSql } from "./desktop-errors.js";
 import { assertTaskContentSources } from "./task-content-sources.js";
 import { recordDeliveryReview } from "./business-quality.js";
 import { enqueueTask } from "./task-service.js";
@@ -70,7 +71,8 @@ export function registerTasks(
             `SELECT id,title,role_key,status,mode,conversation_id,private_owner,
              CASE WHEN task_content_sources_available(id) THEN business_review_state(id) ELSE NULL END AS acceptance,
              NOT task_content_sources_available(id) AS source_unavailable,
-             charged_micros,accrued_micros,budget_micros,attempt,created_at,updated_at,parent_id,version
+             charged_micros,accrued_micros,budget_micros,attempt,created_at,updated_at,parent_id,version,
+             CASE WHEN task_content_sources_available(id) THEN ${desktopClientErrorSql("tasks.id")} ELSE NULL END AS client_error_code
              FROM tasks WHERE tenant_id=$1 AND project_id=$2
              AND (NOT(input_context ? 'analysis_report_id') OR EXISTS(
                SELECT 1 FROM analysis_reports r WHERE r.task_id=tasks.id AND r.id::text=tasks.input_context->>'analysis_report_id' AND analysis_report_available(r.id)))
@@ -155,7 +157,7 @@ export function registerTasks(
     return db.tx(async (tx) => {
       await projectAccess(tx, req.principal, tenant, project);
       const t = (
-        await tx.query("SELECT * FROM tasks WHERE id=$1 AND project_id=$2", [
+        await tx.query(`SELECT *,${desktopClientErrorSql("tasks.id")} AS client_error_code FROM tasks WHERE id=$1 AND project_id=$2`, [
           task,
           project,
         ])
@@ -176,6 +178,7 @@ export function registerTasks(
           prompt: "",
           output: "",
           input_context: {},
+          client_error_code: null,
           source_unavailable: true,
         };
       }
