@@ -1,3 +1,30 @@
+<!-- live-acceptance-189 -->
+
+## Real image deployment and acceptance · 189
+
+`gpt-image-2` passed actual generation and editing and is published with the same upstream URL/key as text. An actual Web Designer task generated persisted files, downloaded verified hashes and settled measured usage. Larger1254-square PNGs are decoded and normalized to1024 while exact originals remain downloadable. Image tools now resolve their frozen per-model connection without a duplicate global key; unrecovered image-tool failures cannot become successful tasks.
+
+Choose Designer, execution mode, a request and budget. Download the verified image and preserved original from Files; access, measured usage and audit remain bound to the task.
+
+The full backend run recorded1950 tests:1949 passed and one failed; that browser deadline issue subsequently passed14/14 focused checks. Web28/28, Admin20/20, Extension89/89, Desktop269/269 and all builds passed. Separate image normalization48/48, per-model image/original persistence and discovery36/36, and actual native protocol image failure/recovery2/2 passed; overlapping runs are not summed into a new full-pass result.
+
+Actual supplier-backed Desktop completion, public reliability, video/audio/Google/Meta credentials, SMTP and Linux native executor qualification remain open. The requested protected test mailbox remains. This is not full-product acceptance. See the [design, usage, original failures and rollback guide](https://github.com/copypasteltd/workmate/blob/docs/docs/development/189-real-image-and-acceptance.md).
+
+```mermaid
+flowchart LR
+ A[Select Designer and budget] --> B[Cloud Codex with design skills]
+ B --> C[Company API and frozen model connection]
+ C --> D[Decode and verify PNG]
+ D --> E[1024 image and exact upstream original]
+ E --> F[Authorized download and measured billing]
+```
+
+![实际 Web 图片交付 / Actual Web image delivery](assets/screenshots/189-real-image-delivery.png)
+
+Actual Web download interaction excerpt. Reuse in other client repositories remains Web evidence.
+
+![Actual interaction](assets/demos/189-actual-image-download.gif)
+
 <!-- live-acceptance-188 -->
 
 ## Real-service acceptance and deployment · 188
