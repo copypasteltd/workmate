@@ -1,3 +1,9 @@
+<!-- selected-repairs-191-publication -->
+
+Desktop **0.7.4 is published**: [Setup and Portable downloads](https://github.com/copypasteltd/workmate/releases/tag/desktop-v0.7.4). Verify SHA256SUMS-0.7.4, install/replace manually and sign in again. Backend fixes are live; all six component branches and bilingual guides are pushed, with docs/main synchronized. The owner excluded12; this unsigned package does not qualify automatic updates or complete-product acceptance. Old frozen releases are preserved.
+
+[Publication receipt and download checksums](quality/191-publication.json) · [Five selected fixes](development/191-native-execution-and-capacity.md)
+
 <!-- selected-repairs-191 -->
 
 Selected02/03/04/05/07 are repaired and verified with native and real supplier-backed workflows. Desktop passed the actual workflow using the route recorded in the evidence; long-term public reliability remains open. The owner excluded12. Desktop0.7.4 is a new unsigned manual build; unknown finances, public reliability and other gaps are retained. Older status entries below are historical.

@@ -96,3 +96,5 @@ The final Desktop uses the installer default company HTTPS origin through raw CO
 最终补充：本轮失败QA另1条请求也经后台终止证据和审计释放容量。最后只读复核两个自有QA企业：8条待对账本机任务均不占执行名额，仍持有供应商容量的请求为0，本机任务组无残留进程；4条已释放请求费用均仍unknown，原财务预留保留。
 
 Final observation: one additional failed QA request had capacity released through the same audited evidence workflow. Both owned QA workspaces have zero held provider requests and zero occupied execution slots; eight native tasks retain reconciliation state, unknown fees and original reservations. No native task process remains.
+
+发布完成 / Publication complete: [Desktop0.7.4](https://github.com/copypasteltd/workmate/releases/tag/desktop-v0.7.4)。安装版、便携版及SHA256SUMS已上传，GitHub返回的文件散列与本地逐项一致；六端源码和docs/main已普通推送，旧冻结发布和标签保留。详见[发布回执](../quality/191-publication.json)。

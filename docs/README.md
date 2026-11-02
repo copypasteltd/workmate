@@ -1,3 +1,9 @@
+<!-- selected-repairs-191-publication -->
+
+Desktop **0.7.4 已发布**：[安装版和便携版](https://github.com/copypasteltd/workmate/releases/tag/desktop-v0.7.4)。下载后按 SHA256SUMS-0.7.4 核对，手动安装/替换后重新登录。当前后台修复已上线；六端代码与双语说明已推送到对应分支，docs/main同步。12按用户要求移出；该包未签名，不使用它宣称自动更新验收或全产品全部通过。旧冻结发布保留。
+
+[发布回执及下载校验](quality/191-publication.json) · [指定五项修复结果](development/191-native-execution-and-capacity.md)
+
 <!-- selected-repairs-191 -->
 
 指定02/03/04/05/07已修复上线并取得本轮原生/真实任务证据；12按用户要求移出。Desktop0.7.4为新的未签名手动安装版本；Desktop实际任务按记录通道通过；默认公网长期稳定性及未知财务等其他范围继续保留。下方旧版本状态为历史。
