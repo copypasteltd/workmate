@@ -1,3 +1,19 @@
+<!-- native-recheck-192 -->
+
+## 再次复查与错误可见性 · 192
+
+保持右侧 Side Panel 与授权文件上传到云端的职责；本轮 89 项回归及构建通过。新增任务诊断为可选响应字段；本轮未重新安装扩展进行真实文件上传验收。
+
+本轮常规回归：后端91、Web30、后台22、扩展89、桌面控制器74；Linux原生8项通过。普通浏览器直连三域名均200，Python脚本直连仍403；不能宣称全产品零错误。12已移出，视频/音频、Google/Meta、Linux Office及完整矩阵等未选范围保留。
+
+[方案 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/192-native-error-observability.md) · [复查 / Recheck](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/192-native-recheck.md)
+
+![本机原始原因 / Reported local cause](assets/screenshots/192-web-local-cause.png)
+
+![实际桌面结果 / Actual Desktop result](assets/screenshots/192-desktop-local-result.png)
+
+![实际云端下载录像 / Actual cloud download recording](assets/screenshots/192-actual-cloud-download.gif)
+
 <!-- selected-repairs-191 -->
 
 ## 指定问题修复与本机交付 · 191
