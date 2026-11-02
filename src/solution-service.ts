@@ -417,7 +417,7 @@ export class Solutions {
     const plan = await effectivePlan(tx, tenant, actor.id);
     const active = (
       await tx.query(
-        "SELECT count(*)::int n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND status IN ('queued','running','paused','awaiting_approval','reconciling','needs_input')",
+        "SELECT count(*)::int n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND (status IN ('queued','paused','awaiting_approval','needs_input') OR task_occupies_execution_slot(tasks))",
         [tenant, actor.id],
       )
     ).rows[0].n;
@@ -536,7 +536,7 @@ export class Solutions {
     const plan = await effectivePlan(tx, tenant, actor.id);
     const active = (
       await tx.query(
-        "SELECT count(*)::int n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND status IN ('queued','running','paused','awaiting_approval','reconciling','needs_input')",
+        "SELECT count(*)::int n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND (status IN ('queued','paused','awaiting_approval','needs_input') OR task_occupies_execution_slot(tasks))",
         [tenant, actor.id],
       )
     ).rows[0].n;

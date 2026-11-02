@@ -816,6 +816,7 @@ export async function startScopedInferenceGateway(
       let terminal = false,
         usageKnown = false,
         pending = "",
+        pendingScan = 0,
         frameBytes = 0,
         measuredInput = 0,
         measuredOutput = 0;
@@ -922,22 +923,26 @@ export async function startScopedInferenceGateway(
         // Latin-1 gives one character per byte, preserving the original UTF-8
         // and line endings. No tool event is exposed before its complete frame
         // has been checked, including across network-chunk boundaries.
-        const lines = final
-          ? /([^\r\n]*)(\r\n|\r|\n)/g
-          : /([^\r\n]*)(\r\n|\n|\r(?!$))/g;
-        let match: RegExpExecArray | null,
-          consumed = 0;
-        while ((match = lines.exec(pending))) {
-          frameLines.push(match[0]);
-          frameBytes += match[0].length;
-          consumed = lines.lastIndex;
+        // An unanchored regex rescans every possible start on a long partial
+        // data line and can block the entire company API for tens of seconds.
+        // Keep the scan cursor across chunks; preserve CR/LF and raw UTF-8.
+        let consumed = 0;
+        while (pendingScan < pending.length) {
+          const code = pending.charCodeAt(pendingScan);
+          if (code !== 13 && code !== 10) { pendingScan++; continue; }
+          if (code === 13 && pendingScan + 1 === pending.length && !final) break;
+          const emptyLine = pendingScan === consumed;
+          const end = pendingScan + (code === 13 && pending.charCodeAt(pendingScan + 1) === 10 ? 2 : 1);
+          frameLines.push(pending.slice(consumed, end));
+          frameBytes += end - consumed;
+          consumed = pendingScan = end;
           if (frameBytes > c.AI_MAX_REQUEST_BYTES)
             throw new AIRequestFailure(
               "AI_RESPONSE_EVENT_TOO_LARGE",
               502,
               true,
             );
-          if (match[1] === "") {
+          if (emptyLine) {
             const frame = Buffer.from(frameLines.join(""), "latin1");
             inspectFrame(frame);
             if (terminal) {
@@ -957,6 +962,7 @@ export async function startScopedInferenceGateway(
           }
         }
         pending = pending.slice(consumed);
+        pendingScan -= consumed;
         if (frameBytes + pending.length > c.AI_MAX_REQUEST_BYTES)
           throw new AIRequestFailure("AI_RESPONSE_EVENT_TOO_LARGE", 502, true);
       };

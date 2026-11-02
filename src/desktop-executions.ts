@@ -97,8 +97,10 @@ const reportBody = z
     output: z.string().max(100000),
     thread_id: z.string().min(1).max(128),
     turn_id: z.string().min(1).max(128),
+    error_code: z.string().regex(/^[A-Z][A-Z0-9_]{2,79}$/).optional(),
   })
-  .strict();
+  .strict()
+  .refine(b => b.status !== "completed" || b.error_code === undefined, "A completed execution cannot report an error");
 // Admission means the native tool protocol is connected, not full professional
 // qualification. Native workflow steps have their own local execution contract.
 export const desktopLocalRoleKeys = [
@@ -429,6 +431,14 @@ export async function registerDesktopExecutions(
         request.model !== capability.body.model_alias
       )
         throw denied("AI_REQUEST_SCOPE_INVALID");
+      // An authenticated, fenced inference request is activity from the same
+      // native owner. Renew only after every live-lease and scope check above;
+      // a delayed heartbeat must not expire an actively connected local turn.
+      // Expired, cancelled and finalized executions cannot reach this update.
+      await tx.query(
+        "UPDATE tasks SET lease_until=clock_timestamp()+interval '45 seconds' WHERE id=$1",
+        [current.id],
+      );
     };
     const admitted = await db.tx(
       async (tx) => {
@@ -1162,6 +1172,7 @@ export async function registerDesktopExecutions(
               status: report.status,
               thread_id: report.thread_id,
               turn_id: report.turn_id,
+              ...(report.error_code ? {error_code: report.error_code} : {}),
             },
           ],
         );
@@ -1188,7 +1199,7 @@ export async function registerDesktopExecutions(
               ? "succeeded"
               : "failed";
         await tx.query(
-          "UPDATE tasks SET status=$2,output=CASE WHEN content_state='deleted' OR EXISTS(SELECT 1 FROM projects p JOIN tenants w ON w.id=p.tenant_id WHERE p.id=tasks.project_id AND (p.erasure_requested_at IS NOT NULL OR w.erasure_requested_at IS NOT NULL)) THEN NULL ELSE $3 END,runtime_thread=$4,runtime_turn=$5,input_tokens=$6,output_tokens=$7,accrued_micros=$8,lease_until=NULL,version=version+1,updated_at=now() WHERE id=$1",
+          "UPDATE tasks SET status=$2,output=CASE WHEN content_state='deleted' OR EXISTS(SELECT 1 FROM projects p JOIN tenants w ON w.id=p.tenant_id WHERE p.id=tasks.project_id AND (p.erasure_requested_at IS NOT NULL OR w.erasure_requested_at IS NOT NULL)) THEN NULL ELSE $3 END,runtime_thread=$4,runtime_turn=$5,input_tokens=$6,output_tokens=$7,accrued_micros=$8,error_code=$9,lease_until=NULL,version=version+1,updated_at=now() WHERE id=$1",
           [
             t.id,
             status,
@@ -1198,6 +1209,7 @@ export async function registerDesktopExecutions(
             cost.inputTokens,
             cost.outputTokens,
             cost.knownChargeMicros,
+            uncertain ? "USAGE_RECONCILIATION_REQUIRED" : status === "failed" ? report.error_code ?? "DESKTOP_LOCAL_EXECUTION_FAILED" : null,
           ],
         );
         await settle(
@@ -1218,6 +1230,7 @@ export async function registerDesktopExecutions(
           provider_usage: "company_server_receipt",
           charged_micros: String(cost.knownChargeMicros),
           usage_known: !uncertain,
+          error_code: uncertain ? "USAGE_RECONCILIATION_REQUIRED" : status === "failed" ? report.error_code ?? "DESKTOP_LOCAL_EXECUTION_FAILED" : null,
         });
         await audit(
           tx,

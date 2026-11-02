@@ -113,7 +113,7 @@ export async function authorizeTaskPlan(
   }
   const n = (
     await tx.query(
-      "SELECT count(*)::int AS n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND ($3::uuid IS NULL OR id<>$3) AND status IN ('queued','running','paused','awaiting_approval','reconciling','needs_input')",
+      "SELECT count(*)::int AS n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND ($3::uuid IS NULL OR id<>$3) AND (status IN ('queued','paused','awaiting_approval','needs_input') OR task_occupies_execution_slot(tasks))",
       [tenant, user, waitingParent],
     )
   ).rows[0].n;

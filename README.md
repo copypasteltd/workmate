@@ -1,3 +1,33 @@
+<!-- selected-repairs-191 -->
+
+## 指定问题修复与本机交付 · 191
+
+Linux原生程序/浏览器执行器、schema162容量判定、原始本机错误回传、活跃推理续租和长SSE流性能修复已上线。 02/03/04/05/07取得本轮证据；12按用户要求移出，新的Windows包为未签名手动安装版本。原未知供应商费用和财务预留保留，不把执行容量释放等同结算。
+
+最终Desktop使用安装包默认公司HTTPS地址，经原始CONNECT通道访问真实域名，TLS证书、请求、模型结果及账务未替换；浏览器PKCE同样使用正式HTTPS域名。本次真实闭环通过，但单次验收不等于长期公网稳定性保证，190的01继续保留。 本轮检查：后端40/40、模型网关24/24、Windows云端兼容38/38、Desktop控制器74/74、实际固定Codex断流1/1、Linux原生8/8；真实云任务HK$0.126067、最终Desktop任务HK$0.035144。上述范围独立记录，不称为全产品重新验收；公网及190的其他未选项目继续保留。以下为当前说明，旧版本记录保留作历史。
+
+```mermaid
+flowchart LR
+ A[Sign in and select workspace] --> B[Cloud Codex: Web and Extension]
+ A --> C[Desktop: explicit local permission]
+ C --> D[Customer-local Codex]
+ B --> E[Company model API and usage]
+ D --> E
+ B --> F[Native Linux program and browser receipts]
+ E --> G[Measured billing and delivery]
+ F --> G
+```
+
+[方案 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/191-native-execution-and-capacity.md) · [证据 / Evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/191-selected-repairs.json) · [Desktop0.7.4手动下载 / Manual download](https://github.com/copypasteltd/workmate/releases/tag/desktop-v0.7.4)
+
+![Actual Desktop result / 实际本机结果](assets/screenshots/191-real-desktop-result.png)
+
+![Actual Web delivery / 实际Web交付](assets/screenshots/191-real-cloud-delivery.png)
+
+Actual Web download recording excerpt; identity labels redacted. 这是Web实际录像节选，不代表其他端的新交互录像。
+
+![Actual Web download](assets/demos/191-actual-cloud-download.gif)
+
 <!-- live-acceptance-189 -->
 
 ## 真实生图上线与本轮验收 · 189

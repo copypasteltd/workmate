@@ -4,20 +4,23 @@ import { fileURLToPath } from "node:url";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { hash, Problem } from "./lib.js";
+import { assertLinuxNativeBoundary } from "./cloud-linux-boundary.js";
 
 const moduleFolder = path.dirname(fileURLToPath(import.meta.url));
 export const browserPackageRoot = path.resolve(
   moduleFolder,
   path.basename(path.dirname(moduleFolder)) === "dist" ? "../.." : "..",
 );
-const folder = path.join(browserPackageRoot, ".data/cloud-browser-host");
+const linux = process.platform === "linux";
+const folder = path.join(browserPackageRoot, linux ? ".data/cloud-browser-host-linux" : ".data/cloud-browser-host");
 const contract = path.join(
   browserPackageRoot,
-  "contracts/cloud-browser-runtime.json",
+  linux ? "contracts/cloud-browser-runtime.linux.json" : "contracts/cloud-browser-runtime.json",
 );
 let cached: { value: any; stats: Map<string, string> } | undefined;
 let checking: Promise<any> | undefined;
 async function inspect() {
+  await assertLinuxNativeBoundary();
   const profileBytes = await readFile(contract),
     profile = JSON.parse(profileBytes.toString("utf8"));
   if (
@@ -27,9 +30,9 @@ async function inspect() {
     throw new Error("PLATFORM");
   const manifestPath = path.join(folder, "manifest.json"),
     manifest = JSON.parse(await readFile(manifestPath, "utf8"));
-  const host = path.join(folder, "cloud-browser-host.exe"),
-    source = path.join(browserPackageRoot, "src/cloud-browser-host.cs"),
-    browser = path.join(folder, "chromium");
+  const host = path.join(folder, linux ? "cloud-linux-host.py" : "cloud-browser-host.exe"),
+    source = path.join(browserPackageRoot, linux ? "src/cloud-linux-host.py" : "src/cloud-browser-host.cs"),
+    browser = linux ? profile.browser_path : path.join(folder, "chromium");
   const version = JSON.parse(
     await readFile(
       path.join(
@@ -44,7 +47,12 @@ async function inspect() {
     manifest.boundary !== profile.boundary ||
     manifest.profile_sha256 !== hash(profileBytes) ||
     manifest.host_sha256 !== hash(await readFile(host)) ||
-    manifest.host_source_sha256 !== hash(await readFile(source))
+    manifest.host_source_sha256 !== hash(await readFile(source)) ||
+    (linux && (manifest.kind !== "browser" ||
+      profile.browser_path !== "/opt/workmate/toolchains/cloud-native-191/browser/chromium-1248/chrome-linux64" ||
+      manifest.bubblewrap_path !== profile.bubblewrap_path ||
+      manifest.bubblewrap_sha256 !== profile.bubblewrap_sha256 ||
+      hash(await readFile(manifest.bubblewrap_path)) !== profile.bubblewrap_sha256))
   )
     throw new Error("CONTRACT");
   if (cached?.value.manifest.profile_sha256 !== manifest.profile_sha256)
@@ -134,7 +142,7 @@ export async function inspectCloudBrowserJob(root: string) {
   const value = JSON.parse(raw.stdout);
   if (
     value.schema !== 1 ||
-    value.job_name !== "Local\\CopyPasteBrowser-" + id ||
+    value.job_name !== (linux ? "cgroup:" : "Local\\CopyPasteBrowser-") + id ||
     typeof value.job_exists !== "boolean" ||
     typeof value.job_empty !== "boolean" ||
     !Array.isArray(value.processes) ||

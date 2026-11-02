@@ -496,6 +496,21 @@ test("split UTF-8, CRLF and multiline SSE data preserve raw bytes and legitimate
   assert.equal(f.sent.length, 2);
 });
 
+test("large partial SSE data lines keep the company event loop responsive and preserve exact bytes", async (t) => {
+  const f = await fixture(t);
+  const raw = Buffer.from(completed({ input_tokens: 7, output_tokens: 11, label: "x".repeat(256 * 1024) }));
+  f.setHandler(async (_, res) => {
+    res.writeHead(200, { "Content-Type": "text/event-stream" });
+    res.write(raw.subarray(0, raw.length - 32));
+    await delay(5);
+    res.end(raw.subarray(raw.length - 32));
+  });
+  const scope = await f.scope(), started = performance.now();
+  assert.deepEqual(Buffer.from(await (await issue(scope)).arrayBuffer()), raw);
+  assert.ok(performance.now() - started < 2500, "A partial line must not block unrelated company requests or native renewal");
+  assert.equal(f.sent.length, 1);
+});
+
 test("an unterminated SSE tool frame is never forwarded or treated as a known terminal result", async (t) => {
   const f = await fixture(t);
   f.setHandler(async (_, res) => {

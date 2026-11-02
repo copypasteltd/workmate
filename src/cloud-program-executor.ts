@@ -16,6 +16,7 @@ import { PassThrough } from "node:stream";
 import { z } from "zod";
 import { canonical, hash, Problem } from "./lib.js";
 import { validateSourcePath } from "./code-workspace.js";
+import { assertLinuxNativeBoundary } from "./cloud-linux-boundary.js";
 
 export const cloudProgramInput = z
   .object({
@@ -74,10 +75,10 @@ const packageRoot = path.resolve(
 );
 const profilePath = path.join(
   packageRoot,
-  "contracts/cloud-program-runtime.json",
+  process.platform === "linux" ? "contracts/cloud-program-runtime.linux.json" : "contracts/cloud-program-runtime.json",
 );
-const boundaryFolder = path.join(packageRoot, ".data/cloud-program-host");
-const hostPath = path.join(boundaryFolder, "cloud-program-host.exe");
+const boundaryFolder = path.join(packageRoot, process.platform === "linux" ? ".data/cloud-program-host-linux" : ".data/cloud-program-host");
+const hostPath = path.join(boundaryFolder, process.platform === "linux" ? "cloud-linux-host.py" : "cloud-program-host.exe");
 const reserved = (p: string) =>
   p
     .split("/")
@@ -115,6 +116,7 @@ export const sourceDigest = (files: SourceManifest) =>
   );
 
 async function checkedRuntime() {
+  await assertLinuxNativeBoundary();
   const profile = JSON.parse(await readFile(profilePath, "utf8"));
   if (
     profile.platform !== process.platform ||
@@ -134,7 +136,12 @@ async function checkedRuntime() {
     manifest.boundary !== profile.boundary ||
     manifest.sha256 !== hash(await readFile(hostPath)) ||
     manifest.source_sha256 !==
-      hash(await readFile(path.join(packageRoot, "src/cloud-program-host.cs")))
+      hash(await readFile(path.join(packageRoot, process.platform === "linux" ? "src/cloud-linux-host.py" : "src/cloud-program-host.cs"))) ||
+    (process.platform === "linux" && (
+      manifest.kind !== "program" || manifest.bubblewrap_path !== profile.bubblewrap_path ||
+      manifest.bubblewrap_sha256 !== profile.bubblewrap_sha256 ||
+      hash(await readFile(manifest.bubblewrap_path)) !== profile.bubblewrap_sha256
+    ))
   )
     throw new Problem(
       503,
@@ -170,7 +177,9 @@ async function collect(work: string, bytes: boolean) {
       const full = path.join(dir, e.name),
         p = path.relative(work, full).replaceAll("\\", "/");
       const info = await lstat(full);
-      if (info.isSymbolicLink() || info.nlink > 1)
+      // Linux directories count their children in nlink; that is not a file
+      // hard link. Continue rejecting every symbolic link and hard-linked file.
+      if (info.isSymbolicLink() || (!info.isDirectory() && info.nlink > 1))
         throw new Error("OUTPUT_LINK_PROHIBITED");
       const internal = reserved(p);
       if (!internal) validateSourcePath(p);
@@ -203,7 +212,7 @@ async function collect(work: string, bytes: boolean) {
   };
 }
 
-/** Customer code only runs in a fresh native AppContainer. No shell, ambient
+/** Customer code only runs in a fresh verified native execution boundary. No shell, ambient
  * environment, arbitrary executable, network capability or child process. */
 async function executeCloudProgram(
   dataDir: string,
@@ -235,7 +244,7 @@ async function executeCloudProgram(
   const id = executionId!,
     root = path.resolve(dataDir, "cloud-programs", id),
     work = path.join(root, "work"),
-    executable = path.join(root, "runtime/node.exe");
+    executable = path.join(root, process.platform === "linux" ? "runtime/node" : "runtime/node.exe");
   await mkdir(work, { recursive: true });
   await mkdir(path.dirname(executable));
   await copyFile(process.execPath, executable);
@@ -260,6 +269,7 @@ async function executeCloudProgram(
     await writeFile(file, sources[i].bytes, { flag: "wx" });
   }
   const argv = [
+    ...(process.platform === "linux" ? ["--permission", "--allow-fs-read=/work", "--allow-fs-read=/runtime", "--allow-fs-write=/work"] : []),
     "--preserve-symlinks",
     "--preserve-symlinks-main",
     "--experimental-strip-types",

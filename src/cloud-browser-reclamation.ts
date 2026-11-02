@@ -45,14 +45,14 @@ export async function reclaimCloudBrowserProfiles(dataDir: string) {
     }
     if (
       owner.schema !== 1 ||
-      owner.boundary !== "chromium-native-sandbox-nested-job-v1" ||
+      owner.boundary !== (process.platform === "linux" ? "chromium-linux-userns-cgroup-v1" : "chromium-native-sandbox-nested-job-v1") ||
       owner.execution_id !== entry.name ||
       !Number.isInteger(owner.controller_pid) ||
       owner.controller_pid <= 0 ||
       owner.controller_pid === process.pid ||
       !Number.isInteger(host.host_pid) ||
       host.host_pid <= 0 ||
-      host.job_name !== "Local\\CopyPasteBrowser-" + entry.name
+      host.job_name !== (process.platform === "linux" ? "cgroup:" : "Local\\CopyPasteBrowser-") + entry.name
     )
       continue;
     let gone = false;

@@ -1282,7 +1282,7 @@ export async function advanceAgentGroups(db: Database, catalog: Catalog) {
             const currentPlan = await effectivePlan(tx, r.tenant_id, actor.id);
             const activeCount = (
               await tx.query(
-                "SELECT count(*)::int AS n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND status IN('queued','running','paused','awaiting_approval','reconciling','needs_input')",
+                "SELECT count(*)::int AS n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND (status IN ('queued','paused','awaiting_approval','needs_input') OR task_occupies_execution_slot(tasks))",
                 [r.tenant_id, actor.id],
               )
             ).rows[0].n;

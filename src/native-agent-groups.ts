@@ -291,7 +291,7 @@ export function registerNativeAgentGroups(app: FastifyInstance, db: Database, ca
         }
         await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))",["task-quota:"+t+":"+req.principal.id]);
         const plan=await effectivePlan(tx,t,req.principal.id);
-        const count=Number((await tx.query("SELECT count(*) AS n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND status IN('queued','running','paused','awaiting_approval','reconciling','needs_input')",[t,req.principal.id])).rows[0].n);
+        const count=Number((await tx.query("SELECT count(*) AS n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND (status IN ('queued','paused','awaiting_approval','needs_input') OR task_occupies_execution_slot(tasks))",[t,req.principal.id])).rows[0].n);
         let slots=Math.min(r.max_parallelism-nodes.filter(n=>n.state==="active").length,plan.body.max_active_tasks-count);
         const conversation=(await tx.query("SELECT * FROM conversations WHERE id=$1 AND content_state='active' AND archived=false",[r.conversation_id])).rows[0];
         if(!conversation) throw missing();

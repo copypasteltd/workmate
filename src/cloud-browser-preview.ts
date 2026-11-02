@@ -134,6 +134,8 @@ async function closeBounded(context: BrowserContext) {
 }
 function cleanError(error: unknown) {
   return String(error)
+    .replace(/<launching>[^\r\n]*/g, "<launching> [approved native browser]")
+    .replace(/Call log:[\s\S]*/, "")
     .replace(/D:\\[^\r\n]+/gi, "[owned runtime]")
     .slice(0, 1500);
 }
@@ -243,7 +245,9 @@ export async function runCloudBrowserPreview(
         renderers.every((p: any) =>
           current.processes.some(
             (v: any) =>
-              v.pid === p.id && v.integrity_rid === 0 && v.restricted === true,
+              v.pid === p.id && (process.platform === "linux"
+                ? v.seccomp === 2 && v.no_new_privs === true && v.uid !== 0
+                : v.integrity_rid === 0 && v.restricted === true),
           ),
         )
       )
@@ -253,7 +257,9 @@ export async function runCloudBrowserPreview(
             type: p.type,
             pid: p.id,
           })),
-          renderers_untrusted_and_restricted: true,
+          ...(process.platform === "linux"
+            ? { renderers_seccomp_and_no_new_privileges: true }
+            : { renderers_untrusted_and_restricted: true }),
         };
       if (bounded.aborted) throw new Error("PREVIEW_STOPPED");
       await delay(40);
@@ -304,6 +310,8 @@ export async function runCloudBrowserPreview(
           COPYPASTE_CHROMIUM_BINARY: runtime.binary,
           COPYPASTE_BROWSER_SHA256: runtime.binary_sha256,
           COPYPASTE_BROWSER_ROOT: root,
+          ...(process.platform === "linux" && process.env.COPYPASTE_NATIVE_CGROUP_ROOT
+            ? {COPYPASTE_NATIVE_CGROUP_ROOT: process.env.COPYPASTE_NATIVE_CGROUP_ROOT} : {}),
           COPYPASTE_BROWSER_PARENT_PID: String(process.pid),
           COPYPASTE_BROWSER_DEADLINE_MS: String(
             a.timeout_ms + browserCleanupMs,
@@ -570,12 +578,17 @@ export async function runCloudBrowserPreview(
       !host.job_empty ||
       !host.kill_on_close ||
       host.failure
-    )
+    ) {
+      const diagnostics=path.resolve(dataDir,"cloud-browser-diagnostics");
+      await mkdir(diagnostics,{recursive:true});
+      await writeFile(path.join(diagnostics,id+".json"),JSON.stringify({execution_id:id,error,host})+"\n",{flag:"wx"});
       throw new Problem(
         503,
         "CLOUD_BROWSER_RECEIPT_INVALID",
         "Native browser execution or process cleanup could not be verified",
+        {execution_id:id,failure:host?.failure ?? "NATIVE_RECEIPT_UNAVAILABLE"},
       );
+    }
     if (host.timed_out) stop ??= "timeout";
     if (host.cancelled) stop ??= "cancelled";
     if (host.parent_gone) stop ??= "controller_stopped";
@@ -662,6 +675,14 @@ export async function runCloudBrowserPreview(
     };
     return { receipt: { ...receipt, workspace_deleted: true }, files };
   } finally {
-    await removeOwnedUUIDDirectory(parent, id);
+    // An incomplete receipt cannot authorize deleting a profile still in use.
+    // The independent reclaimer handles it after both owners have exited.
+    if (
+      host?.running === false &&
+      host.job_empty === true &&
+      host.boundary === runtime.profile.boundary &&
+      host.job_name === (process.platform === "linux" ? "cgroup:" : "Local\\CopyPasteBrowser-") + id
+    )
+      await removeOwnedUUIDDirectory(parent, id);
   }
 }

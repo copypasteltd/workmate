@@ -47,7 +47,7 @@ async function own(tx: Tx, table: "geo_experiments" | "geo_runs", id: string, ac
 }
 async function quota(tx: Tx, actor: Principal, tenant: string) {
   const plan = await effectivePlan(tx, tenant, actor.id);
-  const active = (await tx.query("SELECT count(*)::int AS n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND status IN('queued','running','paused','awaiting_approval','reconciling','needs_input')", [tenant, actor.id])).rows[0].n;
+  const active = (await tx.query("SELECT count(*)::int AS n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND (status IN ('queued','paused','awaiting_approval','needs_input') OR task_occupies_execution_slot(tasks))", [tenant, actor.id])).rows[0].n;
   return { active, max_active_tasks: plan.body.max_active_tasks, available: Math.max(0, plan.body.max_active_tasks - active), max_question_budget_micros: String(plan.body.max_task_budget_micros) };
 }
 async function authorizeRead(tx: Tx, actor: Principal, tenant: string, project: string) {
