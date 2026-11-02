@@ -1,0 +1,22 @@
+import {launch,authenticate,ok} from './live-client-189-v2.mjs';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {randomUUID,createHash} from 'node:crypto';import path from 'node:path';import assert from 'node:assert/strict';
+const proofBytes=await readFile('.data/acceptance-191/server-evidence/owned-qa-termination-final.json');const proof=JSON.parse(proofBytes.toString().replace(/^\uFEFF/,''));
+const run=path.resolve('.data/acceptance-191/owned-qa-cleanup-'+randomUUID());await mkdir(run,{recursive:true});
+const report={stage:191,status:'running',scope:'Owner-authorized cleanup of one named failed stage191 QA request. Operator observes company transport and native-execution termination only; remote vendor computation and all fees remain unknown.',proof_sha256:createHash('sha256').update(proofBytes).digest('hex'),operations:[],checks:[]};
+const save=()=>writeFile(path.join(run,'receipt.json'),JSON.stringify(report,null,2)+'\n',{mode:0o600});let browser,admin;
+try{browser=await launch();admin=await authenticate(browser,'admin');assert.equal(admin.identity.highest_admin,true);const h={'X-CSRF-Token':admin.csrf};
+for(const observed of proof.rows){
+ assert.ok(Date.parse(proof.gateway_process_started_at)>Date.parse(observed.finished_at));assert.ok(observed.desktop_finished_at);assert.equal(observed.lease_until,null);
+ const root='/v1/admin/ai/requests/generation/'+observed.id,original=await ok(admin.page,root);await writeFile(path.join(run,observed.id+'.before.private.json'),JSON.stringify(original,null,2)+'\n',{flag:'wx',mode:0o600});
+ const step={request_id:observed.id,evidence_key:randomUUID(),preview_key:randomUUID(),operation_key:randomUUID()};report.operations.push(step);await save();
+ const document={schema_version:1,data_mode:observed.data_mode,operation_id:observed.operation_id,request_hash:observed.request_hash,provider_reference:'Company AI gateway request '+observed.id,source_reference:'/root/cfg/workmate/native-191/owned-qa-termination-final.sanitized.json#'+observed.id,source_note:proof.observation+' Original HTTP status='+observed.http_status+'; terminal local error='+observed.outcome_code+'; original connection owner process ended before gateway start '+proof.gateway_process_started_at+'. This is an automated operator observation under the project owner repair instruction, not an authenticated supplier completion callback or independent human review.',observed_at:proof.observed_at,terminated:true,currency:'HKD',purpose:'termination_only',billed_micros:null,usage:{kind:observed.request_class},outcome:'failed'};
+ const evidence=await ok(admin.page,root+'/evidence',{document,reason:'Owner-authorized QA repair: release ended company transport capacity; retain every unknown charge, reservation and original request.'},{...h,'Idempotency-Key':step.evidence_key});step.evidence_operation=evidence.id;step.evidence_id=evidence.result_ids?.[0]??evidence.result?.evidence_id;assert.ok(step.evidence_id);await save();
+ const command={action:'ai.capacity.release',channel:'generation',request_id:observed.id,evidence_id:step.evidence_id,reason:'Observed company connection and native owner terminated; release execution capacity only. Vendor usage, invoice and original reservations remain unknown.'};
+ const preview=await ok(admin.page,'/v1/admin/ai/previews',command,{...h,'Idempotency-Key':step.preview_key});assert.equal(preview.decision,'super_admin_direct');step.preview_id=preview.preview_id;await save();
+ const result=await ok(admin.page,'/v1/admin/ai/operations',{command,preview_id:preview.preview_id},{...h,'Idempotency-Key':step.operation_key});assert.equal(result.state,'succeeded');step.release_operation=result.id;await save();
+ const after=await ok(admin.page,root);await writeFile(path.join(run,observed.id+'.after.private.json'),JSON.stringify(after,null,2)+'\n',{flag:'wx',mode:0o600});
+ // The endpoint returns the request envelope. Do not infer fees from transport closure.
+ step.after=after;report.checks.push({request_id:observed.id,status:'passed',release_operation:result.id});await save();console.log(JSON.stringify({request_id:observed.id,status:'capacity_release_audited'}));
+}
+report.status='passed';}catch(e){report.status='failed';report.error=e.message;throw e;}finally{await admin?.context.close();await browser?.close();report.owned_browser_closed=true;report.finished_at=new Date().toISOString();await save();console.log(JSON.stringify({status:report.status,receipt:path.join(run,'receipt.json'),error:report.error}));}

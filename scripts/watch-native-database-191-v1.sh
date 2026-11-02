@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+cd /opt/workmate/overlays/native-repair-191-v3/backend
+/opt/workmate/toolchains/node-v24.22.2-linux-x64/bin/node --env-file=/root/cfg/workmate/app.env --env-file=/root/cfg/workmate/migration.env --input-type=module <<'WM_WATCH'
+import pg from 'pg';import{writeFile}from'node:fs/promises';import{setTimeout}from'node:timers/promises';const c=new pg.Client({connectionString:process.env.OWNER_DATABASE_URL,query_timeout:3000});await c.connect();const samples=[];try{for(let i=0;i<80;i++){const rows=(await c.query(`SELECT pid,usename,state,wait_event_type,wait_event,extract(epoch from(clock_timestamp()-xact_start)) duration,pg_blocking_pids(pid) blockers,left(query,300) query FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid() AND state<>'idle' ORDER BY xact_start NULLS LAST LIMIT 30`)).rows;const health=[];for(const port of [63073,63072]){const begin=Date.now();try{const r=await fetch('http://127.0.0.1:'+port+'/health/ready',{signal:AbortSignal.timeout(1500)});health.push({port,status:r.status,ms:Date.now()-begin});}catch(e){health.push({port,error:e.name,ms:Date.now()-begin});}}samples.push({at:new Date().toISOString(),rows,health});if(rows.some(r=>Number(r.duration)>3)||health.some(h=>h.error))console.log(JSON.stringify(samples.at(-1)));await setTimeout(3000);}}finally{await c.end();await writeFile('/root/cfg/workmate/native-191/database-watch.private.json',JSON.stringify({samples},null,2)+'\n',{flag:'wx',mode:0o600});}
+WM_WATCH
