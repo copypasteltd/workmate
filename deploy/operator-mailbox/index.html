@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Workmate 測試收件箱 / Test mailbox</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font: 15px/1.6 system-ui, sans-serif; margin: 0; background: #f5f5f3; color: #171717; }
+    main { max-width: 960px; margin: 40px auto; padding: 0 24px 48px; }
+    header { border-top: 3px solid #3537ff; padding-top: 22px; }
+    .brand { font-size: 12px; font-weight: 700; letter-spacing: .15em; color: #3537ff; }
+    h1 { font-size: clamp(24px, 4vw, 34px); line-height: 1.3; letter-spacing: -.035em; margin: 10px 0; }
+    .intro, #status, .date { color: #61616b; }
+    .toolbar { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 24px 0 14px; }
+    button { background: #3537ff; color: white; font: inherit; padding: 10px 20px; border: 0; border-radius: 24px; cursor: pointer; }
+    button:disabled { cursor: wait; opacity: .65; }
+    button:focus-visible { outline: 3px solid #171717; outline-offset: 3px; }
+    #status { margin: 0; font-size: 13px; }
+    #error { background: #fff1e8; border: 1px solid #efc5a9; padding: 12px 16px; border-radius: 8px; }
+    [hidden] { display: none !important; }
+    article { background: white; border: 1px solid #dedee3; padding: 20px 24px; margin: 14px 0; border-radius: 12px; overflow-wrap: anywhere; }
+    article:first-child { border-left: 3px solid #3537ff; }
+    h2 { font-size: 16px; margin: 0 0 6px; }
+    .date { font-size: 13px; margin: 0 0 12px; }
+    pre { font: 14px/1.8 ui-monospace, monospace; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+    .empty { padding: 32px 0; color: #61616b; }
+    @media (max-width: 540px) { main { margin-top: 22px; padding-inline: 16px; } article { padding: 16px; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="brand">COPYPASTE / WORKMATE</div>
+    <h1>測試收件箱 / Test mailbox</h1>
+    <p class="intro">最新郵件置頂，每 5 秒自動檢查，最多顯示最近 30 封。此頁使用獨立收件箱登入憑證；管理員登入仍需 TOTP。<br>Newest mail first. Checks every 5 seconds and shows the latest 30 messages. Separate mailbox credentials are required; administrator sign-in still requires TOTP.</p>
+  </header>
+  <div class="toolbar">
+    <button type="button" id="refresh">重新整理 / Refresh</button>
+    <p id="status" role="status" aria-live="polite">正在讀取 / Loading…</p>
+  </div>
+  <p id="error" role="alert" hidden></p>
+  <section id="mail" aria-label="郵件 / Messages" aria-busy="true"></section>
+</main>
+<script>
+(() => {
+  'use strict';
+  const box = document.getElementById('mail');
+  const status = document.getElementById('status');
+  const error = document.getElementById('error');
+  const refresh = document.getElementById('refresh');
+  const cache = new Map();
+  let inFlight = null, timer = null, signature = null;
+
+  async function readJson(url) {
+    const response = await fetch(url, {cache: 'no-store', credentials: 'same-origin', signal: AbortSignal.timeout(10000)});
+    if (!response.ok) throw new Error('Mailbox read failed');
+    return await response.json();
+  }
+
+  async function load() {
+    if (inFlight) return inFlight;
+    clearTimeout(timer);
+    refresh.disabled = true;
+    box.setAttribute('aria-busy', 'true');
+    inFlight = (async () => {
+      try {
+        const listing = await readJson('/ops/mailbox/data/');
+        if (!Array.isArray(listing)) throw new Error('Invalid mailbox listing');
+        const files = listing.filter(file => file.type === 'file' && /^[A-Za-z0-9-]+\.json$/.test(file.name));
+        const timestamp = file => Number.isFinite(Date.parse(file.mtime)) ? Date.parse(file.mtime) : 0;
+        // Nginx uses RFC dates. Compare time values before applying the display limit.
+        files.sort((a, b) => timestamp(b) - timestamp(a) || b.name.localeCompare(a.name));
+        const selected = files.slice(0, 30);
+        const messages = new Array(selected.length);
+        const failures = [];
+        let next = 0;
+        async function worker() {
+          while (next < selected.length) {
+            const index = next++, file = selected[index];
+            const key = file.name + ':' + file.mtime + ':' + file.size;
+            try {
+              let mail = cache.get(key);
+              if (!mail) {
+                mail = await readJson('/ops/mailbox/data/' + encodeURIComponent(file.name));
+                if (!mail || typeof mail.to !== 'string' || typeof mail.text !== 'string') throw new Error('Invalid message');
+                cache.set(key, mail);
+              }
+              messages[index] = {id: file.name, key, mail};
+            } catch { failures.push(file.name); }
+          }
+        }
+        await Promise.all(Array.from({length: Math.min(6, selected.length)}, worker));
+        const readable = messages.filter(Boolean);
+        if (selected.length && !readable.length) throw new Error('No readable messages');
+        const nextSignature = readable.map(item => item.key).join('|');
+        if (signature !== nextSignature) {
+          const nodes = readable.map(({id, mail}) => {
+            const article = document.createElement('article');
+            article.dataset.messageId = id;
+            const heading = document.createElement('h2');
+            heading.textContent = mail.to;
+            const date = document.createElement('p');
+            date.className = 'date';
+            const instant = new Date(mail.at);
+            date.textContent = (Number.isFinite(instant.getTime()) ? instant.toLocaleString() : '') + ' · ' + (mail.subject || '');
+            const body = document.createElement('pre');
+            body.textContent = mail.text;
+            article.append(heading, date, body);
+            return article;
+          });
+          if (!nodes.length) {
+            const empty = document.createElement('p');
+            empty.className = 'empty';
+            empty.textContent = '尚無郵件；請先在登入頁要求驗證碼。 / No messages yet. Request a code from the sign-in page.';
+            nodes.push(empty);
+          }
+          box.replaceChildren(...nodes);
+          signature = nextSignature;
+        }
+        const keep = new Set(selected.map(file => file.name + ':' + file.mtime + ':' + file.size));
+        for (const key of cache.keys()) if (!keep.has(key)) cache.delete(key);
+        status.textContent = '顯示 / Showing ' + readable.length + ' / ' + files.length + ' · 已檢查 / Checked ' + new Date().toLocaleTimeString();
+        error.hidden = !failures.length;
+        error.textContent = failures.length ? '部分郵件暫時讀取失敗，將自動重試。 / Some messages could not be read; retrying automatically.' : '';
+      } catch {
+        error.textContent = '收件箱讀取失敗，已保留上次內容。請重新整理或確認收件箱登入憑證。 / Could not refresh. Previous messages are preserved. Refresh or check your mailbox credentials.';
+        error.hidden = false;
+      } finally {
+        refresh.disabled = false;
+        box.setAttribute('aria-busy', 'false');
+        inFlight = null;
+        if (!document.hidden) timer = setTimeout(load, 5000);
+      }
+    })();
+    return inFlight;
+  }
+  refresh.addEventListener('click', load);
+  document.addEventListener('visibilitychange', () => {
+    clearTimeout(timer);
+    if (!document.hidden) void load();
+  });
+  window.addEventListener('pagehide', () => clearTimeout(timer));
+  void load();
+})();
+</script>
+</body>
+</html>
