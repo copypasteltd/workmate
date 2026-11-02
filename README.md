@@ -1,3 +1,11 @@
+<!-- system-recheck-190 -->
+
+## 当前体系复测 · 190
+
+新增只读复测脚本，区分公网不稳定与源站健康、Linux执行器不可用、Desktop错误回传/待对账状态及外部能力缺口。19项新浏览器检查18通过、1次后台健康读取超时；新的邮箱验证码和管理员TOTP登录正常。测试会话、原始回执在本地受控目录，公开证据不含密钥；浏览器和自有CONNECT已关闭。本轮没有新付费任务或产品上线。[14组编号检查与真实边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/190-system-recheck.md)。
+
+复测工具只供当前受控维护环境使用，依赖本地私有服务器/QA配置及固定浏览器：先开启`scripts/public-qa-transport-189-v1.py`，执行`scripts/recheck-network-system-190-v1.py`与`scripts/recheck-public-ui-190-v1.mjs`，结束后向自有CONNECT进程输入`{"action":"close"}`。不要将私有配置提交或把该诊断路径当作普通公网验收。
+
 <!-- live-acceptance-189 -->
 
 ## 真实生图上线与本轮验收 · 189

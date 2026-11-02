@@ -1,3 +1,11 @@
+<!-- system-recheck-190 -->
+
+## Current system recheck · 190
+
+New read-only probes distinguish intermittent public paths from healthy origins, unavailable Linux executors, Desktop error/reconciliation gaps and missing integrations. Eighteen of19 fresh browser checks passed; the admin readiness timeout remains recorded. Fresh mailbox OTP and administrator TOTP logins worked. Private sessions/receipts stay controlled; public evidence contains no credentials. Owned browsers and CONNECT were closed. No new paid task or product deployment occurred. See the [14 numbered groups and actual scope](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/190-system-recheck.md).
+
+These maintenance-only tools need existing private server/QA configuration and the pinned browser: start`scripts/public-qa-transport-189-v1.py`, run`scripts/recheck-network-system-190-v1.py`and`scripts/recheck-public-ui-190-v1.mjs`, then send`{"action":"close"}`to the owned CONNECT process. Never commit private inputs or treat this diagnostic transport as ordinary public-path acceptance.
+
 <!-- live-acceptance-189 -->
 
 ## Real image deployment and acceptance · 189
