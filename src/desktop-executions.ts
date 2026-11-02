@@ -40,6 +40,7 @@ import { taskProviderBudgetReceipt } from "./provider-budgets.js";
 import { settle } from "./billing.js";
 import {
   startScopedInferenceGateway,
+  AIRequestFailure,
   type AIRequestInfo,
 } from "./internal-ai-gateway.js";
 import { desktopRuntime, seedDesktopRuntime } from "./desktop-runtime.js";
@@ -1325,6 +1326,12 @@ export async function registerDesktopExecutions(
           nativeDesktop: !t.input_context?.geo_sample_id,
           nativeCompanyTools: companyTools,
           signal: shutdown.signal,
+          // Native Codex may present a generic transport error. Retain the
+          // company gateway's bounded cause without logging input or secrets.
+          onRejected: rejection => db.tx(
+            tx => event(tx, t.tenant_id, t.id, "gateway.request_rejected", rejection),
+            t.tenant_id, false, t.created_by,
+          ),
           authority: {
             taskId: t.id,
             tenantId: t.tenant_id,
@@ -1336,6 +1343,13 @@ export async function registerDesktopExecutions(
             budgeted: true,
             authorize: (request) => inferenceAuthority(execution, t, request),
           },
+        }).catch(async error => {
+          await db.tx(tx => event(tx, t.tenant_id, t.id, "gateway.request_rejected", {
+            code: error instanceof AIRequestFailure || error instanceof Problem
+              ? error.code : "AI_GATEWAY_START_FAILED",
+            dispatched: false, phase: "preflight",
+          }), t.tenant_id, false, t.created_by).catch(() => {});
+          throw error;
         });
         gateways.set(gatewayKey, gateway);
         void gateway.catch(() => {

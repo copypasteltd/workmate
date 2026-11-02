@@ -6,6 +6,7 @@ import { modelConnectionFetch } from "./model-connection-http.js";
 import { hash } from "./lib.js";
 import { listenLoopbackHTTP } from "./loopback-http.js";
 import { desktopToolDeclarations, desktopCustomTool, type DesktopCompanyToolSchema } from "./desktop-tool-policy.js";
+import { desktopCodeModeDeclarations } from "./desktop-code-mode.js";
 import { speechLimits, wellFormedAudioText } from "./audio-production-model.js";
 import { cloudToolDeclarations, cloudProgrammaticCall, CloudToolContractError, type CloudToolRegistration } from "./cloud-tool-contract.js";
 
@@ -81,6 +82,7 @@ interface ToolPolicyFacts {
   namespace_present: boolean;
   builtin_tools: string[];
   contract_reason?: string;
+  response_kind?: "function_call" | "custom_tool_call" | "other";
 }
 export class AIRequestFailure extends Error {
   toolPolicy?: ToolPolicyFacts;
@@ -212,6 +214,10 @@ function responseFields(
     throw denied("AI_PROTOCOL_NOT_ALLOWED");
   if (body.tools !== undefined && !Array.isArray(body.tools))
     throw denied("AI_TOOL_NOT_ALLOWED");
+  if (nativeDesktop) {
+    try { body = desktopCodeModeDeclarations(body, tools, nativeCompanyTools).body; }
+    catch { throw denied("AI_DESKTOP_TOOL_NOT_ALLOWED"); }
+  }
   if (!nativeDesktop && (cloudTools || (Array.isArray(body.input) && body.input.some((item: any) => item?.type === "additional_tools")))) {
     try { body = cloudToolDeclarations(body, tools, cloudTools).body; }
     catch (error) { if (error instanceof CloudToolContractError) throw cloudContractFailure(error, tools.length); throw error; }
@@ -463,8 +469,8 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
       });
       info.inputCountId = proof;
       info.maxOutputTokens = Number(normalized!.max_output_tokens);
-      if (!request.nativeDesktop && request.cloudTools &&
-          cloudToolDeclarations(normalized!, request.tools ?? [], request.cloudTools).programmatic) {
+      if ((request.nativeDesktop && desktopCodeModeDeclarations(normalized!, request.tools ?? [], request.nativeCompanyTools ?? []).programmatic) ||
+          (!request.nativeDesktop && request.cloudTools && cloudToolDeclarations(normalized!, request.tools ?? [], request.cloudTools).programmatic)) {
         // Some compatible upstream counters omit additional_tools context.
         // Fund the full serialized request before sending; retain its count
         // proof, original hash, output cap and final monetary enforcement.
@@ -677,7 +683,16 @@ export async function startScopedInferenceGateway(
     }): Promise<void>;
   },
 ) {
-  endpoint(c, "responses", undefined, !!c.MODEL_CONNECTION_RESOLVER);
+  // Resolve this frozen model before preflight as well as before each dispatch.
+  // A model-bound upstream does not require a second environment-wide API key.
+  const connection = await c.MODEL_CONNECTION_RESOLVER?.({
+    taskId: options.authority.taskId,
+    capabilityVersionId: options.authority.capabilityVersionId,
+    model: options.model,
+    operation: "responses",
+  });
+  endpoint(connection ? { ...c, AI_BASE_URL: connection.baseURL, AI_API_KEY: connection.apiKey,
+    AI_ALLOWED_HOSTS: new URL(connection.baseURL).hostname } : c, "responses", undefined, !!connection);
   const secret = randomBytes(32).toString("hex"),
     grant = randomUUID();
   const expected = Buffer.from(`Bearer ${secret}`);
@@ -747,6 +762,10 @@ export async function startScopedInferenceGateway(
       if (!body || typeof body !== "object" || Array.isArray(body))
         throw denied("AI_INVALID_JSON");
       let cloudContract = { programmatic: false, wait: false };
+      if (options.nativeDesktop) {
+        try { cloudContract = desktopCodeModeDeclarations(body, options.tools, options.nativeCompanyTools ?? []); }
+        catch { throw denied("AI_DESKTOP_TOOL_NOT_ALLOWED"); }
+      }
       if (!options.nativeDesktop && options.cloudTools) {
         try { cloudContract = cloudToolDeclarations(body, options.tools, options.cloudTools); }
         catch (error) { if (error instanceof CloudToolContractError) throw cloudContractFailure(error, options.tools.length); throw error; }
@@ -806,26 +825,37 @@ export async function startScopedInferenceGateway(
       const knownCalls = new Set<string>();
       const customCalls = new Set<string>();
       const callIdentities = new Map<string, string>();
+      const rejectedCall = (reason: string, item?: any) => {
+        const failure = new AIRequestFailure("AI_TOOL_CALL_NOT_ALLOWED", 502, true);
+        const knownLabels = [...options.tools, "exec", "functions.exec", "parallel", "multi_tool_use.parallel", "tool_search"];
+        const label = typeof item?.name === "string" && knownLabels.includes(item.name)
+          ? item.name : typeof item?.namespace === "string" && options.tools.includes(item.namespace + "." + item.name)
+            ? item.namespace + "." + item.name : null;
+        failure.toolPolicy = { tool_count: 0, registered_tool_count: options.tools.length,
+          namespace_present: item?.namespace != null, builtin_tools: label ? [label] : [], contract_reason: reason,
+          response_kind: item?.type === "function_call" || item?.type === "custom_tool_call" ? item.type : "other" };
+        return failure;
+      };
       const inspectItem = (item: any) => {
         if (!item) return;
         if (
           ((item.type === "function_call" || (options.nativeDesktop && item.type === "custom_tool_call" && desktopCustomTool(item.name))) &&
           (options.nativeDesktop || item.namespace == null) &&
           options.tools.includes(options.nativeDesktop && item.namespace ? item.namespace + "." + item.name : item.name)) ||
-          (!options.nativeDesktop && cloudProgrammaticCall(item, cloudContract))
+          cloudProgrammaticCall(item, cloudContract)
         ) {
           if (typeof item.id !== "string" || !item.id.length)
             throw new AIRequestFailure("AI_RESPONSE_PROTOCOL_INVALID", 502, true);
           const identity = JSON.stringify([item.type, item.namespace ?? null, item.name, item.call_id ?? null]);
           if (callIdentities.has(item.id) && callIdentities.get(item.id) !== identity)
-            throw new AIRequestFailure("AI_TOOL_CALL_NOT_ALLOWED", 502, true);
+            throw rejectedCall("response_call_identity_changed", item);
           callIdentities.set(item.id, identity);
           knownCalls.add(item.id);
           if (item.type === "custom_tool_call") customCalls.add(item.id);
           return;
         }
         if (!["message", "reasoning"].includes(item.type))
-          throw new AIRequestFailure("AI_TOOL_CALL_NOT_ALLOWED", 502, true);
+          throw rejectedCall("response_call_unregistered", item);
       };
       const inspectFrame = (wire: Buffer) => {
         const data = wire
@@ -859,13 +889,13 @@ export async function startScopedInferenceGateway(
             event.type,
           ) && !(event.type.startsWith("response.custom_tool_call_input.") && customCalls.has(event.item_id))
         )
-          throw new AIRequestFailure("AI_TOOL_CALL_NOT_ALLOWED", 502, true);
+          throw rejectedCall("response_builtin_event_unregistered");
         if (
           typeof event.type === "string" &&
           event.type.startsWith("response.function_call_arguments.") &&
           (!knownCalls.has(event.item_id) || customCalls.has(event.item_id))
         )
-          throw new AIRequestFailure("AI_TOOL_CALL_NOT_ALLOWED", 502, true);
+          throw rejectedCall("response_argument_event_unregistered");
         if (
           [
             "response.completed",

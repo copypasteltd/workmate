@@ -311,7 +311,7 @@ export async function verifyCapability(
           await response.body?.cancel().catch(() => {});
           if (response.status >= 400 && response.status < 500)
             evidence.usage_known = true;
-          throw new Error("Image gateway rejected verification");
+          throw new Problem(502, `AI_IMAGE_HTTP_${response.status}`, "Image gateway rejected verification");
         }
         const declared = Number(response.headers.get("content-length"));
         if (declared > 70_000_000)
@@ -331,15 +331,17 @@ export async function verifyCapability(
         } finally {
           await reader.cancel();
         }
-        const payload = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+        let payload: any;
+        try { payload = JSON.parse(Buffer.concat(chunks).toString("utf8")); }
+        catch { throw new Problem(502, "AI_IMAGE_JSON_INVALID", "Image gateway returned invalid JSON"); }
         if (!Array.isArray(payload.data) || payload.data.length !== 1)
-          throw new Error("Exactly one inline verification image is required");
+          throw new Problem(502, "AI_IMAGE_RESULT_COUNT_INVALID", "Exactly one inline verification image is required");
         const encoded = payload.data[0]?.b64_json;
         if (typeof encoded !== "string" || encoded.length > 70_000_000)
-          throw new Error("A bounded inline image is required");
+          throw new Problem(502, "AI_IMAGE_INLINE_RESULT_REQUIRED", "A bounded inline image is required");
         const bytes = Buffer.from(encoded, "base64");
         if (bytes.toString("base64") !== encoded)
-          throw new Error("Canonical PNG base64 is required");
+          throw new Problem(502, "AI_IMAGE_BASE64_INVALID", "Canonical PNG base64 is required");
         validateVerificationPNG(bytes);
         await finishInternalAIRequest(response, {
           state: "completed",

@@ -403,7 +403,7 @@ export function registerAdminContent(
                   "VERSION_CONFLICT",
                   "Content changed; refresh first",
                 );
-              if (r[state] === "deleted" && b.action !== "delete")
+              if (r[state] === "deleted" && (b.action !== "delete" || table === "project_configurations"))
                 throw new Problem(
                   409,
                   "CONTENT_DELETED",
@@ -459,10 +459,14 @@ export function registerAdminContent(
                   table === "project_configurations"
                 ) {
                   await eraseReplayContent(tx, [id]);
+                  // Erasing immutable saved bodies must not advance a history
+                  // fence on the now permanently deleted parent record.
+                  await tx.query("SELECT set_config('app.erasing_content','true',true)");
                   await tx.query(
                     "UPDATE project_configurations SET draft='{}',content_state='deleted',version=version+1,moderation_version=moderation_version+1 WHERE id=$1",
                     [id],
                   );
+                  await tx.query("SELECT set_config('app.erasing_content','false',true)");
                 } else
                   await tx.query(
                     `UPDATE ${table} SET ${state}=$2,moderation_version=moderation_version+1 WHERE id=$1`,

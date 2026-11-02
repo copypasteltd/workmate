@@ -59,6 +59,11 @@ function nativeSchema(schema: unknown): unknown {
       result[key] = value.map(nativeSchema);
     else throw new Error("Unsupported trusted native company schema keyword");
   }
+  // The pinned native serializer emits an explicit empty properties object for
+  // object schemas, including maps constrained by additionalProperties. Keep
+  // that presentation detail exact without dropping the map's value schema.
+  if (result.type === "object" && !("properties" in result))
+    result.properties = {};
   return result;
 }
 

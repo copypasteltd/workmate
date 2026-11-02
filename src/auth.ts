@@ -537,8 +537,8 @@ export function registerAuth(app: FastifyInstance, db: Database) {
       if (!u) throw new Problem(401, "SESSION_EXPIRED", "Session expired");
       const memberships = (
         await db.app.query(
-          "SELECT t.id,t.name,t.data_mode,m.role FROM tenants t JOIN memberships m ON m.tenant_id=t.id WHERE m.user_id=$1 AND m.status='active' AND t.status='active' ORDER BY t.created_at",
-          [u.id],
+          "SELECT t.id,t.name,t.data_mode,m.role FROM tenants t JOIN memberships m ON m.tenant_id=t.id WHERE m.user_id=$1 AND m.status='active' AND t.status='active' AND t.data_mode=$2 ORDER BY t.created_at",
+          [u.id, db.config.DEMO_MODE ? "simulated" : "configured_services"],
         )
       ).rows;
       return {

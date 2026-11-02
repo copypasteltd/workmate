@@ -7,6 +7,7 @@ import path from "node:path";
 import type { Config } from "./config.js";
 import { canonical, hash, Problem } from "./lib.js";
 import { runtimeToolContent } from "./runtime-tool-content.js";
+import { desktopCompanyToolSchema } from "./desktop-tool-policy.js";
 import {
   startScopedInferenceGateway,
   type AIRequestAuthority,
@@ -633,7 +634,9 @@ export class CodexRuntimeAdapter {
                   ({ name, description, inputSchema }) => ({
                     name,
                     description,
-                    inputSchema,
+                    // Present the same trusted, bounded wire schema which the
+                    // gateway compares. Business inputs still use full schemas.
+                    inputSchema: desktopCompanyToolSchema(inputSchema),
                   }),
                 ),
               },
