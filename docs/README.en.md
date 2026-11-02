@@ -1,3 +1,9 @@
+<!-- native-recheck-192 -->
+
+The recheck repairs native error visibility and strict validation; Backend/Web/Admin patches are deployed.306 final regressions and8 native Linux checks passed, with actual model/task/file/command/browser/download evidence. The BOM wrapper failure is retained and the original completed task independently verified; this is not zero-defect complete-product acceptance.
+
+[复查 / Recheck](quality/192-native-recheck.md) · [实现 / Implementation](development/192-native-error-observability.md) · [证据 / Evidence](quality/192-native-recheck.json)
+
 <!-- selected-repairs-191-publication -->
 
 Desktop **0.7.4 is published**: [Setup and Portable downloads](https://github.com/copypasteltd/workmate/releases/tag/desktop-v0.7.4). Verify SHA256SUMS-0.7.4, install/replace manually and sign in again. Backend fixes are live; all six component branches and bilingual guides are pushed, with docs/main synchronized. The owner excluded12; this unsigned package does not qualify automatic updates or complete-product acceptance. Old frozen releases are preserved.

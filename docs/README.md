@@ -1,3 +1,9 @@
+<!-- native-recheck-192 -->
+
+再次复查已补齐本机原始错误显示与严格格式验证，Backend/Web/Admin补丁已上线。常规回归306项、Linux原生8项通过；实际模型任务/文件/命令/云端浏览器/下载有独立证据。原BOM包装器失败保留，原任务只读复核通过；不宣称整套产品零错误。
+
+[复查 / Recheck](quality/192-native-recheck.md) · [实现 / Implementation](development/192-native-error-observability.md) · [证据 / Evidence](quality/192-native-recheck.json)
+
 <!-- selected-repairs-191-publication -->
 
 Desktop **0.7.4 已发布**：[安装版和便携版](https://github.com/copypasteltd/workmate/releases/tag/desktop-v0.7.4)。下载后按 SHA256SUMS-0.7.4 核对，手动安装/替换后重新登录。当前后台修复已上线；六端代码与双语说明已推送到对应分支，docs/main同步。12按用户要求移出；该包未签名，不使用它宣称自动更新验收或全产品全部通过。旧冻结发布保留。
