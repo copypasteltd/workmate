@@ -110,7 +110,7 @@ export function LocalAgentWorkspace() {
   activeWorkspace.current = workspaceKey;
   const createKey = workspaceKey + ":create", selectedKey = workspaceKey + ":" + selected;
   const creating = pendingActions.has(createKey), pending = creating || pendingActions.has(selectedKey);
-  const error = workspaceError || actionErrors[createKey] || actionErrors[selectedKey];
+  const error = workspaceError || actionErrors[createKey] || actionErrors[selectedKey] || sessions.find(s => s.id === selected)?.error;
   const [videoTask, setVideoTask] = useState("");
   const refresh = useRef<() => Promise<void>>(async () => {}), end = useRef<HTMLDivElement>(null), messages = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -228,6 +228,10 @@ export function LocalAgentWorkspace() {
     }}>{t("將方法加入本次簡報", "Add method to this brief")}</button></section>}
     {error && <div role="alert" className="local-agent-alert">{error === "PROJECT_CONFIGURATION_UNAVAILABLE"
       ? t("專案共用指引的資料已不可用。請到「我的專案」檢查指引及資料授權，再繼續工作。", "Shared project guidance is unavailable. Open My projects to review the guidance and access to its sources, then continue your work.")
+      : error === "LOCAL_CODEX_STREAM_DISCONNECTED"
+        ? t("模型連線在完成前中斷。已保留本機檔案與工作記錄；請先核對本次結果和費用，再決定是否重新執行。", "The model connection ended before completion. Local files and the work record are preserved. Review the result and billing before starting again.")
+      : error === "LOCAL_CODEX_TURN_FAILED" || error === "DESKTOP_LOCAL_EXECUTION_FAILED"
+        ? t("本機 Agent 未完成這次工作。請在活動記錄查看失敗原因，核對檔案後再繼續。", "The local agent did not complete this task. Review the activity log and local files before continuing.")
       : error === "PROJECT_BUDGET_EXCEEDED"
         ? t("本次預算超過專案上限。請降低工作預算，或請專案管理員更新共用指引中的上限。", "This turn exceeds the project budget limit. Reduce the turn budget or ask a project administrator to update the limit in shared guidance.")
         : error === "LOCAL_DISPATCH_RESUME_REQUIRED"

@@ -58,6 +58,8 @@ export interface LocalTurnResult {
   turnId: string;
   status: "completed" | "interrupted" | "failed";
   text: string;
+  /** Bounded machine code only; never an upstream message or credential. */
+  errorCode?: string;
   /** Native observations only. Financial settlement must use company receipts. */
   nativeTokenUsage: { input: number; output: number } | null;
 }
@@ -317,7 +319,7 @@ export class LocalCodexSession {
         `base_url = ${quote(this.profile.baseURL)}`, 'env_key = "COPYPASTE_LOCAL_INFERENCE_TOKEN"', 'wire_api = "responses"',
         'request_max_retries = 0', 'stream_max_retries = 0', 'supports_websockets = false',
         '[shell_environment_policy]', 'inherit = "all"', 'ignore_default_excludes = false',
-        'exclude = ["COPYPASTE_LOCAL_INFERENCE_TOKEN"]',
+        'exclude = ["COPYPASTE_LOCAL_INFERENCE_TOKEN", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY"]',
         '[features]', `shell_tool = ${!this.binding.observationProtocol}`, 'multi_agent = false', 'apps = false', 'plugins = false', 'remote_plugin = false',
         ...(this.binding.observationProtocol ? ["goals = false", "view_image = false", "computer_use = false", "browser_use = false", "browser_use_external = false", "skill_search = false", "workspace_dependencies = false", "sleep_tool = false", "tool_suggest = false"] : []),
         'image_generation = false', 'skill_mcp_dependency_install = false', 'prefer_mxc = false',
@@ -326,7 +328,7 @@ export class LocalCodexSession {
       ].join("\n");
       await atomicFile(path.join(this.home, "config.toml"), Buffer.from(config));
       const env: NodeJS.ProcessEnv = {};
-      for (const name of ["PATH", "Path", "PATHEXT", "SystemRoot", "WINDIR", "COMSPEC", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "TEMP", "TMP", "ProgramFiles", "ProgramFiles(x86)"])
+      for (const name of ["PATH", "Path", "PATHEXT", "SystemRoot", "WINDIR", "COMSPEC", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "TEMP", "TMP", "ProgramFiles", "ProgramFiles(x86)", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY"])
         if (process.env[name]) env[name] = process.env[name];
       env.CODEX_HOME = this.home;
       env.COPYPASTE_LOCAL_INFERENCE_TOKEN = credential.token;
@@ -344,7 +346,7 @@ export class LocalCodexSession {
         ['web_search', '"disabled"'], ['features.image_generation', 'false'], ['features.multi_agent', 'false'], ['features.skill_mcp_dependency_install', 'false'],
         ['features.prefer_mxc', 'false'], ['windows.sandbox', '"unelevated"'],
         ['features.default_mode_request_user_input', this.binding.observationProtocol ? 'false' : 'true'],
-        ['shell_environment_policy.exclude', '["COPYPASTE_LOCAL_INFERENCE_TOKEN"]'],
+        ['shell_environment_policy.exclude', '["COPYPASTE_LOCAL_INFERENCE_TOKEN", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY"]'],
       ].flatMap(([key, value]) => ["-c", `${key}=${value}`]);
       // Revocation can arrive during any asynchronous preparation above. The
       // last company check and this synchronous guard fence native spawning.
@@ -705,7 +707,12 @@ export class LocalCodexSession {
             clearTimeout(pending.timer); this.pending.delete(id); pending.resolve({ turn: { id: params.turn.id } });
           }
         }
-        active.resolve({ threadId: this.threadId, turnId: params.turn.id, status, text: active.text, nativeTokenUsage: this.nativeUsage });
+        const errorCode = status === "failed"
+          ? /stream disconnected|error sending request|connection (?:closed|reset|failed)/i.test(String(params.turn.error?.message ?? ""))
+            ? "LOCAL_CODEX_STREAM_DISCONNECTED" : "LOCAL_CODEX_TURN_FAILED"
+          : undefined;
+        if (errorCode) await this.emit("local.runtime.turn_failed", { code: errorCode });
+        active.resolve({ threadId: this.threadId, turnId: params.turn.id, status, text: active.text, nativeTokenUsage: this.nativeUsage, ...(errorCode ? {errorCode} : {}) });
       }
     }).catch((error) => { this.fail(error instanceof LocalCodexError ? error : new LocalCodexError("LOCAL_EVENT_PERSISTENCE_FAILED")); this.stopInBackground(); });
   }

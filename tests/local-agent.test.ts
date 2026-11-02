@@ -11,6 +11,20 @@ import type { LocalInputRequest } from "../src/local-input.js";
 import { GuardedBrowserSession } from "../src/browser-session.js";
 import { startupFixture, startupTurnFixture } from "./startup-receipt-fixture.js";
 
+test("native failure cause remains visible after settlement and journal reload",async()=>{
+  const f=await fixture();let restored:LocalAgentController|undefined;
+  try{
+    const session=await f.create();await f.controller.permission(session.id,"full-access");
+    f.pending(async()=>({status:"failed",text:"",threadId:"native",turnId:"failed-turn",nativeTokenUsage:null,errorCode:"LOCAL_CODEX_STREAM_DISCONNECTED"}));
+    await f.controller.send(session.id,"Keep the real failure cause",10000);
+    let state=(await f.controller.list(f.scope)).sessions.find(s=>s.id===session.id)!;
+    assert.equal(state.task.status,"failed");assert.equal(state.error,"LOCAL_CODEX_STREAM_DISCONNECTED");assert.equal(state.busy,false);
+    assert.equal(f.calls.find(c=>c.url.endsWith("/finish")).body.error_code,"LOCAL_CODEX_STREAM_DISCONNECTED");
+    restored=new LocalAgentController(f.io,f.factory);state=(await restored.list(f.scope)).sessions.find(s=>s.id===session.id)!;
+    assert.equal(state.error,"LOCAL_CODEX_STREAM_DISCONNECTED");assert.equal(state.task.status,"failed");
+  }finally{await restored?.close();await f.clean();}
+});
+
 test("update checkpoints allow idle sessions and block a live local turn until its settlement finishes", async () => {
   const f = await fixture(); let release!: () => void;
   try {
@@ -844,3 +858,51 @@ for (const target of ["main", "child"] as const)
       assert.equal((await h.f.controller.list(h.f.scope)).sessions[0].task.status, "succeeded");
     } finally { await h.clean(); }
   });
+
+
+test("identity transport failures report a bounded company availability code",async()=>{
+ const f=await fixture();const identity=f.io.identity;
+ try{f.io.identity=async()=>{throw new TypeError("Private network diagnostic must not escape");};
+ await assert.rejects(f.controller.list(f.scope),(e:any)=>e.code==="LOCAL_COMPANY_API_UNAVAILABLE"&&!e.message.includes("Private network"));
+ }finally{f.io.identity=identity;await f.clean();}
+});
+
+test("periodic renewal reaches the authenticated heartbeat while unrelated remote identity reads stall",async t=>{
+ const f=await fixture();const identity=f.io.identity;let release!:()=>void;let run:Promise<any>|undefined;
+ t.mock.timers.enable({apis:["setInterval"]});
+ try{
+ const session=await f.create();await f.controller.permission(session.id,"full-access");
+ let enter!:()=>void;const entered=new Promise<void>(r=>{enter=r;});
+ f.pending(async()=>{enter();await new Promise<void>(r=>{release=r;});return{status:"completed",text:"Actual fixture output",threadId:"native",turnId:"turn",nativeTokenUsage:null};});
+ run=f.controller.send(session.id,"Maintain the live execution lease",10000);await entered;
+ const before=f.calls.filter(c=>c.url.endsWith("/heartbeat")).length;
+ f.io.identity=()=>new Promise(()=>{});t.mock.timers.tick(10000);
+ for(let i=0;i<15;i++)await new Promise<void>(r=>setImmediate(r));
+ assert.equal(f.calls.filter(c=>c.url.endsWith("/heartbeat")).length,before+1);
+ f.io.identity=identity;release();assert.equal((await run).task.status,"succeeded");
+ }finally{f.io.identity=identity;release?.();await run?.catch(()=>{});t.mock.timers.reset();await f.clean();}
+});
+
+test("one transport loss retries only renewal inside its confirmed lease without replaying a native turn",async()=>{
+ const f=await fixture();
+ try{const session=await f.create();await f.controller.permission(session.id,"full-access");
+ const c=f.controller as any,r=(await c.state()).sessions[0],id=randomUUID();
+ r.lastTask={task_id:id,lease_until:new Date(Date.now()+45000).toISOString()};let calls=0;
+ f.io.request=async(url,options)=>{assert.ok(url.endsWith('/'+id+'/heartbeat'));assert.equal(options?.tenantId,f.scope.tenant);calls++;
+ if(calls===1)throw new TypeError('Lost owned TCP connection');return{status:200,body:{state:'running',status:'running',lease_until:new Date(Date.now()+45000).toISOString()}};};
+ const reply=await c.renewDesktopLease(r,'/owned/'+id,c.generation,new AbortController().signal);
+ assert.equal(reply.status,'running');assert.equal(calls,2);assert.equal(f.turns(),0);
+ }finally{await f.clean();}
+});
+
+for(const changed of ['expired','denied','revoked'] as const)
+test(`periodic renewal never retries or revives ${changed} authority`,async()=>{
+ const f=await fixture();
+ try{const session=await f.create();await f.controller.permission(session.id,"full-access");
+ const c=f.controller as any,r=(await c.state()).sessions[0],id=randomUUID();
+ r.lastTask={task_id:id,lease_until:new Date(Date.now()+(changed==='expired'?-1:45000)).toISOString()};let calls=0;
+ f.io.request=async()=>{calls++;if(changed==='denied')return{status:403,body:{error:{code:'DESKTOP_EXECUTION_FENCED'}}};r.revoked=true;throw new TypeError('Connection lost after local withdrawal');};
+ await assert.rejects(c.renewDesktopLease(r,'/owned/'+id,c.generation,new AbortController().signal));
+ assert.equal(calls,changed==='expired'?0:1);assert.equal(f.turns(),0);
+ }finally{await f.clean();}
+});

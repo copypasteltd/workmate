@@ -78,6 +78,7 @@ interface Operation {
     output: string;
     thread_id: string;
     turn_id: string;
+    error_code?: string;
   };
 }
 interface ActiveLocalOperation {
@@ -261,8 +262,14 @@ export class LocalAgentController {
     this.io.changed();
   }
   private async identity() {
-    const generation = this.generation,
-      actor = await this.io.identity();
+    const generation = this.generation;
+    let actor: { actorId: string; epoch: string };
+    try { actor = await this.io.identity(); }
+    catch (error) {
+      if (error instanceof LocalAgentError) throw error;
+      throw new LocalAgentError(error instanceof Error && error.message === "LOCAL_ACCOUNT_CHANGED"
+        ? "LOCAL_ACCOUNT_CHANGED" : "LOCAL_COMPANY_API_UNAVAILABLE");
+    }
     if (this.closed) throw new LocalAgentError("LOCAL_APP_CLOSED");
     if (
       generation !== this.generation ||
@@ -397,6 +404,42 @@ export class LocalAgentController {
     const actor = await this.identity();
     if (generation !== this.generation || actor.actorId !== r.actorId || actor.epoch !== r.epoch)
       throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
+  }
+  /** Periodic renewal uses the local account epoch plus the server's complete
+   * authenticated heartbeat checks. Unrelated remote identity reads must not
+   * delay a still-live execution's lease. Native tool authorization is unchanged. */
+  private async renewDesktopLease(r: LocalRecord, taskURL: string, generation: number, signal: AbortSignal, confirmedLease?: string) {
+    const localOwner = async () => {
+      const epoch = await this.io.localEpoch();
+      if (this.closed || generation !== this.generation || epoch !== r.epoch)
+        throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
+      this.grant(r);
+    };
+    // Renewal has no billable side effect. A single lost connection may be
+    // retried inside the last server-confirmed lease; no command/inference or
+    // rejected authority is replayed, and an expired lease is never revived.
+    const leaseUntil = Date.parse(confirmedLease ??
+      (r.lastTask?.task_id === taskURL.split("/").at(-1) ? r.lastTask?.lease_until : ""));
+    for (let attempt = 0; ; attempt++) {
+      await this.live(signal, localOwner);
+      const remaining = Number.isFinite(leaseUntil) ? leaseUntil - Date.now() - 1000 : 8000;
+      if (remaining <= 0) throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
+      const bounded = AbortSignal.any([signal, AbortSignal.timeout(Math.min(8000, remaining))]);
+      try {
+        const live = await this.api(r, taskURL + "/heartbeat", "POST", {}, undefined, bounded);
+        await this.live(signal, localOwner);
+        if (signal.aborted || live.cancel_requested || live.state !== "running" || live.status !== "running")
+          throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
+        return live;
+      } catch (error) {
+        await this.live(signal, localOwner);
+        const deadlineFailure = error instanceof LocalAgentError && error.code === "LOCAL_EXECUTION_CANCELLED" && bounded.aborted;
+        const transportFailure = deadlineFailure || error instanceof TypeError ||
+          error instanceof Error && ["TimeoutError", "AbortError"].includes(error.name);
+        if (!transportFailure || attempt !== 0 || !Number.isFinite(leaseUntil) || leaseUntil <= Date.now() + 1000)
+          throw deadlineFailure ? new LocalAgentError("LOCAL_COMPANY_API_UNAVAILABLE") : error;
+      }
+    }
   }
   /** Resend the original saved child result without starting tools or renewing
    * native authority. Local permission withdrawal does not prevent reporting. */
@@ -1286,7 +1329,9 @@ export class LocalAgentController {
         op.report!.status === "unknown" || r.lastTask.status === "reconciling";
       this.dispatchFinished(r, op);
       r.operation = undefined;
-      if (!r.uncertain) r.error = undefined;
+      r.error = r.lastTask.status === "failed" || r.lastTask.status === "reconciling"
+        ? op.report?.error_code ?? r.lastTask.error_code ?? (r.uncertain ? "LOCAL_EXECUTION_RECONCILIATION_REQUIRED" : "LOCAL_EXECUTION_FAILED")
+        : undefined;
       await this.persist();
     };
     try {
@@ -1363,9 +1408,11 @@ export class LocalAgentController {
           stoppingHeartbeat = false;
           heartbeat = setInterval(() => {
             if (heartbeatRun || stoppingHeartbeat) return;
-            heartbeatRun = authorize(heartbeatAbort!.signal)
-              .catch(() => {
+            heartbeatRun = this.renewDesktopLease(r, taskURL, generation, AbortSignal.any([abort.signal, heartbeatAbort!.signal]))
+              .then(live => { r.lastTask = live; })
+              .catch(error => {
                 if (stoppingHeartbeat) return;
+                r.error = error instanceof LocalAgentError ? error.code : "LOCAL_COMPANY_API_UNAVAILABLE";
                 abort.abort();
                 void runtime?.close().catch(() => {});
               })
@@ -1619,6 +1666,8 @@ export class LocalAgentController {
           output: result.text.slice(0, 100000),
           thread_id: result.threadId,
           turn_id: result.turnId,
+          ...(result.status !== "completed" ? {error_code: result.errorCode ?? r.error ??
+            (result.status === "failed" ? "LOCAL_CODEX_TURN_FAILED" : "LOCAL_EXECUTION_CANCELLED")} : {}),
         };
         op.phase = "settling";
         await this.persist();
@@ -1627,7 +1676,7 @@ export class LocalAgentController {
       return this.view(r);
     } catch (error) {
       r.error =
-        error instanceof LocalAgentError
+        error instanceof LocalAgentError || error instanceof LocalCodexError
           ? error.code
           : error instanceof Error
             ? error.message
@@ -1637,12 +1686,12 @@ export class LocalAgentController {
         (admitted && op.phase === "starting")
       )) {
         r.uncertain ||= nativeAccepted;
-        if (nativeAccepted) r.error = "LOCAL_EXECUTION_RECONCILIATION_REQUIRED";
         op.report = {
           status: nativeAccepted ? "unknown" : "failed",
           output: "",
           thread_id: "unknown",
           turn_id: "unknown",
+          error_code: /^[A-Z][A-Z0-9_]{2,79}$/.test(r.error ?? "") ? r.error : "LOCAL_EXECUTION_FAILED",
         };
         op.phase = "settling";
         await this.persist();
@@ -1789,7 +1838,7 @@ export class LocalAgentController {
     let heartbeat: ReturnType<typeof setInterval> | undefined,
       heartbeatRun: Promise<unknown> | undefined,
       heartbeatAbort: AbortController | undefined;
-    let stoppingHeartbeat = false;
+    let stoppingHeartbeat = false, childLease: string | undefined;
     const stopHeartbeat = async () => {
       stoppingHeartbeat = true;
       if (heartbeat) clearInterval(heartbeat);
@@ -1811,6 +1860,7 @@ export class LocalAgentController {
         live.status !== "running"
       )
         throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
+      childLease = live.lease_until;
     };
     const startHeartbeat = () => {
       if (heartbeat) clearInterval(heartbeat);
@@ -1818,9 +1868,11 @@ export class LocalAgentController {
       stoppingHeartbeat = false;
       heartbeat = setInterval(() => {
         if (heartbeatRun || stoppingHeartbeat) return;
-        heartbeatRun = authorize(heartbeatAbort!.signal)
-          .catch(() => {
+        heartbeatRun = this.renewDesktopLease(r, taskURL, generation, AbortSignal.any([signal, heartbeatAbort!.signal]), childLease)
+          .then(live => { childLease = live.lease_until; })
+          .catch(error => {
             if (stoppingHeartbeat) return;
+            r.error = error instanceof LocalAgentError ? error.code : "LOCAL_COMPANY_API_UNAVAILABLE";
             active.abort.abort();
             shutdownChild();
           })
@@ -2019,6 +2071,8 @@ export class LocalAgentController {
         output: result.text.slice(0, 100000),
         thread_id: result.threadId,
         turn_id: result.turnId,
+        ...(result.status !== "completed" ? {error_code: result.errorCode ?? r.error ??
+          (result.status === "failed" ? "LOCAL_CODEX_TURN_FAILED" : "LOCAL_EXECUTION_CANCELLED")} : {}),
       };
       checkpoint.phase = "settling";
       await this.persist();

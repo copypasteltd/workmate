@@ -19,7 +19,7 @@ const lock = JSON.parse(await readFile(new URL("../../contracts/local-codex-runt
 const executable = process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN;
 assert.ok(executable && path.isAbsolute(executable), "Set COPYPASTE_LOCAL_CODEX_TEST_BIN to the locked absolute native Codex binary. No PATH fallback.");
 const skill = "---\nname: native-fixture-method\ndescription: Verify a local fixture without fabricating results.\n---\nNATIVE_SKILL_FROM_DISK_73D6. Inspect actual tool results and preserve unrelated files.";
-type Action = { command?: string; input?: { questions: any[] }; company?: { tool: string; arguments: Record<string, unknown> }; program?: { tool: string; arguments: Record<string, unknown> }; stall?: () => void; hold?: () => Promise<void>; stage?: number };
+type Action = { disconnect?: boolean; command?: string; input?: { questions: any[] }; company?: { tool: string; arguments: Record<string, unknown> }; program?: { tool: string; arguments: Record<string, unknown> }; stall?: () => void; hold?: () => Promise<void>; stage?: number };
 
 function emit(res: ServerResponse, type: string, payload: Record<string, unknown>) {
   res.write(`event: ${type}\ndata: ${JSON.stringify({ type, ...payload })}\n\n`);
@@ -78,7 +78,9 @@ async function fixture() {
       assert.ok(action, "Unexpected additional provider dispatch");
       res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache" });
       if (action.hold) await action.hold();
-      if (action.stall) {
+      if(action.disconnect){
+        actions.shift();emit(res,"response.created",{response:{id:"resp_broken",object:"response",status:"in_progress",output:[]}});res.end();
+      } else if (action.stall) {
         actions.shift();
         emit(res, "response.created", { response: { id: "resp_stalled", object: "response", status: "in_progress", output: [] } });
         action.stall();
@@ -841,4 +843,15 @@ test("native read-only Codex can read a registered exact method without gaining 
   assert.equal(f.events.filter(e=>e.kind==="local.company-tool.completed").length,1);
   assert.equal(f.events.some(e=>e.kind==="local.company-tool.failed"),false);
  } finally {await f.clean();}
+});
+
+
+test("actual native Codex preserves a disconnected model stream as a bounded failure code without replay",{timeout:90000},async()=>{
+ const f=await fixture();
+ try{
+  const native=f.make();await f.start(native);f.actions.push({disconnect:true});
+  const result=await native.turn("Respond once; this fixture deliberately ends the model stream early.");
+  assert.equal(result.status,"failed");assert.equal(result.errorCode,"LOCAL_CODEX_STREAM_DISCONNECTED");
+  assert.equal(f.requests.length,1);assert.ok(f.events.some(e=>e.kind==="local.runtime.turn_failed"&&e.value.code==="LOCAL_CODEX_STREAM_DISCONNECTED"));
+ }finally{await f.clean();}
 });
