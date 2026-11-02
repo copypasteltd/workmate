@@ -1,3 +1,9 @@
+<!-- live-acceptance-189 -->
+
+真实gpt-image-2生成、编辑和Web设计师图片交付已通过并上线；原图保留、逐模型连接和失败状态已修复。完整回归及其单项复验分开记录，Desktop与外部服务仍有明确验收缺口。
+
+[需求 / Requirements](requirements/189-real-image-and-acceptance.md) · [报告 / Report](development/189-real-image-and-acceptance.md) · [变更 / Changes](changes/189-real-image-and-acceptance.md) · [证据 / Evidence](quality/live-acceptance-189.json)
+
 <!-- live-acceptance-188 -->
 
 真实文本服务及本轮修复已上线；Web／Extension交付和后台操作通过实测，Desktop真实模型、公网稳定性及外部服务仍有明确验收缺口。

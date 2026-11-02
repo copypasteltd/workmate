@@ -1,3 +1,9 @@
+<!-- live-acceptance-189 -->
+
+Actualgpt-image-2 generation/editing and Web Designer downloads passed and are deployed. Exact originals, frozen per-model routing and image failure status are repaired. Full regression and targeted follow-ups remain separate; Desktop and external integrations retain explicit gaps.
+
+[需求 / Requirements](requirements/189-real-image-and-acceptance.md) · [报告 / Report](development/189-real-image-and-acceptance.md) · [变更 / Changes](changes/189-real-image-and-acceptance.md) · [证据 / Evidence](quality/live-acceptance-189.json)
+
 <!-- live-acceptance-188 -->
 
 Real text service and acceptance fixes are deployed. Web/Extension delivery and admin operations passed actual checks; real-supplier Desktop, public reliability and external integrations retain explicit gaps.
