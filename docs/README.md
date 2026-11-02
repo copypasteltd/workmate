@@ -1,5 +1,9 @@
 <!-- native-recheck-192 -->
 
+本轮代码、双语说明及实际媒体已推送到 backend/web/admin/desktop/extension/delivery，docs/main同步；旧tag和Desktop0.7.4安装包保留。
+
+[推送回执 / Publication receipt](quality/192-publication.json)
+
 再次复查已补齐本机原始错误显示与严格格式验证，Backend/Web/Admin补丁已上线。常规回归306项、Linux原生8项通过；实际模型任务/文件/命令/云端浏览器/下载有独立证据。原BOM包装器失败保留，原任务只读复核通过；不宣称整套产品零错误。
 
 [复查 / Recheck](quality/192-native-recheck.md) · [实现 / Implementation](development/192-native-error-observability.md) · [证据 / Evidence](quality/192-native-recheck.json)

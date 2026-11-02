@@ -1,5 +1,9 @@
 <!-- native-recheck-192 -->
 
+Code, bilingual guides and actual media are pushed to backend/web/admin/desktop/extension/delivery, with docs/main synchronized. Old tags and Desktop0.7.4 binaries are retained.
+
+[推送回执 / Publication receipt](quality/192-publication.json)
+
 The recheck repairs native error visibility and strict validation; Backend/Web/Admin patches are deployed.306 final regressions and8 native Linux checks passed, with actual model/task/file/command/browser/download evidence. The BOM wrapper failure is retained and the original completed task independently verified; this is not zero-defect complete-product acceptance.
 
 [复查 / Recheck](quality/192-native-recheck.md) · [实现 / Implementation](development/192-native-error-observability.md) · [证据 / Evidence](quality/192-native-recheck.json)
