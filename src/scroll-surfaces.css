@@ -1,0 +1,155 @@
+/* Shared Web scroll surfaces follow the existing light/dark brand tokens. */
+:root {
+  --scroll-thumb: color-mix(in srgb, var(--muted) 42%, transparent);
+  --scroll-thumb-hover: color-mix(in srgb, var(--blue) 68%, transparent);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  background-clip: padding-box;
+  border: 1px solid transparent;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scroll-thumb-hover);
+}
+
+/* Keep native wheel, touch and keyboard scrolling without visible chrome. */
+html,
+body,
+#root,
+.sidebar,
+.sidebar nav,
+.modal-backdrop,
+.message-stack {
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar,
+.sidebar nav::-webkit-scrollbar,
+.modal-backdrop::-webkit-scrollbar,
+.message-stack::-webkit-scrollbar {
+  display: none;
+}
+
+html,
+body,
+#root {
+  min-width: 0;
+  max-width: 100%;
+}
+
+html,
+body {
+  overflow-x: clip;
+}
+
+.main-shell,
+.app-topbar,
+.main-content,
+.card,
+.modal,
+.page-heading,
+.section-title,
+.filter-row,
+.table-scroll {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.sidebar {
+  height: 100vh;
+  height: 100dvh;
+  overflow-x: clip;
+  overflow-y: auto;
+}
+
+.sidebar nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: clip;
+  overscroll-behavior-y: contain;
+}
+
+.sidebar nav a,
+.sidebar-bottom,
+.sidebar-brand,
+.workspace-switch,
+.new-task-side,
+.nav-caption {
+  flex-shrink: 0;
+}
+
+.breadcrumb {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.page-heading,
+.section-title,
+.filter-row,
+.app-footer,
+.tabs {
+  flex-wrap: wrap;
+}
+
+.app-footer {
+  gap: 12px;
+}
+
+.tabs {
+  overflow: visible;
+}
+
+.tabs button {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.table-scroll {
+  overscroll-behavior-inline: contain;
+}
+
+.main-content pre,
+.modal pre {
+  min-width: 0;
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.main-content textarea,
+.modal textarea {
+  max-width: 100%;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (forced-colors: active) {
+  * {
+    scrollbar-color: auto;
+  }
+}

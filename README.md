@@ -1,3 +1,26 @@
+<!-- web-scroll-187 -->
+
+## Web 滚动区域优化 · 187
+
+[用户端](https://agent.copypaste.hk)已隐藏页面、侧栏、消息和弹窗外层的可见滚动条，保留原生滚动。必要的内部表格、面板和输入区统一细款样式，颜色跟随浅深色主题。窄屏标题与筛选允许换行，宽表格仅在自身区域左右滚动。
+
+使用鼠标滚轮、触控板或手机滑动浏览长内容；导航可独立滚动，弹窗底部仍可访问。此更新已通过 TypeScript/Vite 构建和最终10项实际内网页面检查；浏览器与测试会话已关闭。公网 HTTPS 端到端旅程未在本轮完整验证，检查范围见[实现、使用与回滚](https://github.com/copypasteltd/workmate/blob/docs/docs/development/187-web-scroll-surfaces.md)。
+
+```mermaid
+flowchart LR
+ A[页面与导航] --> B[隐藏滚动条并保留滚动]
+ C[窄屏长内容] --> D[换行并限制宽度]
+ E[宽表格] --> F[容器内滚动与统一细款样式]
+```
+
+![桌面浅色](assets/screenshots/187-v2-roles-light.png)
+
+![桌面深色](assets/screenshots/187-v2-roles-dark.png)
+
+![手机布局](assets/screenshots/187-v2-roles-mobile.png)
+
+![实际主区域与侧栏滚轮交互](assets/demos/187-web-scroll.gif)
+
 # Workmate · web · v0.1.0
 
 <!-- per-model-connections-178 -->

@@ -164,6 +164,7 @@ import {
 } from "./ui";
 import { WorkspaceProvider, useWorkspace } from "./context";
 import "./style.css";
+import "./scroll-surfaces.css";
 
 function Logo() {
   return (

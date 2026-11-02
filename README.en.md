@@ -1,3 +1,26 @@
+<!-- web-scroll-187 -->
+
+## Web scroll refinement · 187
+
+The [Web client](https://agent.copypaste.hk) hides visible page, sidebar, conversation and outer-modal rails while retaining native scrolling. Necessary inner tables, panels and inputs use consistent thin scrollbars derived from the existing light/dark theme. Narrow controls wrap; wide tables scroll only inside their own container.
+
+Browse long content with the wheel, trackpad or touch. Navigation scrolls independently and long-dialog controls remain accessible. TypeScript/Vite and ten final actual deployed-LAN browser checks passed; owned browsers and QA sessions were closed. A complete public HTTPS journey was not qualified this round. See [usage, implementation, evidence and rollback](https://github.com/copypasteltd/workmate/blob/docs/docs/development/187-web-scroll-surfaces.md) for the exact scope.
+
+```mermaid
+flowchart LR
+ A[Page and navigation] --> B[Hidden rail, native scrolling]
+ C[Narrow long content] --> D[Wrap within viewport]
+ E[Wide tables] --> F[Contained scroll with shared thin rails]
+```
+
+![Desktop light](assets/screenshots/187-v2-roles-light.png)
+
+![Desktop dark](assets/screenshots/187-v2-roles-dark.png)
+
+![Mobile layout](assets/screenshots/187-v2-roles-mobile.png)
+
+![Actual main-page and sidebar wheel interaction](assets/demos/187-web-scroll.gif)
+
 # Workmate · web · v0.1.0
 
 <!-- per-model-connections-178 -->
