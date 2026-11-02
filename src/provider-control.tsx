@@ -234,7 +234,7 @@ export function ProviderReviewFacts({
         </dd>
         <dt>{t("用量", "Usage")}</dt>
         <dd>
-          {Object.entries(before.evidence.document.usage).map(([k, v]) => (
+          {before.evidence.document.purpose === "termination_only" ? t("尚未確認", "Not yet confirmed") : Object.entries(before.evidence.document.usage).map(([k, v]) => (
             <span className="provider-unit" key={k}>
               {k}: {String(v)}
             </span>
@@ -242,7 +242,7 @@ export function ProviderReviewFacts({
         </dd>
         <dt>{t("原始帳單金額", "Source invoice amount")}</dt>
         <dd>
-          <Money value={before.evidence.document.billed_micros} />
+          {before.evidence.document.purpose === "termination_only" ? t("尚未確認，繼續保留預算", "Not yet confirmed; budget remains reserved") : <Money value={before.evidence.document.billed_micros} />}
         </dd>
         {before.cost && (
           <>
@@ -680,6 +680,7 @@ function EvidenceForm({
   onDone: () => void;
 }) {
   const { t } = useI18n(),
+    [terminationOnly, setTerminationOnly] = useState(false),
     kind = r.channel === "input_count" ? "input_count" : r.request_class;
   return (
     <details>
@@ -704,7 +705,7 @@ function EvidenceForm({
               throw new Error(t("請輸入有效用量", "Enter valid usage"));
             return n;
           };
-          const usage =
+          const usage = terminationOnly ? { kind } :
             kind === "text"
               ? {
                   kind,
@@ -732,7 +733,7 @@ function EvidenceForm({
             terminated: true,
             outcome: String(f.get("outcome")),
             currency: "HKD",
-            billed_micros: parseHKD(String(f.get("invoice")), true),
+            ...(terminationOnly ? { purpose: "termination_only", billed_micros: null } : { billed_micros: parseHKD(String(f.get("invoice")), true) }),
             usage,
           };
           await write(access, `/requests/${r.channel}/${r.id}/evidence`, {
@@ -742,6 +743,13 @@ function EvidenceForm({
           onDone();
         }}
       >
+        <Field label={t("證據範圍", "Evidence scope")}>
+          <select name="evidence_scope" value={terminationOnly ? "termination_only" : "cost_and_termination"} onChange={e => setTerminationOnly(e.target.value === "termination_only")}>
+            <option value="cost_and_termination">{t("用量、費用及終止", "Usage, cost and termination")}</option>
+            <option value="termination_only">{t("僅確認終止；用量及費用未知", "Termination only; usage and cost unknown")}</option>
+          </select>
+        </Field>
+        {terminationOnly && <p role="status" className="notice">{t("必須有可核對的終止記錄。此證據僅可釋放請求名額；未知費用及原有預算仍會保留。", "An inspectable termination record is required. This evidence can release the request slot; unknown cost and the original budget remain reserved.")}</p>}
         <div className="provider-form-grid">
           <Field label={t("供應商參考", "Provider reference")}>
             <input
@@ -783,7 +791,7 @@ function EvidenceForm({
               </option>
             </select>
           </Field>
-          {kind === "text" ? (
+          {!terminationOnly && (kind === "text" ? (
             <>
               <Field label={t("實際輸入 tokens", "Actual input tokens")}>
                 <input name="input" type="number" min="0" step="1" required />
@@ -812,12 +820,12 @@ function EvidenceForm({
             >
               <input name="counted" type="number" min="0" step="1" />
             </Field>
-          )}
-          <Field
+          ))}
+          {!terminationOnly && <Field
             label={t("來源帳單金額（HKD）", "Source invoice amount (HKD)")}
           >
             <input name="invoice" inputMode="decimal" required />
-          </Field>
+          </Field>}
         </div>
         <Field label={t("操作原因", "Reason")}>
           <textarea name="reason" minLength={3} maxLength={1000} required />
