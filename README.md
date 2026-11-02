@@ -1,3 +1,30 @@
+<!-- live-acceptance-188 -->
+
+## 真实环境测试与上线 · 188
+
+已部署真实文本服务：Web 与 Chrome 原生右侧 Side Panel 已完成“登录 → 上传获准文件 → 云端 Codex 分析 → 生成文件 → 下载 → 核对实际扣费”。后台完成真实用户／企业新建删除、批量状态管理、模型独立 API/Key 编辑删除、VIP 授予撤销及审计检查。操作与使用边界见[完整报告](https://github.com/copypasteltd/workmate/blob/docs/docs/development/188-live-acceptance.md)。
+
+Desktop 使用本机固定版本 Codex，客户主动选择目录并确认完整本机权限。已修复 GPT 模型的原生 exec 格式兼容，真实本机命令／文件／企业工具桥接通过协议测试；最终真实模型 Desktop 复验受公网连接不稳阻塞，尚不能判定端到端通过。全量后端原始回归为 1,936 项：1,834 通过、101 失败、1 跳过；后续针对修复与现行策略的检查分别记录，不能据此宣称全部通过。
+
+配置和使用：管理员在“模型能力”逐模型填写上游 URL、API Key、模型别名与费率，验证并发布可用版本；用户验证邮箱后选择真实企业与项目，再发起有预算的工作。当前仍使用受保护的测试收件箱。生图实际返回403，视频／语音及 Google／Meta 授权缺失；这些服务尚未取得真实验收。
+
+```mermaid
+flowchart LR
+ A[邮箱验证 / Email verification] --> B[企业与项目 / Workspace and project]
+ B --> C[Web 与 Extension: 云端 Codex]
+ B --> D[Desktop: 主动授予本机权限]
+ D --> E[客户本机 Codex]
+ C --> F[公司服务与逐模型连接]
+ E --> F
+ F --> G[文件交付、实际用量与审计]
+```
+
+![实际 Desktop 本机权限确认 / Actual Desktop local permission consent](assets/screenshots/188-desktop-full-access.png)
+
+下图为真实 Web 已完成任务的只读浏览与滚动录像节选；不代表所有端均已完成真实模型验收。
+
+![实际 Web 结果交互](assets/demos/188-actual-cloud-result.gif)
+
 # Workmate · desktop · v0.1.0
 
 <!-- public-domains-177 -->
