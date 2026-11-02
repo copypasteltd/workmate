@@ -1,3 +1,33 @@
+<!-- selected-repairs-191 -->
+
+## Selected execution repairs and Desktop handoff · 191
+
+The existing evidence/preview/super-admin workflow performed audited QA capacity release while preserving unknown fees. Admin product sources are unchanged. Selected issues02/03/04/05/07 have current evidence. The owner removed12; the new Windows build is unsigned and installed manually. Unknown supplier fees/reservations remain unresolved; execution-capacity release does not settle a bill.
+
+The final Desktop uses the installer default company HTTPS origin through raw CONNECT forwarding, preserving end-to-end TLS verification, requests, model output and accounting. Browser PKCE uses the canonical HTTPS domain. This real workflow passed; a single acceptance does not establish long-term public-route reliability, so issue01 remains open. Fresh scopes: backend40/40, streaming gateway24/24, Windows cloud compatibility38/38, Desktop controller74/74, actual pinned-Codex disconnect1/1 and native Linux8/8; actual cloud task HK$0.126067 and final-build Desktop task HK$0.035144. These are separate checks, not a fresh whole-product acceptance. Public reliability and other unselected190 items retain their gaps. Older entries below are historical.
+
+```mermaid
+flowchart LR
+ A[Sign in and select workspace] --> B[Cloud Codex: Web and Extension]
+ A --> C[Desktop: explicit local permission]
+ C --> D[Customer-local Codex]
+ B --> E[Company model API and usage]
+ D --> E
+ B --> F[Native Linux program and browser receipts]
+ E --> G[Measured billing and delivery]
+ F --> G
+```
+
+[方案 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/191-native-execution-and-capacity.md) · [证据 / Evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/191-selected-repairs.json) · [Desktop0.7.4手动下载 / Manual download](https://github.com/copypasteltd/workmate/releases/tag/desktop-v0.7.4)
+
+![Actual Desktop result / 实际本机结果](assets/screenshots/191-real-desktop-result.png)
+
+![Actual Web delivery / 实际Web交付](assets/screenshots/191-real-cloud-delivery.png)
+
+Actual Web download recording excerpt; identity labels redacted. 这是Web实际录像节选，不代表其他端的新交互录像。
+
+![Actual Web download](assets/demos/191-actual-cloud-download.gif)
+
 <!-- live-acceptance-189 -->
 
 ## Real image deployment and acceptance · 189
