@@ -9,7 +9,8 @@ import { gatewayFingerprint } from "./capability-bindings.js";
 import { CodexRuntimeAdapter, RuntimeFailure } from "./runtime.js";
 import { tokenCharge } from "./billing.js";
 import { removeOwnedUUIDDirectory } from "./owned-directory-cleanup.js";
-import { validateVerificationPNG } from "./png-validation.js";
+import { imageVerificationObservation } from "./image-verification-observation.js";
+import { normalizeGeneratedImagePNG } from "./generated-image-normalization.js";
 import { videoJobLimits, videoJobOperations, videoJobProtocol } from "./video-job-protocol.js";
 import { speechLimits, speechProtocol, transcriptionLimits, transcriptionProtocol } from "./audio-production-model.js";
 import {
@@ -339,10 +340,16 @@ export async function verifyCapability(
         const encoded = payload.data[0]?.b64_json;
         if (typeof encoded !== "string" || encoded.length > 70_000_000)
           throw new Problem(502, "AI_IMAGE_INLINE_RESULT_REQUIRED", "A bounded inline image is required");
-        const bytes = Buffer.from(encoded, "base64");
+        let bytes: Buffer = Buffer.from(encoded, "base64");
         if (bytes.toString("base64") !== encoded)
           throw new Problem(502, "AI_IMAGE_BASE64_INVALID", "Canonical PNG base64 is required");
-        validateVerificationPNG(bytes);
+        evidence.image_responses ??= [];
+        evidence.image_responses.push({ operation: `images.${operation}`, http_status: response.status,
+          ...imageVerificationObservation(bytes) });
+        const normalized = normalizeGeneratedImagePNG(bytes);
+        evidence.image_responses.at(-1).normalized = normalized.normalized;
+        evidence.image_responses.at(-1).output = normalized.output;
+        bytes = normalized.bytes;
         await finishInternalAIRequest(response, {
           state: "completed",
           imageUnits: 1,

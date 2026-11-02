@@ -45,8 +45,14 @@ export function assertProviderEvidenceBinding(
 }
 /** Exact frozen-rate calculation; an invoice cannot substitute a client charge. */
 export function providerEvidenceCost(r: any, raw: unknown, now = Date.now()) {
-  const d = assertProviderEvidenceBinding(r, raw, now),
-    u = d.usage;
+  const d = assertProviderEvidenceBinding(r, raw, now);
+  if ("purpose" in d)
+    throw new Problem(
+      409,
+      "PROVIDER_COST_UNKNOWN",
+      "Termination-only evidence cannot confirm an unknown invoice or usage",
+    );
+  const u = d.usage;
   let input = 0,
     output = 0,
     images = 0,

@@ -86,7 +86,7 @@ import {
   AIRequestFailure,
   type AIRequestInfo,
 } from "./internal-ai-gateway.js";
-import { validateVerificationPNG } from "./png-validation.js";
+import { normalizeGeneratedImagePNG } from "./generated-image-normalization.js";
 import path from "node:path";
 import { z } from "zod";
 import { assertTaskToolNotPausing } from "./task-pause.js";
@@ -1916,8 +1916,8 @@ export class TaskBusinessTools {
     return {
       name: edit ? "image2_edit" : "image2_generate",
       description: edit
-        ? "Edit an authorized project image through the company internal Image 2 capability and save a new immutable artifact. Named workflow images always use their customer-approved fixed version; pass asset_version_id to disambiguate multiple approved versions of one image."
-        : "Generate one real image through the company internal Image 2 capability, with a recorded charge and immutable artifact.",
+        ? "Edit an authorized project image through the company internal Image 2 capability and save a new immutable artifact. A larger square result is normalized to 1024 square and its exact original is retained as a separate project artifact. Named workflow images always use their customer-approved fixed version; pass asset_version_id to disambiguate multiple approved versions of one image."
+        : "Generate one real image through the company internal Image 2 capability, with a recorded charge and immutable artifact. A larger square result is normalized to 1024 square and its exact original is retained as a separate project artifact.",
       inputSchema: {
         type: "object",
         properties: {
@@ -1958,8 +1958,7 @@ export class TaskBusinessTools {
           !c.AI_IMAGE_VERIFIED ||
           !c.AI_IMAGE_MODEL ||
           !c.AI_IMAGE_HKD_MICROS_PER_IMAGE ||
-          !c.AI_BASE_URL ||
-          !c.AI_API_KEY
+          ((!c.AI_BASE_URL || !c.AI_API_KEY) && !c.MODEL_CONNECTION_RESOLVER)
         )
           throw new Error("Image 2 is not configured");
         let source:
@@ -2205,10 +2204,12 @@ export class TaskBusinessTools {
           const encoded = r.data?.[0]?.b64_json;
           if (typeof encoded !== "string" || encoded.length > 70_000_000)
             throw new Error("Gateway must return bounded base64 image bytes");
-          const bytes = Buffer.from(encoded, "base64");
+          const originalBytes = Buffer.from(encoded, "base64");
+          let bytes: Buffer = originalBytes;
           if (bytes.toString("base64") !== encoded)
             throw new Error("Canonical PNG base64 is required");
-          validateVerificationPNG(bytes);
+          const normalized = normalizeGeneratedImagePNG(bytes);
+          bytes = normalized.bytes;
           await finishInternalAIRequest(response, {
             state: "completed",
             imageUnits: 1,
@@ -2220,6 +2221,13 @@ export class TaskBusinessTools {
               // Persist its measured result under the original fencing and source
               // checks; the input request prevents new operations, not completion.
               await this.authority.authorize(tx);
+              const original = normalized.normalized ? await saveAsset(tx, this.storage, {
+                tenant: t.tenant_id, project: t.project_id, user: actor.id,
+                name: b.filename.slice(0, -4).slice(0, 140) + ".original.png",
+                mime: "image/png", bytes: originalBytes, kind: "generated_image",
+                metadata: { task_id: t.id, operation_id: op.id, model: c.AI_IMAGE_MODEL,
+                  capability_version_id: binding.image!.id, upstream_original: true, image_source: normalized.source },
+              }) : null;
               const a = await saveAsset(tx, this.storage, {
                 tenant: t.tenant_id,
                 project: t.project_id,
@@ -2233,6 +2241,8 @@ export class TaskBusinessTools {
                   operation_id: op.id,
                   model: c.AI_IMAGE_MODEL,
                   capability_version_id: binding.image!.id,
+                  image_normalization: { applied: normalized.normalized, source: normalized.source, output: normalized.output,
+                    original_asset_id: original?.id ?? null, original_version_id: original?.version.id ?? null },
                 },
               });
               await tx.query(

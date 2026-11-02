@@ -14,6 +14,7 @@ import { validateSourcePath } from "./code-workspace.js";
 import { removeOwnedUUIDDirectory } from "./owned-directory-cleanup.js";
 import { reclaimCloudBrowserProfiles } from "./cloud-browser-reclamation.js";
 import { hash, Problem } from "./lib.js";
+import { withinPreviewDeadline } from "./preview-deadline.js";
 
 const selector = z.string().trim().min(1).max(500);
 const action = z.discriminatedUnion("action", [
@@ -310,229 +311,235 @@ export async function runCloudBrowserPreview(
         },
       },
     );
-    context.setDefaultTimeout(Math.min(2500, a.timeout_ms));
-    context.setDefaultNavigationTimeout(a.timeout_ms);
-    await context.routeWebSocket("**/*", (socket) => {
-      denied("websocket", socket.url());
-      socket.close();
-    });
-    await context.addInitScript(() => {
-      for (const name of [
-        "RTCPeerConnection",
-        "webkitRTCPeerConnection",
-        "WebTransport",
-      ])
-        Object.defineProperty(globalThis, name, {
-          value: undefined,
-          writable: false,
-          configurable: false,
-        });
-    });
-    await context.route("**/*", async (route) => {
-      if (++requests > 200) {
-        stopNow("resource_limit");
-        await route.abort("blockedbyclient");
-        return;
-      }
-      const req = route.request();
-      let relative: string | undefined;
-      if (
-        req.url() === "http://preview-controller.invalid/" &&
-        req.isNavigationRequest() &&
-        !req.frame().parentFrame()
-      ) {
+    // CDP methods without their own timeout can remain pending after a stalled
+    // renderer. The one caller deadline must return control to the owned-context
+    // cleanup even when that protocol reply never arrives.
+    const activeContext = context;
+    await withinPreviewDeadline(bounded, async () => {
+      activeContext.setDefaultTimeout(Math.min(2500, a.timeout_ms));
+      activeContext.setDefaultNavigationTimeout(a.timeout_ms);
+      await activeContext.routeWebSocket("**/*", (socket) => {
+        denied("websocket", socket.url());
+        socket.close();
+      });
+      await activeContext.addInitScript(() => {
+        for (const name of [
+          "RTCPeerConnection",
+          "webkitRTCPeerConnection",
+          "WebTransport",
+        ])
+          Object.defineProperty(globalThis, name, {
+            value: undefined,
+            writable: false,
+            configurable: false,
+          });
+      });
+      await activeContext.route("**/*", async (route) => {
+        if (++requests > 200) {
+          stopNow("resource_limit");
+          await route.abort("blockedbyclient");
+          return;
+        }
+        const req = route.request();
+        let relative: string | undefined;
+        if (
+          req.url() === "http://preview-controller.invalid/" &&
+          req.isNavigationRequest() &&
+          !req.frame().parentFrame()
+        ) {
+          await route.fulfill({
+            status: 200,
+            headers: {
+              "Content-Type": "text/html; charset=utf-8",
+              "Content-Security-Policy":
+                "default-src 'none'; style-src 'unsafe-inline'; frame-src http://preview.invalid; object-src 'none'; base-uri 'none'; form-action 'none'",
+              "Cache-Control": "no-store",
+              "X-DNS-Prefetch-Control": "off",
+            },
+            body: controllerHTML,
+          });
+          return;
+        }
+        try {
+          const url = new URL(req.url());
+          if (
+            url.protocol === "http:" &&
+            url.hostname === "preview.invalid" &&
+            !url.port &&
+            !url.username &&
+            !url.password &&
+            !/%2f|%5c/i.test(url.pathname) &&
+            ["GET", "HEAD"].includes(req.method())
+          )
+            relative = validateSourcePath(
+              decodeURIComponent(url.pathname.slice(1)),
+            ).normalize("NFC");
+        } catch {}
+        const content = relative
+            ? contents.get(relative.toLowerCase())
+            : undefined,
+          type = relative
+            ? mime[path.extname(relative).toLowerCase()]
+            : undefined;
+        if (!relative || !content || !type) {
+          denied("resource", req.url());
+          await route.abort("blockedbyclient");
+          return;
+        }
         await route.fulfill({
           status: 200,
           headers: {
-            "Content-Type": "text/html; charset=utf-8",
-            "Content-Security-Policy":
-              "default-src 'none'; style-src 'unsafe-inline'; frame-src http://preview.invalid; object-src 'none'; base-uri 'none'; form-action 'none'",
-            "Cache-Control": "no-store",
+            "Content-Type": type,
+            "Content-Security-Policy": csp,
+            "X-Content-Type-Options": "nosniff",
             "X-DNS-Prefetch-Control": "off",
+            "Cache-Control": "no-store",
+            "Permissions-Policy":
+              "camera=(), microphone=(), geolocation=(), usb=(), serial=(), hid=(), bluetooth=(), payment=()",
           },
-          body: controllerHTML,
+          body: req.method() === "HEAD" ? Buffer.alloc(0) : content,
         });
-        return;
-      }
+      });
+      page = activeContext.pages()[0] ?? (await activeContext.newPage());
+      const storageSession = await activeContext.newCDPSession(page);
       try {
-        const url = new URL(req.url());
-        if (
-          url.protocol === "http:" &&
-          url.hostname === "preview.invalid" &&
-          !url.port &&
-          !url.username &&
-          !url.password &&
-          !/%2f|%5c/i.test(url.pathname) &&
-          ["GET", "HEAD"].includes(req.method())
-        )
-          relative = validateSourcePath(
-            decodeURIComponent(url.pathname.slice(1)),
-          ).normalize("NFC");
-      } catch {}
-      const content = relative
-          ? contents.get(relative.toLowerCase())
-          : undefined,
-        type = relative
-          ? mime[path.extname(relative).toLowerCase()]
-          : undefined;
-      if (!relative || !content || !type) {
-        denied("resource", req.url());
-        await route.abort("blockedbyclient");
-        return;
+        await storageSession.send("Storage.overrideQuotaForOrigin", {
+          origin: "http://preview.invalid",
+          quotaSize: 8 * 1024 * 1024,
+        });
+      } finally {
+        await storageSession.detach();
       }
-      await route.fulfill({
-        status: 200,
-        headers: {
-          "Content-Type": type,
-          "Content-Security-Policy": csp,
-          "X-Content-Type-Options": "nosniff",
-          "X-DNS-Prefetch-Control": "off",
-          "Cache-Control": "no-store",
-          "Permissions-Policy":
-            "camera=(), microphone=(), geolocation=(), usb=(), serial=(), hid=(), bluetooth=(), payment=()",
-        },
-        body: req.method() === "HEAD" ? Buffer.alloc(0) : content,
+      activeContext.on("page", (p) => {
+        if (p !== page) {
+          denied("popup", p.url());
+          void p.close().catch(() => {});
+        }
       });
-    });
-    page = context.pages()[0] ?? (await context.newPage());
-    const storageSession = await context.newCDPSession(page);
-    try {
-      await storageSession.send("Storage.overrideQuotaForOrigin", {
-        origin: "http://preview.invalid",
-        quotaSize: 8 * 1024 * 1024,
+      page.on("dialog", (d) => void d.dismiss().catch(() => {}));
+      page.on("download", (d) => {
+        denied("download", d.url());
+        void d.cancel().catch(() => {});
       });
-    } finally {
-      await storageSession.detach();
-    }
-    context.on("page", (p) => {
-      if (p !== page) {
-        denied("popup", p.url());
-        void p.close().catch(() => {});
-      }
-    });
-    page.on("dialog", (d) => void d.dismiss().catch(() => {}));
-    page.on("download", (d) => {
-      denied("download", d.url());
-      void d.cancel().catch(() => {});
-    });
-    page.on("pageerror", (e) => {
-      if (pageErrors.length < 20) pageErrors.push(e.message.slice(0, 1500));
-    });
-    page.on("console", (m) => {
-      if (consoleLog.length < 64 && consoleBytes < 32768) {
-        const text = m.text().slice(0, 2000);
-        consoleBytes += Buffer.byteLength(text);
-        consoleLog.push({ type: m.type(), text });
-      }
-    });
-    attestation = await attest();
-    if (bounded.aborted) throw new Error("PREVIEW_STOPPED");
-    const remaining = Math.floor(a.timeout_ms - (performance.now() - executionStarted));
-    if (remaining <= 0) {
-      controller.abort();
-      throw new Error("PREVIEW_STOPPED");
-    }
-    await page.goto("http://preview-controller.invalid/", {
-      waitUntil: "load",
-      // Startup and attestation have already consumed part of the one caller
-      // budget. A separate five-second cap rejected otherwise valid local
-      // pages; zero would instead disable Playwright's timeout entirely.
-      timeout: remaining,
-    });
-    const taskFrame = page.frameLocator("#task-preview");
-    for (const step of a.actions) {
+      page.on("pageerror", (e) => {
+        if (pageErrors.length < 20) pageErrors.push(e.message.slice(0, 1500));
+      });
+      page.on("console", (m) => {
+        if (consoleLog.length < 64 && consoleBytes < 32768) {
+          const text = m.text().slice(0, 2000);
+          consoleBytes += Buffer.byteLength(text);
+          consoleLog.push({ type: m.type(), text });
+        }
+      });
+      attestation = await attest();
       if (bounded.aborted) throw new Error("PREVIEW_STOPPED");
-      const target = taskFrame.locator(step.selector);
-      switch (step.action) {
-        case "click":
-          await target.click();
-          break;
-        case "fill":
-          await target.fill(step.value);
-          break;
-        case "select":
-          await target.selectOption(step.value);
-          break;
-        case "check":
-          await target.setChecked(step.checked);
-          break;
-        case "press":
-          await target.press(step.key);
-          break;
-        case "wait_for":
-          await target.waitFor({ state: step.state });
-          break;
+      const remaining = Math.floor(a.timeout_ms - (performance.now() - executionStarted));
+      if (remaining <= 0) {
+        controller.abort();
+        throw new Error("PREVIEW_STOPPED");
       }
-      actionCount++;
-    }
-    const element = await page.locator("#task-preview").elementHandle(),
-      activeFrame = await element?.contentFrame();
-    if (
-      page.url() !== "http://preview-controller.invalid/" ||
-      !activeFrame ||
-      new URL(activeFrame.url()).origin !== "http://preview.invalid"
-    )
-      throw new Error("PREVIEW_NAVIGATION_DENIED");
-    for (const check of a.checks) {
-      if (bounded.aborted) throw new Error("PREVIEW_STOPPED");
-      let actual: unknown,
-        passed = false,
-        checkError: string | undefined;
-      try {
-        const target = taskFrame.locator(check.selector),
-          want = check.expect,
-          end = Date.now() + Math.min(2500, a.timeout_ms);
-        do {
-          if ("count" in want) {
-            actual = await target.count();
-            passed = actual === want.count;
-          } else if ("visible" in want) {
-            actual = await target.isVisible();
-            passed = actual === want.visible;
-          } else if ("value" in want) {
-            actual = await target.inputValue();
-            passed = actual === want.value;
-          } else {
-            actual = (await target.innerText()).slice(0, 8000);
-            passed =
-              "text" in want
-                ? actual === want.text
-                : (actual as string).includes(want.contains_text);
-          }
-          if (passed || Date.now() >= end || bounded.aborted) break;
-          await delay(40);
-        } while (true);
-      } catch (e) {
-        checkError = cleanError(e);
-      }
-      checks.push({
-        name: check.name,
-        expected: check.expect,
-        actual,
-        passed,
-        ...(checkError ? { error: checkError } : {}),
+      await page.goto("http://preview-controller.invalid/", {
+        waitUntil: "load",
+        // Startup and attestation have already consumed part of the one caller
+        // budget. A separate five-second cap rejected otherwise valid local
+        // pages; zero would instead disable Playwright's timeout entirely.
+        timeout: remaining,
       });
-    }
-    afterAttestation = await attest();
-    // The screenshot and DOM come from the same actual browser after actions.
-    const png = await page.screenshot({
-      type: "png",
-      timeout: Math.min(3000, a.timeout_ms),
-      animations: "disabled",
+      const taskFrame = page.frameLocator("#task-preview");
+      for (const step of a.actions) {
+        if (bounded.aborted) throw new Error("PREVIEW_STOPPED");
+        const target = taskFrame.locator(step.selector);
+        switch (step.action) {
+          case "click":
+            await target.click();
+            break;
+          case "fill":
+            await target.fill(step.value);
+            break;
+          case "select":
+            await target.selectOption(step.value);
+            break;
+          case "check":
+            await target.setChecked(step.checked);
+            break;
+          case "press":
+            await target.press(step.key);
+            break;
+          case "wait_for":
+            await target.waitFor({ state: step.state });
+            break;
+        }
+        actionCount++;
+      }
+      const element = await page.locator("#task-preview").elementHandle(),
+        activeFrame = await element?.contentFrame();
+      if (
+        page.url() !== "http://preview-controller.invalid/" ||
+        !activeFrame ||
+        new URL(activeFrame.url()).origin !== "http://preview.invalid"
+      )
+        throw new Error("PREVIEW_NAVIGATION_DENIED");
+      for (const check of a.checks) {
+        if (bounded.aborted) throw new Error("PREVIEW_STOPPED");
+        let actual: unknown,
+          passed = false,
+          checkError: string | undefined;
+        try {
+          const target = taskFrame.locator(check.selector),
+            want = check.expect,
+            end = Date.now() + Math.min(2500, a.timeout_ms);
+          do {
+            if ("count" in want) {
+              actual = await target.count();
+              passed = actual === want.count;
+            } else if ("visible" in want) {
+              actual = await target.isVisible();
+              passed = actual === want.visible;
+            } else if ("value" in want) {
+              actual = await target.inputValue();
+              passed = actual === want.value;
+            } else {
+              actual = (await target.innerText()).slice(0, 8000);
+              passed =
+                "text" in want
+                  ? actual === want.text
+                  : (actual as string).includes(want.contains_text);
+            }
+            if (passed || Date.now() >= end || bounded.aborted) break;
+            await delay(40);
+          } while (true);
+        } catch (e) {
+          checkError = cleanError(e);
+        }
+        checks.push({
+          name: check.name,
+          expected: check.expect,
+          actual,
+          passed,
+          ...(checkError ? { error: checkError } : {}),
+        });
+      }
+      afterAttestation = await attest();
+      // The screenshot and DOM come from the same actual browser after actions.
+      const png = await page.screenshot({
+        type: "png",
+        timeout: Math.min(3000, a.timeout_ms),
+        animations: "disabled",
+      });
+      if (png.length > 4_000_000) throw new Error("SCREENSHOT_LIMIT");
+      files.push({ path: "browser-preview.png", bytes: png });
+      const text = await taskFrame.locator("body").innerText({ timeout: 1000 });
+      files.push({
+        path: "page-text.txt",
+        bytes: Buffer.from(text.slice(0, 100000)),
+      });
+      const dom = await taskFrame
+        .locator("html")
+        .evaluate((element) => element.outerHTML.slice(0, 200000));
+      files.push({ path: "page-dom.html", bytes: Buffer.from(dom) });
+      if (a.fail_on_page_error && pageErrors.length)
+        error = "PAGE_SCRIPT_ERROR: " + pageErrors.join("; ").slice(0, 1500);
     });
-    if (png.length > 4_000_000) throw new Error("SCREENSHOT_LIMIT");
-    files.push({ path: "browser-preview.png", bytes: png });
-    const text = await taskFrame.locator("body").innerText({ timeout: 1000 });
-    files.push({
-      path: "page-text.txt",
-      bytes: Buffer.from(text.slice(0, 100000)),
-    });
-    const dom = await taskFrame
-      .locator("html")
-      .evaluate((element) => element.outerHTML.slice(0, 200000));
-    files.push({ path: "page-dom.html", bytes: Buffer.from(dom) });
-    if (a.fail_on_page_error && pageErrors.length)
-      error = "PAGE_SCRIPT_ERROR: " + pageErrors.join("; ").slice(0, 1500);
   } catch (e) {
     error = cleanError(e);
   } finally {

@@ -1,16 +1,17 @@
 import { crc32, inflateSync } from "node:zlib";
 import { PNG } from "pngjs";
 
-/** Decode the actual image, with bounds established before either inflater runs. */
-export function validateVerificationPNG(bytes: Buffer) {
+/** Both paths validate compressed and decoded bounds before accepting pixels. */
+function decodeSquarePNG(bytes: Buffer, maxSide: 1024 | 2048) {
+  const side = bytes.length >= 24 ? bytes.readUInt32BE(16) : 0;
   if (
     bytes.length < 57 ||
     bytes.length > 52_500_000 ||
     bytes.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a" ||
     bytes.readUInt32BE(8) !== 13 ||
     bytes.toString("latin1", 12, 16) !== "IHDR" ||
-    bytes.readUInt32BE(16) !== 1024 ||
-    bytes.readUInt32BE(20) !== 1024
+    side < 1024 || side > maxSide ||
+    bytes.readUInt32BE(20) !== side
   )
     throw new Error("A complete 1024-square PNG is required");
   const depth = bytes[24],
@@ -82,8 +83,8 @@ export function validateVerificationPNG(bytes: Buffer) {
         ]
       : [[0, 0, 1, 1]],
     expected = passes.reduce((total, [x, y, dx, dy]) => {
-      const width = Math.ceil((1024 - x) / dx),
-        height = Math.ceil((1024 - y) / dy);
+      const width = Math.ceil((side - x) / dx),
+        height = Math.ceil((side - y) / dy);
       return total + (Math.ceil((width * channels * depth) / 8) + 1) * height;
     }, 0),
     input = Buffer.concat(compressed),
@@ -103,9 +104,20 @@ export function validateVerificationPNG(bytes: Buffer) {
     throw new Error("PNG compressed data is incomplete or contains extra data");
   const decoded = PNG.sync.read(bytes, { checkCRC: true });
   if (
-    decoded.width !== 1024 ||
-    decoded.height !== 1024 ||
-    decoded.data.length !== 1024 * 1024 * 4
+    decoded.width !== side ||
+    decoded.height !== side ||
+    decoded.data.length !== side * side * 4
   )
     throw new Error("PNG pixel decoding is incomplete");
+  return decoded;
+}
+
+/** Original exact-size validator remains strict for every existing caller. */
+export function validateVerificationPNG(bytes: Buffer) {
+  decodeSquarePNG(bytes, 1024);
+}
+
+/** A complete square result may be downsampled; no upscaling or aspect crop. */
+export function decodeBoundedGatewayPNG(bytes: Buffer) {
+  return decodeSquarePNG(bytes, 2048);
 }

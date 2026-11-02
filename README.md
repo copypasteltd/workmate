@@ -1,3 +1,30 @@
+<!-- live-acceptance-189 -->
+
+## 真实生图上线与本轮验收 · 189
+
+`gpt-image-2` 已使用与文字模型相同的上游接口和密钥通过真实生成、编辑验证并发布。实际 Web 设计师任务已生成文件、下载核对散列并计入真实用量。修复1254平方PNG与请求1024不一致的适配，保留上游原始字节；同时移除生图工具对重复全局密钥的错误依赖，并阻止未恢复的生图失败被标成成功。
+
+本仓库实现云端 Codex、逐模型接口解析、权限、文件存储与账务。数据库保持161；生图和编辑共享已发布图片版本。
+
+后端完整运行1950项：1949通过、1失败；该浏览器超时问题随后14/14复验通过。Web28/28、后台20/20、Extension89/89、Desktop269/269及全部构建通过。图片适配48/48、逐模型图片／原图保存与测试发现36/36、真实本机协议下的生图失败／恢复2/2分别通过，不能相加当作新全量结果。
+
+Desktop真实供应商任务、公网稳定性、视频／语音／Google与Meta授权、SMTP及Linux原生执行器仍有验收缺口。测试收件箱按要求保留；不宣称完整应用全部通过。[完整方案、使用逻辑、原始失败与回滚](https://github.com/copypasteltd/workmate/blob/docs/docs/development/189-real-image-and-acceptance.md)。
+
+```mermaid
+flowchart LR
+ A[Select Designer and budget] --> B[Cloud Codex with design skills]
+ B --> C[Company API and frozen model connection]
+ C --> D[Decode and verify PNG]
+ D --> E[1024 image and exact upstream original]
+ E --> F[Authorized download and measured billing]
+```
+
+![实际 Web 图片交付 / Actual Web image delivery](assets/screenshots/189-real-image-delivery.png)
+
+下方为实际 Web 下载流程录像节选；在其他端的README中引用也仅代表Web证据。
+
+![实际交互](assets/demos/189-actual-image-download.gif)
+
 <!-- live-acceptance-188 -->
 
 ## 真实环境测试与上线 · 188

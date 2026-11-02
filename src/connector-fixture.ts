@@ -4,9 +4,9 @@ import {
   type ServerResponse,
 } from "node:http";
 import { randomUUID } from "node:crypto";
-import type { AddressInfo } from "node:net";
 import type { Config } from "./config.js";
 import { canonical, hash, token } from "./lib.js";
+import { listenLoopbackHTTP } from "./loopback-http.js";
 
 export type ConnectorFixtureFault =
   | "rate_limit"
@@ -546,11 +546,8 @@ export async function startConnectorFixture(config: Config) {
     }
     return send(res, 404, { error: { code: 404 } });
   }
-  await new Promise<void>((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(0, "127.0.0.1", () => resolve());
-  });
-  origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  const port = await listenLoopbackHTTP(server);
+  origin = `http://127.0.0.1:${port}`;
   return {
     config: {
       ...config,

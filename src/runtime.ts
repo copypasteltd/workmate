@@ -373,6 +373,7 @@ export class CodexRuntimeAdapter {
         threadOutput = baselineOutput;
       let completedResult: RuntimeResult | undefined;
       let invalidUsage = false;
+      const failedImageTools = new Set<string>();
       let stdoutBytes = 0,
         stderrBytes = 0;
       const rpcFailure = (code: string, method: string, startedAt: number) =>
@@ -481,7 +482,12 @@ export class CodexRuntimeAdapter {
                 success: true,
                 contentItems: runtimeToolContent(await tool.run(m.params.arguments, m.params.callId)),
               };
+              failedImageTools.delete(tool.name);
             } catch {
+              if (tool && ["image2_generate", "image2_edit"].includes(tool.name)) {
+                failedImageTools.add(tool.name);
+                await ctx.onEvent("runtime.tool.failed", { tool: tool.name, code: "IMAGE_TOOL_FAILED" });
+              }
               result = {
                 success: false,
                 contentItems: [
@@ -660,7 +666,8 @@ export class CodexRuntimeAdapter {
         turn = t.turn.id;
         await ctx.onEvent("runtime.turn", { thread_id: thread, turn_id: turn });
         if (ctx.signal.aborted) abort();
-        const status = await done;
+        const nativeStatus = await done;
+        const status = nativeStatus === "completed" && failedImageTools.size ? "failed" : nativeStatus;
         await ctx.onEvent("runtime.phase", { phase: "finished", status });
         await chain;
         if (gateway.forwardedRequests === 0) {
@@ -698,7 +705,7 @@ export class CodexRuntimeAdapter {
           thread,
           turn,
           status,
-          ...(status !== "completed" ? { errorCode: gatewayError ?? "CODEX_TURN_FAILED" } : {}),
+          ...(status !== "completed" ? { errorCode: failedImageTools.size ? "IMAGE_TOOL_FAILED" : gatewayError ?? "CODEX_TURN_FAILED" } : {}),
         };
         return completedResult;
       } catch (e) {
@@ -739,6 +746,14 @@ export class CodexRuntimeAdapter {
             throw new RecoverableStartupFailure(e.code, e.method);
           throw e;
         }
+        const diagnosticCodes = new Set(["EACCES", "EPERM", "ENOENT", "EEXIST", "ENOTDIR", "ENOTEMPTY", "EPIPE", "ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "ERR_STREAM_DESTROYED", "ERR_INVALID_ARG_TYPE"]);
+        const diagnosticClasses = new Set(["Error", "TypeError", "RangeError", "SyntaxError", "AbortError"]);
+        await ctx.onEvent("runtime.failure", {
+          attempt,
+          code: diagnosticCodes.has((e as any)?.code) ? (e as any).code : "UNEXPECTED_RUNTIME_ERROR",
+          error_class: diagnosticClasses.has((e as any)?.name) ? (e as any).name : "Error",
+          provider_requests: gateway.forwardedRequests,
+        }).catch(() => {});
         throw new RuntimeFailure(
           "CODEX_RUNTIME_FAILED",
           accepted,

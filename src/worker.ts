@@ -725,7 +725,7 @@ export class Worker {
         result.inputTokens,
         result.outputTokens,
         !result.usageKnown && result.accepted,
-        undefined,
+        result.errorCode,
         result.status === "completed" && result.usageKnown
           ? { thread: result.thread, turn: result.turn }
           : undefined,

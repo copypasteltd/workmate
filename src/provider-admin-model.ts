@@ -82,7 +82,7 @@ export const providerPolicyPublication = z
     reason: providerReason,
   })
   .strict();
-export const providerEvidenceDocument = z
+const providerCostEvidenceDocument = z
   .object({
     schema_version: z.literal(1),
     data_mode: providerDataMode,
@@ -119,6 +119,20 @@ export const providerEvidenceDocument = z
     ]),
   })
   .strict();
+/** Additive v1 evidence purpose: termination can be known while every fee and
+ * usage quantity remains unknown. It cannot authorize cost reconciliation. */
+const providerTerminationEvidenceDocument = providerCostEvidenceDocument
+  .omit({ billed_micros: true, usage: true })
+  .extend({
+    purpose: z.literal("termination_only"),
+    billed_micros: z.null(),
+    usage: z.object({ kind: z.enum(["text", "image", "input_count"]) }).strict(),
+  })
+  .strict();
+export const providerEvidenceDocument = z.union([
+  providerCostEvidenceDocument,
+  providerTerminationEvidenceDocument,
+]);
 export const providerEvidenceCreate = z
   .object({
     document: providerEvidenceDocument,

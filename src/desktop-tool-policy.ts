@@ -16,10 +16,29 @@ export interface DesktopCompanyToolSchema {
 /** Project only trusted registrations to the pinned native runtime's wire form.
  * Native schema compaction is part of that contract, not caller permission.
  * The original business validators remain mandatory before all effects. */
-function nativeSchema(schema: unknown): unknown {
+function recursiveJsonDefinition(value: unknown, reference: string): boolean {
+  // z.json() accepts every JSON wire value. {} preserves that transport-level
+  // meaning; it does not relax the business parser or other recursive schemas.
+  const expected = { anyOf: [
+    { type: "string" }, { type: "number" }, { type: "boolean" }, { type: "null" },
+    { type: "array", items: { $ref: reference } },
+    { type: "object", propertyNames: { type: "string" }, additionalProperties: { $ref: reference } },
+  ] };
+  return canonical(value) === canonical(expected);
+}
+
+function nativeSchema(schema: unknown, definitions: Record<string, unknown> = {}): unknown {
   if (typeof schema === "boolean") return schema;
   if (!schema || typeof schema !== "object" || Array.isArray(schema))
     throw new Error("Invalid trusted company schema");
+  if ("$ref" in schema) {
+    const reference = (schema as Record<string, unknown>).$ref;
+    if (Object.keys(schema).length !== 1 || typeof reference !== "string" ||
+      !/^#\/\$defs\/[a-zA-Z0-9_]{1,100}$/.test(reference) ||
+      !recursiveJsonDefinition(definitions[reference.slice(8)], reference))
+      throw new Error("Unsupported trusted native company schema reference");
+    return {};
+  }
   const result: Record<string, unknown> = {};
   const omitted = new Set([
     "$schema",
@@ -50,13 +69,16 @@ function nativeSchema(schema: unknown): unknown {
     else if (key === "properties")
       result[key] = Object.fromEntries(
         Object.entries(value as Record<string, unknown>).map(
-          ([name, child]) => [name, nativeSchema(child)],
+          ([name, child]) => [name, nativeSchema(child, definitions)],
         ),
       );
     else if (key === "items" || key === "additionalProperties")
-      result[key] = nativeSchema(value);
+      result[key] = nativeSchema(value, definitions);
     else if (["oneOf", "anyOf"].includes(key) && Array.isArray(value))
-      result[key] = value.map(nativeSchema);
+      result[key] = value.map(child => nativeSchema(child, definitions));
+    else if (key === "$defs") {
+      if (value !== definitions) throw new Error("Unsupported nested native schema definitions");
+    }
     else throw new Error("Unsupported trusted native company schema keyword");
   }
   // The pinned native serializer emits an explicit empty properties object for
@@ -68,10 +90,15 @@ function nativeSchema(schema: unknown): unknown {
 }
 
 /** Verified against actual 0.163.0-alpha.11 requests and its tagged source:
- * codex-rs/tools/src/json_schema/compaction.rs. The registered subset rejects
- * definitions/references, so its definition-removal pass has no effect here.
+ * codex-rs/tools/src/json_schema/compaction.rs. Only an exact recursive JSON
+ * value definition is flattened; other references remain unsupported.
  * Never apply this projection to untrusted declarations before comparison. */
 export function desktopCompanyToolSchema(schema: unknown): unknown {
+  const definitions = (schema as any)?.$defs ?? {};
+  if (!definitions || typeof definitions !== "object" || Array.isArray(definitions) ||
+    !Object.entries(definitions).every(([name, definition]) =>
+      /^[a-zA-Z0-9_]{1,100}$/.test(name) && recursiveJsonDefinition(definition, "#/$defs/" + name)))
+    throw new Error("Unsupported trusted native schema definitions");
   const children = ["items", "additionalProperties", "oneOf", "anyOf"];
   const visit = (
     value: any,
@@ -89,7 +116,7 @@ export function desktopCompanyToolSchema(schema: unknown): unknown {
     for (const key of children)
       if (key in value) visit(value[key], fn, depth + 1);
   };
-  const result = nativeSchema(schema);
+  const result = nativeSchema(schema, definitions);
   const fits = () => Buffer.byteLength(JSON.stringify(result), "utf8") <= 5000;
   if (fits()) return result;
   visit(result, (node) => {

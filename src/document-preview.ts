@@ -1,6 +1,6 @@
 import { Worker } from "node:worker_threads";
 import { spawn } from "node:child_process";
-import { mkdtemp, mkdir, readFile, writeFile, rm, stat, readdir } from "node:fs/promises";
+import { mkdtemp, mkdir, open, readFile, writeFile, rm, stat, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { hash, Problem } from "./lib.js";
@@ -81,12 +81,15 @@ export class DocumentPreviews {
     try{return await operation;}finally{this.users.delete(user);this.operations.delete(operation);}
   }
   private async convert(bytes:Buffer,format:string,signal:AbortSignal){
-    // Office can exit successfully without publishing its PDF on a cold profile.
+    // A cold private Office profile may produce no PDF or hit the native deadline.
     // One repeat of this private, preflighted, read-only conversion uses a new
     // profile; AI jobs, billing and customer external actions are never replayed.
     for(let attempt=0;;attempt++){
       try{return await this.convertOnce(bytes,format,signal);}
-      catch(e){if(attempt!==0||signal.aborted||!(e instanceof Problem)||e.code!=='DOCUMENT_PREVIEW_EMPTY_RESULT')throw e;}
+      catch(e){
+        const coldTimeout=e instanceof Problem&&e.code==='DOCUMENT_PREVIEW_CONVERSION_FAILED'&&(e.details as {native_exit_code?:unknown}|undefined)?.native_exit_code===72;
+        if(attempt!==0||signal.aborted||!(e instanceof Problem)||(e.code!=='DOCUMENT_PREVIEW_EMPTY_RESULT'&&!coldTimeout))throw e;
+      }
     }
   }
   private async convertOnce(bytes:Buffer,format:string,signal:AbortSignal){
@@ -100,13 +103,17 @@ export class DocumentPreviews {
       const profile=path.join(directory,'profile'),output=path.join(directory,'output'),input=path.join(directory,'input.'+format);
       await mkdir(path.join(profile,'user'),{recursive:true});await mkdir(output);await writeFile(input,bytes,{mode:0o600});
       await writeFile(path.join(profile,'user/registrymodifications.xcu'),`<?xml version="1.0"?><oor:items xmlns:oor="http://openoffice.org/2001/registry"><item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="MacroSecurityLevel" oor:op="fuse"><value>3</value></prop></item><item oor:path="/org.openoffice.Office.Common/Load"><prop oor:name="UpdateDocMode" oor:op="fuse"><value>0</value></prop></item><item oor:path="/org.openoffice.Office.Calc/Content/Update"><prop oor:name="Link" oor:op="fuse"><value>0</value></prop></item></oor:items>`);
-      await new Promise<void>((resolve,reject)=>{
-        const child=spawn(runtime.host_path,[String(process.pid),runtime.office_path,pathToFileURL(profile).href,output,input,directory],{windowsHide:true,stdio:'ignore'});
+      // The native .com launcher needs valid inherited output handles on Windows.
+      // Keep diagnostics inside this operation's private directory, then remove
+      // them with the source/profile. Never return converter output to callers.
+      const log=await open(path.join(directory,'converter.log'),'wx',0o600);
+      try{await new Promise<void>((resolve,reject)=>{
+        const child=spawn(runtime.host_path,[String(process.pid),runtime.office_path,pathToFileURL(profile).href,output,input,directory],{windowsHide:true,stdio:['ignore',log.fd,log.fd]});
         let settled=false;const finish=(e?:unknown)=>{if(settled)return;settled=true;clearTimeout(timer);signal.removeEventListener('abort',abort);e?reject(e):resolve();};
         const abort=()=>{child.kill('SIGKILL');};const timer=setTimeout(abort,50000);
         child.once('error',finish);child.once('close',code=>finish(signal.aborted?signal.reason:code===0?undefined:new Problem(422,'DOCUMENT_PREVIEW_CONVERSION_FAILED','The Office document could not be converted. Download the original or try an unencrypted copy.',{native_exit_code:code})));
         signal.addEventListener('abort',abort,{once:true});if(signal.aborted)abort();
-      });
+      });}finally{await log.close();}
       signal.throwIfAborted();const pdf=path.join(output,'input.pdf'),info=await stat(pdf).catch(e=>{if(e.code==='ENOENT')throw new Problem(422,'DOCUMENT_PREVIEW_EMPTY_RESULT','Office could not produce this preview. Download the original or try another unencrypted copy.');throw e;});
       if(!info.isFile()||info.size>40*1024**2)throw invalid();const result=await readFile(pdf);if(!result.subarray(0,1024).includes(Buffer.from('%PDF-')))throw invalid();return result;
     }finally{await removeDocumentPreviewWork(directory).catch(()=>{throw new Problem(503,'DOCUMENT_PREVIEW_CLEANUP_PENDING','Temporary preview files could not be cleared yet. Please try again later.');});}
