@@ -1,3 +1,9 @@
+<!-- product-downloads-193 -->
+
+產品下載頁已上線：Desktop 0.7.4 安裝/便攜版及 Extension 0.5.4 ZIP 可從本站直接下載，含安裝步驟及 SHA-256；原包/服務保持。
+
+[下載 / Downloads](https://agent.copypaste.hk/downloads) · [需求 / Scope](requirements/193-product-downloads.md) · [方案 / Implementation](development/193-product-downloads.md) · [實測 / Verification](quality/193-product-downloads.md)
+
 <!-- native-recheck-192 -->
 
 本轮代码、双语说明及实际媒体已推送到 backend/web/admin/desktop/extension/delivery，docs/main同步；旧tag和Desktop0.7.4安装包保留。

@@ -1,3 +1,9 @@
+<!-- product-downloads-193 -->
+
+The product download page is live: download Desktop 0.7.4 Setup/Portable and Extension 0.5.4 ZIP directly from the site, with installation instructions and SHA-256. Existing Desktop bytes and services are preserved.
+
+[下載 / Downloads](https://agent.copypaste.hk/downloads) · [需求 / Scope](requirements/193-product-downloads.md) · [方案 / Implementation](development/193-product-downloads.md) · [實測 / Verification](quality/193-product-downloads.md)
+
 <!-- native-recheck-192 -->
 
 Code, bilingual guides and actual media are pushed to backend/web/admin/desktop/extension/delivery, with docs/main synchronized. Old tags and Desktop0.7.4 binaries are retained.
