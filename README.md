@@ -1,3 +1,21 @@
+<!-- product-downloads-193 -->
+
+## 產品下載與安裝 · 193
+
+[開啟產品下載頁](https://agent.copypaste.hk/downloads)。Desktop 0.7.4（Windows 安裝版/便攜版）、Chrome 擴展 0.5.4 ZIP 及檔案校驗清單均可免登入從本站直接下載。
+
+0.5.4 ZIP 解壓到固定資料夾，在 chrome://extensions 啟用開發人員模式並「載入未封裝項目」，釘選圖示後開啟原生右側欄。登入、選擇及上傳檔案後，Agent 在雲端處理。擴展 ID 保持不變。
+
+目前 Windows 包未簽名；擴展為手動安裝，尚未上架 Chrome 線上應用程式商店；macOS/Linux 安裝包尚未提供。
+
+[方案 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/193-product-downloads.md) · [驗證 / Verification](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/193-product-downloads.md)
+
+![實際下載頁 / Actual public download page](assets/screenshots/193-downloads-desktop-en.png)
+
+[實際手機下載頁 / Actual mobile download page](assets/screenshots/193-downloads-mobile-zh.png)
+
+![實際頁面操作錄製 / Actual download navigation recording](assets/screenshots/193-actual-download-navigation.gif)
+
 <!-- native-recheck-192 -->
 
 ## 再次复查与错误可见性 · 192
