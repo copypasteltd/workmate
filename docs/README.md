@@ -1,3 +1,9 @@
+<!-- system-assessment-194 -->
+
+已完成当前完整性与 WorkBuddy 差距评估：32组交付敞口、10项交互改进、102条原始需求追溯。真实云端/本机Codex、图片、后台和下载链路已有证据；真实视频/语音/广告授权、至少12角色专业验收、一体化工作区及生产验收仍未收口。不是全产品零错误或数值完成率声明。
+
+[完整评估 / Assessment](quality/system-assessment-194/README.md) · [102条追溯 / Requirements](quality/system-assessment-194/requirements-102.md) · [只读证据 / Evidence](quality/system-assessment-194/current-evidence.json) · [更新 / Changes](changes/194-system-assessment.md)
+
 <!-- product-downloads-193 -->
 
 產品下載頁已上線：Desktop 0.7.4 安裝/便攜版及 Extension 0.5.4 ZIP 可從本站直接下載，含安裝步驟及 SHA-256；原包/服務保持。

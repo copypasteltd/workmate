@@ -1,0 +1,178 @@
+{
+  "requirement_id": "REQ-040",
+  "review_kind": "second independent refutation, specification and acceptance wording only",
+  "reviewer": "/root/audit194_roles_req080",
+  "review_date": "2026-11-06",
+  "target": {
+    "path": "docs/quality/system-assessment-194/requirements/REQ-040-initial.json",
+    "sha256": "a6838120d60261d1cfc5683eb8613271abfec7032e0eb11560dfc47db7f8d7df"
+  },
+  "overall_result": "narrowed",
+  "conclusion_zh": "保留初审对已实现本机能力和限定真实验收的正面认定，保留‘尚不能宣称完整对齐Codex Desktop’的资格边界。收窄将REQ-040整项标为undecidable的表述：目录监听、批量、批准程序、路径/冲突/撤销以及补充的本机执行/完整权限是可检查的明确条款；只有未固定版本、工具集、应用及操作的开放式对标范围不可直接判全量达标。任意应用、全部工具、所有OS和所有物理休眠组合不是已逐项明确承诺的无限交付清单。离线不误报完成、重连先同步撤权则有明确要求，不能一并降为可选建议。未重做产品代码审计，未给新的完整通过或新代码缺陷结论。",
+  "authority": [
+    {
+      "source": "conversation, user's direct Desktop direction correction; transcribed at docs/requirements/03-client-execution-amendment.md:44",
+      "quote": "Desktop 版本的内容，agent必须要在本地运行，并且允许客户向其提供 fully permission。要求最终的操作能力对标 codex desktop",
+      "force": "explicit user requirement",
+      "interpretation": "Local execution and a real customer-granted full-access option are mandatory. The comparison target is an ability objective, not a named, exhaustive list of every application or tool."
+    },
+    {
+      "path": "docs/requirements/01-srs.md",
+      "line": 162,
+      "quote": "本地调度：授权目录内监听、批量处理及批准程序调用；规范化路径、拒绝越界、检测冲突并支持撤销。",
+      "force": "explicit current REQ-040"
+    },
+    {
+      "path": "docs/requirements/01-srs.md",
+      "line": 109,
+      "quote": "2026-10-22 用户重申的 [CLIENT01 执行位置与权限补充](03-client-execution-amendment.md) 为当前硬约束，覆盖旧的 Desktop 云端复用默认；原 REQ/TC 仍完整保留，须同时满足新增的 DESK-L01–L08 和 EXT-C01–C06，不能以原窗口/侧栏通过记录替代。",
+      "force": "current precedence and additional acceptance"
+    },
+    {
+      "path": "docs/requirements/03-client-execution-amendment.md",
+      "line": 77,
+      "quote": "对标 Codex Desktop 是能力目标：本机文件、终端、工具、Skill、持续会话及执行控制。浏览器/应用操作通过相应的本机工具集成逐项交付和验证，不能仅凭装入 Codex 就宣称所有系统应用都已支持。",
+      "force": "bounded interpretation of the benchmark, including actual delivery/verification"
+    },
+    {
+      "path": "docs/01-product-requirements.md",
+      "lines": [3, 17],
+      "quotes": [
+        "历史来源说明：本文件保留第一轮需求梳理。现行完整规格、接口、阶段和验收以 [文档总目录](README.md) 中的分册为准。",
+        "本稿中的「已确认」来自用户明确陈述；「建议」是本轮提出的产品方案；「待验证」需要实际接口或试点证据。建议与示例均不代表用户已批准的开发范围。"
+      ],
+      "force": "historical context, not authority to enlarge confirmed scope"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "REQ040-SPEC-01",
+      "initial_claim": "REQ-040 original enumerated local scheduling requirements are implemented; the expanded total scope is undecidable.",
+      "result": "narrow",
+      "reason": "The requirement at SRS:162 and TC-040:578-582 is determinate. An unspecified benchmark cannot make those concrete clauses themselves undecidable. The initial report's implemented-core conclusion is retained as that code reviewer's finding, not independently re-certified by this document-only reviewer. Full acceptance remains separate.",
+      "evidence": [
+        {"path": "docs/requirements/01-srs.md", "line": 162},
+        {"path": "docs/quality/01-test-and-acceptance-plan.md", "line": 578, "quote": "前置：授权一个目录和一个允许程序，另有同名越界目录。"},
+        {"path": "docs/quality/01-test-and-acceptance-plan.md", "line": 580, "quote": "操作与异常：测试 ../、绝对路径、UNC、junction/symlink、文件替换竞争、未知 argv 和重复命令；撤销目录。"},
+        {"path": "docs/quality/01-test-and-acceptance-plan.md", "line": 582, "quote": "通过条件及证据：按句柄/根身份验证并拒绝越界；冲突不覆盖；允许程序按结构化 argv；撤销阻止新执行，结果账本防重放。"}
+      ],
+      "recommended_reporting": "明确列出已实现条款与尚未证明的具体验收。将undecidable限制于未定义清单的对标声明，不将REQ-040整体写为无法判断或未实现。"
+    },
+    {
+      "id": "REQ040-SPEC-02",
+      "initial_claim": "REQ-040-U1: all-tool and system-application parity lacks a closed inventory and acceptance.",
+      "result": "retain qualification limit; narrow universal scope",
+      "explicit_obligations": [
+        {"path": "docs/requirements/03-client-execution-amendment.md", "line": 67, "quote": "本机执行会话使用本机工作目录；能够读取、创建、修改文件，执行终端命令，运行开发/设计工具并交付真实结果"},
+        {"path": "docs/requirements/03-client-execution-amendment.md", "line": 71, "quote": "角色预设及 Skill 在本机 Codex 实际加载，并在本机调用相应工具；内部模型和媒体服务仍使用公司网关"},
+        {"path": "docs/requirements/03-client-execution-amendment.md", "line": 77}
+      ],
+      "retained": "Installing Codex or succeeding at one shell task cannot establish all advertised design/media/browser/application workflows. Actual claimed integrations need their own results and verification. A finite supported tool/application/operation list would make a parity claim reviewable.",
+      "overturned_if_used_as_requirement": [
+        "Every possible local GUI application must already have a first-party universal adapter.",
+        "Every internal or external Codex tool, including an unspecified future version, must be exposed.",
+        "Office, Adobe and system-settings examples are all separately confirmed mandatory integrations solely because the user said '对标'."
+      ],
+      "technology_boundary": "No cited requirement mandates desktopCapturer, a particular global mouse/keyboard API, a first-party GUI adapter, or a named automation library. The contract is an authorized, effective, verified operation. Lack of one implementation technique alone is not a specification breach.",
+      "severity_boundary": "Keep unsupported parity as an acceptance/documentation limitation. Do not convert the open universal list into a confirmed P1 implementation defect without a named promised workflow and a demonstrated failing path."
+    },
+    {
+      "id": "REQ040-SPEC-03",
+      "initial_claim": "REQ-040-U2: physical sleep/wake, network interruption and conflict/revocation combinations are unaccepted.",
+      "result": "narrow into mandatory behavior and bounded additional qualification",
+      "mandatory_behavior": [
+        {"path": "docs/requirements/01-srs.md", "line": 163, "quote": "三端接续：同一任务、设备与产物身份一致；设备离线进入等待，不把依赖本机的步骤误报完成。"},
+        {"path": "docs/requirements/01-srs.md", "line": 222, "quote": "跨端管理生效：用户冻结、权限撤销、费用和权益变化通过版本及事件影响 Web、扩展、Desktop、队列和下载；缓存不是授权依据，离线重连先同步撤销，展示可追踪的站内通知。"},
+        {"path": "docs/quality/01-test-and-acceptance-plan.md", "line": 592, "quote": "通过条件及证据：waiting_device 准确；先同步撤销/取消再恢复；fencing 拒绝旧租约；非幂等写入不自动跨设备接管。"},
+        {"path": "docs/quality/01-test-and-acceptance-plan.md", "line": 1182, "quote": "通过条件及证据：所有新请求和执行以权威版本判定；离线先同步撤销，事件去重且能追踪；界面缓存更新不作为授权，站内通知不自动外发。"}
+      ],
+      "retained": "Missing physical suspend/hibernate/wake evidence remains a legitimate recovery-qualification limitation for supported Windows operation. Physical sleep can exercise these state, ownership and authority promises. A test-not-run statement is not a proof that the state handling fails.",
+      "narrowed": "The 'all combinations' phrase has no finite matrix in REQ-040 or TC-040. Scope it to named supported states and observable recovery invariants. Do not treat physical sleep evidence as the same thing as Extension service-worker suspension.",
+      "overturned_if_used_as_requirement": [
+        "The Desktop must keep computing while its physical host is asleep.",
+        "The product must implement Electron powerMonitor or a specific OS sleep handler.",
+        "The absence of a powerMonitor identifier establishes a reproducible bug.",
+        "A complete local offline model must be available because the agent runs locally."
+      ],
+      "scope_sources": [
+        {"path": "docs/quality/remaining-work-stage165.md", "line": 46, "quote": "对标 Codex Desktop 的全工具覆盖、应用操作、冲突/休眠/离线组合。", "weight": "historical remaining-qualification wording, not a new infinite feature promise"},
+        {"path": "docs/technical/87-desktop-folder-work.md", "line": 73, "quote": "任意原生步骤的完整检查点、未知动作对账和长时间睡眠/离线矩阵仍按原条件保留。", "weight": "implementation/qualification follow-up"},
+        {"path": "docs/requirements/03-client-execution-amendment.md", "line": 86, "quote": "在同一会话持续提问，接收云端 Codex 的流式回复、工具进度和成果；扩展关闭/worker 休眠后可恢复云端会话", "weight": "Extension worker lifetime, not physical Desktop sleep"},
+        {"path": "docs/requirements/03-client-execution-amendment.md", "line": 58, "quote": "Desktop 的会话执行循环、Codex 进程、文件工具和命令执行必须在客户电脑；推理和媒体 AI API 仍走公司内部服务器，不要求本机部署模型。"}
+      ]
+    },
+    {
+      "id": "REQ040-SPEC-04",
+      "initial_claim": "Path containment, full permission and revocation are distinct local requirements.",
+      "result": "retain with explicit interpretation",
+      "evidence": [
+        {"path": "docs/quality/01-test-and-acceptance-plan.md", "line": 582},
+        {"path": "docs/requirements/03-client-execution-amendment.md", "line": 68, "quote": "用户可在本机界面主动选择并授予“完整本机权限”；授权后 Codex 能操作当前 OS 用户有权访问的本机资源，不限于旧桥接器的一小时目录和仅新建文件能力"},
+        {"path": "docs/requirements/03-client-execution-amendment.md", "line": 69, "quote": "完整权限的实际配置与界面一致，既不暗中保持 read-only / 禁 shell，也不在已获完整授权的范围内逐命令重复要求确认；用户可以撤回或降级"},
+        {"path": "docs/requirements/03-client-execution-amendment.md", "line": 75, "quote": "“完整本机权限”对应当前 OS 用户权限，不自动获得管理员/root，也不代表离线本机模型。项目范围限制仍适用于平台上的企业资料与账单；不能把这种服务端限制解释成只允许 Desktop 访问一个本机目录。只读/工作目录模式可作为产品默认，完整权限是必须提供的实际能力。"},
+        {"path": "docs/technical/87-desktop-folder-work.md", "line": 59, "quote": "目录与句柄核对用于检测受支持的替换场景，不声称可防御拥有同一 OS 用户权限的恶意进程的一切竞争。客户授予完整本机权限后的通用终端/应用能力仍遵守原 Desktop 需求，不能把自然语言输出目录说明当作额外沙箱或通用原子写入保证。"}
+      ],
+      "interpretation": "Authorized-directory scheduling must reject traversal and conflicting overwrite. Customer-granted full-access shell has a deliberately wider OS-user boundary. Reading outside the original working directory under that explicit grant is not by itself a traversal defect. TC-040 explains '撤销' as directory authorization revocation blocking new execution; it does not promise automatic reversal of every prior arbitrary shell side effect."
+    },
+    {
+      "id": "REQ040-SPEC-05",
+      "initial_claim": "REQ-040-U3: actual release evidence is Windows x64 0.7.4 and not every Desktop OS.",
+      "result": "retain factual qualification boundary; exclude unpromised OS work from mandatory backlog",
+      "evidence": [
+        {"path": "docs/requirements/01-srs.md", "line": 161, "quote": "Desktop：主窗口无边框、无 Electron 默认边框及菜单，使用品牌自绘标题栏及窗口控制；支持原生安装、登录、工作台、退出、更新与卸载；不要求用户安装 Docker/WSL；系统支持范围有发布矩阵。"},
+        {"path": "docs/quality/01-test-and-acceptance-plan.md", "line": 568, "quote": "前置：受支持 Windows 原生环境和签名安装包。"},
+        {"path": "docs/quality/193-product-downloads.md", "line": 11, "quote": "Windows is unsigned, extension installation is manual and Chrome Web Store/macOS/Linux distribution is unavailable."},
+        {"path": "docs/quality/192-native-recheck.md", "line": 7, "quote": "完整0.7.4流程通过；新后台上的独立本机任务成功，BOM输出经只读复核；不覆盖失败包装器回执"}
+      ],
+      "interpretation": "A supported-OS release matrix is required; delivery of all operating systems is not stated by REQ-040. Linux cloud execution cannot establish Linux Desktop acceptance. Unsupported macOS/Linux distribution may be disclosed as a product limitation or expansion option, not added as a proven missed mandatory Desktop implementation solely from this requirement.",
+      "user_override": "The user explicitly removed item12 trusted code signing earlier in this conversation. As the initial report already notes, old signed-package wording must not reinstate that removed blocker. No new signature requirement is created here."
+    },
+    {
+      "id": "REQ040-SPEC-06",
+      "initial_claim": "The initial report credits persistent sessions/recovery and limits the untested sleep/offline combinations.",
+      "result": "retain; reject any expansion to closed-client persistent monitoring",
+      "evidence": [
+        {"path": "docs/technical/87-desktop-folder-work.md", "line": 17, "quote": "应用关闭后不继续监控；重开后规则保持暂停，客户须再次确认。规则预算和次数不随暂停/重启重置。客户端离线或公司权限无法核实时阻断新派发；不会把离线标记为成功。此功能不是关闭客户端仍运行的云端计划。"},
+        {"path": "docs/requirements/03-client-execution-amendment.md", "line": 73, "quote": "本地会话和执行归属可恢复；切换账户、撤销、退出及更新正确处理本机运行，取消只终止本任务拥有的进程/页面"}
+      ],
+      "interpretation": "Local-session recovery and correct ownership/cleanup are mandatory. A closed-client background daemon, automatic wake or continued local monitoring after application exit is not established by these clauses. The initial report did not assert such a defect; this is a boundary for the consolidated assessment."
+    }
+  ],
+  "evidence_handling": {
+    "retain_existing_success": "docs/quality/192-native-recheck.md:7,20,23 records bounded real Desktop/local Codex/model/file/command/settlement evidence. This specification review does not overturn that positive evidence or upgrade it to every tool/application/recovery case.",
+    "retain_failed_receipt": "The initial report expressly separates the failed post-deployment wrapper from the independent original-result verification; retain that distinction.",
+    "do_not_infer_absence_from_open": "docs/quality/remaining-work-stage165.md:3 states that open full acceptance does not mean unimplemented modules. TC-040:584 is an unfilled acceptance-plan status template, not a fresh assertion that no tests or real work have occurred.",
+    "no_new_runtime_verdict": "No source code or tests were re-audited or executed in this second specification-only pass. The code implementation conclusions remain the initial author's evidence, subject to the separate code refutation."
+  },
+  "suggested_consolidated_wording_zh": "Desktop已实现客户本机Codex、可主动授予的完整本机权限、文件/终端/批准程序/专属浏览器及目录监听批量流程，并有Windows限定实测。尚不能宣称与Codex Desktop全部能力对齐；需按实际承诺的应用、工具、操作和恢复场景补足验收。未做物理休眠实测是验证缺口，不是已经确认的休眠故障；任意应用、所有OS、睡眠时持续运行及离线本机模型不作为新增必交承诺。",
+  "search_record": [
+    {
+      "scope": "docs/requirements/01-srs.md, 03-client-execution-amendment.md, 12-client-connection-and-session-recovery.md; docs/01-product-requirements.md; docs/quality/01-test-and-acceptance-plan.md",
+      "patterns": ["REQ-040", "TC-040", "Codex Desktop", "全工具", "全部工具", "任意应用", "物理", "hibernate", "suspend", "睡眠", "休眠", "唤醒", "喚醒", "离线", "撤销"],
+      "result": "Found precise local scheduling, permission and offline/reconnect clauses. Direct sleep wording in the core cited requirement/acceptance sections concerns Extension worker lifetime, not physical Desktop computation. No enumerated universal application/tool/OS list or required powerMonitor API found in this bounded authority set."
+    },
+    {
+      "scope": "docs/quality/remaining-work-stage165.md; docs/technical/87-desktop-folder-work.md, 88-approved-local-programs.md, 77-desktop-native-browser.md, 72-desktop-local-execution-and-control-plane.md; 192/193 quality summaries",
+      "patterns": ["全工具", "应用操作", "休眠", "睡眠", "离线", "OS", "矩阵", "验收", "完整"],
+      "result": "Found historical remaining full-qualification phrases and bounded delivery descriptions. They preserve further verification, but do not define an exhaustive universal requirement. 87:17 expressly limits application-exit/offline behavior; 192 has real selected success; 193 only verifies public downloads."
+    },
+    {
+      "scope": "acceptance plan path discovery",
+      "patterns": ["acceptance", "test-and-acceptance", "TC-040"],
+      "result": "Initial lookup used nonexistent 02-acceptance-test-plan.md / 01-acceptance-test-plan.md aliases. Correct authority docs/quality/01-test-and-acceptance-plan.md was located and TC-039/040/041/042/100 exact text read. No finding relies on the failed lookups."
+    }
+  ],
+  "document_sha256": {
+    "docs/requirements/01-srs.md": "e764c03f02f3cc0d5de5620ce14c20c6a3d46b5cc8ccbcbc7ae59e08aa5c810f",
+    "docs/requirements/03-client-execution-amendment.md": "2520c4537e43d0a76b0d4ef71bae6b0cc8ac0a0bc2857686f58477dfcf20e1f0",
+    "docs/quality/01-test-and-acceptance-plan.md": "cd863fe8ec896b5551f81fd076241f1d60c9df077bb86ea8f61c153914f1fc2f",
+    "docs/quality/remaining-work-stage165.md": "d8768f53b429ef242d8a834c3d56f8104682828ee752c1308e70a835b19a3063"
+  },
+  "not_checked": [
+    "No fresh Codex Desktop external product/version comparison or browsing was performed; no claim about a current external product's exact full feature set is made.",
+    "No complete code audit, first-party GUI absence audit, physical sleep/wake, paid task, network fault injection or new acceptance test was performed.",
+    "No additional applications, operating systems or recovery combinations are silently added to confirmed user scope.",
+    "This is only an independent specification refutation of REQ-040, not a full product completion judgment."
+  ],
+  "changes": "Only this new report was written. Product, README, Git, server configuration and data were not modified. No browser, local Docker/WSL or virtualization used."
+}

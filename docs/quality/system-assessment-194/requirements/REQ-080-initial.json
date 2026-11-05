@@ -1,0 +1,175 @@
+{
+  "stage": 194,
+  "requirement_id": "REQ-080",
+  "at": "2026-11-05T20:49:15.839170+00:00",
+  "review_status": "initial_independent_requirement_review",
+  "verdict": "partial",
+  "confidence": "high",
+  "requirement": {
+    "text": "角色发布资格：每个可用角色须有完整任务、产物修改和依赖/越权异常的运行证据，包含内核/模板/Skill/模型版本、实际交付及费用；首个角色版至少 12 个合格角色并含开发、设计及指定设计师，设计记录不算运行通过。",
+    "source": "docs/requirements/01-srs.md:202",
+    "acceptance_case": "TC-080",
+    "required_qualified_roles": 12
+  },
+  "scope": "Source and existing evidence review for role release qualification only. No paid model requests, browser launch, server writes, test suite rerun or full-product completion claim.",
+  "observed_loader_result": {
+    "operation": "Read-only Catalog.load() under native Node/tsx in platform cwd",
+    "exit_code": 0,
+    "specialist_roles": 19,
+    "unique_specialist_keys": 19,
+    "skill_package_versions": 50,
+    "skill_qualification_states": [
+      "pending_live_validation"
+    ],
+    "roles_with_nonempty_readiness_evidence": 0,
+    "roles_with_qualification_cases_execution_status_other_than_not_run": 0,
+    "includes_default_assistant": false,
+    "formal_catalog_qualified_count": 0,
+    "qualification_count_scope": "Static installed catalogue declarations, not a claim that no real role task has ever succeeded."
+  },
+  "implemented": [
+    {
+      "item": "Nineteen distinct specialist presets exist, including software development, designer, marketing and workflow roles. Presets contain input contracts, workflows, deliverables, exact skill bindings and model/tool bindings.",
+      "evidence": [
+        "dev/copypaste-platform/src/catalog.ts:69",
+        "dev/copypaste-platform/src/catalog.ts:616",
+        "dev/copypaste-platform/src/agent-templates.ts:93",
+        "dev/copypaste-platform/src/agent-templates.ts:109"
+      ]
+    },
+    {
+      "item": "Skills are real packaged SKILL.md files, version/hash checked, bound to tasks, emitted as skills.loaded and supplied to the fixed Codex turn as type=skill input. This is more than a renamed system prompt.",
+      "evidence": [
+        "dev/copypaste-platform/src/catalog.ts:621",
+        "dev/copypaste-platform/src/catalog.ts:741",
+        "dev/copypaste-platform/src/skill-lifecycle.ts:91",
+        "dev/copypaste-platform/src/worker.ts:637",
+        "dev/copypaste-platform/src/worker.ts:685",
+        "dev/copypaste-platform/src/runtime.ts:244",
+        "dev/copypaste-platform/src/runtime.ts:660"
+      ]
+    },
+    {
+      "item": "Dependency admission checks current runtime, project write authority, plan, role/skill enablement, installed skill hash/state, required model readiness and implemented native/cloud tool availability. Versions remain pinned.",
+      "evidence": [
+        "dev/copypaste-platform/src/agent-templates.ts:309",
+        "dev/copypaste-platform/src/agent-templates.ts:359",
+        "dev/copypaste-platform/src/agent-templates.ts:376",
+        "dev/copypaste-platform/src/agent-templates.ts:393",
+        "dev/copypaste-platform/src/catalog.ts:674",
+        "dev/copypaste-platform/src/catalog.ts:757"
+      ]
+    },
+    {
+      "item": "The UI accurately distinguishes evaluation from dependency readiness. It does not label all ready presets as professionally accepted.",
+      "evidence": [
+        "dev/copypaste-platform/src/agent-templates.ts:446",
+        "dev/copypaste-platform/src/agent-templates.ts:462",
+        "dev/copypaste-web/src/role-templates.tsx:513",
+        "dev/copypaste-desktop/renderer/src/role-templates.tsx:511"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "ROLE194-01",
+      "category": "qualification_and_acceptance_not_complete",
+      "severity": "high_for_promising_complete_professional_role_coverage",
+      "summary": "The >=12 preset count is implemented, but >=12 fully qualified professional roles is not demonstrated. Current registry qualifications remain pending/unverified, every role readiness evidence list is empty and case declarations remain not_run.",
+      "evidence": [
+        "docs/requirements/01-srs.md:202",
+        "dev/copypaste-platform/src/catalog.ts:870",
+        "dev/copypaste-platform/src/agent-templates.ts:153",
+        "dev/copypaste-platform/src/agent-templates.ts:462",
+        "dev/copypaste-platform/catalog/role-preset-catalog.json:1546",
+        "dev/copypaste-platform/catalog/role-preset-catalog.json:1553",
+        "dev/copypaste-platform/catalog/dedicated-computer-role-v1.json:70"
+      ],
+      "impact": "Cannot promise that all software/design role modules deliver professional quality across normal work, editing and dependency/permission failure cases, or claim the first role release satisfies TC-080.",
+      "counterevidence_considered": "Actual Designer generation/edit/Web delivery and actual fullstack native/cloud tasks exist in recent acceptance records; they prove selected scenarios and do not establish each of twelve roles normal+revision+failure qualification.",
+      "not_claimed": "This is not nineteen absent roles, not an unavailable Codex kernel and not zero successful real tasks."
+    },
+    {
+      "id": "ROLE194-02",
+      "category": "qualification_state_workflow_not_completed",
+      "severity": "medium",
+      "summary": "Dependency ready/available and professional qualification are separate, but the reviewed runtime/HTTP paths only return unverified or pending_live_validation; no reviewed source/migration path registers a completed version/input/fee-bound professional role qualification and advances the role to qualified.",
+      "evidence": [
+        "dev/copypaste-platform/src/catalog.ts:861",
+        "dev/copypaste-platform/src/catalog.ts:870",
+        "dev/copypaste-platform/src/agent-templates.ts:153",
+        "dev/copypaste-platform/src/agent-templates.ts:462",
+        "dev/copypaste-platform/tests/agent-templates.test.ts:703"
+      ],
+      "impact": "Even a role with an isolated successful real task does not acquire a traceable complete professional-release qualification through the current inspected state flow.",
+      "scope_limit": "No live database/API probe was made; the finding describes the inspected packaged catalogue and qualification-producing code, not arbitrary out-of-band operator database edits."
+    }
+  ],
+  "paths_walked": [
+    "Catalog.load -> layered release definitions -> role/skill lists -> verifySkill(path containment, content hash)",
+    "seedSkillVersions -> packaged definition/hash identity -> per-project provisionRoleSkills -> verified installation/state checks",
+    "seedAgentTemplates -> immutable preset version containing skill/model/tool/runtime bindings -> qualification_state unverified",
+    "template public projection -> current runtime/implemented tools/required model capability -> available flag",
+    "assessTemplate -> projectAccess -> runtime version/state -> ensureEnabled -> plan -> currentCapabilities -> cloud/native tools -> package installation/hash -> ready or missing -> qualification_state unverified",
+    "Worker execute -> fixed role -> boundSkills -> skills.loaded -> current project/input/content/capability authority -> runtime.start -> exact SKILL.md -> typed skill input to Codex turn"
+  ],
+  "searches": [
+    {
+      "pattern": "REQ-080|TC-080|角色发布资格|至少.*12 in requirements/traceability/acceptance",
+      "result": "Authoritative requirement at SRS line202; traceability maps TC-080; older acceptance explicitly does not complete per-role live qualification. Old wording alone was not used as current code evidence."
+    },
+    {
+      "pattern": "qualification_state|role_qualif|role.*qualified|qualification.*passed|readiness_evidence in src,migrations,catalog",
+      "result": "Current source qualification_state only unverified in template seed/preflight; Catalog public hardcodes pending_live_validation. Catalogue and layered releases contain empty readiness_evidence. No professional-role qualified state transition found in inspected source/migrations."
+    },
+    {
+      "pattern": "boundSkills|verifySkill|skills.loaded|type: skill in Catalog/worker/runtime",
+      "result": "Found and traced real version/hash Skill loading and Codex typed-input chain; absence of role implementation is refuted."
+    },
+    {
+      "pattern": "qualification.*qualified|role.*qualification in tests",
+      "result": "Tests explicitly expect ready + unverified, preserve case execution_status and do not widen professional role qualification. Test contents reviewed, suites not rerun."
+    },
+    {
+      "pattern": "role_key|designer|fullstack in latest actual validation scripts and 188-192 reports",
+      "result": "Recent actual fullstack cloud task uses role_key fullstack; stage189 real Web Designer generation/delivery/edit and measured cost are recorded. No complete per-role >=12 qualification ledger located in these selected recent records."
+    }
+  ],
+  "existing_real_evidence": [
+    {
+      "source": "docs/development/189-real-image-and-acceptance.md:10",
+      "scope": "Real Image2 generation and editing HTTP200; Designer Web task 76ee4703-63d0-4524-8269-ab55d3192970 completed generation, file delivery, download/hash and company fee HK$0.039961. Does not close all Designer professional change/brand/permission cases or twelve roles."
+    },
+    {
+      "source": "docs/quality/192-native-recheck.md:7",
+      "scope": "Real native Desktop and Linux cloud program/browser/download workflows passed in their recorded scope. Not a twelve-role professional acceptance run."
+    }
+  ],
+  "not_verified_this_review": [
+    "No fresh live role API/database state queried.",
+    "No role-by-role paid normal/revision/permission-failure tasks executed.",
+    "No customer/expert assessment of software quality, brand fidelity, typography, illustrations, editable projects, video or campaign outcomes.",
+    "No claim that every possible acceptance artifact in historical blob archives was re-audited; inspected recent records and current state cannot substantiate >=12 complete qualifications."
+  ],
+  "source_sha256": {
+    "docs/requirements/01-srs.md": "e764c03f02f3cc0d5de5620ce14c20c6a3d46b5cc8ccbcbc7ae59e08aa5c810f",
+    "docs/quality/remaining-work-stage165.md": "d8768f53b429ef242d8a834c3d56f8104682828ee752c1308e70a835b19a3063",
+    "docs/quality/live-acceptance-189.json": "a2e41af36e5093b8bdd9cc0c2c2a70c86170bbf89d588a1c8dbc162f31058a4e",
+    "docs/development/189-real-image-and-acceptance.md": "d4fa232ce371a378efedf9f7a3ae1b3b1bdae578050a4139ec929b73aec2a990",
+    "docs/development/191-native-execution-and-capacity.md": "13ce1e4a77c805785b3ff13aa12526d3d06cdd1b7d825f6543473e3f3fa4157c",
+    "docs/quality/192-native-recheck.md": "931419144072da2f6d73eb1c4622197871fc4d0f7f12e161e3e481bccc790251",
+    "dev/copypaste-platform/src/catalog.ts": "609eb98ab40360ca2e4bfbc23b0a92edd383b798719d0ca1fd2c6d8a355b0ae4",
+    "dev/copypaste-platform/src/agent-templates.ts": "dd8690ee0b9807551c9d94d0634bdc965c14c36cb0936c0dd1a68be0ec340068",
+    "dev/copypaste-platform/src/skill-lifecycle.ts": "6ee2945f3e3fab830ce2daf1bc230030e3cda6ba99bb61c483bd52e636188f09",
+    "dev/copypaste-platform/src/worker.ts": "a2df77171789f6f1bd8e78ea2a8e224dd9572e7b5f43a142ddddbdcda467e803",
+    "dev/copypaste-platform/src/runtime.ts": "35c41e77bb4a69e3294f82f2f645b59e9c7fafebcc88d91fde4ac0a36c6e3d0c",
+    "dev/copypaste-platform/tests/agent-templates.test.ts": "a0316366858e06936f2a6154f91175e0e85251aba4cc0a33d9cb8643992188a0",
+    "dev/copypaste-web/src/role-templates.tsx": "be2a916c947126ca16696f4278134eaf75315dd8cbd761216877e75cc79fe42b",
+    "dev/copypaste-desktop/renderer/src/role-templates.tsx": "7996c44b8de11572b2cc0f6dd812c2ec2eefb891fd5a52345b77049984f33f38"
+  },
+  "open_questions": [
+    "Which twelve role versions are the intended first formally accepted role release?",
+    "Who signs professional output quality, what representative business briefs and edit/failure cases are required, and where is the immutable version/input/actual-cost evidence registered?"
+  ],
+  "recommended_followup": "Keep the functioning nineteen presets available with accurate evaluation labels. Select at least twelve, execute exact-version normal/revision/permission-dependency cases using real configured company services and explicit budgets, record files/skills/model/input/cost identities, and only mark each role qualified after that evidence is complete."
+}

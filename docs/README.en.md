@@ -1,3 +1,9 @@
+<!-- system-assessment-194 -->
+
+Current assessment records 32 grouped delivery gaps, 10 UX observations and a 102-requirement trace. Real cloud/local Codex, images, administration and downloads are credited. Video/audio/advertising integrations, twelve-role professional acceptance, unified workspace UX and production qualification remain open. This does not assert zero defects or a numeric completion rate.
+
+[Assessment](quality/system-assessment-194/README.md) · [Requirement trace](quality/system-assessment-194/requirements-102.md) · [Read-only evidence](quality/system-assessment-194/current-evidence.json) · [Changes](changes/194-system-assessment.md)
+
 <!-- product-downloads-193 -->
 
 The product download page is live: download Desktop 0.7.4 Setup/Portable and Extension 0.5.4 ZIP directly from the site, with installation instructions and SHA-256. Existing Desktop bytes and services are preserved.

@@ -1,0 +1,162 @@
+{
+  "stage": 194,
+  "requirement_id": "REQ-080",
+  "review_status": "independent_code_refutation_complete",
+  "reviewer": "audit194_desktop_req040",
+  "reviewed_report": "docs/quality/system-assessment-194/requirements/REQ-080-initial.json",
+  "independence": "This reviewer did not author the initial REQ-080 report. The code and counterevidence below were read independently. The initial report and product were not modified.",
+  "overall_decision": "retain_partial_with_narrower_workflow_finding",
+  "summary": "主动反驳未推翻角色专业资格尚未完整验收的结论。19个角色及其真实Skill包/实际Codex加载调用链已实现；ready表示当前依赖可满足，绝不等同于qualified。未找到至少12个角色各自完成正常、修改及依赖/越权异常的正式实测证明。但将‘没有推进qualified的代码路径’直接解释为缺失一项强制的产品API，超出REQ-080字面要求，必须降级为资格登记/发布工作流缺口，并明确未查询线上数据库和所有历史二进制证据。",
+  "decisions": [
+    {
+      "finding_id": "ROLE194-01",
+      "decision": "retain",
+      "finding_class": "acceptance_qualification_incomplete",
+      "reason": "角色数量、专业工作流和精确Skill绑定真实存在，不能把它们列为未实现。可是REQ-080要求至少12个合格角色的真实正常/修改/异常运行证据；当前安装目录声明、前置检查、现有资格检查点及近期真实验收均不能证明达到该门槛。",
+      "scope_correction": "只能说当前正式资格未能证明达到12；不能把所有readiness_evidence为空或静态not_run解释为历史上没有任何真实角色任务成功，也不能把旧的0资格汇总直接当作当前线上数据库事实。",
+      "source_refs": [
+        {"file": "docs/requirements/01-srs.md", "start": 202, "end": 202},
+        {"file": "docs/quality/01-test-and-acceptance-plan.md", "start": 978, "end": 984},
+        {"file": "dev/copypaste-platform/src/agent-templates.ts", "start": 446, "end": 462},
+        {"file": "dev/copypaste-platform/catalog/role-preset-catalog.json", "start": 1541, "end": 1553},
+        {"file": "dev/copypaste-platform/catalog/dedicated-computer-role-v1.json", "start": 63, "end": 76}
+      ]
+    },
+    {
+      "finding_id": "ROLE194-02",
+      "decision": "downgrade_and_narrow",
+      "finding_class": "qualification_registration_and_release_workflow_gap",
+      "reason": "代码确实在模板seed及preflight输出unverified，在Catalog.public输出pending_live_validation。Admin角色发布仅允许enabled/display_name/description，不能提交角色运行资格；不可变template_versions也不能直接原地更新。因此初稿所述‘已检查的路径没有形成qualified登记闭环’保留。但REQ-080要求的是可追踪的真实资格及发布条件，没有明文强制特定qualified API或数据库状态机；资格证据也可以通过受控外部发布工件登记。不能把没有这一特定API本身判为已确认业务逻辑bug。",
+      "retain": "已检查的产品路径无法把逐角色版本/输入/费用绑定的完整验收提交并展示为qualified；当前发布资格流程没有完成的证据。",
+      "withdraw": "没有qualified状态转换就等于所有角色没有真实能力，或必然需要某个特定新增API才算满足需求。",
+      "severity": "medium_for_unfinished_release_qualification_workflow_not_a_new_reproduced_runtime_bug",
+      "source_refs": [
+        {"file": "dev/copypaste-platform/src/agent-templates.ts", "start": 133, "end": 158},
+        {"file": "dev/copypaste-platform/src/agent-templates.ts", "start": 446, "end": 462},
+        {"file": "dev/copypaste-platform/src/catalog.ts", "start": 863, "end": 873},
+        {"file": "dev/copypaste-platform/src/admin.ts", "start": 802, "end": 819},
+        {"file": "dev/copypaste-platform/migrations/031-agent-template-registry.sql", "start": 33, "end": 49}
+      ]
+    }
+  ],
+  "counterarguments_tested": [
+    {
+      "hypothesis": "角色只是改名提示词，实际没有Skill加载，所以初稿partial过于乐观",
+      "result": "refuted",
+      "reason": "Catalog.load加载角色/Skill目录和叠加发行定义，对全部包核验路径及SHA；boundSkills按角色绑定返回实际内容。worker把这些内容传给runtime，runtime写入真实SKILL.md并作为type=skill输入发送至turn/start。",
+      "source_refs": [
+        {"file": "dev/copypaste-platform/src/catalog.ts", "start": 70, "end": 96},
+        {"file": "dev/copypaste-platform/src/catalog.ts", "start": 616, "end": 649},
+        {"file": "dev/copypaste-platform/src/catalog.ts", "start": 741, "end": 755},
+        {"file": "dev/copypaste-platform/src/worker.ts", "start": 637, "end": 645},
+        {"file": "dev/copypaste-platform/src/worker.ts", "start": 679, "end": 691},
+        {"file": "dev/copypaste-platform/src/runtime.ts", "start": 244, "end": 255},
+        {"file": "dev/copypaste-platform/src/runtime.ts", "start": 660, "end": 665}
+      ]
+    },
+    {
+      "hypothesis": "19个角色的ready本身已经证明至少12个合格",
+      "result": "refuted",
+      "reason": "present.available根据角色启用、运行时/工具/能力缺口计算；assessTemplate.state ready根据依赖缺口计算，返回的qualification_state仍明确unverified。测试同时断言ready与unverified，UI向客户说明模板仍在验证。",
+      "source_refs": [
+        {"file": "dev/copypaste-platform/src/agent-templates.ts", "start": 244, "end": 307},
+        {"file": "dev/copypaste-platform/src/agent-templates.ts", "start": 348, "end": 420},
+        {"file": "dev/copypaste-platform/src/agent-templates.ts", "start": 446, "end": 462},
+        {"file": "dev/copypaste-platform/tests/agent-templates.test.ts", "start": 690, "end": 704},
+        {"file": "dev/copypaste-web/src/role-templates.tsx", "start": 513, "end": 520}
+      ]
+    },
+    {
+      "hypothesis": "初稿只查静态not_run，漏掉已成功的真实设计师和开发任务",
+      "result": "partly_supported_but_not_enough_to_overturn",
+      "reason": "近期确有真实Designer Web出图、文件下载和实际计费，以及Desktop/云端实际开发程序/浏览器工作流。初稿已考虑这些反证。它们证明若干业务路径，不能补齐12个角色各自完整三类资格。初稿对189的引文行号需更正：真实Web设计师任务在development/189:8，非:10；:7为真实图片生成/编辑能力检查，不等同于同一个设计师角色完成完整修订用例。",
+      "source_refs": [
+        {"file": "docs/development/189-real-image-and-acceptance.md", "start": 7, "end": 10},
+        {"file": "docs/quality/192-native-recheck.md", "start": 7, "end": 12},
+        {"file": "docs/quality/192-native-recheck.md", "start": 23, "end": 27}
+      ]
+    },
+    {
+      "hypothesis": "Admin通用目录发布或数据库迁移已支持完整角色资格登记，只是初稿搜索名称不对",
+      "result": "not_supported_in_reviewed_paths",
+      "reason": "Admin角色发布strict schema仅能控制enabled及展示字段；Skill发布核验包存在并只允许enabled。template_versions由seed写入固定unverified，数据库触发器禁止原地UPDATE/DELETE。源文件/migrations资格词搜索未发现其他专业角色qualification登记路径。未知的外部发布工件和人工资格流程仍未排除。",
+      "source_refs": [
+        {"file": "dev/copypaste-platform/src/admin.ts", "start": 802, "end": 819},
+        {"file": "dev/copypaste-platform/src/agent-templates.ts", "start": 135, "end": 197},
+        {"file": "dev/copypaste-platform/migrations/031-agent-template-registry.sql", "start": 38, "end": 49}
+      ]
+    }
+  ],
+  "independent_read_only_loader": {
+    "operation": "Native Node + installed tsx loader; import Catalog, chdir to platform, await load and await boundSkills for each role; filesystem reads and SHA checks only, no database or model requests",
+    "exit_code": 0,
+    "specialist_roles": 19,
+    "skill_package_versions": 50,
+    "all_roles_bound_skills_loaded": true,
+    "roles_with_nonempty_readiness_evidence": 0,
+    "qualification_case_execution_statuses": ["not_run"],
+    "interpretation": "证明全部19个预设在已安装代码下能解析实际Skill文件及内容，不代表逐个启动付费模型并完成专业验收。",
+    "role_skill_counts": {
+      "fullstack": 5,
+      "frontend": 5,
+      "backend-api": 3,
+      "software-qa": 3,
+      "ui-ux": 5,
+      "designer": 5,
+      "brand-visual": 5,
+      "ad-creative": 5,
+      "ecommerce": 5,
+      "social-content": 5,
+      "illustration-ip": 4,
+      "typography-layout": 4,
+      "presentation": 6,
+      "landing-page": 5,
+      "information-design": 5,
+      "video-motion": 6,
+      "marketing-analyst": 6,
+      "workflow-consultant": 5,
+      "computer-operator": 2
+    }
+  },
+  "searches": [
+    {
+      "scope": "dev/copypaste-platform/src and migrations, *.ts and *.sql",
+      "patterns": ["qualification_state", "role_qualif", "readiness_evidence", "pending_live_validation", "qualified", "qualif"],
+      "result": "专业角色qualification生产值定位为agent-templates.ts:153/462 unverified和catalog.ts:870 pending_live_validation。其他qualification命中为能力/媒体/恢复等不同含义；未混计为角色合格。"
+    },
+    {
+      "scope": "agent-templates.ts, admin.ts and 031-agent-template-registry.sql",
+      "patterns": ["agent_templates", "agent_template_versions", "role-preset", "qualification_cases", "readiness_evidence"],
+      "result": "进一步读取seed/present/preflight和Admin发布strict schema，未发现通用Admin字段绕过形成合格状态；template版本不可原地修改。未将不存在的schemas.ts作为搜索无结果的证据。"
+    },
+    {
+      "scope": "docs/quality and docs/contracts JSON, excluded **/history/**, **/publication-proofs/**, **/system-assessment-194/**",
+      "patterns": ["qualified_live_roles", "professional_qualification", "qualified_roles", "qualification_status"],
+      "result": "133个JSON文件命中273处。对命中文件结构化递归解析，无解析失败；精确字段值qualified_live_roles=0共54处，qualified_roles=0共83处，professional_qualification=unverified共110处，没有上述字段的正数或passed/qualified/complete/completed值。这里包含多个历史汇总重复值，不是133个独立实测，也不穷尽使用不同字段名或未索引的原始证据。"
+    },
+    {
+      "scope": "analysis-roles-checkpoint.json, editable-design-checkpoint.json, creative-matrix-checkpoint.json, business-quality-checkpoint.json, live-acceptance-188/189 and 190-192 current reports",
+      "patterns": ["scope", "roles", "professional_qualification", "qualification_scopes", "role_key", "designer", "fullstack"],
+      "result": "信息设计/营销分析以及品牌/PPT检查点有实际固定Codex和成果流程，但明确synthetic模型且professional_qualification unverified；真实近期Designer及开发任务限定场景存在。未找到12角色完整三类资格ledger。"
+    }
+  ],
+  "paths_walked": [
+    "Catalog.load -> layered installed definitions -> verifySkill path containment/content SHA -> boundSkills for each of nineteen roles",
+    "worker role selection -> boundSkills -> skills.loaded -> runtime.start(skills) -> write .agents/skills/key/SKILL.md -> turn/start input type=skill",
+    "template seed -> immutable body qualification_state unverified -> present available dependency checks -> preflight dependencies and fixed qualification_state unverified -> Web evaluation notice",
+    "Admin catalog role/Skill publish -> strict role/Skill schema; template registry migration -> immutable template body",
+    "existing qualification checkpoints -> synthetic vs real scope -> recent real Designer and native/cloud task acceptance -> search for positive >=12 qualification records"
+  ],
+  "not_checked": [
+    "No live API, database or production filesystem query; therefore no assertion that arbitrary operator-authored external qualifications cannot exist.",
+    "No new paid role task, browser, model call, installation or test-suite run.",
+    "No expert review of actual outputs for each professional role, brand fidelity, typography, development quality or marketing outcomes.",
+    "No exhaustive re-audit of every raw historical binary/archive or evidence using unknown field names; bounded searches and parsed recorded metadata cannot prove none exists anywhere.",
+    "Desktop native loading internals were reviewed in the independent REQ-040 pass; this refutation independently followed the platform worker/runtime Skill path, not every client path for every role.",
+    "No full-product completion rate or zero-defect claim."
+  ],
+  "product_changes": false,
+  "initial_report_modified": false,
+  "browser_or_paid_service_used": false,
+  "local_virtualization_used": false
+}

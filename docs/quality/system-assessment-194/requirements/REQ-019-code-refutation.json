@@ -1,0 +1,165 @@
+{
+  "requirement_id": "REQ-019",
+  "review_kind": "independent code refutation of another author's initial finding",
+  "reviewer": "/root/audit194_roles_req080",
+  "review_date": "2026-11-06",
+  "target": {
+    "path": "docs/quality/system-assessment-194/requirements/REQ-019-initial.json",
+    "sha256": "3944a316f7f6538646a10ada2a19fa9ae47245b172030ffce2adbe7f9c976b1d"
+  },
+  "specification": {
+    "path": "docs/requirements/01-srs.md",
+    "line": 141,
+    "quote": "生成式视频：经内部服务提交、查询、取消或对账异步作业，保存真实媒体、费用和失败原因。",
+    "scope_retention_line": 232
+  },
+  "verdict": "partial",
+  "refutation_result": "initial integration/evidence finding survives; implemented async, MP4 and fixture publication paths must remain credited",
+  "confidence": "high for code and current readiness; real-provider professional acceptance remains unverified",
+  "conclusion_zh": "未推翻原审查的核心结论：视频异步作业、费用/不确定状态、MP4校验和交付、能力验证/发布均有实质代码和专项测试，不能列为没有实现的视频模块。主动寻找的发布反证明确绑定本地synthetic视频服务；194最新只读服务器记录仍为services.video=false，返回模型仅文字与图片。已检查记录中未找到足以确认当前真实视频模型上线及专业业务验收的反证。保留真实接入与专业验收缺口，并把它们分别归为当前服务未就绪、真实验收未验证，而非宣称视频代码不存在。",
+  "finding_results": [
+    {
+      "finding_id": "REQ019-LIVE",
+      "result": "survives_with_fresh_operational_evidence",
+      "attempt_to_falsify": "Find a current video capability publication, configured real model, successfully delivered real-provider MP4 or a recent production acceptance omitted by the author.",
+      "counterevidence_found": [
+        {
+          "path": "dev/copypaste-platform/tests/capability-video-verification-188-v1.test.ts",
+          "lines": [23, 26, 36, 38, 132, 134, 139, 141, 142, 144, 145, 148],
+          "observation": "A real application/DB verification flow tests 16 cases, 15 decoded MP4 specifications, cancellation observation, independent publication, immutable old capability and rollback. However its definition is synthetic-managed-video-v1/v2, its reason explicitly says synthetic, and AI_BASE_URL is capabilityVideoProvider.origin. A configured_services row in this fixture does not prove a production real video supplier."
+        },
+        {
+          "path": "dev/copypaste-platform/tests/generated-video-jobs.test.ts",
+          "lines": [25, 27, 28, 29, 31, 76, 86, 87, 88, 92, 96, 98, 100, 388, 397],
+          "observation": "Task-side tests really pass MP4 bytes through decoding, scoped asset persistence, preview and exactly-once settlement; one uses actual pinned native Codex. Both reasoning/video service configuration and model aliases are explicit fixtures. This establishes implementation and test scope, not a real model's professional result."
+        }
+      ],
+      "fresh_evidence": {
+        "path": "dev/copypaste-delivery/.data/assessment-194/server-inspection-v1.log",
+        "line": 1,
+        "at": "2026-11-05T20:47:00.475Z",
+        "sha256": "d0e216f6bd4e4a17a56fc5b7648b4f9186f20a3fff6c2d8c6d1a2f24525f7930",
+        "fields_used": {
+          "public_config.data_mode": "configured_services",
+          "public_config.services.text": true,
+          "public_config.services.image": true,
+          "public_config.services.video": false,
+          "returned_model_profiles": ["internal-image2-v1", "internal-text-v1"]
+        },
+        "provenance": "Parent-supplied secret-free read-only server probe; independently read here, not re-executed by this reviewer.",
+        "interpretation": "Current video service is not ready in the actual public configuration. The returned model records contain no video model. This does not by itself identify which readiness predicate failed, prove the upstream can never support video or prove no historical video request ever occurred."
+      },
+      "enforcement_rechecked": {
+        "path": "dev/copypaste-platform/src/server.ts",
+        "lines": [403, 406, 407, 410, 411, 412, 413, 419],
+        "behavior": "services.video derives from current internal-video-v1 capability ready, not revoked, publication or verified flag, and exact gateway fingerprint; it is not a hardcoded false demo label."
+      },
+      "accepted_wording_zh": "生成式视频已有异步作业和交付实现，但当前线上视频能力尚未就绪；真实供应商的完整闭环尚未验收。"
+    },
+    {
+      "finding_id": "REQ019-PROFESSIONAL",
+      "result": "survives_as_unverified_acceptance_not_a_new_code_defect",
+      "attempt_to_falsify": "Locate actual generated media or UI/native evidence that establishes real supplier output and professional marketing acceptance instead of only protocol/media integrity.",
+      "counterevidence_found": [
+        {
+          "path": "dev/copypaste-platform/tests/generated-video-fixture.ts",
+          "lines": [11, 12, 13, 14, 15, 30, 31, 69, 77, 79, 83],
+          "observation": "The fixture creates a genuine four-second blue H.264 MP4 with FFmpeg, then serves its immutable bytes through synthetic async responses. It is playable media and a meaningful integrity fixture; it is not generated marketing content from a real provider."
+        },
+        {
+          "path": "dev/copypaste-delivery/scripts/qa-generated-video-native.ts",
+          "lines": [36, 39],
+          "observation": "The packaged frameless Desktop/native Codex journey credits real budget, progress, decoding, save and ledger while explicitly describing reasoning/video content and native dialogs as fixtures."
+        },
+        {
+          "path": "dev/copypaste-delivery/scripts/qa-generated-video-ui.ts",
+          "lines": [171, 174],
+          "observation": "Its output explicitly excludes live company video provider, professional business acceptance and entire-product acceptance."
+        },
+        {
+          "path": "dev/copypaste-delivery/scripts/qa-managed-video-capability-ui.ts",
+          "lines": [216, 219],
+          "observation": "Its output explicitly excludes live company video provider and professional marketing output; actual admin interaction evidence must not be upgraded to supplier acceptance."
+        }
+      ],
+      "scope_correction": "REQ-019 itself specifies async operations, real media, costs and failures. It does not enumerate every marketing visual-quality criterion or arbitrary professional format. Subject/brand/motion quality remains a wider business acceptance question; failure to find its acceptance evidence must not be reported as a newly proven missing code path or a failed quality test."
+    },
+    {
+      "finding_id": "REQ019-PROTOCOL",
+      "result": "survives_as_explicit_integration_boundary",
+      "attempt_to_falsify": "Check whether this is only an ordinary compatible base URL/key setting, or whether an omitted adapter already establishes the required company operations.",
+      "enforcement_rechecked": [
+        {
+          "path": "dev/copypaste-platform/src/video-job-protocol.ts",
+          "lines": [4, 5, 6, 15, 16, 17, 28, 29, 32, 33, 34, 40, 41, 55, 61],
+          "behavior": "Requires company-video-jobs-v1, create/retrieve/lookup/cancel/content, exact operation identity, monotonic event sequence, immutable content identity and final billable seconds."
+        },
+        {
+          "path": "dev/copypaste-platform/src/internal-ai-gateway.ts",
+          "lines": [128, 131, 132, 136, 140, 141, 146, 147],
+          "behavior": "Maps create to /videos, original-operation lookup to /videos/operations/{operationId}, and scoped resource retrieval/content/cancel to /videos/{videoId}. Source explicitly declares the lookup a company extension."
+        },
+        {
+          "path": "dev/copypaste-platform/src/video-job-gateway.ts",
+          "lines": [13, 17, 20, 21, 23, 27, 28, 31, 34, 41, 42],
+          "behavior": "Sends real multipart requests through internalAIRequest, validates response content type and exact observation. Failed lookup, including 404, retains uncertainty about the original generation."
+        }
+      ],
+      "scope_correction": "This is a compatibility requirement for the selected company service, not evidence that a random upstream is broken and not proof that the product lacks asynchronous video code. No live compatibility request was made here."
+    }
+  ],
+  "implemented_paths_independently_credited": [
+    {
+      "path": "role-scoped tool -> GeneratedVideoJobs.prepare -> fixed video capability/reference -> prepare_ai_video_job",
+      "evidence": ["dev/copypaste-platform/src/video-jobs.ts:62", "dev/copypaste-platform/src/video-jobs.ts:67", "dev/copypaste-platform/src/video-jobs.ts:68", "dev/copypaste-platform/src/video-jobs.ts:72"],
+      "result": "Actual persistent preparation and role/capability checks exist before supplier dispatch."
+    },
+    {
+      "path": "advance lease -> create once, or retrieve/lookup original operation -> observe -> cancellation observation",
+      "evidence": ["dev/copypaste-platform/src/video-jobs.ts:164", "dev/copypaste-platform/src/video-jobs.ts:170", "dev/copypaste-platform/src/video-jobs.ts:183", "dev/copypaste-platform/src/video-jobs.ts:224", "dev/copypaste-platform/src/video-jobs.ts:332", "dev/copypaste-platform/src/video-jobs.ts:358", "dev/copypaste-platform/src/video-jobs.ts:365", "dev/copypaste-platform/src/video-jobs.ts:377"],
+      "result": "State/progress/failure/usage facts persist; lost submission uses original lookup, and observed cancellation is distinct from a local cancel request. The inspected resource-only reconciliation path cannot submit a fresh generation."
+    },
+    {
+      "path": "completed content -> exact hash/bytes -> ffprobe/full FFmpeg decode -> current authority recheck -> saveAsset",
+      "evidence": ["dev/copypaste-platform/src/video-jobs.ts:283", "dev/copypaste-platform/src/video-jobs.ts:287", "dev/copypaste-platform/src/video-jobs.ts:294", "dev/copypaste-platform/src/video-jobs.ts:295", "dev/copypaste-platform/src/video-job-media.ts:13", "dev/copypaste-platform/src/video-job-media.ts:25", "dev/copypaste-platform/src/video-job-media.ts:31", "dev/copypaste-platform/src/video-job-media.ts:37"],
+      "result": "Delivery uses actual MP4 bytes, exact supported dimensions/duration/H.264 and optional AAC, positive frames and full decode. It is not a URL/status object masquerading as a delivered video."
+    }
+  ],
+  "searches": [
+    {
+      "scope": "dev/copypaste-platform/tests file inventory and selected source/test content",
+      "patterns": ["video", "capability.*verification", "synthetic", "provider.origin", "current_internal_capabilities", "publish", "fully_decoded"],
+      "result": "Found durable video jobs, actual media validation, managed verification, publication and rollback tests. The sampled apparently real/publication counterexamples explicitly use synthetic suppliers; no absence of implementation is claimed."
+    },
+    {
+      "scope": "docs/quality and docs/development, 19*.json and 19*.md excluding history/media; parsed status/integration/scope fields of 188, 189, 191, 192, 193 reports",
+      "patterns": ["services.video", "\"video\": false", "生成式视频", "AI_VIDEO", "real.video", "真实视频", "真實影片"],
+      "result": "190 item08 states real integration is incomplete; 188/189 missing_real_integrations include video; 191/192 explicitly retain item08 outside their selected acceptance; 193 accepts public download distribution only. These historical statements are contextual and are strengthened by the fresh 194 readiness observation, not substituted for a new provider test."
+    },
+    {
+      "scope": "docs/quality/native-recheck-192 and docs/quality/product-downloads-193 JSON/Markdown, excluding assets/media",
+      "patterns": ["(real|live|真实|真實).{0,24}(video|视频|影片)", "(video|视频|影片).{0,24}(real|live|真实|真實)"],
+      "result": "No hits. An earlier search used the nonexistent 192-native-recheck directory; this corrected search covers the actual native-recheck-192 directory. This is a bounded evidence search, not a claim about all historical tasks or uninspected provider data."
+    },
+    {
+      "scope": "dev/copypaste-delivery/scripts inventory for 189-193, and generated-video native/UI/managed-capability QA scripts",
+      "patterns": ["video", "qualify-real", "inspect-real", "live_company_video_provider", "professional_business_acceptance", "professional_marketing_output"],
+      "result": "Recent real qualification scripts inventory concerns image/cloud/Desktop; inspected video QA scripts explicitly exclude real provider/professional acceptance. No omitted recent production real-video acceptance was found in the inspected paths."
+    }
+  ],
+  "source_sha256": {
+    "dev/copypaste-platform/src/video-job-gateway.ts": "67255d6b05e8953d8b0d3f90b641b1982ad6eceb57d38772953a110e7221545d",
+    "dev/copypaste-platform/src/video-job-media.ts": "725c73459541b983472ba63b0052fc24387db99c7a80624f7babb461f5d658f6",
+    "dev/copypaste-platform/src/video-jobs.ts": "d049dc7d1b4cdd94db87699b01ef15b907c8a1fd17917d70acb826af787e350a",
+    "dev/copypaste-platform/tests/generated-video-jobs.test.ts": "0a9869131995690499200a69a22b6a9b2c6e52ca2a0d71b654b7b21ef6004a05",
+    "dev/copypaste-platform/tests/capability-video-verification-188-v1.test.ts": "c63bf92bd7c5ed3b1d592f1088e07d8abf0dedb5b260a244d4e13acd1de576d4"
+  },
+  "not_checked": [
+    "No browser, real paid model/provider request, new job, cancellation or financial mutation was performed.",
+    "No tests were rerun; source assertions and existing QA descriptions are not fresh passing receipts.",
+    "The parent server probe was read, not independently recreated. Its out-of-startup-context native runtime availability fields are excluded from this verdict.",
+    "No exhaustive historical DB, every provider adapter, every client playback path or entire SQL history audit was performed.",
+    "No professional real video was viewed or accepted; real output quality and supported-format acceptance remain open questions."
+  ],
+  "changes": "Only this new independent report was written. Product code, README, Git, server configuration and data were not modified. No local Docker/WSL/virtualization or browser was used."
+}

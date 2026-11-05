@@ -1,0 +1,240 @@
+{
+  "requirementId": "REQ-040",
+  "reviewStage": "194-independent-code-refutation",
+  "reviewer": "audit194_video_req019",
+  "authorReviewed": "audit194_desktop_req040",
+  "target": "docs/quality/system-assessment-194/requirements/REQ-040-initial.json",
+  "workspace": "D:/dev/copypasted/自有agent",
+  "result": "confirmed_with_bounds",
+  "refuted": false,
+  "originalRequirementVerdict": "implemented",
+  "broaderQualificationVerdict": "undecidable",
+  "summary": "未找到足以推翻原审查核心结论的代码证据。REQ-040 原文所列本机监听、串行批处理、批准程序调用、路径/冲突检查和撤销有实际调用链及对应测试代码；普通 Desktop 确实启动本机 Codex 并开放 full-access 原生 shell。现有证据仍不能证明全部 Codex 工具、任意系统 GUI 应用以及所有物理休眠/断网组合已经逐项验收。后半句是验收范围限制，不能改写成这些功能不存在或已复现故障。",
+  "specificationRead": [
+    {
+      "file": "docs/requirements/01-srs.md",
+      "line": 162,
+      "requirement": "本地调度：授权目录内监听、批量处理及批准程序调用；规范化路径、拒绝越界、检测冲突并支持撤销。"
+    },
+    {
+      "file": "docs/requirements/03-client-execution-amendment.md",
+      "lines": [67, 68, 69, 75, 77],
+      "requirement": "本机工作目录、真实本地工具结果、主动完整授权及撤回；完整权限限当前 OS 用户，不自动获得管理员/root，也不等于离线本机模型。应用操作需逐项集成和验证。"
+    }
+  ],
+  "findingDecisions": [
+    {
+      "id": "REQ-040-baseline",
+      "decision": "confirmed",
+      "claimReviewed": "原本机调度需求已实现。",
+      "reason": "不仅存在类名：main.ts 实例化调度/程序控制器并接入同一本机 LocalAgentController；fs.watch 触发稳定文件扫描，快照、任务 ID、费用上限、dispatch 和终态回执在实际分支中连接。程序路径经过批准和身份复核后真实 spawn。",
+      "evidence": ["E01", "E03", "E04", "E05", "E06", "E07", "E08", "E09"]
+    },
+    {
+      "id": "REQ-040-U1",
+      "decision": "confirmed_with_narrow_scope",
+      "claimReviewed": "全工具及任意系统应用尚未形成封闭验收。",
+      "reason": "以 full-access shell、可批准任意合规本机程序及浏览器工具尝试推翻‘没有电脑操作能力’，反例成立；但这些机制不等价于已完成所有应用的真实工作流。原报告已经承认这些间接能力，因此其‘未证明全应用验收’结论保留。没有单独的通用鼠标工具契约不能作为缺失功能的证明。",
+      "implementationMissingConfirmed": false,
+      "evidence": ["E01", "E02", "E06", "E09", "E10", "E11", "E13"]
+    },
+    {
+      "id": "REQ-040-U2",
+      "decision": "confirmed_as_verification_gap",
+      "claimReviewed": "物理休眠、网络中断、冲突/撤权完整组合未验收。",
+      "reason": "恢复未知执行不重放、重启暂停、文件冲突、权限改变和离线停止有实现及夹具测试，足以撤销‘这些错误分支完全没处理’的扩大解读；未检出物理休眠/唤醒的实机记录或测试，不能从没有 powerMonitor 字面量推出恢复一定错误。已读测试中的 offline.txt 指应用关闭期间文件改变，另一个 offline 测试以公司网络异常夹具验证停止，均非物理休眠矩阵。",
+      "implementationMissingConfirmed": false,
+      "evidence": ["E04", "E05", "E07", "E08", "E12", "E14", "E15", "E16"]
+    },
+    {
+      "id": "REQ-040-U3",
+      "decision": "confirmed_as_release_qualification_limit",
+      "claimReviewed": "最新 Desktop 原生证据限定于 Windows x64 0.7.4。",
+      "reason": "当前打包入口使用 codex.exe，准备脚本要求 win32；最新引用的实测文档记录限定工作流，未宣称全部应用/OS。源码中程序执行的 POSIX 分支本身不能证明存在已发布并验收的 macOS/Linux Desktop。用户已经移除受信代码签名项，不将其恢复为本需求阻断项。",
+      "implementationMissingConfirmed": false,
+      "evidence": ["E17", "E18"]
+    }
+  ],
+  "counterexamplesAttempted": [
+    {
+      "hypothesis": "Desktop 暗中禁用 shell，完整权限只是界面文字。",
+      "outcome": "withdrawn_counterclaim",
+      "evidence": ["E01", "E02", "E13"],
+      "reason": "full-access 映射 danger-full-access/never；普通会话 features.shell_tool=true。线程返回的 sandbox/approvalPolicy 也会被核验。原生集成测试要求真实目录外文件改变和相同线程续接。"
+    },
+    {
+      "hypothesis": "computer_use=false、apps=false 证明普通 Desktop 不能操作系统应用。",
+      "outcome": "withdrawn_counterclaim",
+      "evidence": ["E02", "E06", "E09"],
+      "reason": "computer_use/browser_use/view_image 等额外关闭仅在 observationProtocol 分支出现；apps/plugins 被禁用约束的是 Codex 相应特性，不能抹掉普通会话原生 shell 和已批准程序的 OS 调用路径。通过 shell/程序调用 OS 自动化接口的可能性是机制推论，本次没有把它冒充为 Office/Adobe 真机验收。"
+    },
+    {
+      "hypothesis": "没有第一方全局鼠标/键盘工具意味着完全没有电脑操作能力。",
+      "outcome": "withdrawn_counterclaim",
+      "evidence": ["E01", "E06", "E09", "E10"],
+      "reason": "现有文件、原生命令、程序和真实任务浏览器操作足以反驳绝对否定。任务浏览器截图也不能反过来证明整个 OS 视觉操作已经验收。"
+    },
+    {
+      "hypothesis": "只要有本机 Codex 和 full-access，就能撤销全部应用/休眠的未验收项。",
+      "outcome": "not_supported",
+      "evidence": ["E11", "E13", "E14", "E15", "E16", "E18"],
+      "reason": "代码和测试覆盖具体路径；原生 Codex 集成测试上游是本地合成协议，最新真实模型证据为文件/命令/结算的限定流程。没有逐应用操作清单和实机成功/失败/取消证据，不能跨越到普遍结论。"
+    }
+  ],
+  "codeEvidence": [
+    {
+      "id": "E01",
+      "file": "dev/copypaste-desktop/src/local-codex.ts",
+      "lines": [103, 106, 108, 109, 353, 356, 357, 424, 428, 651, 655, 762, 770, 786],
+      "observation": "权限映射、真实 app-server --stdio --strict-config spawn、本地 cwd、profile 核验、full-access 批准和撤回路径均存在；不是云端文件桥接。"
+    },
+    {
+      "id": "E02",
+      "file": "dev/copypaste-desktop/src/local-codex.ts",
+      "lines": [312, 323, 324, 343, 344, 345, 347],
+      "observation": "普通会话启用原生 shell；额外 computer_use/browser_use 等关闭受 observationProtocol 条件控制。apps/plugins/remote_plugin 固定关闭，但这不等于禁止 OS 程序。windows.sandbox=unelevated 与当前 OS 用户权限边界一致。"
+    },
+    {
+      "id": "E03",
+      "file": "dev/copypaste-desktop/src/main.ts",
+      "lines": [194, 198, 204, 206, 228, 229, 231, 233, 235, 240, 255, 257, 263, 270, 275],
+      "observation": "本机用户以默认取消的原生弹窗授予权限/批准程序/启用监听；program/browser/schedule 控制器接入本机 Agent。调度 dispatch 使用固定 job ID 和 beforeNative 检查。"
+    },
+    {
+      "id": "E04",
+      "file": "dev/copypaste-desktop/src/local-schedule.ts",
+      "lines": [72, 80, 95, 99, 103, 105, 108, 110, 175, 177, 181],
+      "observation": "持久化规则重启转暂停，账户/目录/权限版本和不确定执行检查；真实递归 fs.watch 及 watcher 错误处理。"
+    },
+    {
+      "id": "E05",
+      "file": "dev/copypaste-desktop/src/local-schedule.ts",
+      "lines": [249, 255, 258, 260, 266, 270, 272, 274, 278, 281, 283, 285, 289, 294],
+      "observation": "串行队列、快照、预算分配和 dispatch 前后原文件 SHA/身份比较；未知执行进入对账，冲突停止批次。"
+    },
+    {
+      "id": "E06",
+      "file": "dev/copypaste-desktop/src/local-programs.ts",
+      "lines": [91, 94, 98, 177, 179, 185, 187, 195, 198, 199, 202, 212, 215, 219, 226],
+      "observation": "程序批准关联账户和授权版本；调用先持久化、在线重验、检查可执行身份，再真实 spawn argv，Windows 使用经哈希验证的 guardian。不是 GUI 应用逐项验收证明。"
+    },
+    {
+      "id": "E07",
+      "file": "dev/copypaste-desktop/src/local-agent.ts",
+      "lines": [234, 237, 238, 240, 245, 251, 1049, 1057, 1063, 1067, 1078, 1081, 1090],
+      "observation": "保存的运行中操作恢复为未知/待对账；调度和程序归属包含撤回/版本/账户，新的运行上下文走公司 runtime 权限校验。"
+    },
+    {
+      "id": "E08",
+      "file": "dev/copypaste-desktop/src/local-schedule-files.ts",
+      "lines": [22, 23, 24, 26, 33, 36, 38, 43, 45, 47, 50, 59, 61, 76, 109, 113, 116, 125, 128, 129, 133, 134],
+      "observation": "绝对路径/UNC/符号链接/规范目录检查、授权目录内 resolve、稳定句柄指纹、快照排他写入及一致性验证直接存在。不能将仅规范目录的调度规则误读成 full-access 原生 shell 被强制限制到单目录。"
+    },
+    {
+      "id": "E09",
+      "file": "dev/copypaste-desktop/src/local-codex.ts",
+      "lines": [388, 390, 393, 395, 396, 398],
+      "observation": "真实本机 Codex thread/start 或 thread/resume 连接版本化 copypaste_browser 和 copypaste_programs dynamic tools；原生 shell 是另一条路径，不要求每次调用都经批准程序工具。"
+    },
+    {
+      "id": "E10",
+      "file": "dev/copypaste-desktop/src/browser-contract.ts",
+      "lines": [9, 10, 11, 14, 15, 16, 17, 18, 19, 20, 21],
+      "observation": "任务拥有浏览器的真实页面、截图、点击/输入/拖拽/上传、JavaScript、等待、弹窗及下载契约。截图范围为任务页面，不是全局桌面。"
+    },
+    {
+      "id": "E11",
+      "file": "dev/copypaste-desktop/tests/integration/local-codex.native.test.ts",
+      "lines": [28, 59, 68, 79, 97, 115, 131],
+      "observation": "集成测试由本地 HTTP/SSE 夹具合成模型 tool call；真实本机 Codex/文件能力与真实付费上游验收应分开。"
+    },
+    {
+      "id": "E12",
+      "file": "dev/copypaste-desktop/tests/local-schedule.test.ts",
+      "lines": [59, 64, 65, 66, 72, 78, 80, 82, 87, 93, 98, 101, 103, 106, 109, 112, 125, 135, 137, 139, 144, 149, 150],
+      "observation": "已读真实文件监听/输出、串行/暂停/恢复、丢回执恢复、关闭期间改变、冲突、撤回和持久化失败测试实现；模型及身份为夹具。本轮未执行这些测试。"
+    },
+    {
+      "id": "E13",
+      "file": "dev/copypaste-desktop/tests/integration/local-codex.native.test.ts",
+      "lines": [662, 671, 673, 677, 680, 685, 686, 689, 693, 694, 699, 704, 706, 713, 719, 720, 724],
+      "observation": "测试代码要求真实目录外文件修改、磁盘 Skill 加载、独立进程、凭据排除、同线程续接和降级后拒写；不支持‘只有一个受限文件桥’的描述。"
+    },
+    {
+      "id": "E14",
+      "file": "dev/copypaste-desktop/tests/local-programs.test.ts",
+      "lines": [38, 41, 42, 46, 51, 53, 54, 55, 56, 72, 77, 81, 85, 87, 88, 92, 95, 97, 98, 101, 106, 108, 109, 111, 115],
+      "observation": "测试真实程序 argv/退出码/输出、凭据排除、授权变化、可执行替换和重启未知不重放；GUI Office/Adobe 的交互不是这些测试的内容。"
+    },
+    {
+      "id": "E15",
+      "file": "dev/copypaste-desktop/tests/local-agent.test.ts",
+      "lines": [572, 576, 580, 581, 582, 583, 584, 585, 586],
+      "observation": "以网络异常夹具验证 stop/revoke 仍关闭本机运行，保留 settling 状态。它证明明确的离线控制分支，不是全部网络/物理休眠故障注入通过。"
+    },
+    {
+      "id": "E16",
+      "file": "docs/requirements/03-client-execution-amendment.md",
+      "lines": [75, 77],
+      "observation": "离线本机模型与自动提权不是完整权限承诺；应用逐项验收不能由装入 Codex 自动推导。"
+    },
+    {
+      "id": "E17",
+      "file": "dev/copypaste-desktop/scripts/prepare-local-codex.mjs",
+      "lines": [8, 10, 22],
+      "additionalFile": "dev/copypaste-desktop/src/main.ts",
+      "additionalLines": [226, 234, 236],
+      "observation": "win32 准备检查、windows-x64 runtime-manifest、codex.exe 和 Windows 程序选择构成当前 Desktop 支持证据，不能用平台 POSIX 源码分支代替其他 OS 安装包验收。"
+    },
+    {
+      "id": "E18",
+      "file": "docs/quality/192-native-recheck.md",
+      "lines": [7, 20, 23, 25, 27, 31],
+      "observation": "最新已读真实证据限定客户本机 Codex/真实模型/文件命令/实际结算，保留包装器失败、特定网络通道及全部业务矩阵的限制。它是历史证据，不独立证明今天实时线上状态，也不能作为任意桌面应用通过记录。"
+    }
+  ],
+  "callChainsWalked": [
+    "main.ts:255 LocalScheduleController -> localAgent.schedulingContext -> local-schedule.ts:177 fs.watch -> stableFile/prepareSnapshot -> local-schedule.ts:270 io.dispatch -> main.ts:275 localAgent.dispatch；前后指纹、账号/版本和费用上限在同链检查。",
+    "main.ts:231 LocalProgramController + 本机 choose/confirm -> local-codex.ts:396 copypaste_programs -> local-programs.ts:177 run -> persist/check/inspectProgram -> Windows guardian -> spawn(executable, argv)。",
+    "main.ts:198 完整授权 -> local-codex.ts:103 localPermissionPolicy -> normal features.shell_tool=true -> spawn pinned app-server --stdio with cwd -> checkThread sandbox/provider/approval -> full-access accept；撤回 -> native close。"
+  ],
+  "searches": [
+    {
+      "scope": "dev/copypaste-desktop/src and tests, TypeScript files",
+      "patterns": "powerMonitor|hibernate|system.?suspend|system.?resume|physical.?sleep|suspend.*wake|UIAutomation|pyautogui|photoshop|illustrator|winword|excel.exe",
+      "result": "未匹配。仅据此记录未在该搜索面发现显式实现/测试；不据此断言 shell、客户工具或 pinned Codex 不可能操作 GUI，亦不穷举仓库外验收材料。"
+    },
+    {
+      "scope": "dev/copypaste-desktop/src, TypeScript files",
+      "patterns": "powerMonitor|suspend|resume|offline|online|danger-full-access|approvalPolicy|approval_policy|shell|exec_command|mouse|keyboard|computer_use|computerUse",
+      "result": "发现正常原生 shell/full-access、observationProtocol 专用关闭、thread resume、在线授权、任务浏览器 CDP mouse；未发现独立 powerMonitor 字面量。已对主要权限及启动分支逐行核验，未将 native shell 间接能力排除。"
+    },
+    {
+      "scope": "tests/local-schedule.test.ts, tests/local-schedule-files.test.ts, tests/local-programs.test.ts, tests/local-agent.test.ts, tests/integration/local-codex.native.test.ts",
+      "patterns": "powerMonitor|suspend|hibernate|offline|resume|restart|conflict|unauthori|revok",
+      "result": "发现真实文件/程序与夹具授权/模型覆盖的重启、恢复、冲突和离线撤回测试；随后逐行读取本报告 E12-E15 引用部分。未运行。"
+    },
+    {
+      "scope": "scripts/prepare-local-codex.mjs, src/local-programs.ts, src/main.ts, package.json",
+      "patterns": "win32|windows-x64|linux|darwin",
+      "result": "找到 Windows runtime 打包入口和程序执行的平台分支；未把后者当作其他 OS 已发布 Desktop 的证据。"
+    }
+  ],
+  "notChecked": [
+    "本轮是独立只读反驳，没有执行新测试、启动产品、浏览器、真实模型、付费服务、SSH 或修改运行配置。",
+    "没有反编译或逐一枚举 pinned Codex 二进制的全部 native 工具；不能断言其所有 GUI/OS 能力不存在。",
+    "没有进行 Windows 真机物理休眠/唤醒、任意 Office/Adobe/系统设置交互或全部网络异常矩阵。",
+    "没有重新核实最新线上配置、客户端包内容和今日网络状态；192 是保留限制的历史验收记录。",
+    "没有独立重做全部 guardian、费用结算或其他需求审计；代码证据与本报告明确范围绑定。"
+  ],
+  "confirmedCodeDefects": [],
+  "handoff": "汇总时保留：基础 REQ-040 已实现，扩展的全应用/全工具/物理休眠组合验收尚未证明。不得把三个未验证子项统计为三个已确认缺失功能，不得使用无 powerMonitor 或无独立 GUI 工具名作为缺陷依据。",
+  "constraintsObserved": {
+    "noLocalVirtualization": true,
+    "noBrowser": true,
+    "noPaidCalls": true,
+    "noProductReadmeGitEdits": true,
+    "onlyNewReportWritten": true,
+    "secretsReadOrEmitted": false
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "requirementId": "REQ-080",
+  "reviewStage": "194-independent-spec-refutation",
+  "reviewer": "audit194_video_req019",
+  "authorReviewed": "audit194_roles_req080",
+  "target": "docs/quality/system-assessment-194/requirements/REQ-080-initial.json",
+  "workspace": "D:/dev/copypasted/自有agent",
+  "result": "retained_with_narrowed_engineering_claim",
+  "requirementVerdict": "partial",
+  "scope": "仅将初审结论与用户原话、现行 SRS、产品角色分册、TC-073/080 和发布门槛进行独立文字反驳。不重做完整代码审计，不重新运行 Catalog、测试、任务或线上探测。",
+  "summary": "保留‘至少 12 个预设及实际 Skill 执行已存在，但至少 12 个角色完整专业发布验收未被证明’这一分层结论。正常/修改/依赖或权限异常、精确版本、实际文件和费用并非初审临时编造，现行 SRS/TC 明确要求；但它们是对用户功能要求的文档验收展开，不能冒充用户逐条指定了数据库状态或资格 API。将 ROLE194-02 收窄为可追溯资格核验和发布流程的未证明项；没有指定 qualified API/字段/端点本身不构成用户功能缺失。",
+  "authorityAndScope": [
+    {
+      "level": "explicit_user_requirement",
+      "source": "本会话用户原始角色要求；对应 docs/requirements/01-srs.md:117 及 docs/product/06-role-templates-and-skill-presets.md:29",
+      "content": "提前预设客户可直接选用的模板角色，例如设计师使用 Codex 加载设计 Skill 配合 Image 2 出图；通过不同 Skill 形成不同客户模块；至少 12 个角色，覆盖软件开发到完整设计业务。",
+      "implication": "至少 12、开发/设计覆盖、真实可使用的 Skill 驱动模块和设计师实际出图属于直接功能承诺；只有名称或提示词占位不能充分满足这一要求。用户没有在该原话指定 qualified 字段、专用资格 API、固定三用例数据库模型或专家签名系统。"
+    },
+    {
+      "level": "documented_acceptance_elaboration",
+      "source": "docs/requirements/01-srs.md:195-202；docs/quality/01-test-and-acceptance-plan.md:976-984",
+      "content": "逐角色完整任务、产物修改、依赖/越权异常；内核/模板/Skill/模型/输入版本、实际文件和费用；首发至少 12 个合格角色。",
+      "implication": "这是现行验收基线，足以要求证据而非仅目录数量；它不使每种证据存储或审核产品实现都变成唯一指定方案。用户之后允许适当跳过部分测试以尽快冻结，应如实披露未完成的该基线，而非把未跑的用例改写成角色不存在。"
+    },
+    {
+      "level": "engineering_choices_or_recommendations",
+      "source": "docs/product/06-role-templates-and-skill-presets.md:41,194；docs/technical/25-role-template-registry-and-runtime-binding.md:44-53；docs/quality/02-requirements-traceability.md:157",
+      "content": "18 个具体名称和首批顺序是设计默认。名为 qualified 的 API/字段、专用登记端点和特定审核页面未被这些权威文本指定为唯一交付形式。",
+      "implication": "资格证据和发布校验可以通过适当的可审计机制实现；不能因没有某个精确接口或状态名字直接判产品功能缺失。也不能以此免除精确版本证据和发布核验本身。"
+    }
+  ],
+  "findingDecisions": [
+    {
+      "id": "ROLE194-01",
+      "decision": "retained_with_explicit_boundary",
+      "kept": "至少 12 个专业角色的完整任务/修改/异常和版本/实际交付/费用资格尚未被初审所读证据证明，不能声称 TC-080 已完成。",
+      "reason": "SRS REQ-080、TC-080、产品 RP06 及 G08 一致规定这些证据。三类运行场景不是初审自行增加的要求。",
+      "narrowed": "初审的静态 formal_catalog_qualified_count=0 仅表示所审目录的声明/状态；不能单凭该值推导今天正式合格角色绝对为零，更不能推出 19 个角色未实现、都不能用或从未有真实任务成功。19 个预设、Skill 实际加载等代码结论由代码审查负责，本次仅确认其与文本要求并不矛盾。",
+      "evidence": ["S01", "S02", "S03", "S04", "S05", "S08"]
+    },
+    {
+      "id": "ROLE194-02",
+      "decision": "narrowed",
+      "kept": "从现行文档看，发布前需要可追溯的同配置资格证据核验；模块规格还要求 TemplateUse 检查发布及资格。初审描述的当前状态流不能自行证明该资格核验和推进流程已闭环。",
+      "removed_as_mandatory": "必须增加独立 qualified API、指定数据库字段或某个精确注册端点，才能算实现用户要求。",
+      "reason": "TC-080 指定真实证据与版本匹配和发布结果，没有指定 API 形状。追踪矩阵 REQ-080 映射 listAgentTemplates/verifySkillVersion；已读技术文档列出目录、详情、预检和实例化四类接口，未给出 dedicated qualification API 约束。缺少该接口可作为工程建议，不能额外计为一个用户明确要求却没实现的业务模块。",
+      "impact_reworded": "尚未证明至少 12 个角色具备可追溯的完整发布资格，以及文档要求的发布/使用时资格核验已闭环；应补齐相应证据和核验机制，具体存储/API 设计由实现选择。",
+      "evidence": ["S03", "S06", "S07", "S09"]
+    },
+    {
+      "id": "qualified-zero-means-no-roles",
+      "decision": "refuted_interpretation",
+      "reason": "产品文本明确将目录定义、依赖就绪、运行证据和资格分开。实际 Designer 真实出图/下载/扣费证据也与‘从未成功’冲突。初审本身已有 not_claimed 边界，汇总时必须保留。",
+      "evidence": ["S02", "S07", "S08"]
+    }
+  ],
+  "specificationEvidence": [
+    {
+      "id": "S01",
+      "file": "docs/requirements/01-srs.md",
+      "lines": [113, 117, 195, 196, 197, 199, 200, 202],
+      "observation": "ROLE01 的直接来源、目录数量与真实可执行技能、设计师实际出图以及单独的发布资格均有明确分项。不能把 REQ-080 资格未证明与 REQ-073 目录未实现混同；重复计数应避免。"
+    },
+    {
+      "id": "S02",
+      "file": "docs/product/06-role-templates-and-skill-presets.md",
+      "lines": [29, 37, 39, 41, 43, 179],
+      "observation": "用户要求至少 12；18 个名称/首批分组是设计默认。实际模块含职责/Skill/工具/工作流，不能只是改名。ready 为依赖、权益、资源和发布状态的交集，不能等同完整专业验收。"
+    },
+    {
+      "id": "S03",
+      "file": "docs/quality/01-test-and-acceptance-plan.md",
+      "lines": [976, 978, 980, 982, 984],
+      "observation": "TC-080 明确三类候选运行、版本匹配、真实运行/实际出图和发布资格，拒绝缺费用或仅静态 schema。它不规定名为 qualified 的 API、字段或专用登记端点；not_run 是计划状态，不独立否定后来所有实际运行。"
+    },
+    {
+      "id": "S04",
+      "file": "docs/quality/01-test-and-acceptance-plan.md",
+      "lines": [156, 906, 908, 910, 912, 914],
+      "observation": "G08 和 TC-073 规定可用计数及真实运行，不把重复/禁用/仅咨询/静态设计计为合格。该内容是当前文档验收基线，不是 API 形状要求。"
+    },
+    {
+      "id": "S05",
+      "file": "docs/product/06-role-templates-and-skill-presets.md",
+      "lines": [187, 188, 189, 190, 191, 192, 194, 196],
+      "observation": "RP01-RP06 将目录、技能、实际执行、复用、版本、资格拆开。三类运行及版本/费用/业务接受写在 RP06 详细验收中；具体优先 R01-R16 为建议，不能把全部 18/19 都当作用户首发最低数量。"
+    },
+    {
+      "id": "S06",
+      "file": "docs/modules/02-agents-tasks-memory.md",
+      "lines": [169, 171, 173, 175],
+      "observation": "发布前证据核验和 TemplateUse 资格检查属于模块设计中的行为约束；精确绑定和审计必须有实际意义。该文本没有要求唯一专用登记端点，不能只因缺该端点就断言行为不能通过其他受控流程实现。"
+    },
+    {
+      "id": "S07",
+      "file": "docs/technical/25-role-template-registry-and-runtime-binding.md",
+      "lines": [18, 22, 24, 26, 44, 48, 49, 50, 51, 53, 79, 81],
+      "observation": "此历史实现记录明确区分目录/预检/实例化与真实专业资格，列出四种实际 API，而非 dedicated qualification API。该文的18角色/0合格是历史范围，不能当作今天线上实时状态或不存在真实成功任务的独立证据。"
+    },
+    {
+      "id": "S08",
+      "file": "docs/development/189-real-image-and-acceptance.md",
+      "lines": [7, 8, 9],
+      "observation": "已有真实 Image 2 生成/编辑以及 Designer Web 任务、文件下载/hash 和实际扣费的限定证据；它反驳‘零真实成功’，但没有记录至少 12 个角色各三类资格全部完成。"
+    },
+    {
+      "id": "S09",
+      "file": "docs/quality/02-requirements-traceability.md",
+      "lines": [150, 151, 152, 153, 154, 155, 156, 157],
+      "observation": "REQ-073–080 各自映射角色目录/绑定/执行/版本与验收；REQ-080 映射 listAgentTemplates、verifySkillVersion 和 TC-080，并未要求名为 qualified 的独立 API。"
+    },
+    {
+      "id": "S10",
+      "file": "docs/product/04-release-and-commercial-model.md",
+      "lines": [46, 48, 50],
+      "observation": "首发至少 12 个合格角色及三类证据为文档发布门槛；基础视频角色并不以生成式视频/配音全部接入为前提，不能无条件扩大每个角色验收到所有媒体服务。"
+    }
+  ],
+  "searches": [
+    {
+      "scope": "docs/requirements, docs/product, docs/modules and selected acceptance/traceability/API documents",
+      "patterns": "REQ-080|TC-080|G08|角色发布资格|至少 12 个|至少十二|qualified|qualification|readiness_evidence|资格登记|资格注册",
+      "result": "发现 SRS、RP06、G08、TC-073/080 的实际能力及发布证据要求；找到目录契约的 qualification/readiness 声明。没有在本次读取的权威文字中找到必须采用某个名为 qualified API/字段的规定。这个结果不替代对全部源码/契约的审计。"
+    },
+    {
+      "scope": "docs/technical/25-role-template-registry-and-runtime-binding.md, docs/modules/02-agents-tasks-memory.md",
+      "patterns": "qualified|qualification|资格|验收|readiness|注册|发布|接口",
+      "result": "找到 TemplateUse 资格检查和官方发布前证据检查；技术记录将依赖就绪与专业资格分开，并列出四个模板 API。未将可选实现方法升级为新增用户功能。"
+    }
+  ],
+  "notChecked": [
+    "未重新阅读全部角色代码、运行目录加载器或验证初审 19 个角色/50 个包的实时源码统计；这些是初审代码证据，不是本次文字反驳重新测得。",
+    "未探测线上数据库/API，也未独立证明今日 formal_catalog_qualified_count 或正式合格角色的总数。",
+    "未执行任何新模型/媒体任务、专业质量评价、修改/异常用例或收费调用。",
+    "未把 technical25 或其他历史 not_run/0 状态当作否定所有后续真实证据的依据。"
+  ],
+  "recommendedAggregation": "主清单保留一项‘至少 12 个真实专业角色完整验收/资格证据未闭环’，同时明确 19 个预设及 Skill 执行已有实现。ROLE194-02 的具体 qualified API/注册设计列为实现建议或该验收项的子工作，不另算一个用户明确要求却完全没有的业务模块。",
+  "constraintsObserved": {
+    "onlyNewReportWritten": true,
+    "noCodeReaudit": true,
+    "noBrowserOrPaidCalls": true,
+    "noProductReadmeGitEdits": true,
+    "noSecretsReadOrEmitted": true
+  }
+}

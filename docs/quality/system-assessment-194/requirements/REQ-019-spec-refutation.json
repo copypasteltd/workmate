@@ -1,0 +1,171 @@
+{
+  "stage": 194,
+  "requirement_id": "REQ-019",
+  "review_type": "independent_specification_refutation",
+  "reviewer": "audit194_desktop_req040",
+  "reviewed_report": "docs/quality/system-assessment-194/requirements/REQ-019-initial.json",
+  "independence": "不同于REQ-019初稿和代码反驳作者。本次只核对用户原始要求、权威需求、产品范围、验收文字和近期验收范围；未审查源代码来认可或否定其具体实现。",
+  "overall_decision": "retain_partial_with_scope_qualifications",
+  "summary": "保留‘真实生成式视频仍是完整产品的接入/验收缺口’，但它不是全部视频业务没有实现，也不是基础模板视频角色成立的前提。必须追补真实公司服务、异步原operation/费用/媒体闭环及实际承诺规格的证据；不得把全部行业格式、任意参考类型、无限专业质量条件或某一特定上游原生协议扩张成用户已经明确的必选项。",
+  "user_original_scope": {
+    "source": "用户本会话原始需求，优先级高于项目分册解释",
+    "quote": "marketing 的 生图、视频、特效、字体等细则。",
+    "related_quote": "上述流程中所有的AI类API接口请求都是用我们自己的内部的服务器。走标准的 openai api 请求规范。",
+    "interpretation": "用户明确要求服务marketing的视频业务和内部AI服务约束；这两句话本身没有指定视频供应商、模型、全部时长/比例/编码/参考类型，也没有要求所有视频必须由生成式模型制作。后续SRS/产品文档将模板制作与生成视频分别细化。用户要求完整应用的目标使生成式视频的后续条款仍需处理，不能用阶段划分永久删除它。"
+  },
+  "authoritative_requirements": [
+    {
+      "file": "docs/requirements/01-srs.md",
+      "start": 140,
+      "end": 141,
+      "quotes": [
+        "| REQ-018 | P0 | 视频基础生产：脚本、分镜和模板工程分别保存，输出可播放成片，含字幕、品牌元素及约定音轨。 |",
+        "| REQ-019 | P1 | 生成式视频：经内部服务提交、查询、取消或对账异步作业，保存真实媒体、费用和失败原因。 |"
+      ],
+      "meaning": "基础成片和生成式模型是独立条款；REQ-019不是仅有脚本/提示词，也不要求把基础模板改成必须依赖生成模型。"
+    },
+    {
+      "file": "docs/quality/01-test-and-acceptance-plan.md",
+      "start": 366,
+      "end": 374,
+      "quotes": [
+        "### TC-019 · 生成视频 · M4",
+        "前置：内部服务支持真实异步视频作业，含报价和状态查询。",
+        "操作与异常：提交后断线、重复回调、取消与完成竞争、查询超时。",
+        "通过条件及证据：供应商 operation 映射稳定；重复事件不重复记账；未知结果进入对账；最终保存真实媒体和状态。"
+      ],
+      "meaning": "最小可核查生成视频闭环明确。用模拟作业或模板MP4替代真实服务不能通过；文字没有枚举必须支持的全部视频规格。"
+    },
+    {
+      "file": "docs/quality/01-test-and-acceptance-plan.md",
+      "start": 353,
+      "end": 364,
+      "quotes": [
+        "前置：固定 15 秒、9:16 的模板、品牌资产、字幕和获准音轨。",
+        "通过条件及证据：实际 MP4 可播放、时长和规格一致，工程可复做；缺资源时标明失败，不以脚本代替成片。"
+      ],
+      "meaning": "15秒9:16是TC-018模板样例，不能偷换成REQ-019全部生成视频必须支持15秒；模板实测也不能反向关掉REQ-019。"
+    },
+    {
+      "file": "docs/product/06-role-templates-and-skill-presets.md",
+      "start": 134,
+      "end": 136,
+      "quote": "输入：目标、时长/比例、文案、素材与音轨使用范围。步骤：脚本 → 分镜 → 素材 → 时间线/字幕/动效 → 原生成片渲染 → 播放与规格检查。示例：「用产品图做一条 15 秒竖版促销视频，有片头和价格动效。」验收：成片可播放、时序/字幕/音轨正确，工程可恢复；基础模板制作不要求生成式视频，生成视频、抠像、AI 配音各自依赖内部已验证能力，未接入时说明受影响步骤。",
+      "meaning": "视频角色可以首先通过模板/时间线真实制作；生成视频、抠像、AI配音按具体能力开放。角色的专业成片、恢复工程和修改是相邻要求，不能在本需求里重复计算成所有生成模型输出必须天然为完整可编辑工程。"
+    },
+    {
+      "file": "docs/product/04-release-and-commercial-model.md",
+      "start": 15,
+      "end": 15,
+      "quote": "| M4 完整产品 | Desktop、更多平台连接、生成式视频/效果/语音、SEO/GEO、更多企业 SOP 与事件流程 | 各能力真实验证、独立质量样例与可持续支持成本 |",
+      "meaning": "生成式视频是完整产品目标，而非任意早期基础版本都必须已验收。"
+    },
+    {
+      "file": "docs/product/04-release-and-commercial-model.md",
+      "start": 48,
+      "end": 48,
+      "quote": "M0 增加 Codex 固定版本加载技能、内部 Image 2 真实生成/编辑及字体分层验证。M1 完成角色目录、自动绑定、版本定制和至少 12 个合格角色；建议优先 R01–R16 的开发与设计角色。R17 可先使用导入数据，R18 的可执行流程和自动计划随 M2 开放；生成式视频和配音仍逐能力验收，不是基础视频角色成立的前提。",
+      "meaning": "至少12个角色的整体资格与生成视频本身分别核对，不能因生成视频未启用直接判定模板视频角色不存在。"
+    }
+  ],
+  "finding_decisions": [
+    {
+      "finding_id": "REQ019-LIVE",
+      "decision": "retain_with_timestamp_and_scope_limit",
+      "supported_claim": "真实异步公司视频服务的接入和用户闭环验收仍需证明；不能把模拟服务、可播放fixture或模板合成说成已完成真实生成视频。",
+      "limits": [
+        "services.video=false是所引用190检查的历史线上观察，192明确保留该范围；本次未重新访问线上，不能声称此刻独立实查仍为false。",
+        "缺少真实接入/资格证据不等于没有实现异步作业代码。代码实现结论须由另一位代码审查员确认。",
+        "这是完整应用范围中的缺口，不是以其单项阻止所有M1/模板功能发布的依据。"
+      ],
+      "source_refs": [
+        {"file": "docs/requirements/01-srs.md", "start": 141, "end": 141},
+        {"file": "docs/quality/01-test-and-acceptance-plan.md", "start": 366, "end": 374},
+        {"file": "docs/quality/190-system-recheck.md", "start": 18, "end": 18},
+        {"file": "docs/quality/192-native-recheck.md", "start": 27, "end": 27},
+        {"file": "docs/requirements/191-selected-repairs.md", "start": 16, "end": 16}
+      ]
+    },
+    {
+      "finding_id": "REQ019-PROFESSIONAL",
+      "decision": "retain_as_unverified_but_narrow_open_ended_scope",
+      "supported_claim": "真实营销用途需要实际输出、明确质量样例和与已承诺brief/规格相符的检验；fixture可播放不证明真实模型质量。",
+      "scope_correction": "‘all professional formats’和‘全部参考素材/规格’只能指该发布实际承诺支持的规格、参考类型及约定业务案例，不能无限扩为所有行业格式、任意时长/分辨率/参考模式或完美品牌/主体一致性。TC-019没有规定所有组合必须逐一真实付费穷举；测试覆盖策略和质量口径应先界定。",
+      "not_required_by_this_requirement_alone": [
+        "支持全部生成视频供应商/模型和全部行业格式。",
+        "把模板用例的15秒强加为生成式视频必选时长。",
+        "用户尚未明确的4K/60fps/任意时长/任意参考类型。",
+        "生成模型输出本身就是第三方完整可编辑专业工程；可恢复性按实际格式及编辑描述另验收。",
+        "把AI配音、抠像或高级修复强制作为每个基础视频任务的依赖。"
+      ],
+      "source_refs": [
+        {"file": "docs/quality/01-test-and-acceptance-plan.md", "start": 355, "end": 372},
+        {"file": "docs/product/06-role-templates-and-skill-presets.md", "start": 136, "end": 136},
+        {"file": "docs/product/04-release-and-commercial-model.md", "start": 15, "end": 15},
+        {"file": "docs/requirements/14-complete-delivery-package.md", "start": 15, "end": 15},
+        {"file": "docs/quality/remaining-work-stage165.md", "start": 24, "end": 25}
+      ]
+    },
+    {
+      "finding_id": "REQ019-PROTOCOL",
+      "decision": "retain_as_selected_integration_boundary_not_new_user_feature",
+      "supported_claim": "仅填写任意文本/图片OpenAI兼容地址和Key不证明供应商具备真实视频异步、状态、用量及媒体能力；选用的内部适配协议需要实际对接和验证。",
+      "scope_correction": "company-video-jobs-v1、原operation查询和取消是项目当前选择的内部工程契约，并非用户指定的唯一上游标准。供应商无需原生暴露项目自定义的全部endpoint；公司内部适配层可以提供等价的可靠映射、恢复及取消/对账。不得将‘上游不直接实现自定义协议’本身当作用户需求矛盾或要求用户购买某个特定视频服务。",
+      "cancellation_wording": "REQ-019写‘取消或对账’，TC-019要求处理取消与完成竞争并保留未知结果。可要求正确处理取消请求和供应商实际终止/费用事实；不能据此无条件要求所有供应商原生支持立即取消、立即免费或缺少取消即无法提供任何生成能力。已派发不能假定零费，仍须安全对账。",
+      "source_refs": [
+        {"file": "docs/requirements/01-srs.md", "start": 141, "end": 141},
+        {"file": "docs/quality/01-test-and-acceptance-plan.md", "start": 368, "end": 372},
+        {"file": "docs/requirements/178-per-model-connections.md", "start": 7, "end": 13},
+        {"file": "docs/technical/80-generated-video-jobs.md", "start": 15, "end": 22}
+      ]
+    }
+  ],
+  "must_close_for_REQ019": [
+    "明确所发布的公司视频模型/连接/费率及支持规格；不将未接入能力宣传成已开放。",
+    "用真实公司异步服务完成任务提交、状态查询、稳定operation映射、真实媒体保存、失败原因与费用记录。",
+    "验证提交后断线、重复回调、取消与完成竞争、查询超时；不重复记账、不擅自重提未知操作，未知费用进入对账。",
+    "通过真实用户任务证明结果可按承诺预览/下载，保留实际版本/费用及相应权限边界；具体客户端通用能力不在本次重复判缺失。",
+    "在对外承诺专业营销交付时，用明确的brief、受支持规格和质量样例作业务验收。"
+  ],
+  "not_yet_confirmed_extensions": [
+    "无限格式、所有参考素材类别和任意时长/尺寸。",
+    "所有规格之间的全部笛卡尔积必须逐项实际付费生成。",
+    "某一特定视频供应商、停用/新模型或固定第三方平台的原生兼容承诺。",
+    "所有视频任务必须使用生成式模型，或模板功能必须等待生成视频/配音/抠像全部接入。",
+    "没有rubric和样例时，主观‘专业质量’被当作可无限追补的确定bug清单。"
+  ],
+  "searches_and_scope": [
+    {
+      "scope": "docs/requirements/01-srs.md and docs/quality/01-test-and-acceptance-plan.md",
+      "patterns": ["REQ-018", "REQ-019", "TC-018", "TC-019", "生成式视频", "模板视频", "取消", "对账"],
+      "result": "确认独立P0模板条款与P1生成条款，TC-018固定15秒9:16，TC-019只规定真实异步/异常/operation/账务/媒体闭环。"
+    },
+    {
+      "scope": "docs/product/01-prd.md, 04-release-and-commercial-model.md, 06-role-templates-and-skill-presets.md",
+      "patterns": ["首期", "生成式视频", "基础模板", "逐能力", "规格", "专业"],
+      "result": "基础真实成片为首期要求，生成媒体M4逐项开放；明确不是基础视频角色成立的前提。完整产品仍包含生成式视频。"
+    },
+    {
+      "scope": "docs/requirements and docs/quality/remaining-work-stage165.md",
+      "patterns": ["时长", "比例", "规格", "参考", "质量", "1280", "720", "1024"],
+      "result": "本次检索未找到将初稿所列生成时长/尺寸或所有行业格式直接写为用户强制最低支持集合的权威条款。宽泛‘全部参考素材/规格’必须限定为约定/发布支持范围；当前实现界限由代码审查另核，不在此反驳中推断。"
+    },
+    {
+      "scope": "requirements/178,188,189,191 and quality/190,192,193",
+      "patterns": ["媒体", "未接入", "视频", "真实", "本轮", "范围"],
+      "result": "逐模型配置不等于全部媒体自动启用；真实环境验收不能由模拟代替；191未把08视频改为完成，192继续保留，193只证明下载分发。"
+    }
+  ],
+  "not_checked": [
+    "没有重审产品源代码、测试实现或SQL，不独立确认初稿每一条实现描述。",
+    "没有查询线上公开配置或Admin模型列表，未读真实供应商密钥。",
+    "没有调用浏览器、真实模型、视频供应商或任何付费服务。",
+    "没有新增专业视觉判断、实机播放测试或全部客户端验收。",
+    "技术分册仅用于区分已选内部协议与用户要求；其中关于第三方API时效的陈述未做外部核实，也未用于增加需求。"
+  ],
+  "written_file_only": "docs/quality/system-assessment-194/requirements/REQ-019-spec-refutation.json",
+  "initial_report_modified": false,
+  "product_or_git_modified": false,
+  "browser_or_paid_service_used": false,
+  "local_virtualization_used": false
+}

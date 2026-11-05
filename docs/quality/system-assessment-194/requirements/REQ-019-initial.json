@@ -1,0 +1,101 @@
+{
+  "requirement_id": "REQ-019",
+  "requirement": "生成式视频：经内部服务提交、查询、取消或对账异步作业，保存真实媒体、费用和失败原因。",
+  "specification": {"path": "docs/requirements/01-srs.md", "line": 141, "priority": "P1"},
+  "review_type": "Independent read-only source and existing-evidence review; no browser, paid model, live server configuration read or test execution",
+  "verdict": "partial",
+  "confidence": "high for implementation/evidence distinction; current live configuration not independently observed in this review",
+  "conclusion_zh": "生成式视频不是没有代码：持久异步作业、公司网关提交/查询/按原operation恢复/取消、未知费用保留、真实MP4摘要及解码校验、文件版本保存、失败原因和后台对账均有实际实现及专项夹具测试。最近线上证据仍为services.video=false且无已发布真实视频能力；192明确保留该缺口，193只补产品分发。因此不能将模板FFmpeg成片、可播放的测试MP4或真实Codex配合模拟媒体服务当作真实视频模型已上线、已专业验收。",
+  "classification": {
+    "code_implementation": "substantially implemented within the declared company-video-jobs-v1 protocol and supported bounds",
+    "actual_company_provider_integration": "not completed in the latest inspected live evidence; not freshly queried by this reviewer",
+    "professional_output_acceptance": "unverified",
+    "tests": "Substantial automated fixture tests exist; none executed in this review; fixture output is not live generation evidence",
+    "confirmed_new_product_code_defects": []
+  },
+  "implemented": [
+    {
+      "item": "Scoped Codex business tool and capability gate",
+      "evidence": ["dev/copypaste-platform/src/task-business-tools.ts:734", "dev/copypaste-platform/src/task-business-tools.ts:752", "dev/copypaste-platform/src/video-jobs.ts:62", "dev/copypaste-platform/src/server.ts:403"],
+      "behavior": "Only role tool_ids plus the frozen ready video capability admit generated_video_create. Preparation validates the exact spec and stores a persistent operation through prepare_ai_video_job before HTTP. Public readiness depends on a current ready, unrevoked, published or verified capability matching the gateway fingerprint."
+    },
+    {
+      "item": "Persistent asynchronous submit, lookup, polling and cancellation",
+      "evidence": ["dev/copypaste-platform/src/video-jobs.ts:147", "dev/copypaste-platform/src/video-jobs.ts:164", "dev/copypaste-platform/src/video-jobs.ts:224", "dev/copypaste-platform/src/video-jobs.ts:332", "dev/copypaste-platform/src/worker.ts:266"],
+      "behavior": "Lease-fenced worker steps claim one existing job, submit once, and recover lost submissions by the original operation rather than a fresh POST. Cancellation is an observed provider fact, not merely a locally changed state; signed callbacks reject conflicting identities and stale/regressive observations."
+    },
+    {
+      "item": "Known/unknown costs and immutable settlement evidence",
+      "evidence": ["dev/copypaste-platform/src/video-jobs.ts:183", "dev/copypaste-platform/src/video-jobs.ts:207", "dev/copypaste-platform/src/video-jobs.ts:233", "dev/copypaste-platform/src/video-jobs.ts:385", "dev/copypaste-platform/migrations/097-generated-video-jobs.sql:31", "dev/copypaste-platform/migrations/097-generated-video-jobs.sql:174", "dev/copypaste-platform/migrations/097-generated-video-jobs.sql:204"],
+      "behavior": "Billable seconds and frozen integer rate determine stored actual cost. Unknown dispatched operations preserve uncertainty/reservation; only an undispatched intent is locally provable zero. Budget overages are retained and block delivery. The common task budget/receipt projection includes known video charges or unknown quotes."
+    },
+    {
+      "item": "Actual binary validation, references and immutable authorized delivery",
+      "evidence": ["dev/copypaste-platform/src/video-jobs.ts:23", "dev/copypaste-platform/src/video-jobs.ts:268", "dev/copypaste-platform/src/video-jobs.ts:283", "dev/copypaste-platform/src/video-job-media.ts:13", "dev/copypaste-platform/src/video-job-media.ts:52", "dev/copypaste-platform/src/video-job-protocol.ts:6"],
+      "behavior": "Reference input is a bounded, decoded PNG/JPEG version (maximum 10 MB). Output requires exact SHA-256/bytes, MP4 H.264, fixed duration/resolution, optional AAC, frame count and actual FFmpeg full decode before saveAsset creates an immutable version. State='completed' alone is insufficient. Current protocol supports 720x1280, 1280x720 and 1024x1024, with 4/8/12/16/20 seconds and a 100 MB content bound."
+    },
+    {
+      "item": "Customer read/cancel/preview and independent administrator cost recheck",
+      "evidence": ["dev/copypaste-platform/src/video-job-routes.ts:22", "dev/copypaste-platform/src/video-job-routes.ts:46", "dev/copypaste-platform/src/video-job-routes.ts:60", "dev/copypaste-platform/src/video-job-routes.ts:81", "dev/copypaste-platform/src/video-jobs.ts:126"],
+      "behavior": "Authenticated customer routes enforce project/private scope and revisions; callbacks use a timestamped HMAC. Admin request and cost permissions are separate and return metadata/cost, not prompt/reference/media. Recheck observes the original operation and explicitly does not submit a new generation. Inline preview is limited to 20 MB; larger valid video needs download."
+    }
+  ],
+  "open_findings": [
+    {
+      "id": "REQ019-LIVE",
+      "category": "integration/configuration not complete in latest evidence",
+      "severity": "P1 business capability gap",
+      "finding": "The product cannot currently be represented as a fully available real generative-video service on the evidence reviewed.",
+      "evidence": ["docs/quality/190-system-recheck.md:18", "docs/quality/192-native-recheck.md:27", "docs/quality/193-product-downloads.md:11", "dev/copypaste-platform/src/server.ts:419"],
+      "required_to_close": ["Configure a real company video model, its own connection/credentials and actual rates without exposing secrets", "Provide all required company-video-jobs-v1 operations, including original-operation lookup, cancellation and confirmed usage", "Pass the real capability verification/publishing flow, then verify services.video=true", "Run real customer tasks through submit/progress/cancel/reconcile/validated MP4 delivery and settlement with preserved receipts"]
+    },
+    {
+      "id": "REQ019-PROFESSIONAL",
+      "category": "unverified professional acceptance",
+      "severity": "P2 verification and quality gap",
+      "finding": "Playable fixture MP4s, fixed bounds and generated-media protocol checks do not establish customer-quality advertising output, motion quality, subject/brand consistency, reference adherence or all professional formats.",
+      "evidence": ["docs/quality/remaining-work-stage165.md:25", "docs/technical/80-generated-video-jobs.md:11", "docs/technical/80-generated-video-jobs.md:54", "dev/copypaste-platform/tests/generated-video-jobs.test.ts:25", "dev/copypaste-platform/tests/generated-video-jobs.test.ts:388"],
+      "required_to_close": ["Record real-provider acceptance for every actually advertised duration, aspect and reference type", "Review professional marketing outputs and requested revisions against an agreed acceptance rubric", "Exercise client playback, original-version downloads and recovery with real outputs, preserving known and uncertain charges"]
+    },
+    {
+      "id": "REQ019-PROTOCOL",
+      "category": "integration compatibility boundary",
+      "severity": "P2 integration requirement",
+      "finding": "The video subsystem requires an explicit company protocol, not only an arbitrary OpenAI-compatible base URL and API key. Original-operation lookup and cancellation are declared company extensions. An upstream offering text/image compatibility does not thereby satisfy this protocol.",
+      "evidence": ["dev/copypaste-platform/src/video-job-protocol.ts:4", "dev/copypaste-platform/src/internal-ai-gateway.ts:131", "dev/copypaste-platform/src/internal-ai-gateway.ts:140", "dev/copypaste-platform/src/video-job-gateway.ts:13"],
+      "required_to_close": ["Verify the selected internal/upstream service implements or is adapted to the complete declared protocol", "Keep model-specific endpoints, rates and capability tests bound to the published video capability; do not enable by changing a boolean alone"]
+    }
+  ],
+  "existing_tests_read": [
+    {"path": "dev/copypaste-platform/tests/generated-video-jobs.test.ts", "examples": ["76: persistent operation, actual MP4 fixture decode, private version and one settlement", "103: valid PNG/JPEG versus invalid references", "121: lost response recovers without another POST", "133: unknown final usage holds the original budget", "161: cancellation versus completion", "205: callback identity/signature/conflict", "218: reference revocation while downloading", "233: corrupt content cannot fabricate a deliverable", "254: over-quote cost blocks delivery", "265: concurrency/interrupted processor", "304: revoked native login limits resource-only reconciliation", "361: independent admin metadata/cost/recheck permissions", "388: real pinned native Codex with explicit synthetic reasoning/media provider"]},
+    {"path": "dev/copypaste-platform/tests/capability-video-verification.test.ts", "examples": ["112: managed draft validation", "124: 15 real MP4 fixture specifications, PNG/JPEG and cancellation; independent review and rollback", "151: same-key replay/lost response", "177: unknown usage/quote/capacity", "198: corrupt media, overquote and cancel race", "224: concurrent processors", "302: shutdown during media download"]},
+    {"path": "dev/copypaste-platform/tests/video-job-protocol.test.ts", "examples": ["50: reject arbitrary providers/models/URLs and unsupported duration", "74: prohibit external media URL substitution", "81: exact frozen charges", "88: actual multipart requests", "119: traversal/scope validation", "149: redirect rejection", "157: declared response bound", "164: streaming response bound", "172: abort preserves uncertainty"]}
+  ],
+  "fixture_distinction": {
+    "explicit_configuration": "dev/copypaste-platform/tests/generated-video-jobs.test.ts:25-32 builds an isolated app with AI_BASE_URL set to generatedVideoProvider.origin and synthetic-video model aliases/credentials",
+    "simulated_upstream_behavior": "dev/copypaste-platform/tests/generated-video-fixture.ts:69-84 constructs video status/usage/content identity from local fixture state; native Codex in a test does not make the video service real",
+    "historical_document": "docs/technical/80-generated-video-jobs.md explicitly distinguishes real native MP4 decoding and synthetic media/reasoning from a real company supplier and complete TC-019"
+  },
+  "paths_walked": [
+    "TaskBusinessTools tools(role,authority.videoReady) -> GeneratedVideoJobs.prepare -> videoJobSpecification -> taskCapabilities + private reference -> prepare_ai_video_job",
+    "GeneratedVideoJobs.wait or Worker loop -> GeneratedVideoJobs.advance -> single lease claim -> input/reference validation -> callVideoGateway(videos.create) -> central internalAIRequest -> observe",
+    "advance uncertain/submitting -> videos.lookup or videos.retrieve for the same operation/provider ID -> observe -> immutable cost and state projection",
+    "customer cancel route -> replay/revision/authority -> cancel_requested -> worker videos.cancel -> observed terminal usage, never locally assumed free",
+    "callback route -> timestamp/HMAC -> bound operation -> observe -> deduplication/regression/conflict checks",
+    "completed/pending -> content-only authorized request -> validateGeneratedVideo -> authority recheck -> saveAsset -> immutable delivery state; invalid/blocked/retry outcomes retained",
+    "administrator cost recheck -> requireAdmin + providerAuthority(admin.ai.cost.reconcile) -> original operation next_poll_at; generation_submitted=false"
+  ],
+  "searches": [
+    {"scope": "dev/copypaste-platform/src and tests", "patterns": ["services.video", "video.generate", "/videos", "AI_VIDEO", "GeneratedVideoJobs", "registerGeneratedVideoJobs", "CapabilityVideoVerification"], "result": "Found real server routes, durable job processing, task tool wiring, gateway resource methods, configured readiness and both generated-job and capability-verification tests; no absence claim was made."},
+    {"scope": "docs/quality, docs/development and docs/requirements with 19*.md/19*.json and excluding history/media", "patterns": ["services.video", "\"video\": false", "生成式视频", "AI_VIDEO"], "result": "190 explicitly records disabled live video/no published real video capability; 192 retains 190 item08; 193 narrows its successful scope to public product downloads, not video."},
+    {"scope": "dev/copypaste-platform/migrations", "patterns": ["ai_video_jobs", "billable_seconds", "actual_micros", "CREATE POLICY", "ENABLE ROW LEVEL"], "result": "097 defines generated actual cost, immutable state guards, RLS, shared budget/receipt projections and persistent preparation; 098 defines managed capability verification budgets and probe storage."}
+  ],
+  "not_checked": [
+    "No new live /v1/public/config or administrator capability read was performed; parent can update the operational conclusion with a fresh secret-free online observation",
+    "No real provider video request or paid cancellation was submitted",
+    "No automated suite or OS process was started; source tests read here are not fresh passing test receipts",
+    "No complete client UX/playback, all runtime permission matrix, production load or all professional output quality assessment was performed",
+    "The entire SQL migration history and every helper called by shared access/budget/content code were not exhaustively re-audited; no new whole-system security correctness claim is made"
+  ],
+  "changes": "This report is the only file written; product code, configuration, data, README and Git state were not modified. No Docker, WSL, browser or virtualization used. No secret read or emitted."
+}
