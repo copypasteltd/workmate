@@ -1,3 +1,21 @@
+<!-- product-downloads-193 -->
+
+## Public product downloads · 193
+
+[Open the download page](https://agent.copypaste.hk/downloads). Desktop 0.7.4 (Windows Setup/Portable), Chrome extension 0.5.4 ZIP and file checksums download directly from the company site without signing in.
+
+Publish only two verified Desktop files, the extension ZIP and SHA256SUMS.txt. Separate page and versioned-file routing supports HEAD and Range/resume, returns 404 for missing files and disables directory listings. Deployment gracefully reloads only the site proxy.
+
+The Windows build is unsigned. The extension is installed manually and is not listed in the Chrome Web Store. macOS/Linux installers are not available.
+
+[方案 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/development/193-product-downloads.md) · [驗證 / Verification](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/193-product-downloads.md)
+
+![實際下載頁 / Actual public download page](assets/screenshots/193-downloads-desktop-en.png)
+
+[實際手機下載頁 / Actual mobile download page](assets/screenshots/193-downloads-mobile-zh.png)
+
+![實際頁面操作錄製 / Actual download navigation recording](assets/screenshots/193-actual-download-navigation.gif)
+
 <!-- native-recheck-192 -->
 
 ## Recheck and native error visibility · 192
