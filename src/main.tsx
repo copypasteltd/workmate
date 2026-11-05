@@ -1,4 +1,5 @@
 import { NativeTaskNotice } from "./native-task-notice";
+import { ProductDownloads } from "./product-download-page";
 import { browserCrypto as crypto } from "./browser-crypto";
 import { WorkspaceCreationForm } from "./workspace-creation-form";
 import { ScopeCleanupPage } from "./scope-cleanup";
@@ -198,6 +199,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/downloads" element={<Downloads />} />
       <Route path="/login" element={<Login />} />
       <Route path="/sso" element={<CompanySignIn />} />
       <Route path="/sso/confirm" element={<ConfirmCompanyIdentity />} />
@@ -211,6 +213,10 @@ function AppRoutes() {
     </Routes>
   );
 }
+function Downloads() {
+  const { me } = useWorkspace();
+  return <ProductDownloads workspace={me ? "/app" : "/login"} />;
+}
 function Landing() {
   const { t } = useI18n();
   const { me } = useWorkspace();
@@ -223,6 +229,7 @@ function Landing() {
         <nav>
           <a href="#work">{t("工作方式", "How it works")}</a>
           <a href="#roles">{t("專業角色", "Specialists")}</a>
+          <Link to="/downloads">{t("下載", "Downloads")}</Link>
           <Link className="button primary small" to={me ? "/app" : "/login"}>
             {me
               ? t("進入工作台", "Open workspace")
@@ -333,6 +340,7 @@ function Landing() {
       <footer className="site-footer">
         <Logo />
         <span>© {new Date().getFullYear()} CopyPaste · Hong Kong</span>
+        <Link to="/downloads">{t("下載 Desktop 與擴展", "Get Desktop & Extension")}</Link>
         <a href="https://copypaste.hk/" target="_blank" rel="noreferrer">
           copypaste.hk <ArrowUpRight size={14} />
         </a>
@@ -502,6 +510,7 @@ function Login() {
           </p>
         </div>
         <span className="auth-bottom">
+          {!window.copyPasteBridge && <Link className="downloads-entry" to="/downloads"><Download size={15} />{t("下載 Desktop 與瀏覽器擴展", "Download Desktop & browser extension")}</Link>}
           DESIGNED FOR WHAT’S NEXT. © COPYPASTE
         </span>
       </section>
@@ -784,6 +793,7 @@ function Shell() {
             ))}
         </nav>
         <div className="sidebar-bottom">
+          {!window.copyPasteBridge && <NavLink to="/downloads"><Download size={17} />{t("下載應用程式", "Download apps")}</NavLink>}
           <NavLink to="/cleanup">{t("清理記錄", "Cleanup records")}</NavLink>
           <NavLink to="/app/devices">
             <Monitor size={17} />
@@ -2538,6 +2548,7 @@ function Devices() {
           "Local files stay within the folders, actions and time periods you authorize.",
         )}
       />
+      {!window.copyPasteBridge && <p><Link className="downloads-entry" to="/downloads"><Download size={16} />{t("下載 Desktop 或 Chrome 擴展，連接你的工作裝置", "Download Desktop or the Chrome extension to connect your device")}</Link></p>}
       <ErrorNotice error={error ?? err} />
       {scheduled && (
         <section className="card section-block">
