@@ -1519,7 +1519,7 @@ function TaskDetail() {
             }
           />
           <ErrorNotice error={actionError} />
-          <TaskToolFeedback events={events.data.items} status={data.status} errorCode={data.error_code} />
+          <TaskToolFeedback events={events.data.items} status={data.status} errorCode={data.error_code} summary={data.tool_outcomes} />
           {data.pause_requested && ["running","needs_input","paused"].includes(data.status) && <p className="notice" role="status">
             {data.status === "running" ? t("已收到暫停要求，正在等待目前輪次安全結束。已發生用量保留，原預算仍預留。", "Pause requested. Waiting for the current turn to finish safely. Recorded usage and the original budget hold are retained.")
               : data.status === "needs_input" ? t("補充資料後仍會保持暫停，請再按繼續。", "Providing inputs will keep this task paused. Choose Resume when you are ready.")

@@ -1,5 +1,6 @@
 import { spawn, execFile, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { promisify } from "node:util";
+import { companyMediaDelivered } from "./company-tool-delivery.js";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, realpath, open, unlink, readdir } from "node:fs/promises";
 import { StringDecoder } from "node:string_decoder";
@@ -604,6 +605,7 @@ export class LocalCodexSession {
             const output = await this.hooks.companyTool(call, this.shutdown.signal);
             this.validateGrant();
             if (this.closed || this.revoked || this.shutdown.signal.aborted) throw new LocalCodexError("LOCAL_COMPANY_TOOL_INTERRUPTED");
+            if (!companyMediaDelivered(call.tool, output)) throw new LocalCodexError("LOCAL_COMPANY_TOOL_DELIVERY_UNCONFIRMED");
             const encoded = JSON.stringify(output);
             if (typeof encoded !== "string" || Buffer.byteLength(encoded) > 2_000_000) throw new LocalCodexError("LOCAL_COMPANY_TOOL_RESULT_INVALID");
             const artifacts: Record<string, unknown>[] = [];

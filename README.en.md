@@ -1,3 +1,33 @@
+<!-- integrated-round-205 -->
+
+## 205 · 0.7.18 · Exact per-call delivery and durable correction
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-205/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Install setup or start portable, authorize using browser S256, then choose a local workspace and specialist. Codex runs on the customer computer with explicitly granted/revocable full local permission. Keep frameless windows and no default Electron menu.
+
+2. The native main process confirms actual available company audio/video deliverables before completion. Preserve native authentication, company API bridge, encrypted storage and save implementation; renderer:sync was not run.
+
+3. Cloud-task review shares per-call summaries and activity identity. Qualify final0.7.18 pinned Codex, fresh native S256, actual pages and identical Web/native export bytes. Full general persistent recovery for every local tool remains within original acceptance scope.
+
+```mermaid
+flowchart LR
+ A[Download and S256 login] --> B[Frameless local Codex]
+ B --> C[Explicit revocable local permission]
+ B --> D[Company tools and actual files]
+ D --> E[Native review and save]
+```
+
+790 qualified related cases, including 675 executed in this round and unchanged Admin/Extension evidence. Four full public files passed exact size/SHA for the explicitly recorded QA path; default direct egress and DNS failover remain separate checks. The original102 requirements/32 groups, professional19-role/50-Skill sign-off, real external media/marketing/IdP services, device/concurrency/long-run/DR matrices and blind WorkBuddy comparison remain explicit. Server networking is read-only. Current exact-call rules supersede historical tool-name-only recovery descriptions below.
+
+![实际正式站点／最终原生客户端 · Actual deployed Web/final native Desktop](assets/screenshots/205-v1-marketing-review-live.png)
+
+![实际正式站点／最终原生客户端 · Actual deployed Web/final native Desktop](assets/screenshots/workmate-205-v1-marketing-review-live.gif)
+
+[Recorded interaction / 实际录影](assets/screenshots/workmate-205-v1-marketing-review-live.mp4)
+
+The complete setup/usage guide and explicitly historical release notes follow.
+
 <!-- integrated-round-204 -->
 
 ## 204 · 0.7.17 · Safe tool feedback and durable cloud ownership
