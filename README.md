@@ -1,3 +1,51 @@
+<!-- integrated-round-204 -->
+
+## 204 · 0.5.13 · 安全工具反馈与云端执行时效
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-204/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 登录 → 选择企业与项目 → 默认助手或专业角色 → 明确固定附件版本和预算 → 持久化原请求／幂等键 → 云端Codex执行 → 审阅实际成果及费用；原完整流程保留。
+
+2. 任务页和对话成果区显示未完成步骤、静态可操作说明和安全参考号；长文字流不会冲掉当前失败。真实同工具修正后解除提示，不制造成果或抹掉已发生用量。
+
+3. 完整任务页共用一个活动连接；成果区按游标接收后续活动。保留双语／双主题、品牌色系、窄屏和无横向溢出。新下载页发布Desktop0.7.17及原字节Extension0.5.7。
+
+```mermaid
+flowchart LR
+ A[Sign in and pin sources] --> B[Submit once with original budget]
+ B --> C[Cloud Codex]
+ C --> D[Retained progress and truthful result]
+ D --> E[Review files and actual fees]
+```
+
+725项相关通过证据区分本轮执行与原样源码沿用。一项关联原失败的营销样例已交付实际文件。四份内网文件完整字节／SHA通过。公网大安装包仅有部分传输证据，完整公网下载检查未通过；本次应用更新与Git同步不代表关闭该项。全部102条／32组、19角色／50Skills专业验收、外部媒体／营销／IdP配置、长稳／设备／并发／灾备及WorkBuddy盲测差距继续保留。原通用错误／租约历史根因、公网默认HTTP/2及正常DNS地址故障转移未因此证明；仅本机验证选用另一个当前公网地址，服务器网络保持不变；不声明完整产品验收通过。
+
+![实际正式站点／最终原生Desktop · Actual deployed Web/final native Desktop](assets/screenshots/204-v1-specialist-intake-live.png)
+
+![实际正式站点／最终原生Desktop · Actual deployed Web/final native Desktop](assets/screenshots/204-v1-marketing-review-live.png)
+
+[Recorded interaction / 实际录影](assets/screenshots/workmate-204-v1-specialist-intake-live.mp4)
+
+![实际正式站点／最终原生Desktop · Actual deployed Web/final native Desktop](assets/screenshots/workmate-204-v1-specialist-intake-live.gif)
+
+[Recorded interaction / 实际录影](assets/screenshots/workmate-204-v1-marketing-review-live.mp4)
+
+![实际正式站点／最终原生Desktop · Actual deployed Web/final native Desktop](assets/screenshots/workmate-204-v1-marketing-review-live.gif)
+
+![受控错误场景 · Controlled UI scenario, not a live customer/model task](assets/screenshots/204-v3-tool-feedback-controlled-light-zh-HK-1280.png)
+
+![受控错误场景 · Controlled UI scenario, not a live customer/model task](assets/screenshots/204-v3-tool-feedback-controlled-dark-zh-HK-1280.png)
+
+![受控错误场景 · Controlled UI scenario, not a live customer/model task](assets/screenshots/204-v3-tool-feedback-controlled-dark-en-390.png)
+
+![受控错误场景 · Controlled UI scenario, not a live customer/model task](assets/screenshots/204-v3-tool-feedback-controlled-light-en-390.png)
+
+[Recorded interaction / 实际录影](assets/screenshots/workmate-204-v3-tool-feedback-controlled.mp4)
+
+![受控错误场景 · Controlled UI scenario, not a live customer/model task](assets/screenshots/workmate-204-v3-tool-feedback-controlled.gif)
+
+以下历史版本说明及完整安装／使用指南继续保留。
+
 <!-- integrated-round-203 -->
 
 ## 203 · 0.5.12 · 专业输入与可靠交付

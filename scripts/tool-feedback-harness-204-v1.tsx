@@ -1,0 +1,9 @@
+import React,{useState} from 'react';import {createRoot} from 'react-dom/client';
+import {Preferences,useI18n} from '../src/ui';import {TaskToolFeedback} from '../src/task-tool-feedback';
+import {retainTaskActivity,type ActivityEvent} from '../src/task-tool-state';import '../src/style.css';
+function Preview(){const {t}=useI18n();const [events,setEvents]=useState<ActivityEvent[]>([{id:1,kind:'runtime.tool.failed',body:{tool:'chart_render',code:'TOOL_INPUT_INVALID',category:'validation',call_ref:'204a204b204c204d'}}]);
+ const [status,setStatus]=useState('running');
+ return <main style={{maxWidth:800,margin:'5rem auto',padding:'1.5rem'}}><section className="card"><p className="eyebrow">COPYPASTE · CONTROLLED UI SCENARIO</p><h1>{t('交付狀態與恢復','Delivery status and recovery')}</h1><p>{t('此頁使用正式介面元件展示受控錯誤情境，並非正式用戶工作或模型驗收。','This controlled scenario uses production UI components. It is not a live customer task or model acceptance.')}</p>
+ <div className="button-row"><button onClick={()=>setEvents(old=>retainTaskActivity(old,Array.from({length:800},(_,i)=>({id:i+2,kind:'message.appended',body:{text:'Controlled progress'}}))))}>{t('加入長回覆','Add a long reply')}</button><button onClick={()=>setStatus('failed')}>{t('工作結束','Finish task')}</button><button onClick={()=>{setEvents(old=>retainTaskActivity(old,[{id:900,kind:'runtime.tool.completed',body:{tool:'chart_render'}}]));setStatus('succeeded');}}>{t('記錄成功修正','Record a successful correction')}</button></div>
+ <TaskToolFeedback events={events} status={status} errorCode={status==='failed'?'TOOL_DELIVERY_INCOMPLETE':null}/><p role="note">{t('保留活動數量','Retained activity count')}: {events.length}</p>{status==='succeeded'&&<p className="notice" role="status">{t('已確認該步驟完成，原用量記錄保留。','The corrected step is complete. Its recorded usage is retained.')}</p>}</section></main>;}
+createRoot(document.getElementById('root')!).render(<Preferences><Preview/></Preferences>);

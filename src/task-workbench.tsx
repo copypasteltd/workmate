@@ -8,17 +8,20 @@ import {Badge,DateText,ErrorNotice,Loading,Money,useData,useI18n} from "./ui";
 import {ConversationDeliveryDownload} from "./delivery-quality";
 import {SoftwareChecks} from "./software-checks";
 import {WorkspaceChanges,WorkspaceTextEditor} from "./workspace-edit";
+import {useTaskEvents} from "./task-events";
+import {TaskToolFeedback} from "./task-tool-feedback";
+import {toolActivityLabel} from "./task-tool-state";
 import "./task-workbench.css";
 
 const tabs=["results","files","changes","terminal","browser","activity","usage"] as const;
 type Tab=typeof tabs[number];
 type NativeViews={changes:ReactNode;terminal:ReactNode;browser:ReactNode};
-export function TaskWorkbench({taskId,refresh=0,review,native}:{taskId?:string;refresh?:number;review?:ReactNode;native?:NativeViews}){
+export function TaskWorkbench({taskId,refresh=0,review,native,activity}:{taskId?:string;refresh?:number;review?:ReactNode;native?:NativeViews;activity?:ReturnType<typeof useTaskEvents>}){
  const w=useWorkspace(),{t}=useI18n();
  if(!taskId)return <section className="card task-workbench"><h3>{t("成果工作區","Work results")}</h3><p className="muted">{t("交辦後，成果、檔案、進度和費用會集中在這裡。","Your results, files, progress and usage appear here after delegation.")}</p></section>;
- return <Workspace key={w.me.user.id+":"+w.base+":"+taskId} taskId={taskId} refresh={refresh} review={review} native={native}/>;
+ return <Workspace key={w.me.user.id+":"+w.base+":"+taskId} taskId={taskId} refresh={refresh} review={review} native={native} activity={activity}/>;
 }
-function Workspace({taskId,refresh,review,native}:{taskId:string;refresh:number;review?:ReactNode;native?:NativeViews}){
+function Workspace({taskId,refresh,review,native,activity:externalActivity}:{taskId:string;refresh:number;review?:ReactNode;native?:NativeViews;activity?:ReturnType<typeof useTaskEvents>}){
  const w=useWorkspace(),{t}=useI18n(),uid=useId(),tabButtons=useRef<Array<HTMLButtonElement|null>>([]);
  const remembered=useWorkReviewState(taskId),work=useWorkLocation(),tab=remembered.tab;
  const [error,setError]=useState<Error|null>(null),[editing,setEditing]=useState<any>(null),[revision,setRevision]=useState(0);
@@ -26,12 +29,13 @@ function Workspace({taskId,refresh,review,native}:{taskId:string;refresh:number;
  const selected=files.find((f:any)=>f.version_id===remembered.selected)??null;
  const setTab=(value:Tab)=>remembered.save({tab:value,selected:remembered.selected});
  const setSelected=(file:any)=>remembered.save({tab,selected:file?.version_id??""});
- const activity=useData(tab==="activity"?w.base+"/tasks/"+taskId+"/events":"",refresh,tab==="activity"?5000:0);
+ const ownedActivity=useTaskEvents(w.base,w.tenant,externalActivity?undefined:taskId,()=>setRevision(value=>value+1)),activity=externalActivity??ownedActivity;
  const labels={results:t("成果","Results"),files:t("檔案","Files"),changes:t("變更","Changes"),terminal:t("執行","Execution"),browser:t("網頁","Browser"),activity:t("活動","Activity"),usage:t("費用","Usage")};
  const icons={results:FileText,files:Files,changes:GitCompare,terminal:Terminal,browser:Globe,activity:Activity,usage:Wallet};
  useEffect(()=>{if(result.data&&!result.error&&remembered.selected&&!files.some((f:any)=>f.version_id===remembered.selected))setSelected(null);},[result.data]);
  return <section className="card task-workbench" aria-label={t("工作成果與活動","Work results and activity")}>
   <header className="workbench-heading"><h3>{task?.title??t("成果工作區","Work results")}</h3>{task&&<Badge value={task.status}/>}</header>
+  {!externalActivity&&<TaskToolFeedback events={activity.data.items} status={task?.status} errorCode={task?.error_code}/>}
   <div className="workbench-tabs" role="tablist" aria-label={t("成果檢視","Result views")} onKeyDown={e=>{let index=tabs.indexOf(tab);if(e.key==="ArrowRight")index=(index+1)%tabs.length;else if(e.key==="ArrowLeft")index=(index+tabs.length-1)%tabs.length;else if(e.key==="Home")index=0;else if(e.key==="End")index=tabs.length-1;else return;e.preventDefault();setTab(tabs[index]);tabButtons.current[index]?.focus();}}>
    {tabs.map((key,index)=>{const Icon=icons[key];return <button key={key} ref={el=>{tabButtons.current[index]=el;}} id={uid+key} type="button" role="tab" aria-selected={tab===key} aria-controls={uid+"panel"} tabIndex={tab===key?0:-1} onClick={()=>setTab(key)}><Icon size={16}/>{labels[key]}{key==="files"&&!!files.length&&<span>{files.length}</span>}</button>;})}
   </div>
@@ -44,7 +48,7 @@ function Workspace({taskId,refresh,review,native}:{taskId:string;refresh:number;
    {task&&tab==="changes"&&(native?native.changes:<WorkspaceChanges taskId={taskId} files={files}/>)}
    {task&&tab==="terminal"&&(native?native.terminal:task.execution_location==="desktop"?<p>{t("本機執行記錄保存在原 Desktop 會話，請回到該電腦查看。","Local execution history stays in the original Desktop session. Open it on that computer.")}</p>:<SoftwareChecks key={w.base+taskId+"terminal"} base={w.base} taskId={taskId} view="terminal"/>)}
    {task&&tab==="browser"&&(native?native.browser:task.execution_location==="desktop"?<p>{t("本機瀏覽器由原 Desktop 會話管理。","The original Desktop session manages its local browser.")}</p>:<SoftwareChecks key={w.base+taskId+"browser"} base={w.base} taskId={taskId} view="browser"/>)}
-   {task&&tab==="activity"&&<><ErrorNotice error={activity.error}/>{activity.loading&&!activity.data&&<Loading/>}<ol className="workbench-activity">{activity.data?.items?.map((event:any)=><li key={event.id}><strong>{String(event.body?.label??event.kind).replaceAll("_"," ")}</strong><DateText value={event.created_at}/>{event.body?.status&&<Badge value={event.body.status}/>}</li>)}</ol>{activity.data?.items?.length===200&&<p className="muted">{t("顯示最早200條事件；完整進度見工作詳情。","Showing the first 200 events. Open task details for the complete stream.")}</p>}</>}
+   {task&&tab==="activity"&&<><ErrorNotice error={activity.error}/>{activity.state==="connecting"&&!activity.data.items.length&&<Loading/>}<ol className="workbench-activity">{activity.data?.items?.map((event:any)=><li key={event.id}><strong>{(toolActivityLabel(event.kind)?t(toolActivityLabel(event.kind)![0],toolActivityLabel(event.kind)![1]):t("工作進度已更新","Work progress updated"))}</strong><DateText value={event.created_at}/>{event.body?.status&&<Badge value={event.body.status}/>}</li>)}</ol></>}
    {task&&tab==="usage"&&<dl className="workbench-usage"><dt>{t("預算上限","Budget limit")}</dt><dd><Money value={task.budget_micros}/></dd><dt>{t("已結算","Settled")}</dt><dd><Money value={task.charged_micros}/></dd><dt>{t("已記錄用量","Recorded usage")}</dt><dd><Money value={task.accrued_micros??task.charged_micros}/></dd><dt>{t("輸入 / 輸出 tokens","Input / output tokens")}</dt><dd>{task.input_tokens??0} / {task.output_tokens??0}</dd></dl>}
   </div>
   {editing&&<WorkspaceTextEditor key={editing.version_id} taskId={taskId} file={editing} onClose={()=>setEditing(null)} onSaved={()=>{setEditing(null);setSelected(null);setRevision(v=>v+1);}}/>}

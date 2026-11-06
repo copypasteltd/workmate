@@ -1,3 +1,51 @@
+<!-- integrated-round-204 -->
+
+## 204 · 0.5.13 · Safe tool feedback and durable cloud ownership
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-204/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Sign in → select company/project → default assistant or specialist → explicitly pin attachments/budget → persist original request/key → cloud Codex → review actual deliverables and usage. The complete existing journey is preserved.
+
+2. Task details and conversation results show outstanding steps, safe guidance and support references. Long responses retain current failures; a recorded successful correction clears feedback without inventing files or deleting usage.
+
+3. Share one task-activity connection in task details and follow activity cursors. Preserve bilingual dual-theme branding, narrow layouts and no horizontal overflow. Publish Desktop0.7.17 and the identical Extension0.5.7 archive on Downloads.
+
+```mermaid
+flowchart LR
+ A[Sign in and pin sources] --> B[Submit once with original budget]
+ B --> C[Cloud Codex]
+ C --> D[Retained progress and truthful result]
+ D --> E[Review files and actual fees]
+```
+
+725 qualified related cases distinguish current tests from identical-source retention. One linked marketing sample delivered actual files. All four inner files passed full byte/SHA checks. Public installer transfers remain incomplete; the complete public-download gate has NOT passed. This release update and Git synchronization do not close that check. Original102 requirements/32 groups, professional19-role/50-Skill acceptance, external media/marketing/IdP setup, long-run/device/concurrency/DR qualification and blind WorkBuddy comparison remain explicit. Original generic failure/lease root causes, default public HTTP/2 and normal DNS-address failover remain unproven; QA alone selects another current public address without changing server networking; no full-product acceptance claim.
+
+![实际正式站点／最终原生Desktop · Actual deployed Web/final native Desktop](assets/screenshots/204-v1-specialist-intake-live.png)
+
+![实际正式站点／最终原生Desktop · Actual deployed Web/final native Desktop](assets/screenshots/204-v1-marketing-review-live.png)
+
+[Recorded interaction / 实际录影](assets/screenshots/workmate-204-v1-specialist-intake-live.mp4)
+
+![实际正式站点／最终原生Desktop · Actual deployed Web/final native Desktop](assets/screenshots/workmate-204-v1-specialist-intake-live.gif)
+
+[Recorded interaction / 实际录影](assets/screenshots/workmate-204-v1-marketing-review-live.mp4)
+
+![实际正式站点／最终原生Desktop · Actual deployed Web/final native Desktop](assets/screenshots/workmate-204-v1-marketing-review-live.gif)
+
+![受控错误场景 · Controlled UI scenario, not a live customer/model task](assets/screenshots/204-v3-tool-feedback-controlled-light-zh-HK-1280.png)
+
+![受控错误场景 · Controlled UI scenario, not a live customer/model task](assets/screenshots/204-v3-tool-feedback-controlled-dark-zh-HK-1280.png)
+
+![受控错误场景 · Controlled UI scenario, not a live customer/model task](assets/screenshots/204-v3-tool-feedback-controlled-dark-en-390.png)
+
+![受控错误场景 · Controlled UI scenario, not a live customer/model task](assets/screenshots/204-v3-tool-feedback-controlled-light-en-390.png)
+
+[Recorded interaction / 实际录影](assets/screenshots/workmate-204-v3-tool-feedback-controlled.mp4)
+
+![受控错误场景 · Controlled UI scenario, not a live customer/model task](assets/screenshots/workmate-204-v3-tool-feedback-controlled.gif)
+
+Historical release notes and the complete setup/usage guide follow.
+
 <!-- integrated-round-203 -->
 
 ## 203 · 0.5.12 · Pinned specialist intake and reliable delivery
