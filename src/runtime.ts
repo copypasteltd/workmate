@@ -7,7 +7,8 @@ import path from "node:path";
 import type { Config } from "./config.js";
 import { canonical, hash, Problem } from "./lib.js";
 import { runtimeToolContent } from "./runtime-tool-content.js";
-import { RuntimeToolState, safeToolFeedback } from "./runtime-tool-feedback.js";
+import { RuntimeToolState } from "./runtime-tool-feedback.js";
+import { RuntimeToolLedger, ToolRecoveryFailure, recoveryToolSchema, outcomeFeedback, assertDeliveredToolResult, type PendingToolOutcome } from "./tool-outcome-ledger.js";
 import { desktopCompanyToolSchema } from "./desktop-tool-policy.js";
 import {
   startScopedInferenceGateway,
@@ -34,7 +35,8 @@ export interface RuntimeContext {
   selection?: RuntimeSelection;
   requestAuthority?: AIRequestAuthority;
   // Server-derived persisted outcomes, never a customer-supplied authority.
-  unresolvedDeliveryToolNames?: readonly string[];
+  unresolvedDeliveryToolNames?: readonly string[]; // Historical adapter fixtures only.
+  pendingToolOutcomes?: readonly PendingToolOutcome[];
   signal: AbortSignal;
   onEvent: (kind: string, body: any) => Promise<void>;
   tools: {
@@ -193,7 +195,7 @@ export class CodexRuntimeAdapter {
     // This is a server-owned continuation receipt, not user-supplied history.
     // An accepted/unknown turn invalidates it before any further provider work.
     const receiptPath = path.join(home, "copypaste-continuation.json");
-    const fingerprint = hash(
+    let fingerprint = hash(
       canonical({
         version: c.CODEX_VERSION,
         ...(selected
@@ -223,6 +225,12 @@ export class CodexRuntimeAdapter {
       if (e.code !== "ENOENT")
         throw new RuntimeFailure("CODEX_CHECKPOINT_INVALID", false, true);
     }
+    // Existing checkpoints retain their exact original declaration fingerprint.
+    // New checkpoints advertise the optional recovery control and pin protocol 2.
+    const outcomeProtocol = receipt?.toolOutcomeProtocol === 2 || !ctx.thread ? 2 : 1;
+    if (outcomeProtocol === 2) fingerprint = hash(canonical({ original: fingerprint, toolOutcomeProtocol: 2 }));
+    const declaredTools = ctx.tools.map(tool => ({ ...tool,
+      inputSchema: outcomeProtocol === 2 ? recoveryToolSchema(tool.inputSchema) : tool.inputSchema }));
     if (
       ctx.thread &&
       (!receipt ||
@@ -262,7 +270,7 @@ export class CodexRuntimeAdapter {
       model: c.AI_MODEL,
       reasoningEffort: c.AI_REASONING_EFFORT,
       tools: ctx.tools.map((tool) => tool.name),
-      cloudTools: ctx.tools.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })),
+      cloudTools: declaredTools.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })),
       authority: ctx.requestAuthority ?? {
         taskId: ctx.taskId,
         authorize: async () => {},
@@ -376,7 +384,9 @@ export class CodexRuntimeAdapter {
         threadOutput = baselineOutput;
       let completedResult: RuntimeResult | undefined;
       let invalidUsage = false;
-      const toolState = new RuntimeToolState(ctx.unresolvedDeliveryToolNames);
+      const toolState = new RuntimeToolLedger(ctx.pendingToolOutcomes);
+      // Compatibility with old injected adapters is isolated from the live worker.
+      const historicalState = new RuntimeToolState(ctx.unresolvedDeliveryToolNames);
       let stdoutBytes = 0,
         stderrBytes = 0;
       const rpcFailure = (code: string, method: string, startedAt: number) =>
@@ -469,41 +479,39 @@ export class CodexRuntimeAdapter {
         if (m.id !== undefined && m.method) {
           if (m.method === "item/tool/call") {
             const tool = ctx.tools.find((t) => t.name === m.params?.tool);
-            const identity = {
-              tool: tool?.name ?? "unavailable_tool",
-              call_ref: hash(String(m.params?.callId ?? "")).slice(0, 16),
+            const identity: Record<string, any> = {
+              outcome_version: 2, tool: tool?.name ?? "unavailable_tool",
+              call_ref: hash(canonical({ task: ctx.taskId, thread, turn, call: m.params?.callId ?? "" })).slice(0,16),
               arguments_sha256: hash(canonical(m.params?.arguments ?? null)),
             };
-            let result: any;
+            let result: any, repair: string | undefined;
             try {
-              if (
-                !tool ||
-                !accepted ||
-                !currentTurn(m.params) ||
-                m.params.namespace != null ||
-                typeof m.params.callId !== "string" ||
-                !m.params.callId.length ||
-                ctx.signal.aborted
-              )
+              if (!tool || !accepted || !currentTurn(m.params) || m.params.namespace != null
+                || typeof m.params.callId !== "string" || !m.params.callId.length || ctx.signal.aborted)
                 throw new Error("Tool not allowed");
-              const contentItems = runtimeToolContent(await tool.run(m.params.arguments, m.params.callId));
+              const prepared = toolState.prepare(tool.name, m.params.arguments);
+              repair = prepared.repair; identity.arguments_sha256 = prepared.arguments_sha256;
+              if (repair) identity.repair_of = repair;
+              const value = await tool.run(prepared.args, m.params.callId);
+              assertDeliveredToolResult(tool.name, value);
+              const contentItems = runtimeToolContent(value);
               await ctx.onEvent("runtime.tool.completed", identity);
-              const previous = toolState.complete(tool.name);
+              const previous = toolState.complete(tool.name, repair);
+              historicalState.complete(tool.name);
               if (previous) await ctx.onEvent("runtime.tool.recovered", { ...identity, code: previous.code });
               result = { success: true, contentItems };
             } catch (error) {
-              const feedback = safeToolFeedback(error, tool ?? { name: "unavailable_tool", inputSchema: {} });
-              if (tool) toolState.fail(tool.name, feedback);
-              await ctx.onEvent("runtime.tool.failed", { ...identity, ...feedback });
-              result = {
-                success: false,
-                contentItems: [
-                  {
-                    type: "inputText",
-                    text: JSON.stringify({ error: { ...feedback, call_ref: identity.call_ref }, instruction: "Use this safe feedback with the existing authorization and original task budget. Never fabricate results or replay unknown side effects." }),
-                  },
-                ],
-              };
+              const feedback = outcomeFeedback(error, tool ?? { name: "unavailable_tool", inputSchema: {} });
+              // A rejected correction performs no business action and does not invent
+              // another requested output. Keep the original obligation until its exact
+              // correction succeeds, and provide only this task/tool's safe references.
+              const rejected = !!tool && error instanceof ToolRecoveryFailure && toolState.pendingFor(tool.name).length > 0;
+              const root = rejected ? undefined : tool ? toolState.fail(tool.name, identity.call_ref, identity.arguments_sha256, feedback, repair) : identity.call_ref;
+              await ctx.onEvent(rejected ? "runtime.tool.repair_rejected" : "runtime.tool.failed", { ...identity, ...(root ? { failure_ref: root } : {}), ...feedback });
+              result = { success: false, contentItems: [{ type: "inputText", text: JSON.stringify({
+                error: { ...feedback, call_ref: identity.call_ref, ...(root ? { failure_ref: root } : {}),
+                  ...(rejected && tool ? { correction_references: toolState.correctableReferences(tool.name) } : {}) },
+                instruction: "Only explicitly not-performed, correctable failures may be corrected using _workmate_repair_of equal to their exact failure_ref. Omit that control for independent outputs. Preserve existing authorization, original budget and receipts; never repeat unknown operations or fabricate delivery." }) }] };
             }
             child.stdin.write(JSON.stringify({ id: m.id, result }) + "\n");
           } else
@@ -634,7 +642,7 @@ export class CodexRuntimeAdapter {
           sandbox: "read-only",
           environments: [],
           developerInstructions:
-            "You are a CopyPaste enterprise specialist. Use only the registered tools, bound Skills and current project data. No direct shell, arbitrary network, secrets, local virtualization, unsupported claims or fabricated artifacts. A registered computer_command may operate only its independently customer-confirmed dedicated cloud lease and original private task binding. It cannot purchase, renew or rebind resources. Verify actual command receipts before claiming effects. Correct explicitly not-performed input validation within this same task and original budget; this grants no new permission or spending. Inspect original receipts for an unverified operation and never automatically repeat uncertain side effects. A tool failure is not a completed delivery. Deliver editable sources and report unresolved requirements.",
+            "You are a CopyPaste enterprise specialist. Use only the registered tools, bound Skills and current project data. No direct shell, arbitrary network, secrets, local virtualization, unsupported claims or fabricated artifacts. A registered computer_command may operate only its independently customer-confirmed dedicated cloud lease and original private task binding. It cannot purchase, renew or rebind resources. Verify actual command receipts before claiming effects. Correct explicitly not-performed input validation within this same task and original budget; this grants no new permission or spending. For a correctable not-performed failure, set _workmate_repair_of to its exact failure_ref on the corrective call of that same tool. An independent output must omit it and cannot resolve another failed output. For legacy tool declarations this control is still accepted by the bridge. Inspect original receipts for an unverified operation and never automatically repeat uncertain side effects. A tool failure is not a completed delivery. Deliver editable sources and report unresolved requirements.",
         };
         const result = await send(
           ctx.thread ? "thread/resume" : "thread/start",
@@ -643,7 +651,7 @@ export class CodexRuntimeAdapter {
             : {
                 ...common,
                 allowProviderModelFallback: false,
-                dynamicTools: ctx.tools.map(
+                dynamicTools: declaredTools.map(
                   ({ name, description, inputSchema }) => ({
                     name,
                     description,
@@ -674,7 +682,7 @@ export class CodexRuntimeAdapter {
         await ctx.onEvent("runtime.turn", { thread_id: thread, turn_id: turn });
         if (ctx.signal.aborted) abort();
         const nativeStatus = await done;
-        const status = nativeStatus === "completed" && toolState.unresolvedDelivery ? "failed" : nativeStatus;
+        const status = nativeStatus === "completed" && (toolState.unresolvedDelivery || historicalState.unresolvedDelivery) ? "failed" : nativeStatus;
         await ctx.onEvent("runtime.phase", { phase: "finished", status });
         await chain;
         if (gateway.forwardedRequests === 0) {
@@ -712,7 +720,7 @@ export class CodexRuntimeAdapter {
           thread,
           turn,
           status,
-          ...(status !== "completed" ? { errorCode: toolState.unresolvedDelivery ? toolState.terminalCode : gatewayError ?? "CODEX_TURN_FAILED" } : {}),
+          ...(status !== "completed" ? { errorCode: toolState.unresolvedDelivery ? toolState.terminalCode : historicalState.unresolvedDelivery ? historicalState.terminalCode : gatewayError ?? "CODEX_TURN_FAILED" } : {}),
         };
         return completedResult;
       } catch (e) {
@@ -828,6 +836,7 @@ export class CodexRuntimeAdapter {
           try {
             await saveReceipt({
               state: "ready",
+              toolOutcomeProtocol: outcomeProtocol,
               thread,
               fingerprint,
               inputTokens: threadInput,

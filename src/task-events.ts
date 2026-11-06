@@ -80,7 +80,7 @@ export function canonicalEvent(e: any) {
       amount_micros: String(b.amount_micros),
       cost_state: b.cost_state,
     };
-  } else if (["runtime.tool.failed", "runtime.tool.completed", "runtime.tool.recovered"].includes(e.kind)) {
+  } else if (["runtime.tool.failed", "runtime.tool.completed", "runtime.tool.recovered", "runtime.tool.repair_rejected"].includes(e.kind)) {
     type = e.kind;
     // Safe, bounded diagnostics only. Never forward arbitrary event bodies or
     // upstream errors through the customer activity stream.
@@ -89,6 +89,8 @@ export function canonicalEvent(e: any) {
     if (typeof b.call_ref === "string" && /^[a-f0-9]{16}$/.test(b.call_ref)) payload.call_ref = b.call_ref;
     if (typeof b.code === "string" && /^[A-Z][A-Z0-9_]{2,79}$/.test(b.code)) payload.code = b.code;
     if (["validation", "source", "permission", "execution"].includes(b.category)) payload.category = b.category;
+    if (b.outcome_version === 2) payload.outcome_version = 2;
+    for (const key of ["failure_ref", "repair_of"]) if (typeof b[key] === "string" && /^[a-f0-9]{16}$/.test(b[key])) payload[key] = b[key];
   } else if (e.kind === "task.finished") {
     type = "task.warning";
     payload = {
@@ -112,6 +114,7 @@ export function canonicalEvent(e: any) {
   if (!seq) throw new Error("EVENT_SEQUENCE_INVALID");
   return {
     event_id: e.event_id,
+    activity_id: /^\d+$/.test(String(e.id)) ? String(e.id) : undefined,
     tenant_id: e.tenant_id,
     task_id: e.task_id,
     attempt_id: e.attempt_id,

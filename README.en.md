@@ -1,3 +1,31 @@
+<!-- integrated-round-205 -->
+
+## 205 · 0.5.12 · Exact per-call delivery and durable correction
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-205/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Cloud execution uses pinned Codex and trusted Skills. Company inference forwards through each bound model's upstream URL/API key. Enforce current tenant/project/user authority, original budget, paid checkpoints and measured usage.
+
+2. Each failed call keeps a separate reference. Another output of the same tool does not resolve it. Codex links an explicitly not-performed correctable call using _workmate_repair_of; the bridge strips control metadata before business validation. Mistyped references record a diagnostic; unknown operations cannot be recreated with changed arguments.
+
+3. Schema166 persists independent RLS-protected safe outcomes across input waits, later turns and activity pruning. Canonical completion rechecks them. Audio/video requires completed available files and confirmed usage; preserve actual costs and partial files.
+
+4. Keep existing63070/63071/63072 entries. Switch only Workmate application paths, retain a real database backup and forward-schema compatible code fallback; full restoration remains a separate exercise. Server networking and live rules are read-only.
+
+```mermaid
+flowchart LR
+ A[Current authorization and original budget] --> B[Pinned Codex and trusted Skills]
+ B --> C[Per-call outcome]
+ C --> D[Exact validated correction]
+ C --> E[Durable outstanding output]
+ D --> F[Actual files and measured usage]
+ E --> F
+```
+
+790 qualified related cases, including 675 executed in this round and unchanged Admin/Extension evidence. Four full public files passed exact size/SHA for the explicitly recorded QA path; default direct egress and DNS failover remain separate checks. The original102 requirements/32 groups, professional19-role/50-Skill sign-off, real external media/marketing/IdP services, device/concurrency/long-run/DR matrices and blind WorkBuddy comparison remain explicit. Server networking is read-only. Current exact-call rules supersede historical tool-name-only recovery descriptions below.
+
+The complete setup/usage guide and explicitly historical release notes follow.
+
 <!-- integrated-round-204 -->
 
 ## 204 · 0.5.11 · Safe tool feedback and durable cloud ownership

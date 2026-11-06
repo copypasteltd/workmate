@@ -87,12 +87,9 @@ export function safeToolFeedback(error: unknown, tool: { name: string; inputSche
 const deliveryTools = new Set(["image2_generate", "image2_edit", "effect_render", "vector_render", "slides_build", "slides_render", "chart_render", "deliver_text", "audio_produce", "generated_video_create", "code_package", "design_render"]);
 /** Latest durable outcomes survive a new native turn and paid input wait. */
 export async function readUnresolvedDeliveryToolNames(tx: Tx, tenant: string, task: string): Promise<string[]> {
-  const rows = await tx.query(`SELECT DISTINCT ON(body->>'tool') body->>'tool' AS tool,kind
-    FROM task_events WHERE tenant_id=$1 AND task_id=$2
-      AND kind IN('runtime.tool.failed','runtime.tool.completed','runtime.tool.recovered')
-      AND body->>'tool'=ANY($3::text[])
-    ORDER BY body->>'tool',id DESC`, [tenant, task, [...deliveryTools]]);
-  return rows.rows.filter(row => row.kind === "runtime.tool.failed").map(row => row.tool);
+  const rows = await tx.query(`SELECT DISTINCT tool FROM task_tool_outcomes
+    WHERE tenant_id=$1 AND task_id=$2 AND resolved_by IS NULL AND tool=ANY($3::text[])`, [tenant,task,[...deliveryTools]]);
+  return rows.rows.map(row => row.tool);
 }
 export function deliveryFailureCode(names: readonly string[]): string {
   return names.some(name => name === "image2_generate" || name === "image2_edit") ? "IMAGE_TOOL_FAILED" : "TOOL_DELIVERY_INCOMPLETE";

@@ -1,3 +1,4 @@
+import { publicToolOutcomeSummary } from "./tool-outcome-ledger.js";
 import { desktopClientErrorSql } from "./desktop-errors.js";
 import { assertTaskContentSources } from "./task-content-sources.js";
 import { recordDeliveryReview } from "./business-quality.js";
@@ -183,6 +184,7 @@ export function registerTasks(
         };
       }
       await projectAccess(tx, req.principal, tenant, project);
+      t.tool_outcomes = await publicToolOutcomeSummary(tx, tenant, task);
       t.acceptance = (await tx.query("SELECT business_review_state($1) AS state", [t.id])).rows[0].state;
       return t;
     }, tenant);

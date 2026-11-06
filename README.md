@@ -1,3 +1,31 @@
+<!-- integrated-round-205 -->
+
+## 205 · 0.5.12 · 逐项交付与精确修正
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-205/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 云端唯一使用固定Codex及受信Skills，公司AI请求按绑定模型的上游地址和API Key转发。企业／项目／用户权限、原预算、付费输入检查点及实际费用继续强制执行。
+
+2. 每个失败调用保留独立参考号。同一工具的另一份输出成功，不解除原项；明确未执行且可修正时，Codex使用_workmate_repair_of关联精确原项，控制字段在原业务校验前移除。参考号错误只记录核对诊断；未知操作换参数也不能重做。
+
+3. schema166保存受RLS控制的独立安全状态，后续回合、补充资料及活动清理均不抹掉未交付项；最终工作状态重新核对。音视频须确认完成、文件可用和确定用量，原费用和实际部分成果保留。
+
+4. 原63070／63071／63072入口保持。仅切换Workmate应用；真实库备份和兼容新schema的旧代码回退保留，尚不等于完整恢复演练。服务器网络配置及实时规则只读。
+
+```mermaid
+flowchart LR
+ A[Current authorization and original budget] --> B[Pinned Codex and trusted Skills]
+ B --> C[Per-call outcome]
+ C --> D[Exact validated correction]
+ C --> E[Durable outstanding output]
+ D --> F[Actual files and measured usage]
+ E --> F
+```
+
+790项相关通过证据，其中本轮执行675项，其余为原样Admin／Extension沿用。四份公网文件在明确记录的QA路径通过完整字节／SHA；默认直接出口与正常DNS故障转移另行验收。保留全部102条／32组、19角色／50Skills专业签收、真实外部媒体／营销／IdP、设备／并发／长稳／灾备矩阵及WorkBuddy同题盲测。服务器网络只读。本轮精确调用规则取代下方历史版本中仅按工具名称解除失败的说明。
+
+以下保留完整安装／使用指南及明确的历史版本记录。
+
 <!-- integrated-round-204 -->
 
 ## 204 · 0.5.11 · 安全工具反馈与云端执行时效

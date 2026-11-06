@@ -90,6 +90,7 @@ import { normalizeGeneratedImagePNG } from "./generated-image-normalization.js";
 import path from "node:path";
 import { z } from "zod";
 import { parseToolArguments } from "./runtime-tool-feedback.js";
+import { assertDeliveredToolResult } from "./tool-outcome-ledger.js";
 import { assertTaskToolNotPausing } from "./task-pause.js";
 import type { Database, Tx } from "./db.js";
 import { saveAsset } from "./storage.js";
@@ -755,7 +756,9 @@ export class TaskBusinessTools {
             authorize,
             this.authority.signal,
           );
-          return audio.execute(t, job.id, authorize, this.authority.signal);
+          const result = await audio.execute(t, job.id, authorize, this.authority.signal);
+          assertDeliveredToolResult("audio_produce", result);
+          return result;
         },
       });
     }
@@ -783,13 +786,15 @@ export class TaskBusinessTools {
           inputSchema: z.toJSONSchema(videoJobSpecification),
           run: async (args: unknown, callId: string) => {
             const job = await jobs.prepare(t, fencing, args, callId, authorize);
-            return jobs.wait(
+            const result = await jobs.wait(
               actor,
               t.tenant_id,
               t.project_id,
               job.id,
               this.authority.signal,
             );
+            assertDeliveredToolResult("generated_video_create", result);
+            return result;
           },
         },
         {

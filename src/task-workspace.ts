@@ -1,3 +1,4 @@
+import { publicToolOutcomeSummary } from "./tool-outcome-ledger.js";
 import type {FastifyInstance} from "fastify";
 import {z} from "zod";
 import type {Database} from "./db.js";
@@ -22,7 +23,7 @@ export function registerTaskWorkspace(app:FastifyInstance,db:Database,storage:St
     AND a.state='active' AND v.erased_at IS NULL ORDER BY a.name,a.id LIMIT 201`,[ids])).rows;
    return {task:{id:task.id,title:task.title,status:task.status,mode:task.mode,output:task.output,execution_location:task.execution_location,
     version:task.version,charged_micros:task.charged_micros,accrued_micros:task.accrued_micros,budget_micros:task.budget_micros,
-    input_tokens:task.input_tokens,output_tokens:task.output_tokens},files:files.slice(0,200),files_truncated:files.length>200};
+    input_tokens:task.input_tokens,output_tokens:task.output_tokens,error_code:task.error_code,tool_outcomes:await publicToolOutcomeSummary(tx,p.tenant,p.task)},files:files.slice(0,200),files_truncated:files.length>200};
   },p.tenant,false,req.principal.id);
  });
  app.get(base+"/preview",{preHandler:requireUser(db)},async(req,reply)=>{
