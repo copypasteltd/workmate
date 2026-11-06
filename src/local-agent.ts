@@ -1,4 +1,5 @@
 import { randomUUID, createHash } from "node:crypto";
+import { ClientFailure, isConnectionFailure } from "./client-failure.js";
 import { nativeDeliveryRevision, type NativeDeliveryRevision } from "./delivery-revision.js";
 import { parseTeamReview, parseTeamRun, parseTeamAssignments, localTeamTerminal,
   type LocalTeamState, type LocalTeamAssignment } from "./local-team.js";
@@ -434,7 +435,8 @@ export class LocalAgentController {
       } catch (error) {
         await this.live(signal, localOwner);
         const deadlineFailure = error instanceof LocalAgentError && error.code === "LOCAL_EXECUTION_CANCELLED" && bounded.aborted;
-        const transportFailure = deadlineFailure || error instanceof TypeError ||
+        const transportFailure = deadlineFailure || isConnectionFailure(error) ||
+          error instanceof ClientFailure && ["CLIENT_CONNECTION_UNAVAILABLE", "CLIENT_RESULT_UNCONFIRMED"].includes(error.code) ||
           error instanceof Error && ["TimeoutError", "AbortError"].includes(error.name);
         if (!transportFailure || attempt !== 0 || !Number.isFinite(leaseUntil) || leaseUntil <= Date.now() + 1000)
           throw deadlineFailure ? new LocalAgentError("LOCAL_COMPANY_API_UNAVAILABLE") : error;

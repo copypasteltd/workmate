@@ -10,13 +10,13 @@ export function nativeExecutionRecords(events:NativeEvent[],taskId:string){
   const turn=text(v.turnId??v.turn?.id,100),item=v.item,id=turn+":"+text(item?.id??v.itemId??v.call_id,150);
   if(event.kind==="item/commandExecution/outputDelta"){
    const r=records.get(id)??{id,kind:"command",status:"inProgress"};
-   if(r.status==="inProgress"){const output=(r.output??"")+text(v.delta);r.output=output.slice(0,32768);r.truncated=r.truncated||output.length>32768;records.set(id,r);}continue;
+   if(r.status==="inProgress"){const output=(r.output??"")+text(v.delta);r.output=output.slice(0,32768);r.truncated=r.truncated||output.length>32768||(typeof v.delta==="string"&&v.delta.length>32768);records.set(id,r);}continue;
   }
   if(["item/started","item/completed"].includes(event.kind)&&item){
    const status=text(item.status,64)||(event.kind==="item/completed"?"completed":"inProgress");
    if(item.type==="commandExecution"){
-    const output=typeof item.aggregatedOutput==="string"?item.aggregatedOutput:records.get(id)?.output??"";
-    records.set(id,{id,kind:"command",status,command:text(item.command,4096),output:text(output),exit_code:Number.isSafeInteger(item.exitCode)?item.exitCode:null,truncated:output.length>32768});
+    const prior=records.get(id),aggregate=typeof item.aggregatedOutput==="string",output=aggregate?item.aggregatedOutput:prior?.output??"";
+    records.set(id,{id,kind:"command",status,command:text(item.command,4096)||prior?.command,output:text(output),exit_code:Number.isSafeInteger(item.exitCode)?item.exitCode:null,truncated:output.length>32768||(!aggregate&&!!prior?.truncated)||(typeof item.command==="string"&&item.command.length>4096)});
    }else if(item.type==="fileChange"){
     const changes=Array.isArray(item.changes)?item.changes:[];
     records.set(id,{id,kind:"files",status,files:changes.slice(0,100).filter((f:any)=>typeof f.path==="string").map((f:any)=>({path:text(f.path,32767),diff:text(f.diff)})),truncated:changes.length>100||changes.some((f:any)=>typeof f.diff==="string"&&f.diff.length>32768)});
@@ -28,4 +28,13 @@ export function nativeExecutionRecords(events:NativeEvent[],taskId:string){
   }
  }
  const values=[...records.values()];return {items:values.slice(-100),truncated:values.length>100,unbound};
+}
+
+export function nativeCommandSummary(command: string) {
+ const compact=command.replace(/\s+/g," ").trim();
+ return compact.length>120?compact.slice(0,119)+"…":compact;
+}
+export function nativeRecordFailed(record: NativeExecutionRecord) {
+ return ["failed","error","declined","cancelled","interrupted"].includes(record.status)
+   || record.kind==="command"&&record.exit_code!=null&&record.exit_code!==0;
 }

@@ -1,3 +1,32 @@
+<!-- integrated-round-197 -->
+
+## 197 · 0.7.8 · Local connection and execution review
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-197/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Install Windows Setup or run Portable, authorize in the system browser, then choose a local folder, specialist and permission. Full local access requires explicit native consent, can be revoked and ends on sign-out. The app is frameless without Electron menus.
+2. Local Codex reads files, runs commands, operates authorized apps/browser and writes results. Models and billing use company servers. Results use the original company task ID and actual native events without rerunning commands.
+3. Company control, authentication, uploads, downloads, media and updates use a separate memory-only Chromium Session with a fixed company origin, no cookies and no redirects. Codex inference retains its original company gateway connection.
+4. Commands/output start collapsed; exit status, failure and truncation stay visible. Current-file previews recheck local permission and canonical paths. Heartbeat recovery is bounded by the last confirmed live lease and cannot replay inference or tools.
+5. The actual0.7.7 package completes PKCE, real company file transfer, native Codex file/command work, HK$0.035904 billing and revocation. Final0.7.8 passes fresh sign-in and timing UI delta checks; all packaged main-process JavaScript/native runtime bytes match the qualified native journey. No second paid task is claimed. A single successful journey does not establish long-term network SLA or arbitrary-app compatibility.
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[Role and permission / 角色與授權]
+  C --> D[Original task / 原工作]
+  D --> E[Review result and usage / 審閱與費用]
+  E --> F[Explicit next action / 明確下一步]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/197-v4-desktop-review.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-197-v4-desktop-review.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-197-v4-desktop-review.mp4)
+
+Earlier sections are retained release history. Full external/professional/production acceptance remains open.
+
 <!-- integrated-round-196 -->
 
 ## 196 · 0.7.6 · Local Codex and execution results

@@ -10,6 +10,7 @@ import { LocalCodexStartupFailure, type LocalCodexHooks } from "../src/local-cod
 import type { LocalInputRequest } from "../src/local-input.js";
 import { GuardedBrowserSession } from "../src/browser-session.js";
 import { startupFixture, startupTurnFixture } from "./startup-receipt-fixture.js";
+import { ClientFailure } from "../src/client-failure.js";
 
 test("native failure cause remains visible after settlement and journal reload",async()=>{
   const f=await fixture();let restored:LocalAgentController|undefined;
@@ -883,13 +884,14 @@ test("periodic renewal reaches the authenticated heartbeat while unrelated remot
  }finally{f.io.identity=identity;release?.();await run?.catch(()=>{});t.mock.timers.reset();await f.clean();}
 });
 
-test("one transport loss retries only renewal inside its confirmed lease without replaying a native turn",async()=>{
+for (const failure of [new TypeError("Lost owned TCP connection"), new Error("net::ERR_CONNECTION_RESET"), new ClientFailure("CLIENT_RESULT_UNCONFIRMED"), new ClientFailure("CLIENT_CONNECTION_UNAVAILABLE")])
+test(failure.message+": one transport loss retries only renewal inside its confirmed lease without replaying a native turn",async()=>{
  const f=await fixture();
  try{const session=await f.create();await f.controller.permission(session.id,"full-access");
  const c=f.controller as any,r=(await c.state()).sessions[0],id=randomUUID();
  r.lastTask={task_id:id,lease_until:new Date(Date.now()+45000).toISOString()};let calls=0;
  f.io.request=async(url,options)=>{assert.ok(url.endsWith('/'+id+'/heartbeat'));assert.equal(options?.tenantId,f.scope.tenant);calls++;
- if(calls===1)throw new TypeError('Lost owned TCP connection');return{status:200,body:{state:'running',status:'running',lease_until:new Date(Date.now()+45000).toISOString()}};};
+ if(calls===1)throw failure;return{status:200,body:{state:'running',status:'running',lease_until:new Date(Date.now()+45000).toISOString()}};};
  const reply=await c.renewDesktopLease(r,'/owned/'+id,c.generation,new AbortController().signal);
  assert.equal(reply.status,'running');assert.equal(calls,2);assert.equal(f.turns(),0);
  }finally{await f.clean();}

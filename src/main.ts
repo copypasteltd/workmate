@@ -1,4 +1,5 @@
-import { ClientFailure, clientFetch, clientJson } from "./client-failure.js";
+import { ClientFailure, clientFetch, clientJson, connectionFailure } from "./client-failure.js";
+import { createCompanyTransport } from "./company-transport.js";
 import { DesktopPairingController, type PairingJournal } from "./desktop-pairing.js";
 import { deployment } from "./deployment.js";
 import { existsSync } from "node:fs";
@@ -77,6 +78,16 @@ const userDir =
   path.join(app.getPath("appData"), "CopyPaste");
 app.setPath("userData", userDir);
 
+// Memory-only Chromium network session: follows system proxy configuration,
+// without renderer cookies/cache or custom protocol handlers. No Node fallback
+// can silently replay a write after a lost response.
+let companyNetwork: Electron.Session | undefined;
+const companyFetch = createCompanyTransport(config.api, async (input, init) => {
+  await app.whenReady();
+  companyNetwork ??= session.fromPartition("copypaste-company-api-v1", { cache: false });
+  return companyNetwork.fetch(input instanceof URL ? input.href : input, { ...init, bypassCustomProtocolHandlers: true });
+});
+
 const vault = new LocalVault(userDir);
 const storePath = (key: string) => path.join(userDir, key + ".enc");
 async function load<T>(key: string, fallback: T): Promise<T> {
@@ -108,7 +119,7 @@ async function nativeAuth(
   refreshToken: string,
   requestId?: string,
 ) {
-  const response = await fetch(
+  const response = await companyFetch(
     config.api +
       (action === "refresh" ? "/v1/auth/token" : "/v1/auth/native/revoke"),
     {
@@ -154,6 +165,7 @@ const tokens = () => nativeSession.get();
 const publicationOwner = () => window && !window.isDestroyed() ? `${window.webContents.id}:${window.webContents.mainFrame.routingId}` : "";
 const publicationMedia = new PublicationMediaProxy({
   api: config.api,
+  fetch: companyFetch,
   session: async () => {
     const current = await tokens();
     if (!current.session_epoch) throw new NativeSessionError("AUTH_CHANGED");
@@ -168,7 +180,7 @@ const pairings = new DesktopPairingController({
   read: () => load<PairingJournal|null>("desktop-pairings",null), write: value => save("desktop-pairings",value),
   epoch: async () => (await load<NativeTokens|null>("auth",null))?.session_epoch ?? null,
   pair: async body => { const r=await request("/v1/auth/native/device-pair",{method:"POST",body}); if(r.status!==200)throw new Error(r.body.error?.code ?? "PAIRING_UNAVAILABLE");return r.body; },
-  retire: async body => {const r=await fetch(config.api+"/v1/auth/native/device-pair/retire",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),redirect:"error",signal:AbortSignal.timeout(8000)});if(!r.ok)throw new Error("PAIRING_RETIREMENT_PENDING");return r.json();},
+  retire: async body => {const r=await companyFetch(config.api+"/v1/auth/native/device-pair/retire",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),redirect:"error",signal:AbortSignal.timeout(8000)});if(!r.ok)throw new Error("PAIRING_RETIREMENT_PENDING");return r.json();},
   legacy: async (tenant,id) => {const r=await request(`/v1/tenants/${tenant}/devices/${id}`,{method:"DELETE"});if(r.status!==200 || r.body?.ok!==true)throw new Error("PAIRING_PREVIOUS_DEVICE_PENDING");},
   connect: async(tenant,d)=>{
     const pub=await request("/v1/public/config");if(pub.status!==200 || !pub.body.device_command_public_key)throw new Error("Command signing key unavailable");
@@ -189,7 +201,8 @@ const localAgent = new LocalAgentController({
   localEpoch: async () => (await load<NativeTokens | null>("auth", null))?.session_epoch ?? null,
   identity: async () => {
     const before = await tokens(), result = await request("/v1/session/context"), after = await tokens();
-    if (result.status !== 200 || !after.session_epoch || before.session_epoch !== after.session_epoch || !result.body.user?.id) throw new Error("LOCAL_ACCOUNT_CHANGED");
+    if (!after.session_epoch || before.session_epoch !== after.session_epoch || result.status === 401 || result.body.error?.code === "SESSION_CHANGED") throw new Error("LOCAL_ACCOUNT_CHANGED");
+    if (result.status !== 200 || !result.body.user?.id) throw new Error("LOCAL_COMPANY_API_UNAVAILABLE");
     return { actorId: result.body.user.id, epoch: after.session_epoch };
   },
   request,
@@ -281,6 +294,7 @@ const installerHelper = app.isPackaged ? path.join(process.resourcesPath, "updat
 const configuredUpdateTrust = await resolveUpdateTrust(updateTrust, app.isPackaged, process.env.COPYPASTE_DEV_UPDATE_TRUST_FILE);
 const desktopUpdates = new DesktopUpdateController({
   origin: config.api, cache: path.join(userDir, "update-cache"), version: app.getVersion(), channel: "stable",
+  fetch: companyFetch,
   keys: configuredUpdateTrust.keys, minimumSequence: configuredUpdateTrust.minimumSequence,
   installerSupported: process.platform === "win32" && app.isPackaged && !process.env.PORTABLE_EXECUTABLE_FILE && existsSync(path.join(path.dirname(process.execPath), "Uninstall CopyPaste.exe")),
   read: () => load("desktop-updates", null), write: value => save("desktop-updates", value),
@@ -338,7 +352,7 @@ const desktopRemoval = new DesktopRemovalController({
   },
   retire: body => pairings.retire(body),
   post: async body => {
-    const response = await fetch(config.api + "/v1/auth/native/disconnect", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body), redirect: "error", signal: AbortSignal.timeout(8000) });
+    const response = await companyFetch(config.api + "/v1/auth/native/disconnect", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body), redirect: "error", signal: AbortSignal.timeout(8000) });
     if (!response.ok) throw new Error("DISCONNECT_UNAVAILABLE");
     return response.json();
   },
@@ -396,6 +410,11 @@ async function request(
       throw e;
     }
   }
+  const deadline = AbortSignal.timeout(/^\/v1\/tenants\/[\w-]+\/projects\/[\w-]+\/desktop-executions\/[\w-]+\/tools$/.test(url)
+    ? options.body && typeof options.body === "object" && "tool" in options.body && ["generated_video_create", "audio_produce"].includes(String(options.body.tool)) ? 855000 : 180000
+    : 40000);
+  const signal = AbortSignal.any([deadline, ...(options.signal ? [options.signal] : [])]);
+  try {
   const r = await clientFetch(apiURL(config.api, url), {
     method,
     headers: {
@@ -411,10 +430,8 @@ async function request(
           : "{}"
         : JSON.stringify(options.body),
     redirect: "error",
-    signal: AbortSignal.any([AbortSignal.timeout(/^\/v1\/tenants\/[\w-]+\/projects\/[\w-]+\/desktop-executions\/[\w-]+\/tools$/.test(url)
-      ? options.body && typeof options.body === "object" && "tool" in options.body && ["generated_video_create", "audio_produce"].includes(String(options.body.tool)) ? 855000 : 180000
-      : 40000), ...(options.signal ? [options.signal] : [])]),
-  });
+    signal,
+  }, companyFetch);
   if (
     r.status === 401 &&
     t &&
@@ -430,8 +447,13 @@ async function request(
       },
     };
   if (r.status === 401) return { status: 401, body: { error: { code: "AUTH_REQUIRED", message: "Your session ended. Sign in again." } } };
-  const body = await clientJson(r, method, options.signal);
+  const body = await clientJson(r, method, signal);
   return { status: r.status, body };
+  } catch (error) {
+    if (options.signal?.aborted) throw options.signal.reason ?? error;
+    if (deadline.aborted) throw connectionFailure(method);
+    throw error;
+  }
 }
 async function signIn() {
   if (authFlow) return authFlow;
@@ -498,7 +520,7 @@ async function signIn() {
         redirect_uri: redirect,
         code,
         code_verifier: verifier,
-      });
+      }, companyFetch);
       await nativeSession.acceptLogin(response, ticket);
       window?.show();
       window?.focus();
@@ -893,7 +915,7 @@ async function createWindow() {
     });
     if (dest.canceled || !dest.filePath) return { saved: false };
     const t = await tokens();
-    const r = await fetch(url, {
+    const r = await companyFetch(url, {
       headers: {
         Authorization: `Bearer ${t.access_token}`,
         ...(tenantId ? { "X-Tenant-ID": tenantId } : {}),
@@ -921,7 +943,7 @@ async function createWindow() {
       headers: { Authorization: `Bearer ${t.access_token}` },
       body: form,
       redirect: "error",
-    });
+    }, companyFetch);
     if (r.status === 401 && !(await nativeSession.invalidate(t.access_token)))
       return {
         status: 409,

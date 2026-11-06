@@ -655,7 +655,7 @@ function EditUnit({
                 <Status value={a.state === "rendering" ? "running" : a.state} />
               </span>
               <span className="muted">
-                AI HK$0{a.elapsed_ms !== null ? ` · ${a.elapsed_ms} ms` : ""}
+                AI HK$0{executionMilliseconds(a.elapsed_ms) !== null ? ` · ${executionMilliseconds(a.elapsed_ms)} ms` : ""}
               </span>
             </header>
             {a.error_code && <p className="muted">{a.error_code}</p>}
@@ -1035,3 +1035,4 @@ export function CreativeMatrices({
     </section>
   );
 }
+import { executionMilliseconds } from "./execution-timing";

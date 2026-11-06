@@ -1,3 +1,32 @@
+<!-- integrated-round-197 -->
+
+## 197 · 0.7.8 · 本机连接与执行审阅
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-197/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 安装 Windows Setup 或运行便携版，在系统浏览器完成授权；选择本机目录、专业角色和权限。完整本机权限需要客户原生确认，可撤销，退出登录即失效。应用无边框且无 Electron 菜单。
+2. 本机 Codex 读取文件、运行命令、操作获准应用／浏览器并写出结果；模型与计费走公司服务器。结果页按原公司任务 ID 读取真实本机事件，不重跑指令。
+3. 公司控制、登录、上传、下载、媒体和更新请求使用独立内存 Chromium Session，固定公司同源、禁止 Cookie 和跳转。Codex 自身推理连接仍走原公司网关，不由界面网络代替。
+4. 指令和输出默认折叠，退出码、失败和截断保持可见。当前文件预览重新验证本机权限及真实路径；撤权后不得继续读取。心跳只在最后确认的有效租期内有限恢复，不能重跑模型或工具。
+5. 本轮0.7.7真实包完成 PKCE、公司文件往返、本机 Codex 文件／命令任务、HK$0.035904结算及撤权。最终0.7.8完成真实登录和耗时显示差异复验，全部包内主进程 JavaScript及原生运行时与该原生闭环逐字节相同；未重复付费任务。单次成功不代表长期网络 SLA 或完整任意应用兼容。
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[Role and permission / 角色與授權]
+  C --> D[Original task / 原工作]
+  D --> E[Review result and usage / 審閱與費用]
+  E --> F[Explicit next action / 明確下一步]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/197-v4-desktop-review.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-197-v4-desktop-review.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-197-v4-desktop-review.mp4)
+
+下方保留較早版本記錄。完整外部、專業與生產驗收仍開放。
+
 <!-- integrated-round-196 -->
 
 ## 196 · 0.7.6 · 本机Codex与执行成果
