@@ -1,3 +1,37 @@
+<!-- integrated-round-200 -->
+
+## 200 · 0.5.2 · Model, user and content management compatibility
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-200/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Email/TOTP Admin sign-in retains scoped organization/user/funds/VIP/content/permission/audit/approval management. Highest admins execute under policy; other roles follow policy approvals.
+
+2. Each model independently stores API URL, key, upstream alias and rates, with existing editing/deletion/authorized batch actions. Readiness is distinct from real upstream/specialist quality acceptance.
+
+3. No new Admin product logic this round; version stays0.5.2. The unified build and22 current frontend cases pass. The198 media below is explicitly earlier real evidence, not a newly recorded200 operation.
+
+4. The requested test inbox stays. Real SMTP, video/speech, Google/Meta settings, the complete administrator resource/permission matrix and production acceptance retain their original scope.
+
+```mermaid
+flowchart LR
+ A[Email and TOTP / 郵箱與TOTP] --> B[Current role and scope / 目前角色範圍]
+ B --> C[Users, VIP, funds and content / 用戶權益費用與內容]
+ B --> D[Per-model API URL, key and rates / 模型獨立上游與費率]
+ C --> E[Policy approval or direct execution / 策略審批或直接執行]
+ D --> E
+ E --> F[Audit and actual readiness / 審計與實際就緒]
+```
+
+Earlier198 real Admin / 歷史198真實後台
+
+![Actual interface / 實際頁面](assets/screenshots/198-v4-service-readiness.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v4-service-review.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v4-service-review.mp4)
+
+Earlier release/setup instructions remain below; full original acceptance stays open.
+
 <!-- integrated-round-199 -->
 
 ## 199 · 0.5.2 · Model/user management compatibility review

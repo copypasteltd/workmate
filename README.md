@@ -1,3 +1,37 @@
+<!-- integrated-round-200 -->
+
+## 200 · 0.5.2 · 模型、用戶與內容管理相容覆核
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-200/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 管理員以郵箱／TOTP登入，按範圍管理企業、用戶、費用／VIP、內容、權限、審計及審批；最高管理員依策略直接執行，其他角色按策略審批。
+
+2. 每個模型各自維護API接口、API key、上游別名與費率，保留編輯／刪除和受權批量操作。就緒狀態與真實上游／角色品質必須分開核對。
+
+3. 本輪後台產品沒有新邏輯變更，版本保持0.5.2，整批構建及22項當前前端回歸通過。下方198錄影明確為歷史真實頁面，不冒充200輪新後台交互。
+
+4. 測試收件箱按用戶要求保留。真實SMTP、視頻／語音、Google／Meta配置、完整管理資源權限矩陣和生產驗收仍依原範圍處理。
+
+```mermaid
+flowchart LR
+ A[Email and TOTP / 郵箱與TOTP] --> B[Current role and scope / 目前角色範圍]
+ B --> C[Users, VIP, funds and content / 用戶權益費用與內容]
+ B --> D[Per-model API URL, key and rates / 模型獨立上游與費率]
+ C --> E[Policy approval or direct execution / 策略審批或直接執行]
+ D --> E
+ E --> F[Audit and actual readiness / 審計與實際就緒]
+```
+
+Earlier198 real Admin / 歷史198真實後台
+
+![Actual interface / 實際頁面](assets/screenshots/198-v4-service-readiness.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v4-service-review.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v4-service-review.mp4)
+
+下方保留此前版本和完整安裝／使用說明，全部原始驗收範圍仍開放。
+
 <!-- integrated-round-199 -->
 
 ## 199 · 0.5.2 · 模型與用戶管理相容覆核
