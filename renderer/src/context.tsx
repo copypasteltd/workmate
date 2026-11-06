@@ -16,6 +16,7 @@ interface WorkspaceState {
   tenant: string;
   project: string;
   projects: any[];
+  projectsReady: boolean;
   refresh: (requireCurrent?: boolean) => Promise<void>;
   setTenant: (id: string) => void;
   setProject: (id: string) => void;
@@ -31,6 +32,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [tenant, setTenantState] = useState(""),
     [project, setProjectState] = useState(""),
     [projects, setProjects] = useState<any[]>([]);
+  const [loadedProjectTenant,setLoadedProjectTenant]=useState("");
   const loadRevision = useRef(0);
   const projectLoadRevision = useRef(0);
   const tenantRef = useRef(tenant);
@@ -43,6 +45,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setTenantState("");
     setProjectState("");
     setProjects([]);
+    setLoadedProjectTenant("");
     setError(null);
     setLoading(false);
     localStorage.removeItem("cp_tenant");
@@ -56,6 +59,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     ++projectLoadRevision.current;
     tenantRef.current = id;
     setProjects([]);
+    setLoadedProjectTenant("");
     setProjectState("");
     setTenantState(id);
     localStorage.setItem("cp_tenant", id);
@@ -96,6 +100,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (tenantRef.current !== tenant || revision !== projectLoadRevision.current)
       return;
     setProjects(d.items);
+    setLoadedProjectTenant(tenant);
+    setError(null);
     const preferred = preferredProject && d.items.some((p: any) => p.id === preferredProject) ? preferredProject : "";
     if (preferred) localStorage.setItem("cp_project", preferred);
     const saved = localStorage.getItem("cp_project");
@@ -143,12 +149,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     let live = true;
     const revision = ++projectLoadRevision.current;
     setProjects([]);
+    setLoadedProjectTenant("");
     setProjectState("");
     if (!tenant) return;
     void api(`/v1/tenants/${tenant}/projects`)
       .then((d) => {
         if (!live || revision !== projectLoadRevision.current || tenantRef.current !== tenant) return;
         setProjects(d.items);
+    setLoadedProjectTenant(tenant);
+    setError(null);
         const saved = localStorage.getItem("cp_project");
         setProjectState(
           d.items.some((p: any) => p.id === saved)
@@ -172,6 +181,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         tenant,
         project,
         projects,
+        projectsReady: !!tenant && loadedProjectTenant===tenant,
         refresh,
         setTenant,
         setProject,

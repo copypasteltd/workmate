@@ -247,7 +247,7 @@ contextBridge.exposeInMainWorld(
       ipcRenderer.on("desktop-updates:changed", listener);
       return () => ipcRenderer.removeListener("desktop-updates:changed", listener);
     },
-    openCloudWorkspace: (section?: "geo" | "devices") => ipcRenderer.invoke("workspace:cloud", section),
+    openCloudWorkspace: (section?: "geo" | "devices" | {kind:"work";tenant:string;project:string;conversation?:string;task?:string}) => ipcRenderer.invoke("workspace:cloud", section),
     localAgent: (action: string, payload: unknown) => ipcRenderer.invoke("local-agent", action, payload),
     localFilePath:(file:File)=>webUtils.getPathForFile(file),
     onLocalAgentChanged: (fn: () => void) => {

@@ -1,3 +1,4 @@
+import {cloudWorkDestination} from "./cloud-work-destination.js";
 import { ClientFailure, clientFetch, clientJson, connectionFailure } from "./client-failure.js";
 import { createCompanyTransport } from "./company-transport.js";
 import { DesktopPairingController, type PairingJournal } from "./desktop-pairing.js";
@@ -812,7 +813,7 @@ async function createWindow() {
     }
   }));
   ipcMain.handle("auth:signin", () => updateAdmission.run(() => desktopRemoval.activate(async () => { await signIn(); await localAccessReset; }), true));
-  ipcMain.handle("workspace:cloud", (_e, section?: string) => shell.openExternal(config.web + (section === "geo" ? "/app/analytics?view=geo" : section === "devices" ? "/app/devices" : "/app")));
+  ipcMain.handle("workspace:cloud", (_e, destination?: unknown) => shell.openExternal(cloudWorkDestination(config.web,destination)));
   ipcMain.handle("auth:signout", async () => updateAdmission.run(async () => {
     const result = await nativeSession.signOut();
     await localAccessReset;

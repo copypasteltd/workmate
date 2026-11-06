@@ -1,3 +1,5 @@
+import {navigationIdentity,WorkBackLink} from "./work-navigation";
+import {workId,updateNavigation} from "./work-navigation-state";
 import {TaskWorkbench} from "./task-workbench";
 import {NativeExecutionView} from "./native-execution";
 import {WorkRoleGuide} from "./work-role-guide";
@@ -10,7 +12,7 @@ import { VideoBriefFields, videoGenerationBrief } from "./video-brief";
 import { useEffect, useRef, useState } from "react";
 import { BookOpen, ArrowUp, Download, FolderOpen, Monitor, Plus, ShieldCheck, Square, Terminal, X, Paperclip, ClipboardPaste, Files } from "lucide-react";
 import { download } from "./api";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams,useLocation,useNavigate } from "react-router-dom";
 import { useWorkspace } from "./context";
 import { ErrorNotice, Money, useData, useI18n } from "./ui";
 import "./local-agent.css";
@@ -92,15 +94,23 @@ function LocalInputCard({ input, sessionId, onDone, onStop }: {
   </form>;
 }
 export function CloudWorkspaceLink() {
-  const { t } = useI18n();
-  return <div className="local-agent-empty"><Monitor size={32}/><h2>{t("前往雲端工作台", "Open the cloud workspace")}</h2><p>{t("Desktop 的 Agent 在此電腦執行。雲端會話與尚未提供本機工具的創作角色，請在 Web 工作台使用。", "The Desktop Agent runs on this computer. Open the Web workspace for cloud conversations and specialists whose local tools are still being prepared.")}</p><button className="button primary" onClick={() => void window.copyPasteBridge!.openCloudWorkspace()}>{t("在瀏覽器開啟 Web", "Open Web in browser")}</button></div>;
+  const { t } = useI18n(),w=useWorkspace(),location=useLocation(),[error,setError]=useState<Error|null>(null);
+  const conversation=location.pathname.match(/^\/app\/conversations\/([a-f\d-]{36})$/i)?.[1],task=new URLSearchParams(location.search).get("task");
+  const destination=conversation&&workId.test(conversation)?{kind:"work" as const,tenant:w.tenant,project:w.project,conversation,...(task&&workId.test(task)?{task}:{})}:undefined;
+  return <div className="local-agent-empty"><WorkBackLink fallback="/app/conversations"/><ErrorNotice error={error}/><Monitor size={32}/><h2>{t("前往雲端工作台", "Open the cloud workspace")}</h2><p>{t("Desktop 的 Agent 在此電腦執行。雲端會話與尚未提供本機工具的創作角色，請在 Web 工作台使用。", "The Desktop Agent runs on this computer. Open the Web workspace for cloud conversations and specialists whose local tools are still being prepared.")}</p><button className="button primary" onClick={() => void window.copyPasteBridge!.openCloudWorkspace(destination).catch(setError)}>{t("在瀏覽器開啟 Web", "Open Web in browser")}</button></div>;
 }
 export function LocalAgentWorkspace() {
   const w = useWorkspace(), { t } = useI18n();
   const [methodQuery, setMethodQuery] = useSearchParams();
+  const location=useLocation(),navigate=useNavigate(),navigationScope=navigationIdentity(w);
+  const savedNavigation=location.state?.workNavigation198?.local;
+  const savedLocal=savedNavigation?.scope===navigationScope?savedNavigation.value:null;
+  const requestedTask=workId.test(methodQuery.get("native_task")??"")?methodQuery.get("native_task")!:"";
+  const taskRequest=useRef(requestedTask);taskRequest.current=requestedTask;
+  const initialLocal=useRef(savedLocal),[missingRequestedTask,setMissingRequestedTask]=useState(false);
   const requestedSession = methodQuery.get("native_project") === w.project && /^[a-f0-9-]{36}$/.test(methodQuery.get("native_session") ?? "") ? methodQuery.get("native_session")! : "";
-  const requested = useRef(requestedSession);
-  useEffect(() => { requested.current = requestedSession; }, [requestedSession, w.project]);
+  const requested = useRef(requestedSession|| (workId.test(savedLocal?.session??"")?savedLocal.session:""));
+  useEffect(() => { if(requestedSession)requested.current = requestedSession; }, [requestedSession, w.project]);
   const methodInstallation = methodQuery.get("method_project") === w.project && /^[a-f0-9-]{36}$/.test(methodQuery.get("method_installation") ?? "") ? methodQuery.get("method_installation")! : "";
   const installedMethod = useData<any>(methodInstallation ? `/v1/solution-installations/${methodInstallation}` : null, 0, 0, w.tenant);
   const pinnedMethod = useData<any>(installedMethod.data?.solution ? `/v1/solution-versions/${installedMethod.data.solution.id}/details` : null, 0, 0, w.tenant);
@@ -125,6 +135,8 @@ export function LocalAgentWorkspace() {
       try {
         const data = await native("list", { tenant: w.tenant, project: w.project });
         if (alive) { setSessions(data.sessions); setRoles(data.roles); setSelected(id => {
+          const target=taskRequest.current;
+          if(target){const found=data.sessions.find((s:LocalSession)=>s.task?.task_id===target);setMissingRequestedTask(!found);return found?.id??"";}
           const wanted = requested.current;
           if (wanted && data.sessions.some((s: LocalSession) => s.id === wanted)) { requested.current = ""; return wanted; }
           return data.sessions.some((s: LocalSession) => s.id === id) ? id : data.sessions.at(-1)?.id ?? "";
@@ -160,7 +172,11 @@ export function LocalAgentWorkspace() {
     finally{if(revision===attachmentGeneration.current)setAttachmentBusy(false);}
   }
   const [panel, setPanel] = useState("chat");
-  useEffect(() => setPanel("chat"), [session?.id]);
+  useEffect(()=>{const remembered=initialLocal.current;setPanel(session?.id&&remembered?.session===session.id&&["chat","results","folders","programs"].includes(remembered.panel)?remembered.panel:requestedTask&&session?"results":"chat");},[session?.id]);
+  useEffect(()=>{if(!selected)return;const prior=location.state?.workNavigation198?.local;
+   if(prior?.scope===navigationScope&&prior.value?.session===selected&&prior.value?.panel===panel)return;
+   navigate(location.pathname+location.search,{replace:true,state:updateNavigation(location.state,navigationScope,"local",{session:selected,panel}),preventScrollReset:true});
+  },[selected,panel,navigationScope]);
   const videoTaskIds = [...new Set([session?.task?.task_id, ...(session?.events ?? []).slice().reverse()
     .filter(event => event.kind === "local.company-tool.completed").map(event => event.value.generated_video?.task_id ?? event.value.audio?.task_id)]
     .filter((id): id is string => typeof id === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id)))];
@@ -249,6 +265,8 @@ export function LocalAgentWorkspace() {
       setPrompt(`Read the exact installed method using the company solution_read tool with installation_id ${methodInstallation}. Apply its pinned method only within this task's current local permissions, approved files and budget. Ask me for missing required target inputs or reporting accounts before proceeding; this instruction does not grant local access or external-write approval.\n\nMy request:\n`);
       setMethodQuery({});
     }}>{t("將方法加入本次簡報", "Add method to this brief")}</button></section>}
+    {location.state?.workReturn198&&<WorkBackLink/>}
+    {missingRequestedTask&&<p className="local-agent-alert" role="status">{t("此工作目前不在這台電腦的會話內，請從所有工作查看交付記錄。","This task is unavailable in the sessions on this computer. Open All tasks to review the delivery record.")}</p>}
     {error && <div role="alert" className="local-agent-alert">{error === "PROJECT_CONFIGURATION_UNAVAILABLE"
       ? t("專案共用指引的資料已不可用。請到「我的專案」檢查指引及資料授權，再繼續工作。", "Shared project guidance is unavailable. Open My projects to review the guidance and access to its sources, then continue your work.")
       : error === "LOCAL_CODEX_STREAM_DISCONNECTED"
@@ -276,7 +294,7 @@ export function LocalAgentWorkspace() {
         {roles.map(key => <option key={key} value={key}>{roleNames[key] ? t(...roleNames[key]) : key}</option>)}</select></label>
       <button className="button primary" disabled={creating || !roles.includes(role)} onClick={() => void act("create", { tenant: w.tenant, project: w.project, role })}><Plus size={16}/>{t("選擇目錄開始", "Choose folder to start")}</button>
       <p className="muted">{t("檔案與終端在此電腦處理；圖片、影片與專案工具使用公司服務。", "Files and terminal run on this computer; image, video and project tools use company services.")}</p>
-      <nav aria-label={t("本機會話", "Local sessions")}>{sessions.map(s => <button key={s.id} title={s.workspace} aria-pressed={s.id === selected} className={s.id === selected ? "selected" : ""} onClick={() => { setSelected(s.id); setError(""); }}>
+      <nav aria-label={t("本機會話", "Local sessions")}>{sessions.map(s => <button key={s.id} title={s.workspace} aria-pressed={s.id === selected} className={s.id === selected ? "selected" : ""} onClick={() => {taskRequest.current="";setMissingRequestedTask(false);const q=new URLSearchParams(methodQuery);q.delete("native_task");q.delete("native_session");setMethodQuery(q,{replace:true});setSelected(s.id);setError("");}}>
         <FolderOpen size={16}/><span>{s.workspace.split(/[\\/]/).filter(Boolean).at(-1)}<small>{s.specialist ? s.specialist.name + " · v" + s.specialist.version : roleNames[s.role] ? t(...roleNames[s.role]) : s.role}{s.revoked ? t(" · 已撤權", " · Revoked") : ""}</small></span></button>)}</nav>
     </aside><section className="local-agent-conversation" aria-label={t("本機工作對話", "Local work conversation")}>
       {session ? <><div className="local-agent-toolbar"><div className="local-agent-folder"><FolderOpen size={17}/><span title={session.workspace}>{session.workspace}</span></div>

@@ -1,3 +1,31 @@
+<!-- integrated-round-198 -->
+
+## 198 · 0.7.10 · Resume local work and results
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-198/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Install Setup or run Portable and authorize in the system browser. The app is frameless without Electron menus. Choose a local folder/specialist; full local access requires explicit native consent and can be revoked. Codex reads, executes and writes on the customer computer; AI/billing uses company servers.
+2. All tasks finds cloud/local work. Open locally returns to the original session on this computer. Session, results panel, selected tab and scoped return state restore. Current-file preview still rechecks permission/canonical paths; withdrawal prevents further reads.
+3. Cloud-work opening accepts resource IDs only; the main process builds company-origin organization/project URLs. Arbitrary URLs are rejected. Company browser requests retain a separate memory-only session without cookies or redirects; local Codex inference continues through its company gateway.
+4. The actual 0.7.9 package completes PKCE, private file transfer, full access, real PowerShell result.json work, HK$0.032730 settlement, revocation and directory return. Commands/output stay collapsed with exit status; root/horizontal overflow checks pass. Final 0.7.10 corrects directory amounts to Recorded usage and passes actual PKCE/directory/return checks. Every main-process/runtime byte matches 0.7.9; no repeated paid task is claimed. Current GIF records the final directory; the 0.7.9 execution PNG/receipt remain. Arbitrary-app/offline/sleep compatibility remains open.
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[All tasks / 查找工作]
+  C --> D[Verify current authority / 當前授權]
+  D --> E[Original session and results / 原會話與成果]
+  E --> F[Return with context / 保留上下文返回]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/198-v3-desktop-directory.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v3-desktop-directory.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v3-desktop-directory.mp4)
+
+Earlier sections retain previous release/setup history. Current delivery does not close full original acceptance.
+
 <!-- integrated-round-197 -->
 
 ## 197 · 0.7.8 · Local connection and execution review

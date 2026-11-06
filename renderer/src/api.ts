@@ -8,7 +8,16 @@ import { sessionProtectedRequest } from "./session-request";
 export let csrfToken = "";
 let sessionRevision = 0;
 export const clientSessionGeneration = () => sessionRevision;
+// Non-secret browser-history partition. Never a credential or server authority.
+let navigationEpoch = "";
+export function clientNavigationEpoch() {
+ if(navigationEpoch)return navigationEpoch;
+ try{const saved=sessionStorage.getItem("cp_navigation_epoch");if(saved&&/^[a-f\d-]{36}$/i.test(saved))navigationEpoch=saved;}catch{/* Memory-only fallback. */}
+ if(!navigationEpoch)rotateNavigationEpoch();return navigationEpoch;
+}
+function rotateNavigationEpoch(){navigationEpoch=crypto.randomUUID();try{sessionStorage.setItem("cp_navigation_epoch",navigationEpoch);}catch{/* Memory-only fallback. */}}
 export function endClientSession(broadcast = true) {
+  rotateNavigationEpoch();
   ++sessionRevision;
   csrfToken = "";
   redactWorkspaceAttempts();
@@ -21,6 +30,7 @@ export function endClientSession(broadcast = true) {
     );
 }
 export function changeClientSession() {
+  rotateNavigationEpoch();
   ++sessionRevision;
   csrfToken = "";
 }
@@ -44,7 +54,7 @@ declare global {
       onDesktopRemovalChanged: (fn: () => void) => () => void;
       desktopUpdates: (action: "status" | "check" | "download" | "cancel" | "discard" | "install") => Promise<any>;
       onDesktopUpdatesChanged: (fn: () => void) => () => void;
-      openCloudWorkspace: (section?: "geo" | "devices") => Promise<void>;
+      openCloudWorkspace: (section?: "geo" | "devices" | {kind:"work";tenant:string;project:string;conversation?:string;task?:string}) => Promise<void>;
       localAgent: (action: string, payload: unknown) => Promise<{ ok: boolean; value?: any; code?: string }>;
       localFilePath:(file:File)=>string;
       onLocalAgentChanged: (fn: () => void) => () => void;

@@ -1,3 +1,6 @@
+import {TaskDirectory} from "./task-directory";
+import {WorkScopeGate,WorkBackLink,useWorkLocation} from "./work-navigation";
+import {scopedWorkPath} from "./work-navigation-state";
 import { WorkspaceCreationForm } from "./workspace-creation-form";
 import { ScopeCleanupPage } from "./scope-cleanup";
 import { ProjectManagement } from "./project-management";
@@ -634,6 +637,7 @@ const navigation = [
   ["teams", Users, "本機團隊", "Local teams"],
   ["skills", BookOpen, "專案技能", "Project methods"],
   ["solutions", Layers, "業務方案", "Business methods"],
+  ["tasks", FileText, "所有工作", "All tasks"],
   ["notifications", Bell, "工作通知", "Work notifications"],
   ["conversations", MessageSquare, "我的會話", "Your conversations"],
   ["memories", Brain, "記憶與偏好", "Memory & preferences"],
@@ -670,7 +674,7 @@ function Shell() {
       document.removeEventListener("keydown", escape);
     };
   }, []);
-  const location = useLocation();
+  const location = useLocation(), shellNavigate=useNavigate();
   const published = useClientContent(w.me?.user.id, w.tenant, w.project);
   const navConfig = (path: string) =>
     published.items.find(
@@ -709,7 +713,7 @@ function Shell() {
           </span>
           <select
             value={w.tenant}
-            onChange={(e) => w.setTenant(e.target.value)}
+            onChange={(e) => {w.setTenant(e.target.value);shellNavigate("/app");}}
             aria-label={t("切換企業", "Switch workspace")}
           >
             {w.me.memberships.map((m: any) => (
@@ -797,7 +801,7 @@ function Shell() {
           </span>
           <select
             value={w.project}
-            onChange={(e) => w.setProject(e.target.value)}
+            onChange={(e) => {w.setProject(e.target.value);shellNavigate("/app");}}
             aria-label={t("目前專案", "Current project")}
           >
             {w.projects.map((p) => (
@@ -819,7 +823,7 @@ function Shell() {
           <ErrorNotice error={w.error} />
           <OwnershipTransferNotice key={w.me.user.id+":"+w.tenant}/>
           <PublishedContent />
-          {w.base || ["/app/projects", "/app/members", "/app/devices", "/app/usage", "/app/settings"].includes(location.pathname.replace(/\/+$/, "")) ? (
+          <WorkScopeGate>{w.base || ["/app/projects", "/app/members", "/app/devices", "/app/usage", "/app/settings"].includes(location.pathname.replace(/\/+$/, "")) ? (
             <Routes>
               <Route index element={<LocalAgentWorkspace />} />
               <Route path="solutions" element={<Solutions />} />
@@ -836,6 +840,7 @@ function Shell() {
               />
               <Route path="memories" element={<Memories />} />
               <Route path="projects" element={<Projects />} />
+              <Route path="tasks" element={<TaskDirectory />} />
               <Route path="tasks/:id" element={<TaskDetail />} />
               <Route path="assets" element={<Assets />} />
               <Route path="files" element={<CloudFiles />} />
@@ -864,7 +869,7 @@ function Shell() {
                 </Link>
               }
             />
-          )}
+          )}</WorkScopeGate>
         </main>
         <footer className="app-footer">
           <span>COPYPASTE · MAKE ROOM FOR POSSIBILITY.</span>
@@ -1227,7 +1232,7 @@ function Workbench() {
       </section>
       <section className="section-block">
         <div className="section-title">
-          <h2>{t("最近的工作", "Your recent work")}</h2>
+          <h2>{t("最近的工作", "Your recent work")}</h2><Link className="text-link" to={scopedWorkPath("/app/tasks",w.tenant,w.project)}>{t("查看所有工作","View all tasks")}<ArrowRight size={15}/></Link>
           <span className="muted small-text">
             {data?.items.length ?? 0} {t("項工作", "tasks")}
           </span>
@@ -1319,7 +1324,7 @@ function Roles() {
   );
 }
 function TaskTable({ items }: { items: any[] }) {
-  const { t } = useI18n();
+  const { t } = useI18n(),work=useWorkLocation();
   return (
     <div className="table-scroll">
       <table>
@@ -1336,7 +1341,7 @@ function TaskTable({ items }: { items: any[] }) {
           {items.map((r) => (
             <tr key={r.id}>
               <td>
-                <Link className="table-link" to={"/app/tasks/" + r.id}>
+                <Link className="table-link" to={work.path("/app/tasks/" + r.id)} state={work.returnState}>
                   {r.title}
                   <ArrowUpRight size={14} />
                 </Link>
@@ -1458,9 +1463,7 @@ function TaskDetail() {
   if (loading && !data) return <Loading />;
   return (
     <>
-      <Link to="/app" className="text-link">
-        ← {t("返回工作台", "Back to workspace")}
-      </Link>
+      <WorkBackLink/>
       <ErrorNotice error={error} />
       {data && <ProjectConfigurationSummary taskId={id} />}
       {data && (

@@ -1,3 +1,31 @@
+<!-- integrated-round-198 -->
+
+## 198 · 0.7.10 · 本机工作与成果接续
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-198/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 从下载页安装Setup或运行Portable，在系统浏览器授权。无边框且无Electron菜单；选择本机目录和角色，完整本机权限必须客户原生确认，可主动撤销。Codex在客户电脑读取文件、执行命令和写出成果，AI及计费经公司服务器。
+2. 全部任务目录可查找云端和本机工作；「在本机打开」准确回到当前电脑原有本机会话。原会话、成果面板、所选标签与范围内返回状态保留，当前文件预览仍重新核对授权和真实路径，撤权后不能继续读取。
+3. 从桌面打开云端工作只接受资源ID，由主进程构建固定公司域名及企业／项目链接，不接受任意网址。浏览器公司请求继续使用独立内存会话，不带Cookie且禁止跳转；本机Codex推理仍走公司网关。
+4. 本轮0.7.9实际包完成PKCE、私人文件往返、完整权限、本机PowerShell读写result.json、真实HK$0.032730结算、撤权和目录返回。指令及输出折叠且退出码可见，没有根滚动条或横向溢出。最终0.7.10修正目录金额为「已记录用量」，完成真实PKCE、原任务目录与返回复验；全部主进程和原生运行时与0.7.9逐字节相同，没有重复付费任务。当前GIF来自最终目录审阅；0.7.9完成执行截图及回执保留。完整任意应用／离线／休眠兼容仍需验收。
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[All tasks / 查找工作]
+  C --> D[Verify current authority / 當前授權]
+  D --> E[Original session and results / 原會話與成果]
+  E --> F[Return with context / 保留上下文返回]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/198-v3-desktop-directory.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v3-desktop-directory.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v3-desktop-directory.mp4)
+
+下方保留早期版本與完整安裝說明。本輪交付不代表全部原始需求已驗收。
+
 <!-- integrated-round-197 -->
 
 ## 197 · 0.7.8 · 本机连接与执行审阅
