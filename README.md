@@ -1,3 +1,43 @@
+<!-- integrated-round-203 -->
+
+## 203 · 0.5.12 · 专业输入与可靠交付
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-203/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 登录→选择企业／项目→新工作→选择默认助手或专业角色→填写实际目标→明确选择文件、拖放／粘贴图片，或从素材库固定共享文件的当前版本→查看交付范围与最高预算→明确开始。上传中禁止提交，未点开始不创建模型任务。
+
+2. 草稿按使用者／企业／项目隔离；切换范围卸载旧输入。付费发送前精确保存并读回原请求与幂等键，存储失败即阻止；结果未知时锁定正文、附件和预算，刷新后明确继续原请求，避免换键重复收费。退出清理本标签页草稿。普通私人会话保持原私人附件范围。
+
+3. Marketing insights的完整证据复核使用宽版弹窗、容器重排和完整Comparison标签；按期间及口径核对精确数据，免费导出HTML／CSV／JSON。两主题、两语种与多宽度实际页面及同字节原生导出通过；物理OS缩放和全部键盘矩阵仍开放。
+
+4. 下面203-v4页面／交互来自实际部署Web，附件和CSV明确为受控验收材料。688项相关用例中当前Web68通过；HTTP/1.1原域名TLS为本次QA连接范围，默认HTTP/2超时单独保留。
+
+```mermaid
+flowchart LR
+ A[Sign in and project] --> B[Default assistant or specialist]
+ B --> C[Explicit upload and pinned version]
+ C --> D[Scope-bound draft and budget]
+ D --> E[Persist exact body and key]
+ E --> F[Create once or explicitly resume original]
+ F --> G[Actual delivery and customer review]
+```
+
+当前开放项：marketing-analyst未交付图表文件，技术状态succeeded不计为通过；通用工具错误的准确原因尚未验证。公网默认HTTP/2停滞及一次任务租约根因也保持开放。详细见证据报告，不声称完整产品验收通过。
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/203-v4-specialist-intake-live.png)
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/workmate-203-v4-specialist-intake-live.gif)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-203-v4-specialist-intake-live.mp4)
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/203-v4-marketing-review-live.png)
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/workmate-203-v4-marketing-review-live.gif)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-203-v4-marketing-review-live.mp4)
+
+以下保留完整架构、安装与使用细则。
+
 <!-- integrated-round-202 -->
 
 ## 202 · 0.5.11 · 营销证据复核、交付与请求恢复

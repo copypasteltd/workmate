@@ -206,7 +206,7 @@ export function Empty({
     </div>
   );
 }
-export function Modal({title,children,onClose}:{title:string;children:ReactNode;onClose:()=>void}){
+export function Modal({title,children,onClose,size="standard"}:{title:string;children:ReactNode;onClose:()=>void;size?:"standard"|"wide"}){
  const close=useRef(onClose);close.current=onClose;
  const dialog=useRef<HTMLElement>(null),{t}=useI18n();
  useEffect(()=>{
@@ -227,7 +227,7 @@ export function Modal({title,children,onClose}:{title:string;children:ReactNode;
   const frame=requestAnimationFrame(()=>{if(modalFocusStack.at(-1)===element)(focusable()[0]??element).focus();});
   return()=>{cancelAnimationFrame(frame);document.removeEventListener("keydown",key);const index=modalFocusStack.indexOf(element);if(index>=0)modalFocusStack.splice(index,1);if(--modalBodyLocks===0)document.body.style.overflow=previousBodyOverflow;if(previous?.isConnected&&(!modalFocusStack.length||modalFocusStack.at(-1)?.contains(previous)))previous.focus();else modalFocusStack.at(-1)?.focus();};
  },[]);
- return <div className="modal-backdrop" onMouseDown={event=>{if(event.target===event.currentTarget&&modalFocusStack.at(-1)===dialog.current)close.current();}}><section ref={dialog} className="modal" role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}><header><h2>{title}</h2><button type="button" className="icon-button" onClick={onClose} aria-label={t("關閉","Close")}><X size={20}/></button></header>{children}</section></div>;
+ return <div className="modal-backdrop" onMouseDown={event=>{if(event.target===event.currentTarget&&modalFocusStack.at(-1)===dialog.current)close.current();}}><section ref={dialog} className={"modal"+(size==="wide"?" modal-wide":"")} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}><header><h2>{title}</h2><button type="button" className="icon-button" onClick={onClose} aria-label={t("關閉","Close")}><X size={20}/></button></header>{children}</section></div>;
 }
 
 export function PageHeader({

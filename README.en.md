@@ -1,3 +1,43 @@
+<!-- integrated-round-203 -->
+
+## 203 · 0.5.12 · Pinned specialist intake and reliable delivery
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-203/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Sign in→choose workspace/project→New work→default assistant or specialist→state the actual goal→explicitly attach/drop/paste files/images or pin a current shared library version→review deliverables/maximum budget→Start. Pending upload blocks dispatch; no model task starts before confirmation.
+
+2. Drafts belong to actor/tenant/project and remount on scope change. Persist and read back the exact body/idempotency key before paid dispatch; storage failure blocks it. Unknown outcomes lock prompt, attachments and budget; reload allows explicit continuation of the same original request, preventing a new key/charge. Sign-out clears this tab. Ordinary private conversations retain private attachment scope.
+
+3. Marketing insights uses a wide responsive evidence dialog with complete Comparison labels. Review exact periods/scopes and export free HTML/CSV/JSON. Actual two-theme/two-language/multi-width views and identical native exports pass. Physical OS zoom and complete keyboard matrices stay open.
+
+4. 203-v4 screenshots/interaction below use actual deployed Web with explicitly controlled QA attachments/CSV. Current Web68 pass among688 related qualified cases. QA uses original-domain TLS over HTTP/1.1; default HTTP/2 timeout evidence remains separate.
+
+```mermaid
+flowchart LR
+ A[Sign in and project] --> B[Default assistant or specialist]
+ B --> C[Explicit upload and pinned version]
+ C --> D[Scope-bound draft and budget]
+ D --> E[Persist exact body and key]
+ E --> F[Create once or explicitly resume original]
+ F --> G[Actual delivery and customer review]
+```
+
+Open delivery: marketing-analyst returned no chart files; technical succeeded does not qualify it. The exact generic tool failure remains unverified. Default public HTTP/2 stalls and one worker-lease investigation also stay open. See the evidence report; no full-product acceptance is claimed.
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/203-v4-specialist-intake-live.png)
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/workmate-203-v4-specialist-intake-live.gif)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-203-v4-specialist-intake-live.mp4)
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/203-v4-marketing-review-live.png)
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/workmate-203-v4-marketing-review-live.gif)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-203-v4-marketing-review-live.mp4)
+
+The complete architecture, setup and usage guide follows.
+
 <!-- integrated-round-202 -->
 
 ## 202 · 0.5.11 · Evidence review, delivery and safe request recovery

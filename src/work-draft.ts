@@ -1,4 +1,5 @@
 import { browserCrypto as crypto } from "./browser-crypto";
+import { validWorkAttachments, type WorkAttachment } from "./work-attachments";
 /** Tab-local customer drafts. Storage never supplies identity or authority. */
 export type WorkScope = { user: string; tenant: string; project: string };
 export type WorkValues = {
@@ -9,6 +10,7 @@ export type WorkSeed = Partial<Pick<WorkValues, "role" | "prompt">>;
 export type Submission = { key: string; identity: string; endpoint: string; body: Record<string, unknown> };
 export type WorkDraft = {
   version: 1; id: string; scope: WorkScope; saved: number; values: WorkValues;
+  attachments?: WorkAttachment[];
   pending?: Submission; accepted?: string; acceptedIdentity?: string; removed?: boolean;
 };
 type Store = Pick<Storage, "getItem" | "setItem" | "removeItem" | "key" | "length">;
@@ -37,6 +39,7 @@ function scopeKey(scope: WorkScope) {
   return prefix + [scope.user, scope.tenant, scope.project].map(encodeURIComponent).join(":");
 }
 const sameScope = (a: WorkScope, b: WorkScope) => a.user === b.user && a.tenant === b.tenant && a.project === b.project;
+export function assertWorkScope(draft: WorkDraft, scope: WorkScope) { if (!sameScope(draft.scope, scope)) throw new Error("WORK_SCOPE_CHANGED"); }
 const plain = (value: unknown): value is Record<string, unknown> => !!value && typeof value === "object" && !Array.isArray(value);
 function validValues(value: unknown): value is WorkValues {
   if (!plain(value) || Object.keys(value).length !== Object.keys(blankWork).length) return false;
@@ -68,7 +71,8 @@ export function loadWorkDraft(scope: WorkScope): WorkDraft | null {
     if (raw.length > 256000) throw new Error();
     const draft = JSON.parse(raw) as WorkDraft;
     if (draft.version !== 1 || !sameScope(draft.scope, scope) || !/^[a-f0-9-]{36}$/.test(draft.id)
-      || !Number.isFinite(draft.saved) || !validValues(draft.values)) throw new Error();
+      || !Number.isFinite(draft.saved) || !validValues(draft.values)
+      || (draft.attachments !== undefined && !validWorkAttachments(draft.attachments))) throw new Error();
     if (draft.pending && !validSubmission(draft.pending, draft)) throw new Error();
     if (draft.accepted && !/^\/app\/(tasks|conversations)\/[a-f0-9-]{36}$/.test(draft.accepted)) throw new Error();
     if (draft.removed !== undefined && draft.removed !== true) throw new Error();
@@ -82,11 +86,34 @@ export function newWorkDraft(scope: WorkScope, seed: WorkSeed = {}): WorkDraft {
   const previous = loadWorkDraft(scope);
   if (previous?.pending) throw new Error("WORK_SUBMISSION_LOCKED");
   if (previous?.acceptedIdentity) remove(previous.acceptedIdentity);
-  const draft: WorkDraft = { version: 1, id: crypto.randomUUID(), scope: { ...scope }, saved: Date.now(), values: { ...blankWork, ...seed } };
+  const draft: WorkDraft = { version: 1, id: crypto.randomUUID(), scope: { ...scope }, saved: Date.now(), values: { ...blankWork, ...seed }, attachments: [] };
   if (!validValues(draft.values)) throw new Error("WORK_DRAFT_INVALID");
   return draft;
 }
 export function saveWorkDraft(draft: WorkDraft) { return write(scopeKey(draft.scope), JSON.stringify(draft)); }
+export function updateWorkAttachments(draft: WorkDraft, attachments: WorkAttachment[]) {
+  if (draft.pending || draft.accepted || draft.removed) throw new Error("WORK_SUBMISSION_LOCKED");
+  if (!validWorkAttachments(attachments)) throw new Error("WORK_ATTACHMENTS_INVALID");
+  const next = {...draft, saved:Date.now(), attachments:attachments.map(item=>({...item}))};
+  saveWorkDraft(next); return next;
+}
+/** This gate is mandatory immediately before dispatch, including an explicit replay. */
+export function durableWorkSubmission(draft: WorkDraft): WorkDraft {
+  if (!draft.pending || !validSubmission(draft.pending, draft)) throw new Error("WORK_SUBMISSION_INVALID");
+  const current=loadWorkDraft(draft.scope);
+  if (!current || current.id!==draft.id || current.accepted || current.removed
+    || JSON.stringify(current.values)!==JSON.stringify(draft.values)
+    || JSON.stringify(current.attachments??[])!==JSON.stringify(draft.attachments??[])
+    || (current.pending && JSON.stringify(current.pending)!==JSON.stringify(draft.pending))) throw new Error("WORK_DRAFT_CHANGED");
+  const raw=JSON.stringify(draft), store=storage();
+  try {
+    if (!store) throw new Error();
+    store.setItem(draft.pending.identity,draft.pending.key);
+    store.setItem(scopeKey(draft.scope),raw);
+    if (store.getItem(draft.pending.identity)!==draft.pending.key || store.getItem(scopeKey(draft.scope))!==raw) throw new Error();
+  } catch { throw new Error("WORK_STORAGE_REQUIRED"); }
+  memory.set(draft.pending.identity,draft.pending.key);memory.set(scopeKey(draft.scope),raw);return draft;
+}
 export function updateWorkDraft(draft: WorkDraft, changes: Partial<WorkValues>) {
   if (draft.pending || draft.accepted || draft.removed) throw new Error("WORK_SUBMISSION_LOCKED");
   const next = { ...draft, saved: Date.now(), values: { ...draft.values, ...changes } };
@@ -108,13 +135,14 @@ function canonical(value: unknown): unknown {
 }
 export async function prepareWorkSubmission(draft: WorkDraft, body: Record<string, unknown>): Promise<WorkDraft> {
   if (draft.accepted || draft.removed) return draft;
-  if (draft.pending) return draft; // Retry exactly the original customer-confirmed request.
+  if (draft.pending) return durableWorkSubmission(draft); // Retry exactly the original customer-confirmed request.
   const endpoint = workEndpoint(draft.scope, draft.values.role);
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(canonical([draft.scope, endpoint, body]))));
   const name = attempts + [...new Uint8Array(digest)].map(v => v.toString(16).padStart(2, "0")).join("");
   const current = loadWorkDraft(draft.scope);
-  if (!current || current.id !== draft.id || current.accepted || current.removed || JSON.stringify(current.values) !== JSON.stringify(draft.values)) throw new Error("WORK_DRAFT_CHANGED");
-  if (current.pending) return current;
+  if (!current || current.id !== draft.id || current.accepted || current.removed || JSON.stringify(current.values) !== JSON.stringify(draft.values)
+    || JSON.stringify(current.attachments??[]) !== JSON.stringify(draft.attachments??[])) throw new Error("WORK_DRAFT_CHANGED");
+  if (current.pending) return durableWorkSubmission(current);
   const prior = read(name);
   if (prior && !/^[a-f0-9-]{36}$/.test(prior)) throw new Error("WORK_DRAFT_INVALID");
   const key = prior ?? crypto.randomUUID();
@@ -123,7 +151,7 @@ export async function prepareWorkSubmission(draft: WorkDraft, body: Record<strin
   const pending: Submission = { key, identity: name, endpoint, body: { ...body, ...(draft.values.role === "assistant" ? { client_message_id: key } : {}) } };
   const next = { ...draft, saved: Date.now(), pending };
   if (!validSubmission(pending, next)) throw new Error("WORK_SUBMISSION_INVALID");
-  saveWorkDraft(next); return next;
+  return durableWorkSubmission(next);
 }
 export function rejectWorkSubmission(draft: WorkDraft) {
   const { pending: _, ...next } = draft;

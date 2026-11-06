@@ -6,17 +6,18 @@ import {useI18n} from "./ui";
 import "./work-composer.css";
 import {browserCrypto as crypto} from "./browser-crypto";
 
-export type WorkAttachment={id:string;assetId:string;name:string};
+import type {WorkAttachment} from "./work-attachments";
+export type {WorkAttachment} from "./work-attachments";
 type Transfer={id:string;file:File};
 /** Scope-keyed by the caller. Server authorization remains authoritative. */
-export function WorkComposer({value,onChange,attachments,onAttachments,conversationId,disabled=false,onReady,minLength=5,placeholder}:{
+export function WorkComposer({value,onChange,attachments,onAttachments,conversationId,disabled=false,onReady,minLength=5,placeholder,label,currentVersionsOnly=false,sharedSourcesOnly=false}:{
  value:string;onChange:(text:string)=>void;attachments:WorkAttachment[];onAttachments:(items:WorkAttachment[])=>void;
- conversationId?:string;disabled?:boolean;onReady?:(ready:boolean)=>void;minLength?:number;placeholder?:string;
+ conversationId?:string;disabled?:boolean;onReady?:(ready:boolean)=>void;minLength?:number;placeholder?:string;label?:string;currentVersionsOnly?:boolean;sharedSourcesOnly?:boolean;
 }){
  const {t}=useI18n(),uid=useId(),input=useRef<HTMLInputElement>(null),text=useRef<HTMLTextAreaElement>(null);
  const [queue,setQueue]=useState<Transfer[]>([]),[library,setLibrary]=useState(false),[drag,setDrag]=useState(false),[notice,setNotice]=useState("");
  const alive=useRef(true),current=useRef(attachments),transfers=useRef<Transfer[]>([]);current.current=attachments;
- const changeQueue=(items:Transfer[])=>{transfers.current=items;setQueue(items);};
+ const changeQueue=(items:Transfer[])=>{transfers.current=items;callbacks.current.onReady?.(items.length===0);setQueue(items);};
  const callbacks=useRef({onAttachments,onReady});callbacks.current={onAttachments,onReady};
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  useEffect(()=>{callbacks.current.onReady?.(queue.length===0);},[queue.length]);
@@ -35,7 +36,7 @@ export function WorkComposer({value,onChange,attachments,onAttachments,conversat
  return <div className={"work-composer"+(drag?" is-dragging":"")} onDragOver={e=>{if(e.dataTransfer.types.includes("Files")){e.preventDefault();if(!disabled)setDrag(true);}}}
   onDragLeave={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node))setDrag(false);}}
   onDrop={e=>{if(e.dataTransfer.files.length){e.preventDefault();setDrag(false);select([...e.dataTransfer.files]);}}}>
-  <label className="sr-only" htmlFor={uid}>{t("你的訊息","Your message")}</label>
+  <label className="sr-only" htmlFor={uid}>{label??t("你的訊息","Your message")}</label>
   <textarea id={uid} ref={text} value={value} disabled={disabled} minLength={minLength} maxLength={30000} required rows={4}
    placeholder={placeholder??t("描述要完成的工作，拖入檔案，或輸入 @ 引用專案素材…","Describe your work, drop files, or type @ to reference project materials…")}
    onChange={e=>{onChange(e.target.value);if(e.target.value.endsWith("@"))setLibrary(true);}}
@@ -47,7 +48,7 @@ export function WorkComposer({value,onChange,attachments,onAttachments,conversat
    <span className="muted small-text">{t("可貼上圖片 · 固定檔案版本","Paste images · pinned file versions")}</span>
   </div>
   {notice&&<p className="notice" role="status">{notice}</p>}
-  {library&&!disabled&&!queue.length&&<div className="composer-library"><CloudAssetPicker shared={false} required={false} onChange={()=>{}} onReady={()=>{}} onReference={item=>{add(item);if(value.endsWith("@"))onChange(value+item.name+" ");text.current?.focus();}}/></div>}
+  {library&&!disabled&&!queue.length&&<div className="composer-library"><CloudAssetPicker shared={sharedSourcesOnly} required={false} currentVersionsOnly={currentVersionsOnly} onChange={()=>{}} onReady={()=>{}} onReference={item=>{add(item);if(value.endsWith("@"))onChange(value+item.name+" ");text.current?.focus();}}/></div>}
   {!!queue.length&&<div className="composer-transfers" aria-label={t("附件上傳","Attachment uploads")}>
    <p className="muted small-text">{conversationId?t("檔案只加入目前私人會話；傳送後才交給助手。","Files join this private conversation. Send the message to give them to your assistant."):t("檔案加入此專案；有專案權限的成員可使用。","Files join this project and are accessible to its authorized members.")}</p>
    {queue.map((entry,index)=><section key={entry.id}><header><Upload size={15}/><strong>{entry.file.name}</strong><button type="button" className="text-button" disabled={disabled} onClick={()=>changeQueue(transfers.current.filter(x=>x.id!==entry.id))}>{t("移除","Remove")}</button></header>
