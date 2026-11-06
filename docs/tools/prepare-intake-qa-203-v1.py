@@ -1,0 +1,39 @@
+from pathlib import Path
+R=Path(__file__).resolve().parents[2];S=R/'dev/copypaste-delivery/scripts'
+p=S/'qualify-marketing-review-202-v3.mjs';text=p.read_text('utf-8')
+text=text.replace('acceptance-202','acceptance-203').replace('stage:202','stage:203').replace('202-v3','203-v1')
+text=text.replace('Actual built Web/native PostgreSQL with explicitly simulated imported business data; current authority, all13scopes, exact downloads and controlled lost-response/reload recovery. Not a real model narrative or professional acceptance.','Actual built203 Web and native PostgreSQL. Controlled isolated data, current-source attachments, scope remount, durable pre-dispatch storage and committed-but-lost task response. No real model, customer data or professional quality claim.')
+text=text.replace("import {untilMotion} from './motion-ui-journey-201-v2.mjs';","import {untilMotion} from './motion-ui-journey-201-v2.mjs';\nimport {assertReviewLayout} from './review-layout-203-v1.mjs';")
+text=text.replace("await s.app.listen({host:'127.0.0.1',port:4310});","const other=await historyOk(s,owner,'POST','/v1/tenants',{name:'Other scope203',project_name:'Separate input scope'});await s.app.listen({host:'127.0.0.1',port:4310});")
+a=text.index(' let submitted;');b=text.index('assert.deepEqual(report.javascript_errors,[]);',a)
+text=text[:a]+''' report.review_layout=await assertReviewLayout(page,dialog,review);await dialog.getByRole('button',{name:'Close',exact:true}).click();
+ const open=async()=>{await page.evaluate(()=>document.dispatchEvent(new CustomEvent('cp:new-task',{detail:{role:'frontend'}})));const d=page.getByRole('dialog',{name:'Start something new',exact:true});await d.waitFor();return d;};
+ let intake=await open();await intake.getByLabel('What would you like to make?',{exact:true}).fill('Create a useful offline prototype from the selected controlled sample.');
+ let releasePart;const blockedPart=new Promise(r=>releasePart=r);await page.route('**/uploads/*/parts/0',async route=>{await blockedPart;await route.continue();});
+ await intake.getByLabel('Choose attachments',{exact:true}).setInputFiles({name:'controlled-intake-203.txt',mimeType:'text/plain',buffer:Buffer.from('CONTROLLED QA SAMPLE / COPYPASTE / pinned version203')});
+ await intake.getByRole('region',{name:'Attachment uploads',exact:true}).count().catch(()=>0);
+ await untilMotion(()=>intake.getByRole('button',{name:/^Start task/}).isDisabled(),Boolean);releasePart();
+ const attached=intake.getByRole('list',{name:'Pinned attachments for this message',exact:true});await attached.getByText('controlled-intake-203.txt',{exact:true}).waitFor();await page.unroute('**/uploads/*/parts/0');
+ await untilMotion(()=>intake.getByRole('button',{name:/^Start task/}).isEnabled(),Boolean);pass('Actual file upload synchronously blocks dispatch and pins its completed current version');
+ await intake.getByRole('button',{name:'Reference materials',exact:true}).click();await intake.locator('.composer-library select').waitFor();
+ const validity=await intake.locator('form').evaluate(e=>({valid:e.checkValidity(),optional:[...e.querySelectorAll('.composer-library select')].map(s=>({required:s.required,value:s.value}))}));assert.equal(validity.valid,true);assert.ok(validity.optional.every(s=>!s.required));report.optional_reference=validity;
+ await intake.getByRole('button',{name:'Reference materials',exact:true}).click();
+ await page.getByLabel('Switch workspace',{exact:true}).selectOption(other.tenant.id);await page.getByLabel('Current project',{exact:true}).selectOption(other.project.id);
+ intake=page.getByRole('dialog',{name:'Start something new',exact:true});await untilMotion(()=>intake.getByLabel('What would you like to make?',{exact:true}).inputValue(),v=>v==='');assert.equal(await intake.getByRole('list',{name:'Pinned attachments for this message',exact:true}).count(),0);
+ await page.getByLabel('Switch workspace',{exact:true}).selectOption(w.tenant.id);await page.getByLabel('Current project',{exact:true}).selectOption(w.project.id);
+ intake=page.getByRole('dialog',{name:'Start something new',exact:true});await intake.getByText('controlled-intake-203.txt',{exact:true}).waitFor();assert.match(await intake.getByLabel('What would you like to make?',{exact:true}).inputValue(),/offline prototype/);pass('Switching company/project remounts the input and restores only its own original draft and attachment');
+ recording=new WorkmateRecording('web','specialist-intake','203-v1',()=>page.screenshot({type:'jpeg',quality:74,mask:[page.locator('.user-chip strong')],maskColor:'#d7d8df'}),'Actual built203 intake with explicitly controlled isolated QA file, scope remount and durable paid-request recovery',delivery);await recording.start();
+ await page.screenshot({path:path.join(web,'assets/screenshots/203-v1-specialist-intake-controlled.png'),animations:'disabled',mask:[page.locator('.user-chip strong')],maskColor:'#d7d8df'});
+ const posts=[];page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname===base+'/tasks')posts.push({key:r.headers()['idempotency-key'],body:r.postDataJSON()});});
+ await page.evaluate(()=>{window.__qaSetItem203=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k.startsWith('cp_work_'))throw Error('Controlled unavailable storage203');return window.__qaSetItem203.call(this,k,v);};});
+ await intake.getByRole('button',{name:/^Start task/}).click();await intake.getByText(/browser could not safely retain/).waitFor();assert.equal(posts.length,0);pass('Actual browser storage failure prevents the paid POST before dispatch');
+ await page.evaluate(()=>{Storage.prototype.setItem=window.__qaSetItem203;delete window.__qaSetItem203;});
+ let submitted;await page.route('**/tasks',async route=>{if(route.request().method()!=='POST'||new URL(route.request().url()).pathname!==base+'/tasks')return route.continue();const r=await route.fetch();assert.equal(r.status(),202);submitted=await r.json();await route.abort('connectionreset');});
+ await intake.getByRole('button',{name:/^Start task/}).click();await intake.getByRole('button',{name:'Retry original submission',exact:true}).waitFor();await page.unroute('**/tasks');assert.ok(submitted?.id);assert.equal(posts.length,1);assert.equal(posts[0].body.dependencies[0].resource_ids.length,1);
+ await page.reload({waitUntil:'domcontentloaded'});intake=await open();await intake.getByRole('button',{name:'Retry original submission',exact:true}).waitFor();assert.equal(await intake.getByLabel('What would you like to make?',{exact:true}).isDisabled(),true);await intake.getByText('controlled-intake-203.txt',{exact:true}).waitFor();
+ await intake.getByRole('button',{name:'Retry original submission',exact:true}).click();await intake.waitFor({state:'hidden'});assert.equal(posts.length,2);assert.deepEqual(posts[1],posts[0]);await page.waitForURL(u=>u.pathname==='/app/tasks/'+submitted.id);report.original_task_id=submitted.id;report.exact_same_request_key=true;
+ const counts=(await s.db.control.query("SELECT (SELECT count(*) FROM tasks WHERE tenant_id=$1)::int tasks,(SELECT count(*) FROM ledger WHERE tenant_id=$1 AND kind='charge')::int charges,(SELECT count(*) FROM current_ai_provider_requests WHERE tenant_id=$1)::int calls,(SELECT count(*) FROM reservations WHERE tenant_id=$1)::int reservations",[w.tenant.id])).rows[0];assert.deepEqual(counts,{tasks:1,charges:0,calls:0,reservations:1});report.counters=counts;pass('Committed lost response survives reload, retains exact pinned version/body/key and creates one task/reservation with no model calls');
+ report.intake_recording=await recording.stop();recording=null;
+ '''+text[b:]
+out=S/'qualify-specialist-intake-203-v1.mjs';assert not out.exists();out.write_text(text,encoding='utf-8',newline='\n')
+print('Prepared actual DOM upload/scope/storage/replay and existing evidence-review verification; no test executed.')

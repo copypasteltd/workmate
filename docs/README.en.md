@@ -1,3 +1,9 @@
+<!-- integrated-round-203 -->
+
+203: Pinned specialist attachments, scope-bound drafts and durable paid-request recovery, wide actual native review, source-qualified688 related cases and preserved server networking. All original acceptance and failed outcomes remain explicit.
+
+[交付 / Delivery](quality/integrated-round-203/README.md) · [102条 / Scope](quality/integrated-round-203/requirements-102.md) · [实现 / Implementation](development/203-specialist-intake-and-runtime.md)
+
 <!-- integrated-round-202 -->
 
 Round202: searchable source/report history, complete exact evidence review, bounded HTML/CSV/JSON delivery and persisted same-request recovery.677 relevant test cases, actual clients/downloads and unchanged server network fingerprints; all original acceptance remains traceable.
