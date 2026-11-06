@@ -1,3 +1,5 @@
+import { readReviewBlob } from "./review-download";
+import { clearAnalysisPending } from "./analysis-request-state";
 import {clearMotionDrafts} from "./motion-draft-state";
 import { redactWorkspaceAttempts } from "./workspace-creation";
 import { saveScopeArchive } from "./scope-export-download";
@@ -23,7 +25,7 @@ export function endClientSession(broadcast = true) {
   ++sessionRevision;
   csrfToken = "";
   redactWorkspaceAttempts();
-  if (broadcast) { clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); clearDesignDrafts(); clearMotionDrafts(); clearWorkspaceSaves(); }
+  if (broadcast) { clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); clearDesignDrafts(); clearMotionDrafts(); clearAnalysisPending(); clearWorkspaceSaves(); }
   window.dispatchEvent(new Event("copypaste:session-ended"));
   if (broadcast)
     localStorage.setItem(
@@ -85,6 +87,7 @@ declare global {
         path: string,
         name: string,
         tenantId?: string,
+        options?: { body: unknown },
       ) => Promise<unknown>;
       openExternal: (url: string) => Promise<void>;
       authorizeConnector: (state: string) => Promise<void>;
@@ -189,10 +192,12 @@ export const post = (path: string, body: unknown = {}, requestKey?: string) =>
   });
 export const patch = (path: string, body: unknown) =>
   api(path, { method: "PATCH", body: JSON.stringify(body) });
+export const downloadPost = (path: string, filename: string, body: unknown, tenantId?: string) => download(path, filename, tenantId, body);
 export async function download(
   path: string,
   filename: string,
   tenantId?: string,
+  postBody?: unknown,
 ) {
   const revision = sessionRevision;
   const current = () => {
@@ -200,7 +205,7 @@ export async function download(
   };
   if (window.copyPasteBridge) {
     let result: unknown;
-    try { result = await window.copyPasteBridge.download(path, filename, tenantId); }
+    try { result = await window.copyPasteBridge.download(path, filename, tenantId, postBody === undefined ? undefined : { body: postBody }); }
     catch { current(); throw connectionFailure(); }
     current();
     return { saved: !(result && typeof result === "object" && "saved" in result && result.saved === false) };
@@ -209,7 +214,8 @@ export async function download(
   try {
     response = await clientFetch(base + path, {
       credentials: "include",
-      ...(tenantId ? { headers: { "X-Tenant-ID": tenantId } } : {}),
+      ...(postBody === undefined ? {} : { method: "POST", body: JSON.stringify(postBody) }),
+      headers: { ...(tenantId ? { "X-Tenant-ID": tenantId } : {}), ...(postBody === undefined ? {} : { "Content-Type": "application/json", "X-CSRF-Token": csrfToken }) },
     });
   } catch (error) { current(); throw error; }
   current();
@@ -217,11 +223,13 @@ export async function download(
     endClientSession(false);
     throw new ApiError("AUTH_REQUIRED", "Your session ended. Sign in again.", 401);
   }
+  if (!response.ok && postBody !== undefined) { const problem = await clientJson(response, "POST"); current(); throw new ApiError(problem?.error?.code ?? "DOWNLOAD_UNAVAILABLE", problem?.error?.message ?? "Download unavailable", response.status); }
   if (!response.ok) throw new ApiError("DOWNLOAD_UNAVAILABLE", "Download unavailable", response.status);
   let blob: Blob;
-  try { blob = await response.blob(); }
+  try { blob = postBody === undefined ? await response.blob() : await readReviewBlob(response, current); }
   catch { current(); throw connectionFailure(); }
   current();
+  if (postBody !== undefined) { const expected = response.headers.get("x-content-sha256"); if (!expected || !/^[a-f0-9]{64}$/.test(expected) || blob.size > 8 * 1024 ** 2) throw new ApiError("DOWNLOAD_INTEGRITY", "Invalid review download", 422); const bytes = await blob.arrayBuffer(), actual = [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))].map(n => n.toString(16).padStart(2, "0")).join(""); current(); if (actual !== expected) throw new ApiError("DOWNLOAD_INTEGRITY", "Review download checksum mismatch", 422); }
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

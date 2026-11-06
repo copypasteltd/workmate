@@ -30,6 +30,7 @@ export class NativeSession {
     promise: Promise<NativeTokens>;
   };
   constructor(private readonly store: SessionStore) {}
+  generation(): number { return this.revision; }
   private exclusive<T>(fn: () => Promise<T>): Promise<T> {
     const result = this.tail.then(fn, fn);
     this.tail = result.catch(() => {});

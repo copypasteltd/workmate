@@ -141,6 +141,7 @@ import {
   Field,
 } from "./ui";
 import { WorkspaceProvider, useWorkspace } from "./context";
+import { AnalysisHistoryControls, useAnalysisHistory } from "./analysis-history";
 import "./style.css";
 import "./desktop-layout.css";
 import { DesktopUpdatesCard, DesktopUpdatesPage } from "./desktop-updates";
@@ -2200,7 +2201,8 @@ function Analytics() {
     [selected, setSelected] = useState<string | null>(null),
     [imported, setImported] = useState<string | null>(null),
     [err, setErr] = useState<Error | null>(null);
-  const { data, error, loading } = useData(w.base + "/analytics", refresh);
+  const history = useAnalysisHistory(w.base + "/analytics", refresh);
+  const { data, error, loading } = history;
   const selectedId = selected ?? data?.items[0]?.id;
   const detail = useData(
     selectedId ? w.base + "/analytics/" + selectedId : null,
@@ -2254,6 +2256,7 @@ function Analytics() {
           </div>
         }
       />
+      <AnalysisHistoryControls history={history} label={t("搜尋歷史數據集", "Search dataset history")}/>
       <ErrorNotice error={error ?? detail.error ?? err} />
       {imported && (
         <div className="notice success" role="status">

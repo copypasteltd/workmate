@@ -14,6 +14,7 @@ import { pauseNativeHosts, resumeNativeHosts, waitNativeHosts } from "./native-h
 import { chromeRegistration } from "./chrome-registration.js";
 import { inspectInstaller, prepareInstaller } from "./update-native.js";
 import { saveDownload } from "./download.js";
+import { analysisDownloadBody } from "./analysis-download.js";
 import { PublicationMediaProxy, publicationMediaScheme } from "./publication-media.js";
 import { attachWindowControls, windowAppearance } from "./window-controls.js";
 import { exclusive } from "./lock.js";
@@ -890,12 +891,13 @@ async function createWindow() {
       );
     return shell.openExternal(connectorLaunchURL(config.web, state));
   });
-  ipcMain.handle("asset:download", async (e, p, name, tenantId?: string) => {
+  ipcMain.handle("asset:download", async (e, p, name, tenantId?: string, options?: unknown) => {
+    const body = analysisDownloadBody(p, options), method = body === undefined ? "GET" : "POST";
     if (
       !window ||
       e.sender !== window.webContents ||
       e.senderFrame !== window.webContents.mainFrame ||
-      !rendererApiOperation(p, "GET")
+      !rendererApiOperation(p, method)
     )
       throw new Error(
         "Downloads are restricted to authorized product operations in the application frame",
@@ -911,21 +913,27 @@ async function createWindow() {
     // Validate the server path before any native selection, then stream to the
     // selected destination without retaining a large media file in JS memory.
     const url = apiURL(config.api, p);
+    const t = await tokens(), generation = nativeSession.generation();
+    const current = () => { if (generation !== nativeSession.generation()) throw new Error("Sign-in changed during download"); };
     const dest = await dialog.showSaveDialog({
       defaultPath: path.basename(String(name)),
     });
     if (dest.canceled || !dest.filePath) return { saved: false };
-    const t = await tokens();
+    current();
     const r = await companyFetch(url, {
+      method,
+      ...(body === undefined ? {} : { body }),
       headers: {
         Authorization: `Bearer ${t.access_token}`,
+        ...(body === undefined ? {} : { "Content-Type": "application/json" }),
         ...(tenantId ? { "X-Tenant-ID": tenantId } : {}),
       },
       redirect: "error",
     });
     if (r.status === 401) await nativeSession.invalidate(t.access_token);
     const scopeArchive = /^\/v1\/tenants\/[a-f0-9-]{36}(?:\/projects\/[a-f0-9-]{36})?\/export-package$/i.test(new URL(url).pathname);
-    return saveDownload(r, dest.filePath, scopeArchive ? 17 * 1024 ** 3 : undefined);
+    if (body !== undefined && !/^[a-f0-9]{64}$/.test(r.headers.get("x-content-sha256") ?? "")) { await r.body?.cancel(); throw new Error("Review checksum is missing"); }
+    return saveDownload(r, dest.filePath, body !== undefined ? 8 * 1024 ** 2 : scopeArchive ? 17 * 1024 ** 3 : undefined, current);
   });
   ipcMain.handle("asset:upload", async (_e, p, body) => {
     if (typeof body?.base64 !== "string" || body.base64.length > 34_000_000)

@@ -4,6 +4,12 @@ import { Link } from "react-router-dom";
 import { api, post, download } from "./api";
 import { ErrorNotice, Field, Loading, Modal, useData, useI18n } from "./ui";
 
+import { AnalysisReview } from "./analysis-review";
+import { AnalysisHistoryControls, useAnalysisHistory } from "./analysis-history";
+import { useWorkspace } from "./context";
+import { metricLabel } from "./analysis-review-model";
+import { readAnalysisPending, keepAnalysisPending, forgetAnalysisPending, uncertainAnalysisResult, type AnalysisPending } from "./analysis-request-state";
+
 const metricNames = [
   "spend",
   "impressions",
@@ -40,7 +46,8 @@ export function MarketingReports({
     [refresh, setRefresh] = useState(0),
     [open, setOpen] = useState(false),
     [selected, setSelected] = useState<string | null>(null);
-  const list = useData(base + "/analysis/reports", refresh, 5000);
+  const list = useAnalysisHistory(base + "/analysis/reports", refresh, 5000);
+  useEffect(() => { setSelected(null); }, [base, list.page, list.search]);
   const id = selected ?? list.data?.items[0]?.id;
   const detail = useData(
     id ? base + "/analysis/reports/" + id : null,
@@ -128,6 +135,7 @@ export function MarketingReports({
           "Choose snapshots and comparison dates. Your analyst interprets calculated facts in a private report, keeping currencies, sources and attribution separate.",
         )}
       </p>
+      <AnalysisHistoryControls history={list} label={t("搜尋私人報告", "Search private reports")} />
       <ErrorNotice error={list.error ?? detail.error ?? error} />
       {list.loading && !list.data ? (
         <Loading />
@@ -225,62 +233,7 @@ export function MarketingReports({
                     </section>
                   </div>
                 )}
-                <div className="report-scopes">
-                  {data.calculation.groups.map((g: any, i: number) => (
-                    <details key={i}>
-                      <summary>
-                        {g.scope.source} ·{" "}
-                        {g.scope.account_id ||
-                          t("未確認帳戶", "Unconfirmed account")}{" "}
-                        · {g.scope.currency} · {g.periods.current.row_count}{" "}
-                        {t("行", "rows")}
-                      </summary>
-                      <p>
-                        {t("歸因", "Attribution")}:{" "}
-                        {g.scope.attribution_definition} ·{" "}
-                        {t("轉化", "Conversions")}:{" "}
-                        {g.scope.conversion_definition}
-                      </p>
-                      <div className="table-scroll">
-                        <table>
-                          <thead>
-                            <tr>
-                              <th>{t("指標", "Metric")}</th>
-                              <th>{t("目前", "Current")}</th>
-                              {g.periods.comparison && (
-                                <th>{t("比較期", "Comparison")}</th>
-                              )}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {data.spec.metrics.map((metric: string) => (
-                              <tr key={metric}>
-                                <td>{metric}</td>
-                                <td>
-                                  {g.periods.current.summary.exact[metric] ??
-                                    t("未知", "Unknown")}
-                                </td>
-                                {g.periods.comparison && (
-                                  <td>
-                                    {g.periods.comparison.summary.exact[
-                                      metric
-                                    ] ?? t("未知", "Unknown")}
-                                  </td>
-                                )}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </details>
-                  ))}
-                </div>
-                <p className="notice">
-                  {t(
-                    "檔案未證明平台取數截止時間。不同平台的轉化沒有統一去重；沒有匯率轉換或因果推斷。",
-                    "The file does not prove the platform extraction cutoff. Conversions are not deduplicated across platforms; no currency conversion or causal inference is applied.",
-                  )}
-                </p>
+                <AnalysisReview key={report.id} calculation={data.calculation} base={base} tenant={tenant} />
                 <div className="row-actions">
                   <button
                     className="button secondary"
@@ -390,30 +343,37 @@ function CreateReport({
   onClose: () => void;
   onCreated: (r: any) => void;
 }) {
-  const { t } = useI18n(),
-    available = datasets.filter((d) => d.spec_hash),
-    initial = dates(available.slice(0, 1));
+  const { t, locale } = useI18n(), { me } = useWorkspace();
+  const scope = [me.user.id, tenant, project].join(":");
+  const saved = useRef(readAnalysisPending(scope));
+  const original = saved.current?.body.analysis;
+  const [pending, setPending] = useState<AnalysisPending | null>(saved.current);
+  const pendingRef = useRef<AnalysisPending | null>(saved.current);
+  const sourceHistory = useAnalysisHistory(base + "/analytics");
+  const available = (sourceHistory.data?.items ?? datasets).filter((d: any) => d.spec_hash);
+  const [picked, setPicked] = useState<any[]>(datasets.filter(d => (original?.snapshot_ids ?? [datasets.find(d => d.spec_hash)?.id]).includes(d.id)));
+  const initial = dates(available.slice(0, 1));
   const [selected, setSelected] = useState<string[]>(
-      available.slice(0, 1).map((d) => d.id),
+      original?.snapshot_ids ?? available.slice(0, 1).map((d: any) => d.id),
     ),
-    [prompt, setPrompt] = useState(""),
-    [from, setFrom] = useState(initial[0] || ""),
-    [to, setTo] = useState(initial.at(-1) || ""),
+    [prompt, setPrompt] = useState(original?.prompt ?? ""),
+    [from, setFrom] = useState(original?.date_from ?? initial[0] ?? ""),
+    [to, setTo] = useState(original?.date_to ?? initial.at(-1) ?? ""),
     [timezone, setTimezone] = useState(
-      available[0]?.timezone || "Asia/Hong_Kong",
+      original?.timezone ?? available[0]?.timezone ?? "Asia/Hong_Kong",
     ),
-    [comparison, setComparison] = useState(false),
-    [previousFrom, setPreviousFrom] = useState(""),
-    [previousTo, setPreviousTo] = useState(""),
-    [metrics, setMetrics] = useState(["spend", "ctr", "cpc", "cpa", "roas"]),
-    [dimensions, setDimensions] = useState<string[]>([]),
+    [comparison, setComparison] = useState(!!original?.comparison),
+    [previousFrom, setPreviousFrom] = useState(original?.comparison?.date_from ?? ""),
+    [previousTo, setPreviousTo] = useState(original?.comparison?.date_to ?? ""),
+    [metrics, setMetrics] = useState<string[]>(original?.metrics ?? ["spend", "ctr", "cpc", "cpa", "roas"]),
+    [dimensions, setDimensions] = useState<string[]>(original?.dimensions ?? []),
     [budget, setBudget] = useState("1.00"),
     [preview, setPreview] = useState<any>(null),
     [confirmed, setConfirmed] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState<unknown>(null);
   const saving = useRef(false),
-    requestKey = useRef(crypto.randomUUID()),
+    requestKey = useRef(saved.current?.key ?? crypto.randomUUID()),
     live = useRef(true);
   useEffect(() => {
     live.current = true;
@@ -441,6 +401,7 @@ function CreateReport({
     setError(null);
   };
   const change = (fn: () => void) => {
+    if (saving.current || pendingRef.current) return;
     invalidate();
     fn();
   };
@@ -454,36 +415,27 @@ function CreateReport({
         const p = await post(base + "/analysis/preview", spec);
         if (live.current) setPreview(p);
       } else {
-        if (!/^\d+(\.\d{1,6})?$/.test(budget))
-          throw new Error(
-            t("請輸入有效的 HKD 預算", "Enter a valid HKD budget"),
-          );
-        const [a, b = ""] = budget.split("."),
-          amount = BigInt(a) * 1000000n + BigInt(b.padEnd(6, "0"));
-        if (amount <= 0n || amount > 1000000000000n)
-          throw new Error(
-            t(
-              "預算須大於零並在支援範圍內",
-              "Budget must be positive and within the supported limit",
-            ),
-          );
-        const agent = await post(base + "/analysis/assistant", {});
-        const r = await api("/v1/reports", {
-          method: "POST",
-          headers: {
-            "X-Tenant-ID": tenant,
-            "Idempotency-Key": requestKey.current,
-          },
-          body: JSON.stringify({
-            project_id: project,
-            agent_id: agent.id,
-            analysis: spec,
-            budget: { currency: "HKD", amount_micros: amount.toString() },
-          }),
-        });
-        if (live.current) onCreated(r);
+        let request = pendingRef.current;
+        if (!request) {
+          if (!preview || !confirmed) throw new Error(t("請先預覽並確認", "Preview and confirm first"));
+          if (!/^\d+(\.\d{1,6})?$/.test(budget)) throw new Error(t("請輸入有效的 HKD 預算", "Enter a valid HKD budget"));
+          const [a, b = ""] = budget.split("."), amount = BigInt(a) * 1000000n + BigInt(b.padEnd(6, "0"));
+          if (amount <= 0n || amount > 1000000000000n) throw new Error(t("預算超出支援範圍", "Budget is outside the supported range"));
+          const agent = await post(base + "/analysis/assistant", {});
+          if (!live.current) return;
+          request = { schema: 1, at: Date.now(), key: requestKey.current, body: { project_id: project, agent_id: agent.id, analysis: preview.spec, expected_calculation_sha256: preview.calculation_sha256, budget: { currency: "HKD", amount_micros: amount.toString() } } };
+          keepAnalysisPending(scope, request);
+          pendingRef.current = request; setPending(request);
+        }
+        const r = await api("/v1/reports", { method: "POST", headers: { "X-Tenant-ID": tenant, "Idempotency-Key": request.key }, body: JSON.stringify(request.body) });
+        forgetAnalysisPending(scope); pendingRef.current = null;
+        if (live.current) { setPending(null); onCreated(r); }
       }
     } catch (e) {
+      if (create && pendingRef.current && !uncertainAnalysisResult(e)) {
+        forgetAnalysisPending(scope); pendingRef.current = null; requestKey.current = crypto.randomUUID();
+        if (live.current) { setPending(null); setConfirmed(false); setPreview(null); }
+      }
       if (live.current) setError(e);
     } finally {
       saving.current = false;
@@ -505,7 +457,8 @@ function CreateReport({
         className="analysis-report-form"
       >
         <ErrorNotice error={error} />
-        <fieldset disabled={busy}>
+        {pending && <section className="review-pending" role="status"><h3>{t("繼續原報告申請", "Continue the original report request")}</h3><p>{t("上次結果尚未確認。來源、期間、預算和申請編號已固定；繼續只會查收或完成同一份報告，不會自動另開付費任務。", "The previous result is unconfirmed. Its sources, dates, budget and request identity are fixed. Continuing retrieves or completes the same report; it does not automatically start another paid task.")}</p><p>{pending.body.analysis.prompt}</p><p>{pending.body.analysis.date_from} → {pending.body.analysis.date_to} · {pending.body.analysis.timezone}</p><p>HKD {(BigInt(pending.body.budget.amount_micros) / 1000000n).toString()}.{(BigInt(pending.body.budget.amount_micros) % 1000000n).toString().padStart(6,"0")} · {t("最高預算", "Maximum budget")}</p><button type="button" className="button primary" disabled={busy} onClick={() => void run(true)}>{busy ? t("查收中…", "Checking…") : t("查收並繼續原申請", "Check & continue original request")}</button></section>}
+        <fieldset disabled={busy || !!pending}>
           <Field label={t("業務問題", "Business question")}>
             <textarea
               required
@@ -522,25 +475,31 @@ function CreateReport({
             <legend>
               {t("來源快照（最多十個）", "Source snapshots (up to ten)")}
             </legend>
-            {available.map((d) => (
+            <div className="review-selected">{picked.filter(d => selected.includes(d.id)).map(d => <button type="button" className="button secondary" key={d.id} onClick={() => change(() => setSelected(ids => ids.filter(id => id !== d.id)))}>{d.name} ×</button>)}</div>
+            <AnalysisHistoryControls history={sourceHistory} label={t("搜尋來源快照", "Search source snapshots")}/>
+            <ErrorNotice error={sourceHistory.error}/>
+            <div className="review-source-picker">
+            {available.map((d: any) => (
               <label className="checkbox-row" key={d.id}>
                 <input
                   type="checkbox"
                   checked={selected.includes(d.id)}
                   disabled={!selected.includes(d.id) && selected.length >= 10}
                   onChange={(e) =>
-                    change(() =>
+                    change(() => {
+                      setPicked(old => old.some(x => x.id === d.id) ? old : [...old, d]);
                       setSelected((old) =>
                         e.target.checked
                           ? [...old, d.id]
                           : old.filter((id) => id !== d.id),
-                      ),
-                    )
+                      );
+                    })
                   }
                 />
                 {d.name} · {d.currency}
               </label>
             ))}
+            </div>
           </fieldset>
           <div className="report-date-grid">
             <Field label={t("開始日期", "Start date")}>
@@ -618,7 +577,7 @@ function CreateReport({
                     )
                   }
                 />
-                {m}
+                {metricLabel(m, locale === "en")}
               </label>
             ))}
           </fieldset>
@@ -673,31 +632,7 @@ function CreateReport({
               className="report-preview"
               aria-label={t("報告預覽", "Report preview")}
             >
-              <h3>{t("確認分析範圍", "Confirm analysis scope")}</h3>
-              <p>
-                {preview.coverage.groups}{" "}
-                {t("個獨立口徑", "independent scopes")} ·{" "}
-                {preview.evidence.length}{" "}
-                {t("項數字證據", "numeric references")} ·{" "}
-                {preview.coverage.identical_facts_skipped}{" "}
-                {t("行相同資料已略過", "identical facts skipped")}
-              </p>
-              <ul>
-                {preview.groups.slice(0, 12).map((g: any, i: number) => (
-                  <li key={i}>
-                    {g.scope.source} · {g.scope.currency} ·{" "}
-                    {g.scope.account_id ||
-                      t("未確認帳戶", "Unconfirmed account")}{" "}
-                    · {g.periods.current.row_count} {t("行", "rows")}
-                  </li>
-                ))}
-              </ul>
-              <p>
-                {t(
-                  "來源的取數截止時間未知；缺失值保留未知，不推算跨平台統一轉化。",
-                  "Source extraction cutoff is unknown. Missing values stay unknown; no unified cross-platform conversions are inferred.",
-                )}
-              </p>
+              <AnalysisReview key={preview.calculation_sha256} calculation={preview} base={base} tenant={tenant} preview />
               <label className="checkbox-row">
                 <input
                   type="checkbox"

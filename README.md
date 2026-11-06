@@ -1,3 +1,36 @@
+<!-- integrated-round-202 -->
+
+## 202 · 0.7.15 · 营销证据复核、交付与请求恢复
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-202/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 下载Setup／Portable并在浏览器完成S256授权。最终0.7.15仍无边框／无Electron菜单；Codex0.163.0-alpha.11在客户本机运行，完整权限须明确授予且可撤销，AI请求仍走公司API。
+
+2. Marketing insights继续同一项目的复核流程，使用原生主进程保存。仅允许明确当前项目的复核POST路由、限定格式／摘要和请求大小；经保存对话框选择目标后，检查8MiB上限、长度、SHA及当前会话代次并原子写入，不开放任意POST或路径。
+
+3. 最终实际包已完成新S256授权、无边框／无菜单、13口径和三种原生保存；每个导出字节／SHA与Web一致。验收自动选择专属保存路径，真实主进程／IPC／公司请求未替换；该结果不等于OS安装或任意应用操作矩阵。固定本机Codex二进制摘要亦已核对。
+
+4. 本次Setup／Portable0.7.15和校验文件通过站点 /downloads/releases/20201/ 下载。旧版保留。受信签名按用户要求排除；完整机器／安装升级／长稳矩阵仍保留原验收范围。
+
+```mermaid
+flowchart LR
+ A[Download and S256 sign-in] --> B[Frameless local app]
+ B --> C[Local Codex and revocable permission]
+ B --> D[Authorized project evidence]
+ D --> E[Native save dialog]
+ E --> F[Session bounds and hash verified atomic save]
+```
+
+Actual deployed services with controlled acceptance CSV / 正式服务与明确验收CSV
+
+![Actual interface / 实际页面](assets/screenshots/202-v7-marketing-review-live.png)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-202-v7-marketing-review-live.mp4)
+
+![Actual interaction / 实际交互](assets/screenshots/workmate-202-v7-marketing-review-live.gif)
+
+以下保留完整架构、安装与使用细则。
+
 <!-- integrated-round-201 -->
 
 ## 201 · 0.7.14 · 影片製作與實際交付

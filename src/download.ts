@@ -9,7 +9,9 @@ export async function saveDownload(
   response: Response,
   destination: string,
   limit = 1024 * 1024 * 1024,
+  current: () => void = () => {},
 ) {
+  current();
   if (!response.ok || !response.body) throw new Error("Download unavailable");
   const declared = response.headers.get("content-length"),
     expectedHash = response.headers.get("x-content-sha256");
@@ -33,6 +35,7 @@ export async function saveDownload(
       Readable.fromWeb(response.body as any),
       new Transform({
         transform(chunk: Buffer, _encoding, done) {
+          try { current(); } catch (error) { done(error as Error); return; }
           bytes += chunk.length;
           if (bytes > limit) {
             done(new Error("Download exceeds limit"));
@@ -49,6 +52,7 @@ export async function saveDownload(
     if (expectedHash && digest.digest("hex") !== expectedHash)
       throw new Error("Download checksum mismatch");
     // The OS copy is bounded in memory and explicitly refuses existing files.
+    current();
     await copyFile(temporary, target, constants.COPYFILE_EXCL);
     return { saved: true, bytes };
   } finally {

@@ -1,3 +1,36 @@
+<!-- integrated-round-202 -->
+
+## 202 · 0.7.15 · Evidence review, delivery and safe request recovery
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-202/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Download Setup/Portable and complete S256 browser authorization. Final0.7.15 remains frameless with no Electron menu; pinned Codex0.163.0-alpha.11 runs locally. Full permission is explicit and revocable; AI uses company APIs.
+
+2. Continue the same project review in Marketing insights with native main-process saving. Only the exact authorized project review POST, formats/digest/bounded body are allowed. After the save dialog selects a destination, verify8MiB/length/SHA/current session generation and atomically save; no arbitrary POST/path is exposed.
+
+3. The actual final package completes fresh S256/no-menu/frameless checks,13-scope review and all three native saves matching Web bytes/hashes. QA automates only its owned save-dialog destination; actual main/IPC/company requests are unchanged. This does not qualify OS installation or arbitrary applications. Pinned local Codex binary hashes are verified.
+
+4. Setup/Portable0.7.15 and checksums are available at /downloads/releases/20201/ through the site. Older releases remain. Trusted signing stays excluded by user instruction; full machine/install/update/long-run matrices retain their original scope.
+
+```mermaid
+flowchart LR
+ A[Download and S256 sign-in] --> B[Frameless local app]
+ B --> C[Local Codex and revocable permission]
+ B --> D[Authorized project evidence]
+ D --> E[Native save dialog]
+ E --> F[Session bounds and hash verified atomic save]
+```
+
+Actual deployed services with controlled acceptance CSV / 正式服务与明确验收CSV
+
+![Actual interface / 实际页面](assets/screenshots/202-v7-marketing-review-live.png)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-202-v7-marketing-review-live.mp4)
+
+![Actual interaction / 实际交互](assets/screenshots/workmate-202-v7-marketing-review-live.gif)
+
+Earlier architecture, setup and complete use details remain below.
+
 <!-- integrated-round-201 -->
 
 ## 201 · 0.7.14 · Motion production and actual delivery
