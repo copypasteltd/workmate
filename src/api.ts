@@ -13,10 +13,19 @@ let sessionRevision = 0;
 // Explicit sign-out and a completed sign-in still invalidate older auth flows.
 let authenticationRevision = 0;
 export const clientSessionGeneration = () => sessionRevision;
+// Non-secret browser-history partition. Never a credential or server authority.
+let navigationEpoch = "";
+export function clientNavigationEpoch() {
+ if(navigationEpoch)return navigationEpoch;
+ try{const saved=sessionStorage.getItem("cp_navigation_epoch");if(saved&&/^[a-f\d-]{36}$/i.test(saved))navigationEpoch=saved;}catch{/* Memory-only fallback. */}
+ if(!navigationEpoch)rotateNavigationEpoch();return navigationEpoch;
+}
+function rotateNavigationEpoch(){navigationEpoch=crypto.randomUUID();try{sessionStorage.setItem("cp_navigation_epoch",navigationEpoch);}catch{/* Memory-only fallback. */}}
 export function endClientSession(
   broadcast = true,
   reason: "sign_out" | "expired" = "sign_out",
 ) {
+  rotateNavigationEpoch();
   ++sessionRevision;
   if (reason === "sign_out") ++authenticationRevision;
   csrfToken = "";
@@ -29,6 +38,7 @@ export function endClientSession(
     );
 }
 export function changeClientSession() {
+  rotateNavigationEpoch();
   ++sessionRevision;
   ++authenticationRevision;
   csrfToken = "";

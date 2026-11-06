@@ -1,3 +1,33 @@
+<!-- integrated-round-198 -->
+
+## 198 · 0.5.6 · 查找工作与准确返回
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-198/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 登录后选择企业、项目、专业角色及材料，提交云端Codex工作。从侧栏「全部任务」进入完整任务目录，按标题／状态／执行位置／工作模式查找；下一页通过当前权限签名游标读取。
+2. 点击任务查看成果、文件、变更、执行、网页、活动和费用；返回保留本账户原筛选和页码。所选标签及仍可用的文件版本按任务恢复，查询文字不会写入浏览器地址栏，凭证及任务正文不放入导航状态。
+3. 原会话明确定位指定任务，完整审阅后返回仍是同一任务和标签。通知、成果和会话链接先确认目标企业及项目，权限未确认前不加载目标业务页；手动切换工作区离开旧链接，旧账户迟到请求不能改变新工作。
+4. 实际线上验证375／768／1024／1440宽度、浅深色、键盘操作、浏览器前进后退和无效项目提示。下载页已更新到Desktop0.7.10及Extension0.5.7，三个包均完成公开完整下载和SHA-256核对。
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[All tasks / 查找工作]
+  C --> D[Verify current authority / 當前授權]
+  D --> E[Original session and results / 原會話與成果]
+  E --> F[Return with context / 保留上下文返回]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/198-v6-task-directory-light.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v6-work-directory.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v6-work-directory.mp4)
+
+![Dark theme / 深色頁面](assets/screenshots/198-v6-task-directory-dark.png)
+
+下方保留早期版本與完整安裝說明。本輪交付不代表全部原始需求已驗收。
+
 <!-- integrated-round-197 -->
 
 ## 197 · 0.5.4 · 统一任务审阅

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Bell, Check, RefreshCw } from "lucide-react";
+import {useDirectoryNavigation,useWorkLocation,useScopeLifetime,navigationIdentity} from "./work-navigation";
+import {pageForward,scopedWorkPath} from "./work-navigation-state";
 import { patch } from "./api";
 import { useWorkspace } from "./context";
 import {
@@ -55,18 +57,17 @@ export function Notifications() {
   const w = useWorkspace(),
     { t } = useI18n(),
     nav = useNavigate();
+  const browse=useDirectoryNavigation("notifications",false),view=browse.value,work=useWorkLocation(),capture=useScopeLifetime(navigationIdentity(w));
+  const unread=view.archived,cursors=view.pages;
+  const setUnread=(archived:boolean)=>browse.save({...view,archived,pages:[""]});
+  const setCursors=(pages:string[])=>browse.save({...view,pages});
   const [refresh, setRefresh] = useState(0),
-    [unread, setUnread] = useState(false),
-    [cursors, setCursors] = useState<(string | null)[]>([null]),
-    [scope, setScope] = useState(w.tenant),
     [error, setError] = useState<Error | null>(null),
     [busy, setBusy] = useState("");
   useEffect(() => {
-    setCursors([null]);
-    setScope(w.tenant);
     setError(null);
   }, [w.tenant]);
-  const cursor = scope === w.tenant ? cursors[cursors.length - 1] : null;
+  const cursor = cursors.at(-1);
   const base = `/v1/tenants/${w.tenant}/notifications`,
     url =
       base +
@@ -76,20 +77,23 @@ export function Notifications() {
   const data = useData<Inbox>(url, refresh, 15000),
     inbox = data.error ? null : data.data;
   async function change(n: WorkNotification, read: boolean, open = false) {
+    const current=capture();
+    if(busy)return;
     setBusy(n.id);
     setError(null);
     try {
       await patch(base + "/" + n.id, { read });
+      if(!current())return;
       setRefresh((v) => v + 1);
       document.dispatchEvent(new Event("cp:notifications"));
       if (open) {
-        w.setProject(n.project_id);
-        nav("/app/tasks/" + n.task_id);
+        if(!w.projects.some(p=>p.id===n.project_id))throw new Error(t("目前已無法存取通知中的專案。","This notification project is no longer accessible."));
+        nav(scopedWorkPath("/app/tasks/"+n.task_id,w.tenant,n.project_id),{state:work.returnState});
       }
     } catch (e) {
-      setError(e as Error);
+      if(current())setError(e as Error);
     } finally {
-      setBusy("");
+      if(current())setBusy("");
     }
   }
   return (
@@ -105,7 +109,7 @@ export function Notifications() {
           <button
             className="button"
             onClick={() => {
-              setCursors([null]);
+              setCursors([""]);
               setRefresh((v) => v + 1);
             }}
           >
@@ -127,7 +131,7 @@ export function Notifications() {
             className={unread === value ? "active" : ""}
             onClick={() => {
               setUnread(value);
-              setCursors([null]);
+              setCursors([""]);
             }}
           >
             {value ? t("未讀", "Unread") : t("全部", "All")}
@@ -160,7 +164,7 @@ export function Notifications() {
               <div className="row-actions">
                 <button
                   className="text-button"
-                  disabled={busy === n.id}
+                  disabled={!!busy}
                   onClick={() => void change(n, !n.read)}
                 >
                   <Check size={15} />
@@ -170,7 +174,7 @@ export function Notifications() {
                 </button>
                 <button
                   className="button"
-                  disabled={busy === n.id}
+                  disabled={!!busy}
                   onClick={() => void change(n, true, true)}
                 >
                   {t("查看工作", "Open task")}
@@ -196,7 +200,7 @@ export function Notifications() {
         <button
           className="button"
           disabled={cursors.length < 2 || data.loading}
-          onClick={() => setCursors((v) => v.slice(0, -1))}
+          onClick={() => setCursors(cursors.slice(0,-1))}
         >
           {t("上一頁", "Previous page")}
         </button>
@@ -205,7 +209,7 @@ export function Notifications() {
           disabled={!inbox?.next_cursor || data.loading}
           onClick={() => {
             if (inbox?.next_cursor)
-              setCursors((v) => [...v, inbox.next_cursor]);
+              try{browse.save(pageForward(view,inbox.next_cursor));}catch(e){setError(e as Error);}
           }}
         >
           {t("下一頁", "Next page")}

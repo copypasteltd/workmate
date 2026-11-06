@@ -1,3 +1,5 @@
+import {useDirectoryNavigation,useWorkLocation,WorkBackLink,useConversationTaskSelection} from "./work-navigation";
+import {pageForward} from "./work-navigation-state";
 import {conversationAttempt,completeConversationAttempt} from "./conversation-attempt";
 import { ProjectConfigurationSummary } from "./project-configuration";
 import { ConversationDeliveryDownload } from "./delivery-quality";
@@ -571,13 +573,12 @@ export function Conversations() {
   const w = useWorkspace(),
     { t } = useI18n(),
     nav = useNavigate();
-  const [query, setQuery] = useState(""),
-    [archived, setArchived] = useState(false),
-    [open, setOpen] = useState(false),[refresh,setRefresh]=useState(0),
-    [pages,setPages]=useState<string[]>([""]),[pagingScope,setPagingScope]=useState("");
-  const identity=String(w.me?.user?.id??"")+":"+w.base+":"+archived+":"+query;
-  useEffect(()=>{setPages([""]);setPagingScope(identity);},[identity]);
-  const stack=pagingScope===identity?pages:[""],cursor=stack.at(-1)!;
+  const browse=useDirectoryNavigation("conversations"),view=browse.value,work=useWorkLocation();
+  const query=view.q,archived=view.archived,stack=view.pages,cursor=stack.at(-1)!;
+  const setQuery=(q:string)=>browse.save({...view,q,pages:[""]});
+  const setArchived=(archived:boolean)=>browse.save({...view,archived,pages:[""]});
+  const [open,setOpen]=useState(false),[refresh,setRefresh]=useState(0),[pageError,setPageError]=useState<Error|null>(null);
+  const setPages=(pages:string[])=>{setPageError(null);browse.save({...view,pages});};
   const data = useData(
     `${w.base}/conversations?archived=${archived}&q=${encodeURIComponent(query)}&limit=40${cursor?"&cursor="+encodeURIComponent(cursor):""}`,
     refresh,
@@ -625,14 +626,15 @@ export function Conversations() {
           {t("僅你可見", "Only you")}
         </span>
       </div>
-      <ErrorNotice error={data.error} />
+      <ErrorNotice error={data.error??pageError} />
+      {data.error&&<button className="button secondary" onClick={()=>setPages([""])}>{t("重新載入第一頁","Reload first page")}</button>}
       {data.loading && !data.data ? (
         <Loading />
       ) : data.data?.items.length ? (
         <div className="conversation-list">
           {data.data.items.map((c: any) => (
             <Link
-              to={"/app/conversations/" + c.id}
+              to={work.path("/app/conversations/" + c.id)} state={work.returnState}
               key={c.id}
               className="card conversation-list-item"
             >
@@ -677,19 +679,20 @@ export function Conversations() {
       <nav className="row-actions" aria-label={t("會話分頁", "Conversation pages")}>
         <button className="button secondary" disabled={data.loading||stack.length===1} onClick={()=>setPages(stack.slice(0,-1))}>{t("上一頁會話", "Previous conversations")}</button>
         <span role="status">{t("第 ", "Page ")}{stack.length}{t(" 頁", "")}</span>
-        <button className="button secondary" disabled={data.loading||!!data.error||!data.data?.next_cursor} onClick={()=>{if(data.data?.next_cursor)setPages([...stack,data.data.next_cursor]);}}>{t("下一頁會話", "Next conversations")}</button>
+        <button className="button secondary" disabled={data.loading||!!data.error||!data.data?.next_cursor} onClick={()=>{try{if(data.data?.next_cursor)browse.save(pageForward(view,data.data.next_cursor));}catch(e){setPageError(e as Error);}}}>{t("下一頁會話", "Next conversations")}</button>
         <button className="button quiet" disabled={data.loading} onClick={()=>{setPages([""]);setRefresh(n=>n+1);}}>{t("重新整理會話", "Refresh conversations")}</button>
       </nav>
       {open && (
         <NewConversation
           onClose={() => setOpen(false)}
-          onSaved={(id) => nav("/app/conversations/" + id)}
+          onSaved={(id) => nav(work.path("/app/conversations/" + id),{state:work.returnState})}
         />
       )}
     </>
   );
 }
 export function RecentConversations() {
+  const work=useWorkLocation();
   const w = useWorkspace(),
     { t } = useI18n(),
     data = useData(w.base + "/conversations");
@@ -705,7 +708,7 @@ export function RecentConversations() {
       {data.data?.items.length ? (
         <div className="conversation-strip">
           {data.data.items.slice(0, 3).map((c: any) => (
-            <Link className="card" key={c.id} to={"/app/conversations/" + c.id}>
+            <Link className="card" key={c.id} to={work.path("/app/conversations/" + c.id)} state={work.returnState}>
               <MessageSquare size={20} />
               <h3>{c.name}</h3>
               <p className="muted small-text">{c.agent_name}</p>
@@ -744,22 +747,22 @@ export function ConversationDetail() {
     [budget, setBudget] = useState("20"),
     [error, setError] = useState<Error | null>(null);
   const pending = useRef<{ fingerprint: string; payload: any } | null>(null);
-  const [selectedTaskId,setSelectedTaskId]=useState("");
+  const {selected:selectedTaskId,setSelected:setSelectedTaskId}=useConversationTaskSelection(id??"");
+  const work=useWorkLocation();
   const [attachments,setAttachments]=useState<WorkAttachment[]>([]),[attachmentsReady,setAttachmentsReady]=useState(true),
     [sending,setSending]=useState(false),[uncertain,setUncertain]=useState(false);
   const account=String(w.me?.user?.id??""),endpoint=w.base+"/conversations/"+id+"/messages",identity=account+":"+endpoint;
   const currentIdentity=useRef(identity),lifetime=useRef(0),alive=useRef(false);
   currentIdentity.current=identity;
   useEffect(()=>{alive.current=true;const revision=++lifetime.current;
-    pending.current=null;setSelectedTaskId("");setBody("");setError(null);setAttachments([]);setAttachmentsReady(true);setSending(false);setUncertain(false);
+    pending.current=null;setBody("");setError(null);setAttachments([]);setAttachmentsReady(true);setSending(false);setUncertain(false);
     return()=>{alive.current=false;if(lifetime.current===revision)++lifetime.current;};
   },[identity]);
   const data = useData(w.base + "/conversations/" + id, refresh, 3000),
     agents = useData(w.base + "/agents", refresh);
   const c = data.data,
     agent = agents.data?.items.find((a: any) => a.id === c?.agent_id),
-    active = c?.tasks.find((task:any)=>task.id===selectedTaskId) ??
-      c?.tasks.slice().reverse().find((task:any)=>["queued","running","paused","awaiting_approval","reconciling","needs_input"].includes(task.status)) ?? c?.tasks.at(-1);
+    active = selectedTaskId?c?.tasks.find((task:any)=>task.id===selectedTaskId):(c?.tasks.slice().reverse().find((task:any)=>["queued","running","paused","awaiting_approval","reconciling","needs_input"].includes(task.status)) ?? c?.tasks.at(-1));
   async function update(fields: unknown) {
     try {
       await patch(w.base + "/conversations/" + id, {
@@ -774,9 +777,8 @@ export function ConversationDetail() {
   }
   return (
     <>
-      <Link className="text-link" to="/app/conversations">
-        ← {t("我的會話", "Your conversations")}
-      </Link>
+      <WorkBackLink fallback="/app/conversations"/>
+      {c&&selectedTaskId&&!active&&<p role="status" className="card work-location-notice">{t("連結指定的工作目前不在此會話內，或已無法存取。請從會話工作清單重新選擇。","The linked task is unavailable in this conversation. Select an accessible task from the conversation list.")}</p>}
       <ErrorNotice error={data.error ?? error} />
       {c && <ProjectConfigurationSummary taskId={active?.id} compact />}
       {!c ? (
@@ -794,7 +796,7 @@ export function ConversationDetail() {
               <div className="row-actions">
                 <Link
                   className="button secondary"
-                  to={"/app/files?conversation=" + id}
+                  to={work.path("/app/files?conversation=" + id)}
                 >
                   {t("會話檔案", "Conversation files")}
                 </Link>
@@ -872,7 +874,7 @@ export function ConversationDetail() {
                       {m.task_id && (
                         <Link
                           className="text-link"
-                          to={"/app/tasks/" + m.task_id}
+                          to={work.path("/app/tasks/" + m.task_id)} state={work.returnState}
                         >
                           {t("查看工作與費用", "View task and usage")}
                           <ArrowUpRight size={14} />
@@ -900,6 +902,7 @@ export function ConversationDetail() {
               </div>
               {c.tasks.length>0 && <Field label={t("選擇要查看或補充資料的工作","Select a task to view or provide inputs")}>
                 <select aria-label={t("目前選中的工作","Selected task")} value={active?.id??""} onChange={e=>setSelectedTaskId(e.target.value)}>
+                  {!active&&<option value="" disabled>{t("請選擇會話中的工作","Select a conversation task")}</option>}
                   {c.tasks.map((task:any)=><option key={task.id} value={task.id}>{task.title} · {task.status} · {task.id.slice(0,8)}</option>)}
                 </select>
               </Field>}

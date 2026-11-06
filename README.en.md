@@ -1,3 +1,33 @@
+<!-- integrated-round-198 -->
+
+## 198 · 0.5.6 · Find work and return precisely
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-198/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Sign in, select an organization/project, specialist and materials, then submit cloud Codex work. Open All tasks to find work by title/status/execution location/mode; subsequent pages use a cursor bound to current authority.
+2. Review Results, Files, Changes, Execution, Browser, Activity and Usage. Returning retains the original account-scoped filters/page. Task tabs and still-available file versions restore without putting query text in the browser address bar or credentials/task bodies in navigation state.
+3. An original conversation selects the exact requested task and preserves that task/tab through full review. Work links verify organization/project before mounting target pages. Manual scope changes leave old links; late requests from an old account cannot navigate current work.
+4. Live checks explicitly assert 375/768/1024/1440 widths, light/dark themes, keyboard access, browser history and unavailable-project feedback. Downloads now provide Desktop 0.7.10 and Extension 0.5.7; all three packages pass complete public download and SHA-256 checks.
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[All tasks / 查找工作]
+  C --> D[Verify current authority / 當前授權]
+  D --> E[Original session and results / 原會話與成果]
+  E --> F[Return with context / 保留上下文返回]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/198-v6-task-directory-light.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v6-work-directory.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v6-work-directory.mp4)
+
+![Dark theme / 深色頁面](assets/screenshots/198-v6-task-directory-dark.png)
+
+Earlier sections retain previous release/setup history. Current delivery does not close full original acceptance.
+
 <!-- integrated-round-197 -->
 
 ## 197 · 0.5.4 · Consistent task review
