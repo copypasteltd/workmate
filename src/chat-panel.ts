@@ -153,6 +153,7 @@ export class ChatPanel {
     el("chat-history-archived-label").textContent=t("已封存", "Archived");
     el("chat-history-previous").textContent=t("上一頁", "Previous");el("chat-history-next").textContent=t("下一頁", "Next");
     el("chat-history-page").textContent=t("第 ", "Page ")+s.historyPages.length+t(" 頁", "");
+    el("chat-history-notice").textContent=s.historyNotice;el("chat-history-notice").hidden=!s.historyNotice;
     const browsing=s.loading||s.historyLoading;
     search.disabled=browsing;el<HTMLInputElement>("chat-history-archived").disabled=browsing;
     if(el<HTMLInputElement>("chat-history-archived").dataset.applied!==String(s.historyArchived)){el<HTMLInputElement>("chat-history-archived").checked=s.historyArchived;el<HTMLInputElement>("chat-history-archived").dataset.applied=String(s.historyArchived);}

@@ -1,3 +1,31 @@
+<!-- integrated-round-198 -->
+
+## 198 · 0.5.7 · Side Panel and restored history
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-198/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Download/unzip the ZIP and load its directory in Chrome developer mode. The toolbar action opens the actual right browser Side Panel with ChatGPT-style conversation/input/attachments. The agent executes in the company cloud.
+2. Complete company Web PKCE, select an organization/project and explicitly choose/drop files or paste images. Only authorized materials upload; the extension receives no arbitrary local-filesystem access.
+3. History search/archive/page state uses the existing serialized storage queue with account/scope isolation. Reopening reads fresh server data. Expired cursors return to page one without losing pending receipts, current conversation or selected task. History failures have a separate nonblocking notice.
+4. Actual toolbar/Side Panel, PKCE, CSV drop/image paste, two private uploads, filter recovery after native document reload and 360px width all pass. This is an unpacked ZIP release; Chrome Web Store publication is not claimed.
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[All tasks / 查找工作]
+  C --> D[Verify current authority / 當前授權]
+  D --> E[Original session and results / 原會話與成果]
+  E --> F[Return with context / 保留上下文返回]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/198-v1-side-panel.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v1-side-panel.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v1-side-panel.mp4)
+
+Earlier sections retain previous release/setup history. Current delivery does not close full original acceptance.
+
 <!-- integrated-round-197 -->
 
 ## 197 · 0.5.6 · Browser side-panel workspace

@@ -1,3 +1,4 @@
+import {historyView} from "./history-view.js";
 /** Cloud conversation state. No local Agent, filesystem paths or model keys. */
 export interface ChatScope { actor: string; tenant: string; project: string }
 export interface Attachment {
@@ -37,6 +38,7 @@ export class ConversationState {
   historyQuery = "";
   historyArchived = false;
   historyLoading = false;
+  historyNotice = "";
   private historyRevision = 0;
   conversation: any = null;
   projectConfiguration: any = null;
@@ -66,14 +68,14 @@ export class ConversationState {
   private notify() { this.io.changed(); }
   private persist(s: ChatScope) {
     // Serialize writes so a slow earlier response cannot restore a cleared receipt.
-    const value = structuredClone({ conversationId: this.conversation?.id ?? null, pending: this.pending ?? null, creation: this.creation ?? null, selectedTaskId:this.selectedTaskId });
+    const value = structuredClone({ conversationId: this.conversation?.id ?? null, pending: this.pending ?? null, creation: this.creation ?? null, selectedTaskId:this.selectedTaskId, history:{q:this.historyQuery,archived:this.historyArchived,pages:this.historyPages} });
     const work = this.storageTail.catch(() => {}).then(() => this.io.write(this.storageKey(s), value));
     this.storageTail = work;
     return work;
   }
   reset() {
     ++this.generation; this.scope = undefined; this.agents = []; this.history = [];
-    this.historyNext = null; this.historyPages = [""]; this.historyQuery = ""; this.historyArchived = false; this.historyLoading = false; ++this.historyRevision;
+    this.historyNext = null; this.historyPages = [""]; this.historyQuery = ""; this.historyArchived = false; this.historyLoading = false; this.historyNotice=""; ++this.historyRevision;
     this.conversation = null; this.attachments = []; this.draft = ""; this.agentId = "";this.selectedTaskId="";
     this.projectConfiguration = null; this.projectConfigurationTaskId = "";
     this.loading = false; this.sending = false; this.unavailable = false; this.pending = undefined;
@@ -90,15 +92,30 @@ export class ConversationState {
     this.notify();
     try {
       await this.storageTail.catch(() => {});
-      const [agents, history, saved, brief] = await Promise.all([
+      const [agents, saved, brief] = await Promise.all([
         this.io.request(s, chatBase(s) + "/agents"),
-        this.io.request(s, chatBase(s) + "/conversations"), this.io.read(this.storageKey(s)),
+        this.io.read(this.storageKey(s)),
         this.io.request(s, chatBase(s) + "/project-configuration"),
       ]);
       if (!this.current(g)) return;
       this.acceptBrief(brief);
       this.agents = agents.items.filter((a: any) => a.enabled && a.content_state === "active");
-      this.history = history.items; this.historyNext = history.next_cursor ?? null;
+      const restored=historyView(saved?.history);
+      if(restored){this.historyQuery=restored.q;this.historyArchived=restored.archived;this.historyPages=restored.pages;}
+      // A directory error must not discard an accepted message receipt or current chat.
+      try{
+        let history:any;
+        try{history=await this.io.request(s,chatBase(s)+(restored&&(restored.q||restored.archived||restored.pages.length>1)?this.historyPath():"/conversations"));}
+        catch(e:any){
+          if(!restored?.pages.at(-1)||!["CONVERSATION_CURSOR_INVALID","CONVERSATION_CURSOR_EXPIRED"].includes(e.code))throw e;
+          if(!this.current(g))return;
+          this.historyPages=[""];history=await this.io.request(s,chatBase(s)+this.historyPath());
+          this.historyNotice="The saved page expired; showing the first page / 已儲存頁碼失效，已顯示第一頁";
+        }
+        if(!this.current(g))return;
+        this.history=history.items;this.historyNext=history.next_cursor??null;
+      }catch(e){if(!this.current(g))return;this.history=[];this.historyNext=null;this.historyNotice="Conversation list is unavailable. Search again to retry / 會話清單暫時無法載入，請重新搜尋";}
+
       // Saved state is a receipt, never authority. Server rechecks every read/write.
       if (this.validCreation(saved?.creation)) {
         this.creation = saved.creation; this.agentId = this.creation!.agentId;
@@ -131,6 +148,7 @@ export class ConversationState {
     return c && uuid.test(c.key) && typeof c.name === "string" && c.name.length > 0 && c.name.length <= 160
       && typeof c.agentId === "string" && (c.agentId === "" || uuid.test(c.agentId));
   }
+  private historyPath(){const q=new URLSearchParams({limit:"200",q:this.historyQuery,archived:String(this.historyArchived)});const cursor=this.historyPages.at(-1);if(cursor)q.set("cursor",cursor);return "/conversations?"+q;}
   /** Browse the private directory without replacing the open chat, draft or receipt. */
   async browseHistory(options: {q?:string;archived?:boolean;direction?:"next"|"previous";refresh?:boolean} = {}) {
     if (!this.scope || this.loading || this.historyLoading) return;
@@ -139,15 +157,15 @@ export class ConversationState {
     if(query.length>160)throw new Error("Search is limited to160 characters / 搜尋最多160字");
     const changed=query!==this.historyQuery||archived!==this.historyArchived;
     let pages=changed||options.refresh?[""]:[...this.historyPages];
-    if(options.direction==="next"){if(!this.historyNext||changed)return;pages.push(this.historyNext);}
+    if(options.direction==="next"){if(!this.historyNext||changed)return;if(pages.length>=512)throw new Error("Refresh search before continuing / 請重新搜尋後繼續");pages.push(this.historyNext);}
     if(options.direction==="previous"){if(pages.length<=1)return;pages.pop();}
-    this.historyQuery=query;this.historyArchived=archived;this.historyLoading=true;this.notify();
+    this.historyQuery=query;this.historyArchived=archived;this.historyLoading=true;this.historyNotice="";this.notify();
     const cursor=pages.at(-1)!;const params=new URLSearchParams({limit:"200",q:query,archived:String(archived)});
     if(cursor)params.set("cursor",cursor);
     try{const result=await this.io.request(s,chatBase(s)+"/conversations?"+params);
       if(this.scope!==s||ticket!==this.historyRevision)return;
-      this.history=result.items;this.historyNext=result.next_cursor??null;this.historyPages=pages;
-    }catch(e){if(this.scope===s&&ticket===this.historyRevision){this.history=[];this.historyNext=null;this.historyPages=[""];throw e;}}
+      this.history=result.items;this.historyNext=result.next_cursor??null;this.historyPages=pages;await this.persist(s);
+    }catch(e){if(this.scope===s&&ticket===this.historyRevision){this.history=[];this.historyNext=null;this.historyPages=[""];this.historyNotice="Conversation list is unavailable. Search again to retry / 會話清單暫時無法載入，請重新搜尋";throw e;}}
     finally{if(this.scope===s&&ticket===this.historyRevision){this.historyLoading=false;this.notify();}}
   }
   get preparing() { return !!this.creating || this.importing; }

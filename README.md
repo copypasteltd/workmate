@@ -1,3 +1,31 @@
+<!-- integrated-round-198 -->
+
+## 198 · 0.5.7 · 右侧会话与历史恢复
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-198/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 下载ZIP并解压，在Chrome开发者模式加载目录；点击工具栏图标打开真正的浏览器右侧Side Panel。保留ChatGPT式会话、输入和附件布局，Agent运行在公司云端。
+2. 通过公司Web完成PKCE，选择企业及项目，再明确选择／拖入文件或粘贴图片。只上传获准材料，不给予插件任意读取本机文件的能力。
+3. 历史搜索、归档筛选和页码按账户／范围在原有串行存储队列内保存；重新打开时向服务端读取当前数据。游标过期回到第一页，不丢弃当前消息接续回执、当前会话和已选任务。历史读取失败单独提示，不阻断当前对话。
+4. 本轮真实工具栏／右侧栏、PKCE、CSV拖入／图片粘贴、两份私人附件上传、原生页面重载后的筛选恢复和360px宽度均通过。当前为解压加载包，未声称已在Chrome商店上架。
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[All tasks / 查找工作]
+  C --> D[Verify current authority / 當前授權]
+  D --> E[Original session and results / 原會話與成果]
+  E --> F[Return with context / 保留上下文返回]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/198-v1-side-panel.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v1-side-panel.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v1-side-panel.mp4)
+
+下方保留早期版本與完整安裝說明。本輪交付不代表全部原始需求已驗收。
+
 <!-- integrated-round-197 -->
 
 ## 197 · 0.5.6 · 右侧工作栏
