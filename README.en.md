@@ -1,3 +1,38 @@
+<!-- integrated-round-199 -->
+
+## 199 · 0.7.11 · Local Codex and design continuity
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-199/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Download Setup or Portable and authorize in the system browser. The app remains frameless without Electron menus; Codex runs locally with explicit, revocable native full-access consent. Company servers still carry all model calls/billing.
+
+2. Design canvas matches Web direct editing, actual draft previews, saved versions and recovery. Shared cloud designs and local tasks retain their execution locations; shared editing does not replace the local agent.
+
+3. The actual final0.7.11 package passes fresh PKCE, real-source version2→3 saving, frameless/no-menu and root/horizontal scrollbar checks. Every main-process and pinned Codex0.163.0-alpha.11 runtime byte matches the accepted0.7.10 native implementation. No repeated paid native execution is claimed this round.
+
+4. Earlier197/198 local execution/revocation evidence remains. Arbitrary applications, other machines, offline/sleep and upgrade-failure matrices still require acceptance. Trusted Windows signing remains excluded by user instruction, not claimed complete.
+
+```mermaid
+flowchart LR
+ A[Install and browser PKCE / 安裝與授權] --> B[Local folder and specialist / 本機目錄與專員]
+ B --> C[Customer grants access / 客戶授予權限]
+ C --> D[Local Codex through company API / 本機Codex與公司接口]
+ D --> E[Local execution and files / 本機執行與成果]
+ A --> F[Authorized shared design / 有權共用設計]
+ F --> G[Direct editing and recovery / 直接編輯與恢復]
+ G --> H[Immutable version and delivery / 版本與交付]
+```
+
+Current final packaged0.7.11 / 本輪最終實際包
+
+![Actual interface / 實際頁面](assets/screenshots/199-v2-native-review.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-199-v2-native-review.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-199-v2-native-review.mp4)
+
+Earlier release/setup sections remain below. This batch does not close full original acceptance.
+
 <!-- integrated-round-198 -->
 
 ## 198 · 0.7.10 · Resume local work and results

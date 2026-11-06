@@ -1,3 +1,38 @@
+<!-- integrated-round-199 -->
+
+## 199 · 0.7.11 · 本機Codex與設計交付接續
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-199/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 從站點下載Setup或Portable，在系統瀏覽器完成安全授權。保持無邊框、無Electron選單，Codex在客戶本機執行；完整本機權限須客戶原生確認且可撤銷，所有模型請求與計費仍經公司伺服器。
+
+2. 設計畫布同步Web的直接編輯、真實草稿預覽、版本保存及恢復。雲端共用設計與本機任務仍按原執行位置運作；沒有以共用工程替代本機Agent。
+
+3. 本輪最終0.7.11實際包完成新PKCE、真實雲端來源v2→v3保存、無邊框／無選單及根／橫向滾動條檢查。主進程與固定Codex0.163.0-alpha.11全部逐字節對應既有0.7.10已驗收原生實現；本輪沒有重複本機付費執行。
+
+4. 保留197／198的原生執行及撤權證據；完整任意應用、其他機器、離線／休眠及升級故障矩陣仍需驗收。Windows受信簽名依用戶要求排除，不能稱為已完成簽名。
+
+```mermaid
+flowchart LR
+ A[Install and browser PKCE / 安裝與授權] --> B[Local folder and specialist / 本機目錄與專員]
+ B --> C[Customer grants access / 客戶授予權限]
+ C --> D[Local Codex through company API / 本機Codex與公司接口]
+ D --> E[Local execution and files / 本機執行與成果]
+ A --> F[Authorized shared design / 有權共用設計]
+ F --> G[Direct editing and recovery / 直接編輯與恢復]
+ G --> H[Immutable version and delivery / 版本與交付]
+```
+
+Current final packaged0.7.11 / 本輪最終實際包
+
+![Actual interface / 實際頁面](assets/screenshots/199-v2-native-review.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-199-v2-native-review.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-199-v2-native-review.mp4)
+
+下方保留此前版本與完整使用／安裝說明。本輪不代表全部原始要求已完成驗收。
+
 <!-- integrated-round-198 -->
 
 ## 198 · 0.7.10 · 本机工作与成果接续
