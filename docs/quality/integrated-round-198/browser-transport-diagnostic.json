@@ -1,0 +1,47 @@
+{
+  "stage": 198,
+  "at": "2026-11-06T05:03:52.032Z",
+  "scope": "Unauthenticated company public GET diagnostics only. No cookies, headers, credentials, model requests, alternate origins or response replacement.",
+  "transports": [
+    {
+      "name": "default_http",
+      "attempts": [
+        {
+          "url": "https://agent.copypaste.hk/app",
+          "status": 200,
+          "protocol": "browser_native",
+          "ms": 3158
+        },
+        {
+          "url": "https://agent.copypaste.hk/downloads",
+          "status": 200,
+          "protocol": "browser_native",
+          "ms": 542
+        }
+      ],
+      "failures": [],
+      "owned_browser_closed": true
+    },
+    {
+      "name": "http1_diagnostic",
+      "attempts": [
+        {
+          "url": "https://agent.copypaste.hk/app",
+          "status": 200,
+          "protocol": "browser_native",
+          "ms": 2320
+        },
+        {
+          "url": "https://agent.copypaste.hk/downloads",
+          "status": 200,
+          "protocol": "browser_native",
+          "ms": 1011
+        }
+      ],
+      "failures": [],
+      "owned_browser_closed": true
+    }
+  ],
+  "finished_at": "2026-11-06T05:04:00.791Z",
+  "finding": "All four subsequent unauthenticated public GETs returned200, under default and HTTP1 diagnostic browser configurations. This does not establish the exact cause of earlier Chromium navigation failures or resolve long-term network stability."
+}

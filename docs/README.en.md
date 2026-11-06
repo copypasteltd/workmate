@@ -1,3 +1,9 @@
+<!-- integrated-round-198 -->
+
+Round198 ships a full task directory and scoped return/navigation context, with555 selected regressions, native0.7.10/Side Panel0.5.7 and complete public downloads. Full original acceptance remains open.
+
+[交付 / Delivery](quality/integrated-round-198/README.md) · [完整追溯 / Scope](quality/integrated-round-198/requirements-102.md) · [更新 / Changes](changes/198-task-directory-and-context.md)
+
 <!-- integrated-round-197 -->
 
 Round197: isolated company transport, bounded recovery, proven pre-turn settlement and compact native review. Six builds and 528 selected tests pass; full original acceptance remains open.

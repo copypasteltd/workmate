@@ -1,3 +1,9 @@
+<!-- integrated-round-198 -->
+
+198輪交付完整任務目錄、範圍與返回上下文；555項相關測試、真實Desktop0.7.10／Side Panel0.5.7及公開完整下載通過。全部原始驗收仍保留。
+
+[交付 / Delivery](quality/integrated-round-198/README.md) · [完整追溯 / Scope](quality/integrated-round-198/requirements-102.md) · [更新 / Changes](changes/198-task-directory-and-context.md)
+
 <!-- integrated-round-197 -->
 
 197 轮：公司连接隔离、有界恢复、持久零准入结算和本机结果审阅。六端构建及 528 项相关测试通过；完整原始验收仍开放。
