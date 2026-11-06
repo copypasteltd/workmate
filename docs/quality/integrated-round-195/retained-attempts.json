@@ -1,0 +1,82 @@
+{
+  "scope": "Original failed receipts remain locally; later success does not overwrite them",
+  "ui_failures": [
+    {
+      "receipt": "copypaste-delivery/.data/acceptance-195/extension-08bc2af1-2c11-49eb-8f76-6ed4c4c2680e/receipt.json",
+      "sha256": "4dd920be7928fddf8a2e605a4e3d85ddb8cd991fcc28524fe01dd20794669270",
+      "error": "AssertionError: Expected values to be strictly equal:",
+      "checks_passed_before_failure": 0
+    },
+    {
+      "receipt": "copypaste-delivery/.data/acceptance-195/extension-36bb7039-4395-4a66-8f78-43af34cb291a/receipt.json",
+      "sha256": "5a2d53443349715578615e9c9766adef3b92ef9c099808d520341a0c13563b58",
+      "error": "Error: Native panel condition timed out: {\"login\":false,\"consent\":false}",
+      "checks_passed_before_failure": 1
+    },
+    {
+      "receipt": "copypaste-delivery/.data/acceptance-195/extension-ebc3885f-a23f-4e23-9428-af797628146e/receipt.json",
+      "sha256": "b45f0a81bdfae93690a7b673c609334a9ac21c3f95505d7465f8c743b24c82b4",
+      "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.",
+      "checks_passed_before_failure": 1
+    },
+    {
+      "receipt": "copypaste-delivery/.data/acceptance-195/final-smoke-5964e615-f1ce-4a7d-9167-3241277b4b82/receipt.json",
+      "sha256": "d23400e1af0218c991ebb86fd61ada68e093bfcb42db0ae24f6d530ad454ed5f",
+      "error": "AssertionError: The expression evaluated to a falsy value:",
+      "checks_passed_before_failure": 1
+    },
+    {
+      "receipt": "copypaste-delivery/.data/acceptance-195/final-smoke-d4ef583f-ce18-4c43-b72c-db62bdb9b150/receipt.json",
+      "sha256": "22398664011d7ba6e5f02aff5b18238efa2850663ad3c246ec0ade40f800fd8e",
+      "error": "TimeoutError: apiRequestContext.get: Timeout 30000ms exceeded.",
+      "checks_passed_before_failure": 2
+    },
+    {
+      "receipt": "copypaste-delivery/.data/acceptance-195/ui-1ac5c66d-04f6-45da-ad24-3820c333b93e/receipt.json",
+      "sha256": "0d8b2e34f23d9faab3d91db6d559cb7f26f7c27076ee6ee3266b2092818f2b72",
+      "error": "TimeoutError: locator.selectOption: Timeout 30000ms exceeded.",
+      "checks_passed_before_failure": 0
+    },
+    {
+      "receipt": "copypaste-delivery/.data/acceptance-195/ui-5203d701-e3c1-42ac-abc8-9d17eea86212/receipt.json",
+      "sha256": "2a866c1c2f03bfd39f691d17b6edc0177a3acf217b8483d81a9a4bc7e069bfb9",
+      "error": "TimeoutError: locator.selectOption: Timeout 30000ms exceeded.",
+      "checks_passed_before_failure": 8
+    },
+    {
+      "receipt": "copypaste-delivery/.data/acceptance-195/ui-57177a71-3795-4a32-98ce-09e0d08a3642/receipt.json",
+      "sha256": "6787d46ad772f5947b34309546046e560c9ada95bf77ba07dae6d05054e26550",
+      "error": "TimeoutError: locator.waitFor: Timeout 60000ms exceeded.",
+      "checks_passed_before_failure": 3
+    },
+    {
+      "receipt": "copypaste-delivery/.data/acceptance-195/ui-6b9c5c51-0a0d-498d-a1f4-7b1e01ff535e/receipt.json",
+      "sha256": "b06e2cc7501a5492394f0da011d9ed07bbfad3b9a71a23a9fbad545cb0299aa3",
+      "error": "Error: locator.evaluate: Error: strict mode violation: getByRole('button', { name: 'Start conversation', exact: true }) resolved to 2 elements:",
+      "checks_passed_before_failure": 0
+    },
+    {
+      "receipt": "copypaste-delivery/.data/acceptance-195/ui-707e11cf-89d4-470e-aa81-b03089559c2f/receipt.json",
+      "sha256": "b8559b9133bc873cfefacb10458147d6cc0d1af0639becf5aa767bf5d8dc4371",
+      "error": "AssertionError: The expression evaluated to a falsy value:",
+      "checks_passed_before_failure": 4
+    }
+  ],
+  "earlier_verification_directories": [
+    "integrated-195",
+    "integrated-195-v2",
+    "integrated-195-v3",
+    "integrated-195-v4",
+    "integrated-195-v5",
+    "integrated-195-v6",
+    "integrated-195-v7"
+  ],
+  "notes": [
+    "First implementation build exposed type/API compatibility issues, fixed as a batch.",
+    "The source database was started natively and the local schema gate corrected.",
+    "Windows Office cold startup still failed in v6/v7. The final batch pins soffice.bin, permits one observed exit81 restart inside the same private profile/job/deadline, and corrects the actor-bound private fixture. Original failed receipts remain.",
+    "The Office upload MIME allowlist and conversation attachment wire contract were corrected after actual UI failures.",
+    "Side Panel readiness and bilingual consent were corrected in the QA automation; original failures are retained.",
+    "The first graceful Nginx reload checks raced worker activation; automatic rollback was exercised, then bounded readiness checks were added."
+  ]
+}

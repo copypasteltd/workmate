@@ -1,3 +1,9 @@
+<!-- integrated-round-195 -->
+
+195輪已整批補齊統一私人輸入/成果、後台就緒/角色驗收、Linux Office及客戶端輸入，統一回歸與實機證據見報告；完整外部、專業及生產驗收仍開放。
+
+[Delivery / 交付](quality/integrated-round-195/README.md) · [102 requirements / 102條追溯](quality/integrated-round-195/requirements-102.md) · [Changes / 更新](changes/195-integrated-workspaces.md)
+
 <!-- system-assessment-194 -->
 
 已完成当前完整性与 WorkBuddy 差距评估：32组交付敞口、10项交互改进、102条原始需求追溯。真实云端/本机Codex、图片、后台和下载链路已有证据；真实视频/语音/广告授权、至少12角色专业验收、一体化工作区及生产验收仍未收口。不是全产品零错误或数值完成率声明。

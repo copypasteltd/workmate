@@ -1,3 +1,9 @@
+<!-- integrated-round-195 -->
+
+Round195 ships unified private inputs/results, Admin readiness/role evidence, native Linux Office and improved client inputs. External, professional and production acceptance remains scoped.
+
+[Delivery / 交付](quality/integrated-round-195/README.md) · [102 requirements / 102條追溯](quality/integrated-round-195/requirements-102.md) · [Changes / 更新](changes/195-integrated-workspaces.md)
+
 <!-- system-assessment-194 -->
 
 Current assessment records 32 grouped delivery gaps, 10 UX observations and a 102-requirement trace. Real cloud/local Codex, images, administration and downloads are credited. Video/audio/advertising integrations, twelve-role professional acceptance, unified workspace UX and production qualification remain open. This does not assert zero defects or a numeric completion rate.
