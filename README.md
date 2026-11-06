@@ -1,3 +1,30 @@
+<!-- integrated-round-203 -->
+
+## 203 · 0.5.10 · 专业输入与可靠交付
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-203/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Backend产品版本0.5.10／schema163保持，171项相关回归按202轮完全未变源码保留。Web新工作用原公司云端Codex任务／附件接口；固定来源版本在受理、执行及下载时核查权限，不因选择ID而授予权利。
+
+2. 修正云端两份原生浏览器／程序运行时目录的部署形态：精确复制既有清单字节为真实目录，保留原符号链接作回退。保持原沙箱、来源摘要和程序限制；没有API重启，也没有改网络、安全策略或Nginx。
+
+3. 12类受控真实角色样例中11类有功能交付证据；实际Codex线程、Skill／运行时／能力绑定、事务工具／原生回执和文件SHA单列。技术状态succeeded不表示客户交付通过；专业角色签收、外部服务、一次租约超时根因及长稳仍开放。
+
+4. 一次已知费用的QA超时任务通过最高管理员预览／审计核账结清HK$0.250508；不重放模型，不修改套餐并发限制，不把公司计数费用加到客户生成费。全部原始失败保留。
+
+```mermaid
+flowchart LR
+ A[Explicit pinned sources and budget] --> B[Current server authority]
+ B --> C[Frozen Codex Skills and capabilities]
+ C --> D[Actual native business tools]
+ D --> E[Immutable files and actual fees]
+ E --> F[Customer review]
+```
+
+当前开放项：marketing-analyst未交付图表文件，技术状态succeeded不计为通过；通用工具错误的准确原因尚未验证。公网默认HTTP/2停滞及一次任务租约根因也保持开放。详细见证据报告，不声称完整产品验收通过。
+
+以下保留完整架构、安装与使用细则。
+
 <!-- integrated-round-202 -->
 
 ## 202 · 0.5.10 · 营销证据复核、交付与请求恢复

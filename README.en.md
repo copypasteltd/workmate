@@ -1,3 +1,30 @@
+<!-- integrated-round-203 -->
+
+## 203 · 0.5.10 · Pinned specialist intake and reliable delivery
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-203/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Backend0.5.10/schema163 stay;171 related202 cases retain identical production-source qualification. New Web intake uses existing company cloud Codex/task/attachment APIs. Pinned source versions still require current admission, execution and download authority; IDs never grant permission.
+
+2. Materialize the two owned native browser/program runtime directories from exact existing manifest bytes, preserving old symlinks for rollback. Retain native sandbox, digest and program restrictions, without API restart, network/security-policy or Nginx changes.
+
+3. Of12 controlled real role samples,11 currently have qualified functional delivery. Actual Codex threads, immutable Skill/runtime/capability bindings, transactional/native receipts and file hashes are separate evidence. Technical succeeded is not customer acceptance; professional sign-off, external services, one lease-expiry investigation and long-running reliability remain open.
+
+4. An owned known-cost timed-out QA task is settled through the actual highest-admin preview/audit flow for HK$0.250508, without model replay, plan-limit changes or adding company-side counting fees to customer generation charges. Retain all failed evidence.
+
+```mermaid
+flowchart LR
+ A[Explicit pinned sources and budget] --> B[Current server authority]
+ B --> C[Frozen Codex Skills and capabilities]
+ C --> D[Actual native business tools]
+ D --> E[Immutable files and actual fees]
+ E --> F[Customer review]
+```
+
+Open delivery: marketing-analyst returned no chart files; technical succeeded does not qualify it. The exact generic tool failure remains unverified. Default public HTTP/2 stalls and one worker-lease investigation also stay open. See the evidence report; no full-product acceptance is claimed.
+
+The complete architecture, setup and usage guide follows.
+
 <!-- integrated-round-202 -->
 
 ## 202 · 0.5.10 · Evidence review, delivery and safe request recovery
