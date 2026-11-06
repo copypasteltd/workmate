@@ -24,6 +24,13 @@ export const videoScene = z
     headline: text(240).refine((s) => s.trim().length > 0),
     body: text(500),
     image: videoAssetRef.nullable(),
+    transition: z
+      .object({
+        kind: z.enum(["crossfade", "slide-left"]),
+        frames: z.number().int().min(1).max(45),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 export const videoSubtitle = z
@@ -101,6 +108,16 @@ export const videoDefinition = z
     let cursor = 0;
     for (const [i, scene] of b.storyboard.entries()) {
       if (
+        scene.transition &&
+        (i === 0 ||
+          scene.transition.frames >
+            Math.floor((scene.end_frame - scene.start_frame) / 2))
+      )
+        fail(
+          "Transitions require a preceding scene and at most half this scene's frames",
+          ["storyboard", i, "transition"],
+        );
+      if (
         scene.start_frame !== cursor ||
         scene.end_frame <= scene.start_frame ||
         scene.end_frame > b.duration_frames
@@ -150,7 +167,11 @@ export const videoCancelRequest = z
 const sha256 = z.string().regex(/^[a-f0-9]{64}$/);
 export const videoProfile = z
   .object({
-    renderer: z.enum(["copypaste-campaign-cuts-1", "copypaste-campaign-cuts-2"]),
+    renderer: z.enum([
+      "copypaste-campaign-cuts-1",
+      "copypaste-campaign-cuts-2",
+      "copypaste-campaign-cuts-3",
+    ]),
     font_id: z.string(),
     font_sha256: sha256,
     ffmpeg_sha256: sha256,
@@ -252,19 +273,50 @@ export const videoPreview = z
   })
   .strict();
 
-export const videoStatus = z.object({
-  project: z.object({ id: uuid, name, version }).strict(),
-  render: videoRenderDto.pick({ id: true, version: true, revision: true, state: true, error_code: true, probe: true }),
-  delivery_state: z.enum(["queued", "rendering", "available", "unavailable", "failed", "cancelled"]),
-  requires_render_completion: z.boolean(),
-  retry_after_ms: z.union([z.literal(0), z.literal(1000)]),
-  ai_cost_micros: z.literal("0"),
-  cost_source: z.literal("local_composition_no_ai"),
-  assets: z.array(z.object({
-    id: uuid, name: z.string().min(1).max(240),
-    version: z.object({ id: uuid, version, mime_type: z.string().min(1).max(200), bytes: z.string().regex(/^\d+$/), sha256 }).strict(),
-  }).strict()).max(6),
-}).strict();
+export const videoStatus = z
+  .object({
+    project: z.object({ id: uuid, name, version }).strict(),
+    render: videoRenderDto.pick({
+      id: true,
+      version: true,
+      revision: true,
+      state: true,
+      error_code: true,
+      probe: true,
+    }),
+    delivery_state: z.enum([
+      "queued",
+      "rendering",
+      "available",
+      "unavailable",
+      "failed",
+      "cancelled",
+    ]),
+    requires_render_completion: z.boolean(),
+    retry_after_ms: z.union([z.literal(0), z.literal(1000)]),
+    ai_cost_micros: z.literal("0"),
+    cost_source: z.literal("local_composition_no_ai"),
+    assets: z
+      .array(
+        z
+          .object({
+            id: uuid,
+            name: z.string().min(1).max(240),
+            version: z
+              .object({
+                id: uuid,
+                version,
+                mime_type: z.string().min(1).max(200),
+                bytes: z.string().regex(/^\d+$/),
+                sha256,
+              })
+              .strict(),
+          })
+          .strict(),
+      )
+      .max(6),
+  })
+  .strict();
 
 export function videoSeconds(
   definition: VideoDefinition,

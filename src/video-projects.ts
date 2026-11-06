@@ -8,6 +8,7 @@ import { lockUserAuthorities } from "./user-authority.js";
 import { Storage, saveAsset } from "./storage.js";
 import { canonical, hash, Problem, uuid } from "./lib.js";
 import { assertDesktopVideoOrigin } from "./desktop-video-origin.js";
+import { videoTemplates } from "./video-templates.js";
 import {
   videoDefinition,
   videoCreate,
@@ -22,6 +23,8 @@ import {
 import {
   renderVideoProject,
   videoRendererProfile,
+  previewVideoFrame,
+  videoFrameReferences,
   type VideoSource,
 } from "./video-render.js";
 
@@ -60,7 +63,12 @@ async function source(
 ) {
   const v = (
     await tx.query(
-      `SELECT v.* FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=$2 WHERE a.id=$1 AND a.project_id=$3 AND a.state='active' AND a.retention_expires_at>clock_timestamp() AND (a.private_owner IS NULL OR a.private_owner=$4) AND v.erased_at IS NULL AND analysis_asset_available(a.id) AND matrix_asset_available(a.id) AND video_asset_available(a.id) ${lock ? "FOR SHARE OF a" : ""}`,
+      `SELECT v.* FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=$2
+       LEFT JOIN tasks t ON t.id::text=v.metadata->>'task_id'
+       WHERE a.id=$1 AND a.project_id=$3 AND a.state='active' AND a.retention_expires_at>clock_timestamp()
+       AND (a.private_owner IS NULL OR a.private_owner=$4) AND v.erased_at IS NULL
+       AND coalesce(v.metadata->>'data_mode',t.data_mode)=(SELECT data_mode FROM tenants WHERE id=a.tenant_id)
+       AND task_asset_version_sources_available(v.id) AND analysis_asset_available(a.id) AND matrix_asset_available(a.id) AND video_asset_available(a.id) ${lock ? "FOR SHARE OF a" : ""}`,
       [ref.asset_id, ref.version, project, privateOwner],
     )
   ).rows[0];
@@ -174,7 +182,12 @@ async function insertVersion(
   profile: unknown,
   actor: string,
 ) {
-  const sources = await fixedSources(tx, p.project_id, definition, p.private_owner ?? null),
+  const sources = await fixedSources(
+      tx,
+      p.project_id,
+      definition,
+      p.private_owner ?? null,
+    ),
     inputHash = hash(
       canonical({
         definition,
@@ -307,7 +320,11 @@ export async function enqueueVideoRender(
   await projectAccess(tx, principal, tenant, project, "write");
   const p = await parent(tx, tenant, project, video, db, true);
   if (originTaskId && p.private_owner !== principal.id)
-    throw new Problem(409, "DESKTOP_PRIVATE_VIDEO_REQUIRED", "Create a private video project from this desktop specialist");
+    throw new Problem(
+      409,
+      "DESKTOP_PRIVATE_VIDEO_REQUIRED",
+      "Create a private video project from this desktop specialist",
+    );
   if (p.version !== version)
     throw new Problem(
       409,
@@ -380,89 +397,236 @@ export async function enqueueVideoRender(
 /** Shared with the native specialist; a revision and its immutable inputs are
  * committed atomically with any render the caller chooses to enqueue. */
 export async function editVideoProject(
-  tx: Tx, db: Database, principal: Principal, tenant: string, project: string,
-  video: string, request: z.infer<typeof videoEdit>, profile: unknown,
+  tx: Tx,
+  db: Database,
+  principal: Principal,
+  tenant: string,
+  project: string,
+  video: string,
+  request: z.infer<typeof videoEdit>,
+  profile: unknown,
   privateOnly = false,
 ) {
   await projectAccess(tx, principal, tenant, project, "write");
   const p = await parent(tx, tenant, project, video, db, true);
   if (privateOnly && p.private_owner !== principal.id)
-    throw new Problem(409, "DESKTOP_PRIVATE_VIDEO_REQUIRED", "Copy the timeline into a new private desktop video project before editing");
+    throw new Problem(
+      409,
+      "DESKTOP_PRIVATE_VIDEO_REQUIRED",
+      "Copy the timeline into a new private desktop video project before editing",
+    );
   if (p.version !== request.expected_version)
-    throw new Problem(409, "VERSION_CONFLICT", "The video project changed; reload it");
+    throw new Problem(
+      409,
+      "VERSION_CONFLICT",
+      "The video project changed; reload it",
+    );
   if (p.version >= 50)
-    throw new Problem(409, "VIDEO_VERSION_LIMIT", "This video reached 50 versions; create a new project");
-  await tx.query("UPDATE creative_projects SET name=$2,version=version+1,body=jsonb_set(body,'{last_edited_at}',to_jsonb(clock_timestamp())) WHERE id=$1", [video, request.name]);
-  await insertVersion(tx, { ...p, version: p.version + 1 }, request.definition, profile, principal.id);
-  await audit(tx, principal, "video.project.edit", video, "succeeded", { version: p.version + 1 }, tenant);
+    throw new Problem(
+      409,
+      "VIDEO_VERSION_LIMIT",
+      "This video reached 50 versions; create a new project",
+    );
+  await tx.query(
+    "UPDATE creative_projects SET name=$2,version=version+1,body=jsonb_set(body,'{last_edited_at}',to_jsonb(clock_timestamp())) WHERE id=$1",
+    [video, request.name],
+  );
+  await insertVersion(
+    tx,
+    { ...p, version: p.version + 1 },
+    request.definition,
+    profile,
+    principal.id,
+  );
+  await audit(
+    tx,
+    principal,
+    "video.project.edit",
+    video,
+    "succeeded",
+    { version: p.version + 1 },
+    tenant,
+  );
   return { id: video, version: p.version + 1 };
 }
 
 export async function cancelVideoRender(
-  tx: Tx, db: Database, principal: Principal, tenant: string, project: string,
-  video: string, render: string, expectedRevision: number,
+  tx: Tx,
+  db: Database,
+  principal: Principal,
+  tenant: string,
+  project: string,
+  video: string,
+  render: string,
+  expectedRevision: number,
 ) {
   await projectAccess(tx, principal, tenant, project, "write");
   await parent(tx, tenant, project, video, db, true);
-  const r = (await tx.query("SELECT * FROM video_renders WHERE id=$1 AND video_id=$2 FOR UPDATE", [render, video])).rows[0];
+  const r = (
+    await tx.query(
+      "SELECT * FROM video_renders WHERE id=$1 AND video_id=$2 FOR UPDATE",
+      [render, video],
+    )
+  ).rows[0];
   if (!r) throw new Problem(404, "NOT_FOUND", "Video render not found");
-  if (r.revision !== expectedRevision) throw new Problem(409, "VERSION_CONFLICT", "The render state changed; reload it");
-  if (!["queued", "rendering"].includes(r.state)) throw new Problem(409, "VIDEO_RENDER_FINISHED", "This render already finished");
-  await tx.query("UPDATE video_renders SET state='cancelled',revision=revision+1,error_code='VIDEO_CANCELLED',finished_at=clock_timestamp() WHERE id=$1", [render]);
-  await audit(tx, principal, "video.render.cancel", video, "succeeded", { render_id: render }, tenant);
+  if (r.revision !== expectedRevision)
+    throw new Problem(
+      409,
+      "VERSION_CONFLICT",
+      "The render state changed; reload it",
+    );
+  if (!["queued", "rendering"].includes(r.state))
+    throw new Problem(
+      409,
+      "VIDEO_RENDER_FINISHED",
+      "This render already finished",
+    );
+  await tx.query(
+    "UPDATE video_renders SET state='cancelled',revision=revision+1,error_code='VIDEO_CANCELLED',finished_at=clock_timestamp() WHERE id=$1",
+    [render],
+  );
+  await audit(
+    tx,
+    principal,
+    "video.render.cancel",
+    video,
+    "succeeded",
+    { render_id: render },
+    tenant,
+  );
   return { id: render, revision: r.revision + 1, state: "cancelled" as const };
 }
 
 /** Bounded native tool result: no storage paths, arbitrary URLs or binary data.
  * Every output must remain available before any of the six is disclosed. */
 export async function videoRenderToolStatus(
-  tx: Tx, db: Database, principal: Principal, tenant: string, project: string,
-  video: string, render: string,
+  tx: Tx,
+  db: Database,
+  principal: Principal,
+  tenant: string,
+  project: string,
+  video: string,
+  render: string,
 ) {
   await projectAccess(tx, principal, tenant, project);
   const p = await parent(tx, tenant, project, video, db);
-  const r = (await tx.query(`SELECT ${renderColumns} FROM video_renders WHERE id=$1 AND video_id=$2`, [render, video])).rows[0];
+  const r = (
+    await tx.query(
+      `SELECT ${renderColumns} FROM video_renders WHERE id=$1 AND video_id=$2`,
+      [render, video],
+    )
+  ).rows[0];
   if (!r) throw new Problem(404, "NOT_FOUND", "Video render not found");
-  let assets: { id: string; name: string; version: { id: string; version: number; mime_type: string; bytes: string; sha256: string } }[] = [];
+  let assets: {
+    id: string;
+    name: string;
+    version: {
+      id: string;
+      version: number;
+      mime_type: string;
+      bytes: string;
+      sha256: string;
+    };
+  }[] = [];
   if (r.state === "succeeded") {
-    const ids = [r.mp4_asset_id, r.project_asset_id, r.script_asset_id, r.storyboard_asset_id, r.subtitles_asset_id, r.probe_asset_id];
-    const rows = (await tx.query(
-      `SELECT a.id,a.name,v.id AS version_id,v.version,v.mime_type,v.bytes::text,v.sha256
+    const ids = [
+      r.mp4_asset_id,
+      r.project_asset_id,
+      r.script_asset_id,
+      r.storyboard_asset_id,
+      r.subtitles_asset_id,
+      r.probe_asset_id,
+    ];
+    const rows = (
+      await tx.query(
+        `SELECT a.id,a.name,v.id AS version_id,v.version,v.mime_type,v.bytes::text,v.sha256
        FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=1
        WHERE a.id=ANY($1::uuid[]) AND a.project_id=$2 AND a.state='active' AND a.retention_expires_at>clock_timestamp()
-       AND v.erased_at IS NULL AND task_asset_version_sources_available(v.id)`, [ids, project],
-    )).rows;
-    if (rows.length === 6) assets = ids.map(id => {
-      const a = rows.find(a => a.id === id)!;
-      return { id: a.id, name: a.name, version: { id: a.version_id, version: a.version, mime_type: a.mime_type, bytes: a.bytes, sha256: a.sha256 } };
-    });
+       AND v.erased_at IS NULL AND task_asset_version_sources_available(v.id)`,
+        [ids, project],
+      )
+    ).rows;
+    if (rows.length === 6)
+      assets = ids.map((id) => {
+        const a = rows.find((a) => a.id === id)!;
+        return {
+          id: a.id,
+          name: a.name,
+          version: {
+            id: a.version_id,
+            version: a.version,
+            mime_type: a.mime_type,
+            bytes: a.bytes,
+            sha256: a.sha256,
+          },
+        };
+      });
   }
   const pending = ["queued", "rendering"].includes(r.state);
   return videoStatus.parse({
     project: { id: p.id, name: p.name, version: p.version },
-    render: { id: r.id, version: r.version, revision: r.revision, state: r.state, error_code: r.error_code, probe: r.probe },
-    delivery_state: pending ? r.state : r.state === "succeeded" ? assets.length === 6 ? "available" : "unavailable" : r.state,
-    requires_render_completion: pending, retry_after_ms: pending ? 1000 : 0,
-    ai_cost_micros: "0", cost_source: "local_composition_no_ai", assets,
+    render: {
+      id: r.id,
+      version: r.version,
+      revision: r.revision,
+      state: r.state,
+      error_code: r.error_code,
+      probe: r.probe,
+    },
+    delivery_state: pending
+      ? r.state
+      : r.state === "succeeded"
+        ? assets.length === 6
+          ? "available"
+          : "unavailable"
+        : r.state,
+    requires_render_completion: pending,
+    retry_after_ms: pending ? 1000 : 0,
+    ai_cost_micros: "0",
+    cost_source: "local_composition_no_ai",
+    assets,
   });
 }
 
 export async function listVideoToolProjects(
-  tx: Tx, db: Database, principal: Principal, tenant: string, project: string, beforeId?: string,
+  tx: Tx,
+  db: Database,
+  principal: Principal,
+  tenant: string,
+  project: string,
+  beforeId?: string,
 ) {
   await projectAccess(tx, principal, tenant, project);
-  const before = beforeId ? await parent(tx, tenant, project, beforeId, db) : null;
-  const rows = (await tx.query(
-    `SELECT id,name,version,created_at FROM creative_projects WHERE tenant_id=$1 AND project_id=$2 AND kind='video'
+  const before = beforeId
+    ? await parent(tx, tenant, project, beforeId, db)
+    : null;
+  const rows = (
+    await tx.query(
+      `SELECT id,name,version,created_at FROM creative_projects WHERE tenant_id=$1 AND project_id=$2 AND kind='video'
      AND content_state='active' AND retention_expires_at>clock_timestamp() AND body->>'data_mode'=$3
      AND ($4::timestamptz IS NULL OR (created_at,id)<($4,$5::uuid)) ORDER BY created_at DESC,id DESC LIMIT 21`,
-    [tenant, project, mode(db), before?.created_at ?? null, before?.id ?? null],
-  )).rows;
-  return { items: rows.slice(0, 20), next_cursor: rows.length > 20 ? rows[19].id : null };
+      [
+        tenant,
+        project,
+        mode(db),
+        before?.created_at ?? null,
+        before?.id ?? null,
+      ],
+    )
+  ).rows;
+  return {
+    items: rows.slice(0, 20),
+    next_cursor: rows.length > 20 ? rows[19].id : null,
+  };
 }
 
 export async function readVideoToolProject(
-  tx: Tx, db: Database, principal: Principal, tenant: string, project: string, video: string,
+  tx: Tx,
+  db: Database,
+  principal: Principal,
+  tenant: string,
+  project: string,
+  video: string,
 ) {
   await projectAccess(tx, principal, tenant, project);
   return detail(tx, await parent(tx, tenant, project, video, db));
@@ -473,6 +637,150 @@ export function registerVideoProjects(
   storage: Storage,
 ) {
   const base = "/v1/tenants/:tenant/projects/:project/video-projects";
+  app.get(
+    base + "/templates",
+    { preHandler: requireUser(db) },
+    async (req, reply) => {
+      const p = scope.parse(req.params),
+        q = z
+          .object({
+            locale: z.enum(["zh-HK", "en"]).default("zh-HK"),
+            format: z
+              .enum(["portrait", "square", "landscape"])
+              .default("portrait"),
+          })
+          .strict()
+          .parse(req.query);
+      return reply.header("Cache-Control", "no-store").send(
+        await db.tx(async (tx) => {
+          await projectAccess(tx, req.principal, p.tenant, p.project, "write");
+          return { items: videoTemplates(q.locale, q.format) };
+        }, p.tenant),
+      );
+    },
+  );
+  app.get(
+    base + "/resources",
+    { preHandler: requireUser(db) },
+    async (req, reply) => {
+      const p = scope.parse(req.params),
+        q = z
+          .object({
+            kind: z.enum(["image", "audio"]),
+            q: z.string().trim().max(150).default(""),
+            cursor: uuid.optional(),
+          })
+          .strict()
+          .parse(req.query);
+      return reply.header("Cache-Control", "no-store").send(
+        await db.tx(async (tx) => {
+          await projectAccess(tx, req.principal, p.tenant, p.project, "write");
+          const rows = (
+            await tx.query(
+              `SELECT a.id AS asset_id,a.name,v.version,v.id AS source_version_id,v.sha256,v.mime_type,v.bytes::text
+        FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version
+        LEFT JOIN tasks t ON t.id::text=v.metadata->>'task_id'
+        WHERE a.project_id=$1 AND a.private_owner IS NULL AND a.state='active' AND a.retention_expires_at>clock_timestamp()
+          AND v.erased_at IS NULL AND coalesce(v.metadata->>'data_mode',t.data_mode)=$2
+          AND (($3='image' AND v.mime_type='image/png' AND v.bytes<=8000000) OR ($3='audio' AND v.mime_type IN('audio/wav','audio/mpeg') AND v.bytes<=30000000))
+          AND ($4='' OR a.name ILIKE $4 ESCAPE '\\') AND ($5::uuid IS NULL OR v.id>$5)
+          AND task_asset_version_sources_available(v.id) AND analysis_asset_available(a.id) AND matrix_asset_available(a.id) AND video_asset_available(a.id)
+        ORDER BY v.id LIMIT 21`,
+              [
+                p.project,
+                mode(db),
+                q.kind,
+                q.q ? "%" + q.q.replace(/[\\%_]/g, "\\$&") + "%" : "",
+                q.cursor ?? null,
+              ],
+            )
+          ).rows;
+          return {
+            items: rows.slice(0, 20),
+            next_cursor: rows.length > 20 ? rows[19].source_version_id : null,
+          };
+        }, p.tenant),
+      );
+    },
+  );
+  app.post(
+    base + "/draft-preview",
+    {
+      preHandler: requireUser(db),
+      bodyLimit: 250000,
+      config: { rateLimit: { max: 40, timeWindow: 60000 } },
+    },
+    async (req, reply) => {
+      const p = scope.parse(req.params),
+        body = z
+          .object({
+            definition: videoDefinition,
+            frame: z.number().int().min(0).max(1799),
+            video_id: uuid.optional(),
+            expected_version: z.number().int().positive().optional(),
+          })
+          .strict()
+          .superRefine((b, c) => {
+            if (!!b.video_id !== !!b.expected_version)
+              c.addIssue({
+                code: "custom",
+                message:
+                  "An existing preview requires its exact project version",
+              });
+          })
+          .parse(req.body);
+      return reply.header("Cache-Control", "no-store").send(
+        await db.tx(async (tx) => {
+          await lockUserAuthorities(tx, [req.principal.id]);
+          await projectAccess(tx, req.principal, p.tenant, p.project, "write");
+          const original = body.video_id
+            ? await parent(tx, p.tenant, p.project, body.video_id, db, true)
+            : null;
+          if (original && original.version !== body.expected_version)
+            throw new Problem(
+              409,
+              "VERSION_CONFLICT",
+              "Reload the original video version before previewing this edit",
+            );
+          if (
+            original?.private_owner &&
+            original.private_owner !== req.principal.id
+          )
+            throw new Problem(404, "NOT_FOUND", "Video project not found");
+          await fixedSources(
+            tx,
+            p.project,
+            body.definition,
+            original?.private_owner ?? null,
+          );
+          const images: VideoSource[] = [];
+          for (const ref of videoFrameReferences(body.definition, body.frame)) {
+            const v = await source(
+                tx,
+                p.project,
+                ref,
+                true,
+                original?.private_owner ?? null,
+              ),
+              bytes = await storage.get(v.storage_key);
+            if (bytes.length !== Number(v.bytes) || hash(bytes) !== v.sha256)
+              throw new Problem(
+                422,
+                "VIDEO_SOURCE_INTEGRITY",
+                "The fixed preview image changed",
+              );
+            images.push({
+              ...ref,
+              mime_type: v.mime_type,
+              sha256: v.sha256,
+              bytes,
+            });
+          }
+          return previewVideoFrame(body.definition, body.frame, images);
+        }, p.tenant),
+      );
+    },
+  );
   app.get(base, { preHandler: requireUser(db) }, async (req) => {
     const { tenant, project } = scope.parse(req.params),
       q = z.object({ before: uuid.optional() }).strict().parse(req.query);
@@ -503,7 +811,7 @@ export function registerVideoProjects(
     const { tenant, project } = scope.parse(req.params),
       b = videoCreate.parse(req.body),
       requestKey = key(req),
-      profile = await videoRendererProfile();
+      profile = await videoRendererProfile(undefined, b.definition);
     return db.tx(async (tx) => {
       await lockUserAuthorities(tx, [req.principal.id]);
       await projectAccess(tx, req.principal, tenant, project, "write");
@@ -540,7 +848,7 @@ export function registerVideoProjects(
       const { tenant, project, video } = projectParams.parse(req.params),
         b = videoEdit.parse(req.body),
         requestKey = key(req),
-        profile = await videoRendererProfile();
+        profile = await videoRendererProfile(undefined, b.definition);
       return db.tx(async (tx) => {
         await lockUserAuthorities(tx, [req.principal.id]);
         await projectAccess(tx, req.principal, tenant, project, "write");
@@ -551,7 +859,17 @@ export function registerVideoProjects(
           "video.project.edit:" + video,
           requestKey,
           b,
-          () => editVideoProject(tx, db, req.principal, tenant, project, video, b, profile),
+          () =>
+            editVideoProject(
+              tx,
+              db,
+              req.principal,
+              tenant,
+              project,
+              video,
+              b,
+              profile,
+            ),
         );
       }, tenant);
     },
@@ -604,16 +922,42 @@ export function registerVideoProjects(
           "video.render.cancel:" + render,
           requestKey,
           b,
-          () => cancelVideoRender(tx, db, req.principal, tenant, project, video, render, b.expected_revision),
+          () =>
+            cancelVideoRender(
+              tx,
+              db,
+              req.principal,
+              tenant,
+              project,
+              video,
+              render,
+              b.expected_revision,
+            ),
         );
       }, tenant);
     },
   );
-  app.get(base + "/:video/renders/:render/status", { preHandler: requireUser(db) }, async (req, reply) => {
-    const { tenant, project, video, render } = renderParams.parse(req.params);
-    reply.header("Cache-Control", "no-store");
-    return db.tx(tx => videoRenderToolStatus(tx, db, req.principal, tenant, project, video, render), tenant);
-  });
+  app.get(
+    base + "/:video/renders/:render/status",
+    { preHandler: requireUser(db) },
+    async (req, reply) => {
+      const { tenant, project, video, render } = renderParams.parse(req.params);
+      reply.header("Cache-Control", "no-store");
+      return db.tx(
+        (tx) =>
+          videoRenderToolStatus(
+            tx,
+            db,
+            req.principal,
+            tenant,
+            project,
+            video,
+            render,
+          ),
+        tenant,
+      );
+    },
+  );
   app.get(
     base + "/:video/renders/:render/preview",
     { preHandler: requireUser(db) },
@@ -789,7 +1133,11 @@ export async function advanceVideoProjects(
       // Record a denied origin inside the ordinary claim savepoint below so an
       // expired owner cannot leave a queued job starving the remaining queue.
       let originError: unknown;
-      try { await assertDesktopVideoOrigin(tx, candidate); } catch (error) { originError = error; }
+      try {
+        await assertDesktopVideoOrigin(tx, candidate);
+      } catch (error) {
+        originError = error;
+      }
       // Lock in the same order as user actions, then record a validation failure
       // inside the savepoint if an active parent has expired since queueing.
       await tx.query(
@@ -898,7 +1246,13 @@ export async function advanceVideoProjects(
         const expected = await verifyInput(tx, claim),
           result: VideoSource[] = [];
         for (const ref of expected) {
-          const current = await source(tx, claim.project_id, ref, true, claim.private_owner),
+          const current = await source(
+              tx,
+              claim.project_id,
+              ref,
+              true,
+              claim.private_owner,
+            ),
             bytes = await storage.get(current.storage_key);
           if (bytes.length !== Number(ref.bytes) || hash(bytes) !== ref.sha256)
             throw new Problem(
@@ -991,7 +1345,9 @@ export async function advanceVideoProjects(
               input_hash: claim.input_hash,
               ai_cost_micros: "0",
               cost_source: "local_composition_no_ai",
-              ...(claim.origin_task_id ? { task_id: claim.origin_task_id } : {}),
+              ...(claim.origin_task_id
+                ? { task_id: claim.origin_task_id }
+                : {}),
             },
           });
           ids.push(a.id);

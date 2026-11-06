@@ -1,3 +1,28 @@
+<!-- integrated-round-201 -->
+
+## 201 · 0.5.9 · Motion production and actual delivery
+
+[Evidence and limits / 證據與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-201/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Six bilingual video starters and three formats add authorized /video-projects/templates, /resources and /draft-preview routes:759 regular routes plus one conditional route. Templates make no model calls or invented campaign metrics.
+
+2. Crossfade/slide-left use1–45 integer frames, at most half the incoming scene; scene1 cannot transition. Actual transitions select cuts-3; legacy definitions retain their original digest/cuts-2. PNG preview and MP4 share drawing; transition frames are individually rendered. Full decode/audio/budget checks remain.
+
+3. A frame preview binds current identity/project/original version and rechecks private scope, fixed sources, availability, data mode and SHA. It creates no assets/provider requests/charges and qualifies only a visual frame. Shared PNG/WAV/MP3 search returns20 per page; production rechecks authority.
+
+4. All AI requests still use company servers and per-model Admin API/key settings. Web/Extension Codex runs in the cloud; Desktop Codex runs on the customer computer. Schema163 is unchanged.
+
+```mermaid
+flowchart LR
+ A[Current project authority] --> B[Fixed source versions and SHA]
+ B --> C[Actual frame preview]
+ B --> D[Immutable saved definition]
+ D --> E[Real MP4 and full decode]
+ E --> F[Versioned project and source package]
+```
+
+Earlier installation, architecture and use details remain below.
+
 <!-- integrated-round-200 -->
 
 ## 200 · 0.5.8 · Design production, authorized resources and exact evidence

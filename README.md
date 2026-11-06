@@ -1,3 +1,28 @@
+<!-- integrated-round-201 -->
+
+## 201 · 0.5.9 · 影片製作與實際交付
+
+[Evidence and limits / 證據與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-201/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 六種中英影片版面、三種比例，以及 /video-projects/templates、/resources、/draft-preview 三個獲准路由；目前759個常規路由及1個條件路由。範本不調模型、不建立虛構營銷數值。
+
+2. 交叉淡化／向左滑動轉場1–45整數幀，不超過進場鏡頭一半，首鏡頭不接受轉場。新工程按實際轉場使用cuts-3；舊工程缺失此欄位時保留原摘要和cuts-2。PNG預覽和MP4共用繪圖函式，轉場逐幀渲染，正式成片仍完整解碼、檢查音軌與預算。
+
+3. 單幀預覽綁定當前使用者／項目／原工程版本，重新核對私人範圍、固定素材、來源狀態、資料環境和SHA，不建立資產／模型請求／費用；只檢查畫面。共享PNG／WAV／MP3搜尋20條分頁；製作時再次核對。
+
+4. 所有AI請求仍經公司伺服器；Admin按每個模型配置上游API／key。Web與Extension的Codex在雲端，Desktop的Codex在客戶本機。schema163不變。
+
+```mermaid
+flowchart LR
+ A[Current project authority] --> B[Fixed source versions and SHA]
+ B --> C[Actual frame preview]
+ B --> D[Immutable saved definition]
+ D --> E[Real MP4 and full decode]
+ E --> F[Versioned project and source package]
+```
+
+以下保留完整安裝、架構和使用細則。
+
 <!-- integrated-round-200 -->
 
 ## 200 · 0.5.8 · 設計製作、授權素材與精確證據

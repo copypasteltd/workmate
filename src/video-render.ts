@@ -72,12 +72,17 @@ async function processFile(
     );
   }
 }
-export async function videoRendererProfile(signal?: AbortSignal) {
+export async function videoRendererProfile(
+  signal?: AbortSignal,
+  definition?: VideoDefinition,
+) {
   const font = await loadVideoFont();
   const encoder = await processFile(ffmpeg(), ["-version"], signal, 10000);
   const probe = await processFile(ffprobe(), ["-version"], signal, 10000);
   return {
-    renderer: "copypaste-campaign-cuts-2",
+    renderer: definition?.storyboard.some((s) => s.transition)
+      ? "copypaste-campaign-cuts-3"
+      : "copypaste-campaign-cuts-2",
     font_id: font.font_id,
     font_sha256: font.sha256,
     ffmpeg_sha256: hash(encoder.stdout),
@@ -188,18 +193,22 @@ function contained(
     image.height * scale,
   );
 }
-function drawFrame(
+function drawStill(
   definition: VideoDefinition,
   frame: number,
   family: string,
   images: Map<string, Image>,
+  fixedScene?: VideoDefinition["storyboard"][number],
+  captions = true,
 ) {
   const { width: w, height: h, brand } = definition,
     canvas = createCanvas(w, h),
     ctx = canvas.getContext("2d");
-  const scene = definition.storyboard.find(
-    (s) => frame >= s.start_frame && frame < s.end_frame,
-  )!;
+  const scene =
+    fixedScene ??
+    definition.storyboard.find(
+      (s) => frame >= s.start_frame && frame < s.end_frame,
+    )!;
   const cue = definition.subtitles.find(
     (s) => frame >= s.start_frame && frame < s.end_frame,
   );
@@ -275,7 +284,7 @@ function drawFrame(
       brand.ink,
       600,
     );
-  if (cue) {
+  if (cue && captions) {
     ctx.fillStyle = "#101622";
     ctx.fillRect(w * 0.06, h * 0.8, w * 0.88, h * 0.12);
     drawText(
@@ -289,7 +298,157 @@ function drawFrame(
       500,
     );
   }
+  return canvas;
+}
+function drawFrame(
+  definition: VideoDefinition,
+  frame: number,
+  family: string,
+  images: Map<string, Image>,
+) {
+  const index = definition.storyboard.findIndex(
+      (s) => frame >= s.start_frame && frame < s.end_frame,
+    ),
+    scene = definition.storyboard[index];
+  const transition = scene.transition,
+    position = frame - scene.start_frame;
+  if (!transition || position >= transition.frames)
+    return drawStill(definition, frame, family, images).toBuffer("image/png");
+  const previous = definition.storyboard[index - 1],
+    canvas = createCanvas(definition.width, definition.height),
+    ctx = canvas.getContext("2d");
+  const progress = position / transition.frames,
+    incoming = drawStill(definition, frame, family, images, scene, false);
+  // Captions belong to the current timeline, including over the outgoing scene.
+  ctx.drawImage(
+    drawStill(definition, frame, family, images, previous, false),
+    0,
+    0,
+  );
+  if (transition.kind === "crossfade") {
+    ctx.globalAlpha = progress;
+    ctx.drawImage(incoming, 0, 0);
+    ctx.globalAlpha = 1;
+  } else {
+    ctx.fillStyle = definition.brand.background;
+    ctx.fillRect(0, 0, definition.width, definition.height);
+    ctx.drawImage(
+      drawStill(definition, frame, family, images, previous, false),
+      -progress * definition.width,
+      0,
+    );
+    ctx.drawImage(incoming, (1 - progress) * definition.width, 0);
+  }
+  const cue = definition.subtitles.find(
+    (c) => frame >= c.start_frame && frame < c.end_frame,
+  );
+  if (cue) {
+    const w = definition.width,
+      h = definition.height,
+      unit = Math.min(w, h);
+    ctx.fillStyle = "#101622";
+    ctx.fillRect(w * 0.06, h * 0.8, w * 0.88, h * 0.12);
+    drawText(
+      ctx,
+      cue.text,
+      { x: w * 0.08, y: h * 0.814, width: w * 0.84, height: h * 0.095 },
+      family,
+      Math.floor(unit * 0.04),
+      Math.max(10, Math.floor(unit * 0.024)),
+      "#ffffff",
+      500,
+    );
+  }
   return canvas.toBuffer("image/png");
+}
+export function videoFrameReferences(
+  definition: VideoDefinition,
+  frame: number,
+) {
+  const index = definition.storyboard.findIndex(
+      (s) => frame >= s.start_frame && frame < s.end_frame,
+    ),
+    scene = definition.storyboard[index];
+  if (!scene)
+    throw new Problem(
+      422,
+      "VIDEO_FRAME_INVALID",
+      "Choose a frame inside the timeline",
+    );
+  const previous =
+    scene.transition && frame - scene.start_frame < scene.transition.frames
+      ? definition.storyboard[index - 1]
+      : undefined;
+  return [
+    ...new Map(
+      [definition.brand.logo, scene.image, previous?.image]
+        .filter((r): r is VideoAssetRef => !!r)
+        .map((r) => [identity(r), r]),
+    ).values(),
+  ];
+}
+export async function previewVideoFrame(
+  input: VideoDefinition,
+  frame: number,
+  sources: VideoSource[],
+) {
+  const definition = videoDefinition.parse(input);
+  if (
+    !Number.isSafeInteger(frame) ||
+    frame < 0 ||
+    frame >= definition.duration_frames
+  )
+    throw new Problem(
+      422,
+      "VIDEO_FRAME_INVALID",
+      "Choose a frame inside the timeline",
+    );
+  const font = await loadVideoFont([
+    definition.brand.label,
+    definition.script.call_to_action,
+    ...definition.storyboard.flatMap((s) => [s.headline, s.body]),
+    ...definition.subtitles.map((s) => s.text),
+  ]);
+  const light = [
+    luminance(definition.brand.background),
+    luminance(definition.brand.ink),
+  ].sort((a, b) => b - a);
+  if ((light[0] + 0.05) / (light[1] + 0.05) < 4.5)
+    throw new Problem(
+      422,
+      "VIDEO_TEXT_CONTRAST",
+      "Brand text needs at least 4.5:1 contrast against its background",
+    );
+  const images = new Map<string, Image>();
+  for (const ref of videoFrameReferences(definition, frame)) {
+    const source = sources.find((s) => identity(s) === identity(ref));
+    if (
+      !source ||
+      source.mime_type !== "image/png" ||
+      hash(source.bytes) !== source.sha256
+    )
+      throw new Problem(
+        422,
+        "VIDEO_SOURCE_INTEGRITY",
+        "The fixed preview image is unavailable or changed",
+      );
+    checkedImage(source);
+    images.set(identity(ref), await loadImage(source.bytes));
+  }
+  const bytes = drawFrame(definition, frame, font.family, images);
+  return {
+    content_type: "image/png" as const,
+    base64: bytes.toString("base64"),
+    bytes: bytes.length,
+    sha256: hash(bytes),
+    width: definition.width,
+    height: definition.height,
+    frame,
+    definition_sha256: hash(canonical(definition)),
+    saved: false as const,
+    scope: "visual_frame_only" as const,
+    ai_cost_micros: "0" as const,
+  };
 }
 export async function renderVideoProject(
   input: VideoDefinition,
@@ -304,7 +463,7 @@ export async function renderVideoProject(
     ...definition.storyboard.flatMap((s) => [s.headline, s.body]),
     ...definition.subtitles.map((s) => s.text),
   ]);
-  const profile = await videoRendererProfile(signal);
+  const profile = await videoRendererProfile(signal, definition);
   if (
     options.expectedProfile &&
     canonical(options.expectedProfile) !== canonical(profile)
@@ -361,7 +520,16 @@ export async function renderVideoProject(
       ...new Set([
         0,
         definition.duration_frames,
-        ...definition.storyboard.flatMap((s) => [s.start_frame, s.end_frame]),
+        ...definition.storyboard.flatMap((s) => [
+          s.start_frame,
+          s.end_frame,
+          ...(s.transition
+            ? Array.from(
+                { length: s.transition.frames },
+                (_, i) => s.start_frame + i + 1,
+              )
+            : []),
+        ]),
         ...definition.subtitles.flatMap((s) => [s.start_frame, s.end_frame]),
       ]),
     ].sort((a, b) => a - b);
