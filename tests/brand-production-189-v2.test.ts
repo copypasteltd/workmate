@@ -1,3 +1,4 @@
+import { withUnadmittedToolRetry } from "./task-tool-protocol-199.js";
 import { currentRouteInventory } from "./route-inventory-189-v2.js";
 import { Ajv2020 } from "ajv/dist/2020.js";
 import { createRequire } from "node:module";
@@ -810,6 +811,7 @@ test("a real queued designer task and tool replay enforce the frozen brand and r
     calls = 0;
   class BrandRuntime extends CodexRuntimeAdapter {
     override async start(ctx: RuntimeContext): Promise<RuntimeResult> {
+    ctx = { ...ctx, tools: ctx.tools.map(withUnadmittedToolRetry) };
       calls++;
       assert.ok(ctx.prompt.includes('"amount_minor":12800'));
       assert.ok(!ctx.prompt.includes('"amount_minor":18800'));

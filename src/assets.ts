@@ -4,8 +4,26 @@ import { z } from "zod";
 import type { Database } from "./db.js";
 import { audit, requireUser } from "./auth.js";
 import { projectAccess, key, replay } from "./access.js";
-import { hash, name, Problem, token, uuid } from "./lib.js";
+import { canonical, hash, name, Problem, token, uuid } from "./lib.js";
 import { Storage, saveAsset } from "./storage.js";
+import { editableDesignSchema } from "./editable-design-model.js";
+import { parseEditableInput } from "./editable-project-source.js";
+
+function publishedDesignMetadata(mime: string, bytes: Buffer, metadata: Record<string, unknown>) {
+  // Copy only validated source classification. Private task/conversation and
+  // execution bindings are not transferred to the shared publication.
+  if (mime !== "application/json" || metadata.editable_design_schema !== editableDesignSchema || bytes.length > 12 * 1024 ** 2) return {};
+  let body: any;
+  try { body = JSON.parse(bytes.toString("utf8")); } catch { return {}; }
+  // The design tool also tags review manifests: those remain ordinary files.
+  if (body.schema !== editableDesignSchema) return {};
+  if (!["vector", "presentation"].includes(body.kind) || metadata.design_kind !== body.kind || body.data_mode !== metadata.data_mode)
+    throw new Problem(422, "EDITABLE_SOURCE_INVALID", "The published design source does not match its recorded kind and environment");
+  const input = parseEditableInput(body.kind, body.input);
+  if (hash(canonical(input)) !== body.input_sha256)
+    throw new Problem(409, "DESIGN_SOURCE_INTEGRITY", "The published design source failed its input digest check");
+  return { editable_design_schema: editableDesignSchema, design_kind: body.kind };
+}
 
 const params = z.object({ tenant: uuid, project: uuid });
 const assetParams = params.extend({ asset: uuid });
@@ -78,15 +96,18 @@ export function registerAssets(
                 "TASK_SOURCE_REVOKED",
                 "A source used by this artifact is no longer available",
               );
+            const bytes = await storage.get(a.storage_key);
+            const designMetadata = publishedDesignMetadata(a.mime_type, bytes, a.metadata);
             const result = await saveAsset(tx, storage, {
               tenant,
               project,
               user: req.principal.id,
               name: b.name,
               mime: a.mime_type,
-              bytes: await storage.get(a.storage_key),
+              bytes,
               kind: "published_deliverable",
               metadata: {
+                ...designMetadata,
                 publication_origin_version_id: a.source_version_id,
                 publication_sources: provenance,
               },

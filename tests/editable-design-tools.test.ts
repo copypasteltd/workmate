@@ -1,3 +1,4 @@
+import { withUnadmittedToolRetry } from "./task-tool-protocol-199.js";
 import { before, after, test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -188,6 +189,7 @@ class FixtureRuntime extends CodexRuntimeAdapter {
     super(s.db.config);
   }
   override async start(ctx: RuntimeContext): Promise<RuntimeResult> {
+    ctx = { ...ctx, tools: ctx.tools.map(withUnadmittedToolRetry) };
     try {
       await this.perform(ctx);
     } catch (error) {

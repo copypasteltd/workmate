@@ -1,3 +1,31 @@
+<!-- integrated-round-199 -->
+
+## 199 · 0.5.7 · Direct editing and source-to-delivery continuity
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-199/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Web/Extension execute company-hosted Codex; Desktop Codex runs on the customer computer. Admin configures each model with its own upstream API URL, key, alias and rates; all AI calls use company servers.
+
+2. Adds authorized unsaved design previews with exact head/original-version and shared fixed-source checks. Returns a maximum960px PNG with digest/version metadata, without writing versions/assets/provider requests/charges. Rendering remains bounded; schema163 is unchanged.
+
+3. Fixes private design source publication losing editable classification. Actual schema/kind/environment/input digest are checked before copying only source classification. Original provenance stays; private task/conversation bindings do not transfer. Existing incomplete publications remain immutable; explicitly publish the original source again.
+
+4. Relevant regressions cover vector/presentation publication→discovery→creation→preview, idempotency, forged digests, unauthorized reads, actual pixel changes, stale heads and withdrawal. Controlled fixtures do not establish real upstream professional acceptance.
+
+```mermaid
+flowchart LR
+ A[Cloud Codex source / 雲端來源] --> B[Explicit publication / 明確發布]
+ B --> C[Shared project / 共用工程]
+ C --> D[Direct canvas and draft / 畫布與草稿]
+ D --> E[Current authority and actual preview / 授權與真實預覽]
+ E --> F[Save immutable version / 儲存新版本]
+ F --> G[Download delivery / 下載交付]
+ D --> H[Review and recover / 核對並恢復]
+ H --> D
+```
+
+Earlier release/setup sections remain below. This batch does not close full original acceptance.
+
 <!-- integrated-round-198 -->
 
 ## 198 · 0.5.6 · Full task directory and current authority

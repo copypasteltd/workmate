@@ -1,3 +1,31 @@
+<!-- integrated-round-199 -->
+
+## 199 · 0.5.7 · 直接編輯與來源交付接續
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-199/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Web／Extension在公司雲端執行Codex，Desktop在客戶本機執行。每個模型在Admin分別配置上游API地址、API key、別名與費率，所有AI請求經公司伺服器。
+
+2. 新增受授權的未儲存設計預覽：核對最新工程頭、原版本、私人／共享來源及固定素材，返回最大960px PNG與完整SHA-256／版本標識；不寫版本、資產、模型或費用。沿用有界渲染隊列，schema163不變。
+
+3. 修復私人設計成果發布後無法被工程識別。發布檢查實際來源schema／kind／環境及輸入摘要，只複製必要類型；原來源追溯保留，私人任務及會話綁定不轉移。既有不完整發布保持原樣，可從原私人來源明確重新發布。
+
+4. 相關回歸覆蓋矢量及簡報的發布→發現→建立→預覽、同鍵回放、偽造摘要、無權存取、實際像素變化、併發頭與來源撤回；受控夾具並非真實上游專業驗收。
+
+```mermaid
+flowchart LR
+ A[Cloud Codex source / 雲端來源] --> B[Explicit publication / 明確發布]
+ B --> C[Shared project / 共用工程]
+ C --> D[Direct canvas and draft / 畫布與草稿]
+ D --> E[Current authority and actual preview / 授權與真實預覽]
+ E --> F[Save immutable version / 儲存新版本]
+ F --> G[Download delivery / 下載交付]
+ D --> H[Review and recover / 核對並恢復]
+ H --> D
+```
+
+下方保留此前版本與完整使用／安裝說明。本輪不代表全部原始要求已完成驗收。
+
 <!-- integrated-round-198 -->
 
 ## 198 · 0.5.6 · 完整任务目录与当前授权

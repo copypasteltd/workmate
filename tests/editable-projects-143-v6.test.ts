@@ -1,3 +1,4 @@
+import { withUnadmittedToolRetry } from "./task-tool-protocol-199.js";
 import { before, after, test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -217,6 +218,7 @@ test("the actual presentation specialist reads restored chart values and emits a
   let failure: unknown, result: any;
   class Runtime extends CodexRuntimeAdapter {
     override async start(ctx: RuntimeContext): Promise<RuntimeResult> {
+    ctx = { ...ctx, tools: ctx.tools.map(withUnadmittedToolRetry) };
       try { const tool = (name: string) => { const t = ctx.tools.find(t => t.name === name); assert.ok(t, name); return t; }, chart = d.input.slides[0].scene.layers.find((l: any) => l.kind === "chart"),
         facts: any = await tool("design_chart_read").run({ source_version_id: chart.source_version_id, offset: 0 }, randomUUID());
         assert.equal(facts.data_provenance, "user_attested_import"); assert.equal(facts.evidence[0].value, "123.450000000001");

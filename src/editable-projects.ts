@@ -160,6 +160,37 @@ export function registerEditableProjects(app: FastifyInstance, db: Database, sto
       return result;
     }, scope.tenant));
   });
+  // Draft preview is an authorized read: it never saves versions/assets or calls
+  // a provider. Both the opened version and current head must still be usable.
+  app.post(base + "/:id/draft-preview", { ...guard, bodyLimit: 2_500_000 }, async (req, reply) => {
+    const scope = scopeSchema.extend({ id: uuid }).parse(req.params), body = z.object({
+      expected_version: z.number().int().positive(), source_version: z.number().int().positive(),
+      input: z.unknown(), page: z.number().int().min(1).max(20).default(1),
+    }).strict().parse(req.body);
+    const result = await bounded(req.principal.id, () => db.tx(async tx => {
+      await projectAccess(tx, req.principal, scope.tenant, scope.project);
+      const p = await selectEditableProject(tx, scope, scope.id, body.expected_version);
+      if (p.body.data_mode !== mode(db)) throw new Problem(404, "NOT_FOUND", "This project is unavailable in this service mode");
+      const available = (await tx.query(`SELECT version FROM editable_project_versions WHERE creative_id=$1 AND version=$2
+        AND editable_project_version_available(creative_id,version)`, [p.id, body.source_version])).rows[0];
+      if (!available) throw new Problem(404, "NOT_FOUND", "The original version or its sources are unavailable");
+      const input = cleanEditableInput(p.kind, body.input), checked = await loadEditableResources(tx, storage, scope.project, p.kind, input),
+        scene = editableScenes(p.kind, input)[body.page - 1];
+      if (!scene) throw new Problem(404, "NOT_FOUND", "Choose an available page");
+      const rendered = await renderEditableDesign("vector", { title: input.title, locale: input.locale, purpose: "Unsaved project page preview", scene,
+        ...(input.brand ? { brand: input.brand } : {}) }, checked.resources, checked.imported_evidence ? "user_attested_import" : mode(db));
+      const image = rendered.files.find(v => v.mime === "image/png");
+      if (!image) throw new Problem(404, "NOT_FOUND", "The preview is unavailable");
+      let bytes = image.bytes;
+      if (Math.max(scene.width, scene.height) > 960) {
+        const scale = 960 / Math.max(scene.width, scene.height), canvas = createCanvas(Math.round(scene.width * scale), Math.round(scene.height * scale));
+        canvas.getContext("2d").drawImage(await loadImage(bytes), 0, 0, canvas.width, canvas.height); bytes = canvas.toBuffer("image/png");
+      }
+      return { content_type: "image/png", base64: bytes.toString("base64"), bytes: bytes.length, sha256: hash(bytes), input_sha256: hash(canonical(input)),
+        project_id: p.id, source_version: body.source_version, current_version: p.version, page: body.page, saved: false, provider_calls: 0 };
+    }, scope.tenant));
+    return reply.header("Cache-Control", "no-store").send(result);
+  });
   app.get(base + "/:id/preview", guard, async (req, reply) => {
     const scope = scopeSchema.extend({ id: uuid }).parse(req.params), q = z.object({ version: z.coerce.number().int().positive(), page: z.coerce.number().int().min(1).max(20).default(1) }).strict().parse(req.query);
     const bytes = await bounded(req.principal.id, () => db.tx(async tx => {

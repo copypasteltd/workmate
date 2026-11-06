@@ -25,5 +25,10 @@ export async function currentRouteInventory() {
   const finalRoutes=[...currentRoutes,...directory.routes],finalConditional=[...currentConditional,...directory.conditional_routes];
   assert.equal(new Set([...finalRoutes,...finalConditional].map(row=>row.method+" "+row.path)).size,finalRoutes.length+finalConditional.length);
   assert.equal(finalRoutes.length,directory.expected_current_routes);assert.equal(finalConditional.length,directory.expected_current_conditional_routes);
-  return {...previous,routes:finalRoutes,conditional_routes:finalConditional};
+  const design=JSON.parse(await readFile("contracts/design-draft-route-additions-199.json","utf8"));
+  assert.equal(design.baseline_lf_sha256,addition.baseline_lf_sha256);
+  const allRoutes=[...finalRoutes,...design.routes],allConditional=[...finalConditional,...design.conditional_routes];
+  assert.equal(new Set([...allRoutes,...allConditional].map(row=>row.method+" "+row.path)).size,allRoutes.length+allConditional.length);
+  assert.equal(allRoutes.length,design.expected_current_routes);assert.equal(allConditional.length,design.expected_current_conditional_routes);
+  return {...previous,routes:allRoutes,conditional_routes:allConditional};
 }
