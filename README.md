@@ -1,3 +1,33 @@
+<!-- integrated-round-204 -->
+
+## 204 · 0.7.17 · 安全工具反馈与云端执行时效
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-204/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 下载后采用浏览器S256授权；Codex在客户电脑本地运行。客户可明确授予并撤销完整本机权限，窗口保持无边框、无Electron自带菜单。
+
+2. 选择云端工作的审阅页使用相同安全反馈和关键活动保留；本机认证、公司API桥接、加密存储及保存功能按原生实现保留，未执行renderer:sync。
+
+3. 最终0.7.17安装／便携包核对固定Codex字节、全新原生授权、实际页面及同字节保存。受控错误界面验证与真实正式Web／最终原生Desktop旅程分别标注。
+
+```mermaid
+flowchart LR
+ A[Download and S256 login] --> B[Frameless local Codex]
+ B --> C[Explicit revocable local permission]
+ B --> D[Cloud evidence review]
+ D --> E[Safe result feedback and native save]
+```
+
+725项相关通过证据区分本轮执行与原样源码沿用。一项关联原失败的营销样例已交付实际文件。四份内网文件完整字节／SHA通过。公网大安装包仅有部分传输证据，完整公网下载检查未通过；本次应用更新与Git同步不代表关闭该项。全部102条／32组、19角色／50Skills专业验收、外部媒体／营销／IdP配置、长稳／设备／并发／灾备及WorkBuddy盲测差距继续保留。原通用错误／租约历史根因、公网默认HTTP/2及正常DNS地址故障转移未因此证明；仅本机验证选用另一个当前公网地址，服务器网络保持不变；不声明完整产品验收通过。
+
+![实际正式站点／最终原生Desktop · Actual deployed Web/final native Desktop](assets/screenshots/204-v1-marketing-review-live.png)
+
+[Recorded interaction / 实际录影](assets/screenshots/workmate-204-v1-marketing-review-live.mp4)
+
+![实际正式站点／最终原生Desktop · Actual deployed Web/final native Desktop](assets/screenshots/workmate-204-v1-marketing-review-live.gif)
+
+以下历史版本说明及完整安装／使用指南继续保留。
+
 <!-- integrated-round-203 -->
 
 ## 203 · 0.7.16 · 专业输入与可靠交付

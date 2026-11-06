@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError, clientSessionGeneration, endClientSession } from "./api";
+import { retainTaskActivity } from "./task-tool-state";
 
 export function useTaskEvents(
   base: string,
@@ -38,11 +39,7 @@ export function useTaskEvents(
     };
     const merge = (batch: any[]) => {
       if (!current()) return;
-      setItems((old) =>
-        [
-          ...new Map([...old, ...batch].map((e) => [String(e.id), e])).values(),
-        ].slice(-400),
-      );
+      setItems((old) => retainTaskActivity(old, batch));
     };
     setItems([]);
     setError(null);

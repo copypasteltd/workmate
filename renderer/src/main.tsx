@@ -125,6 +125,7 @@ import { Members } from "./members";
 import { OwnershipTransferNotice } from "./ownership-transfers";
 import { operationKey } from "./operation-key";
 import { useTaskEvents } from "./task-events";
+import { TaskToolFeedback } from "./task-tool-feedback";
 import {
   Preferences,
   useI18n,
@@ -1425,6 +1426,9 @@ function TaskDetail() {
       ],
       "runtime.startup.retry": ["正在重新連接助手", "Reconnecting your assistant"],
       "runtime.rpc.failed": ["助手連線遇到問題", "Assistant connection encountered an issue"],
+      "runtime.tool.failed": ["部分步驟需要處理", "A step needs attention"],
+      "runtime.tool.recovered": ["步驟已修正並完成", "Step corrected and completed"],
+      "runtime.tool.completed": ["步驟已完成", "Step completed"],
     };
     const labelKey = state || e.body.step_key || e.kind;
     if (labels[labelKey]) return t(...labels[labelKey]);
@@ -1515,6 +1519,7 @@ function TaskDetail() {
             }
           />
           <ErrorNotice error={actionError} />
+          <TaskToolFeedback events={events.data.items} status={data.status} errorCode={data.error_code} />
           {data.pause_requested && ["running","needs_input","paused"].includes(data.status) && <p className="notice" role="status">
             {data.status === "running" ? t("已收到暫停要求，正在等待目前輪次安全結束。已發生用量保留，原預算仍預留。", "Pause requested. Waiting for the current turn to finish safely. Recorded usage and the original budget hold are retained.")
               : data.status === "needs_input" ? t("補充資料後仍會保持暫停，請再按繼續。", "Providing inputs will keep this task paused. Choose Resume when you are ready.")
