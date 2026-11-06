@@ -1,3 +1,32 @@
+<!-- integrated-round-203 -->
+
+## 203 · 0.5.10 · 专业输入与可靠交付
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-203/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 清单中的829份产品源码（含.cts，按列明扩展名取样）及计划用例／交付脚本先完成，再统一构建／测试；不把清单解释为所有文件扩展名均已覆盖。688项相关通过证据按当前运行与原样源码沿用区分，原始失败和整批修正单独保留。
+
+2. 实际隔离上传／草稿范围／存储失败／响应丢失恢复，与实际正式Web／最终Desktop新S256授权、宽复核及同字节原生导出分开。真实角色功能样例／费用／不通过项均列在本轮回执，不能冒充专业客户签收。
+
+3. 只物化自身两个原生运行时目录、切换自身Web静态入口及发布20301下载；无API重启，无Nginx改写／重载。全部9份网络文件与实时规则、原凭证及DB／代理进程保持。
+
+4. 四份发布文件完整内网200和公网原TLS HTTP/1.1全部206字节重组核对SHA。保留H2超时、一次任务租约根因和全部102条／32组开放范围。12份双语README、实际PNG／GIF／MP4、更新说明和普通8引用发布同步。
+
+```mermaid
+flowchart LR
+ A[Complete whole code batch] --> B[Unified build and tests]
+ B --> C[Retain failures and collected correction]
+ C --> B
+ B --> D[Actual clients and exact packages]
+ D --> E[Application-only deployment]
+ E --> F[Unchanged server network and full bytes]
+ F --> G[Bilingual guides and ordinary eight-ref push]
+```
+
+当前开放项：marketing-analyst未交付图表文件，技术状态succeeded不计为通过；通用工具错误的准确原因尚未验证。公网默认HTTP/2停滞及一次任务租约根因也保持开放。详细见证据报告，不声称完整产品验收通过。
+
+以下保留完整架构、安装与使用细则。
+
 <!-- integrated-round-202 -->
 
 ## 202 · 0.5.9 · 营销证据复核、交付与请求恢复

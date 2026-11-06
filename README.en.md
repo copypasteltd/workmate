@@ -1,3 +1,32 @@
+<!-- integrated-round-203 -->
+
+## 203 · 0.5.10 · Pinned specialist intake and reliable delivery
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-203/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Complete the829 listed production-source files, including .cts within the stated selected extensions, and planned cases/operations before unified builds/tests. The manifest does not cover every filesystem extension.688 related passing cases distinguish current runs from identical-source retention; original failures and collected corrections stay separate.
+
+2. Separate isolated real upload/scope/storage/lost-response injection from deployed Web/final Desktop fresh S256 authorization, wide review and identical native exports. Actual role samples, fees and failed outcomes are explicit, not professional customer acceptance.
+
+3. Materialize only two owned native runtime directories, switch the owned Web static entry and publish20301 downloads. No API restart or Nginx write/reload. Preserve all nine network files/live rules, credentials and DB/proxy processes.
+
+4. Verify all four complete inner200 files and every original-TLS HTTP/1.1 public206 byte against whole-file SHA. Retain H2 stalls, one lease investigation and all original102 requirements/32 groups. Synchronize12 bilingual READMEs, actual PNG/GIF/MP4, changes and ordinary eight-ref publication.
+
+```mermaid
+flowchart LR
+ A[Complete whole code batch] --> B[Unified build and tests]
+ B --> C[Retain failures and collected correction]
+ C --> B
+ B --> D[Actual clients and exact packages]
+ D --> E[Application-only deployment]
+ E --> F[Unchanged server network and full bytes]
+ F --> G[Bilingual guides and ordinary eight-ref push]
+```
+
+Open delivery: marketing-analyst returned no chart files; technical succeeded does not qualify it. The exact generic tool failure remains unverified. Default public HTTP/2 stalls and one worker-lease investigation also stay open. See the evidence report; no full-product acceptance is claimed.
+
+The complete architecture, setup and usage guide follows.
+
 <!-- integrated-round-202 -->
 
 ## 202 · 0.5.9 · Evidence review, delivery and safe request recovery
