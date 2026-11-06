@@ -1,3 +1,37 @@
+<!-- integrated-round-196 -->
+
+## 196 · 0.5.1 · 后台兼容与运行就绪
+
+[完整交付與限制 / Delivery and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-196/README.md) · [下載 / Downloads](https://agent.copypaste.hk/downloads)
+
+1. 本轮后台业务源码和版本保持0.5.1，已对当前Backend0.5.3实际复验；使用新邮箱验证码及TOTP登录后台。
+2. 在模型能力中逐个新增/编辑/删除模型，其API地址、密钥、上游别名和费率随该模型配置。运行就绪页只展示状态，不显示密钥值。
+3. 企业和用户目录保留新增、删除及批量操作。最高管理员按现行策略直接执行，其他角色按策略审批；服务器仍检查权限、当前版本与审计。
+4. 运行就绪可检查当前模型、Office和测试邮箱等依赖；角色验收记录真实任务/模板/交付快照，可筛选、分页及批量撤回，不能将受控QA当作客户专业合格。
+5. 本轮首次本机QA启动中断于模型调用前，经服务器零请求证据及现有最高管理员预览/提交对账释放HK$2预留；失败任务、审计和成功第二次任务的真实费用均保留。
+
+```mermaid
+flowchart LR
+ A[Sign in / 登入] --> B[Project, role and budget / 專案角色預算]
+ B --> C{Execution / 執行}
+ C -->|Web or Extension| D[Company cloud Codex / 公司雲端]
+ C -->|Desktop native permission| E[Local Codex / 本機]
+ D --> F[Results, files and actual usage / 成果檔案實際費用]
+ E --> F
+ F --> G[Review and compare / 審閱比較]
+ G --> H[Explicit revision / 明確修改]
+```
+
+`/readiness` · `/role-acceptance` · model capabilities / 模型能力 · organization and user management / 企業與用戶管理
+
+![Actual interface / 實際頁面](assets/screenshots/196-service-readiness.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-196-v1-service-review.gif)
+
+[Actual MP4 / 實際錄影](assets/screenshots/workmate-196-v1-service-review.mp4)
+
+範圍：本輪相關旅程通過，原失敗保留。間歇公網連線超時、專業產出、外部接入及完整生產/兼容驗收仍開放。下方較早章節為歷史版本。
+
 <!-- integrated-round-195 -->
 
 ## 195 · 0.5.1 · 运营管理台 / Admin dashboard

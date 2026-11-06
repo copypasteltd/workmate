@@ -1,3 +1,37 @@
+<!-- integrated-round-196 -->
+
+## 196 · 0.5.1 · Admin compatibility and readiness
+
+[完整交付與限制 / Delivery and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-196/README.md) · [下載 / Downloads](https://agent.copypaste.hk/downloads)
+
+1. Admin business source and version remain0.5.1, requalified against Backend0.5.3. Sign in using a fresh administrator email code and TOTP.
+2. Create/edit/delete model capabilities individually. Each model owns its API URL, key, upstream name and rates. Readiness exposes state without displaying secret values.
+3. Organization/user directories retain creation, deletion and batch actions. Highest administrators execute according to current policy; other roles follow configured approval. Server permissions, current versions and audit remain mandatory.
+4. Readiness checks models, Office, the requested test mailbox and other dependencies. Role acceptance records real task/template/delivery snapshots with filtering, pagination and batch withdrawal. Controlled QA is not professional customer acceptance.
+5. The first native QA startup stopped before model admission. Server zero-request evidence and the existing audited highest-admin preview/commit released itsHK$2 reservation. The failed task and the successful second task charge both remain recorded.
+
+```mermaid
+flowchart LR
+ A[Sign in / 登入] --> B[Project, role and budget / 專案角色預算]
+ B --> C{Execution / 執行}
+ C -->|Web or Extension| D[Company cloud Codex / 公司雲端]
+ C -->|Desktop native permission| E[Local Codex / 本機]
+ D --> F[Results, files and actual usage / 成果檔案實際費用]
+ E --> F
+ F --> G[Review and compare / 審閱比較]
+ G --> H[Explicit revision / 明確修改]
+```
+
+`/readiness` · `/role-acceptance` · model capabilities / 模型能力 · organization and user management / 企業與用戶管理
+
+![Actual interface / 實際頁面](assets/screenshots/196-service-readiness.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-196-v1-service-review.gif)
+
+[Actual MP4 / 實際錄影](assets/screenshots/workmate-196-v1-service-review.mp4)
+
+Scope: selected current journeys pass; original failures remain. Intermittent public HTTPS timeouts, professional outcomes, external integrations and full production/compatibility acceptance remain open. Earlier sections below describe historical releases.
+
 <!-- integrated-round-195 -->
 
 ## 195 · 0.5.1 · 运营管理台 / Admin dashboard
