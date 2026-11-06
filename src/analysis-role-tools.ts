@@ -21,6 +21,7 @@ import {
   recordTaskContentRead,
 } from "./task-content-sources.js";
 import { taskPrivateAssetScopeSQL } from "./task-private-asset-scope.js";
+import { checkedAnalysisSource } from "./analysis-source.js";
 import { connectorFact, connectorLimits } from "./connector-model.js";
 import { campaignFile, normalizeCampaignFile } from "./analytics-file.js";
 import {
@@ -401,16 +402,7 @@ async function sourceVersion(
       "ANALYSIS_SOURCE_INTEGRITY",
       "The editable analysis source failed its byte check",
     );
-  const body = JSON.parse(bytes.toString("utf8"));
-  if (
-    body.schema !== analysisDeliveryVersion ||
-    body.calculation_sha256 !== v.metadata.calculation_sha256
-  )
-    throw new Problem(
-      409,
-      "ANALYSIS_SOURCE_INTEGRITY",
-      "The editable analysis source has an invalid schema or binding",
-    );
+  const body = checkedAnalysisSource(bytes, v.metadata);
   await recordTaskContentRead(tx, t, "asset_version", v.id, v.id, v.sha256);
   return { v, body };
 }

@@ -9,7 +9,7 @@ import {
 import { taskPrivateAssetScopeSQL } from "./task-private-asset-scope.js";
 import { readAnalysisSource } from "./analysis-role-tools.js";
 import { calculationDigest } from "./analysis-role-delivery.js";
-import { importedDesignEvidence, importedEvidenceDigest } from "./portable-design-evidence.js";
+import { importedDesignEvidence, importedEvidenceDigest, designEvidenceScope } from "./portable-design-evidence.js";
 import { prepareBrandProduction } from "./brand-production.js";
 import {
   editableDesignSchema,
@@ -421,22 +421,7 @@ async function resources(
             "DESIGN_EVIDENCE_INVALID",
             "A chart contains an unknown evidence ID",
           );
-        const compatibility = new Set(
-          selected.map((e) => {
-            const scope = JSON.parse(e!.scope);
-            return canonical({
-              metric: e!.metric_id,
-              unit: e!.unit,
-              currency: scope.currency,
-              account_id: scope.account_id,
-              attribution_definition: scope.attribution_definition,
-              conversion_definition: scope.conversion_definition,
-              period: scope.period,
-              date_from: scope.date_from,
-              date_to: scope.date_to,
-            });
-          }),
-        );
+        const compatibility = new Set(selected.map(e => designEvidenceScope(e!)));
         if (compatibility.size !== 1)
           throw new Problem(
             422,
@@ -448,7 +433,7 @@ async function resources(
           return {
             id: e!.id,
             label: String(
-              scope.campaign ??
+              scope.dimensions?.campaign ?? scope.dimensions?.channel ?? scope.dimensions?.entity_id ?? scope.dimensions?.date?.period_day ?? scope.campaign ??
                 scope.channel ??
                 scope.entity_id ??
                 scope.currency ??

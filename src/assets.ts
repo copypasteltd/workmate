@@ -8,6 +8,8 @@ import { canonical, hash, name, Problem, token, uuid } from "./lib.js";
 import { Storage, saveAsset } from "./storage.js";
 import { editableDesignSchema } from "./editable-design-model.js";
 import { parseEditableInput } from "./editable-project-source.js";
+import { checkedAnalysisSource } from "./analysis-source.js";
+import { analysisDeliveryVersion } from "./analysis-role-delivery.js";
 
 function publishedDesignMetadata(mime: string, bytes: Buffer, metadata: Record<string, unknown>) {
   // Copy only validated source classification. Private task/conversation and
@@ -73,7 +75,7 @@ export function registerAssets(
           async () => {
             const a = (
               await tx.query(
-                "SELECT a.*,v.id AS source_version_id,v.storage_key,v.mime_type,v.metadata FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version WHERE a.id=$1 AND a.project_id=$2 AND a.state='active' FOR UPDATE OF a",
+                "SELECT a.*,v.id AS source_version_id,v.storage_key,v.mime_type,v.metadata,v.bytes AS source_bytes,v.sha256 AS source_sha256 FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version WHERE a.id=$1 AND a.project_id=$2 AND a.state='active' FOR UPDATE OF a",
                 [asset, project],
               )
             ).rows[0];
@@ -97,7 +99,17 @@ export function registerAssets(
                 "A source used by this artifact is no longer available",
               );
             const bytes = await storage.get(a.storage_key);
+            if (bytes.length !== Number(a.source_bytes) || hash(bytes) !== a.source_sha256)
+              throw new Problem(409, "PUBLICATION_SOURCE_INTEGRITY", "The original file failed its byte check; no shared copy was created");
             const designMetadata = publishedDesignMetadata(a.mime_type, bytes, a.metadata);
+            let analysisMetadata = {};
+            if (a.mime_type === "application/json" && a.metadata.analysis_role_schema === analysisDeliveryVersion) {
+              let body: any; try { body = JSON.parse(bytes.toString("utf8")); } catch { /* ordinary tagged files are not structured sources */ }
+              if (body?.schema === analysisDeliveryVersion) {
+                const checked = checkedAnalysisSource(bytes, a.metadata);
+                analysisMetadata = { analysis_role_schema: analysisDeliveryVersion, calculation_sha256: checked.calculation_sha256 };
+              }
+            }
             const result = await saveAsset(tx, storage, {
               tenant,
               project,
@@ -108,6 +120,7 @@ export function registerAssets(
               kind: "published_deliverable",
               metadata: {
                 ...designMetadata,
+                ...analysisMetadata,
                 publication_origin_version_id: a.source_version_id,
                 publication_sources: provenance,
               },

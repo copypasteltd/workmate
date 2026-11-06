@@ -1,3 +1,31 @@
+<!-- integrated-round-200 -->
+
+## 200 · 0.5.8 · 設計製作、授權素材與精確證據
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-200/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Web／Extension在公司雲端執行Codex，Desktop在客戶本機執行；所有AI請求經公司伺服器。Admin按每個模型配置獨立API地址、API key、上游別名和費率。
+
+2. 六種中英矢量／簡報起步版面沿用嚴格參數、共用確認、幂等建立、原請求查詢、審計與不可變版本，不調模型。新增/templates、/resources及/resources/:version三個有權路由；目前756個常規路由及1個條件路由。
+
+3. 素材僅列當前項目／環境的有效共用固定版本，每頁20條。PNG≤10MiB真實解碼／預覽；分析JSON≤4MiB，每頁64條證據；實際字節／SHA與來源狀態再次核對。私人分析先明確發布，保留驗證分類及原來源，沒有轉移私人任務權限。
+
+4. 圖表最多八項同口徑原值，核對指標／來源／帳戶／幣種／時區／期間／歸因與維度，保留未知原因。無關負變化不再使合法非負條形圖整份來源失效；原分析不被修改。schema163不變。
+
+```mermaid
+flowchart LR
+ A[Choose layout or published source / 版面或已發布來源] --> B[Confirm shared work / 確認共用工程]
+ C[Fixed shared image / 共用圖片固定版本] --> D[Review rights and exact evidence / 核對權限與證據]
+ E[Published analysis source / 已發布分析源] --> D
+ B --> F[Edit layers and pages / 編輯圖層與頁面]
+ D --> F
+ F --> G[Adapt all pages atomically / 全頁原子適配]
+ G --> H[Actual preview and immutable version / 真實預覽與新版本]
+ H --> I[Download editable delivery / 下載可編輯交付]
+```
+
+下方保留此前版本和完整安裝／使用說明，全部原始驗收範圍仍開放。
+
 <!-- integrated-round-199 -->
 
 ## 199 · 0.5.7 · 直接編輯與來源交付接續

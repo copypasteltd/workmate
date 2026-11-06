@@ -6,8 +6,8 @@ import { designChartKey, type DesignResources, editableFontFiles } from "./edita
 import { prepareBrandProduction } from "./brand-production.js";
 import { renderProjectPoster } from "./business.js";
 import { decodePNG } from "./editable-design-tools.js";
-import { calculationDigest } from "./analysis-role-delivery.js";
-import { designEvidenceRecord, importedDesignEvidence, selectDesignEvidence, type DesignEvidenceRecord } from "./portable-design-evidence.js";
+import { selectDesignEvidence, type DesignEvidenceRecord } from "./portable-design-evidence.js";
+import { checkedDesignEvidence } from "./design-evidence-source.js";
 
 export type EditableKind = "vector" | "presentation";
 export type EditableInput = VectorInput | SlidesInput;
@@ -75,19 +75,7 @@ export async function loadEditableResources(tx: Tx, storage: Storage, project: s
         if (!snapshot) {
           if (entry.v.mime_type !== "application/json" || entry.bytes.length > 4 * 1024 ** 2)
             throw new Problem(422, "DESIGN_EVIDENCE_INVALID", "Choose a bounded structured chart source");
-          let data: any; try { data = JSON.parse(entry.bytes.toString("utf8")); } catch { throw new Problem(422, "DESIGN_EVIDENCE_INVALID", "Chart evidence is not valid JSON"); }
-          if (data.schema === "copypaste-imported-design-evidence-1") {
-            if (entry.v.metadata.design_evidence_provenance !== "user_attested_import") throw new Problem(422, "DESIGN_EVIDENCE_INVALID", "The imported snapshot has no recorded provenance");
-            snapshot = { rows: importedDesignEvidence.parse(data).rows, imported: true };
-          } else {
-            if (data.schema !== "copypaste-analysis-delivery-1" || entry.v.metadata.analysis_role_schema !== data.schema
-              || data.calculation_sha256 !== entry.v.metadata.calculation_sha256 || calculationDigest(data.calculation) !== data.calculation_sha256)
-              throw new Problem(422, "DESIGN_EVIDENCE_INVALID", "The current analysis source does not match its saved calculation");
-            snapshot = { imported: false, rows: data.calculation.evidence.map((r: any) => { const scope = JSON.parse(r.scope); return designEvidenceRecord.parse({
-              id: r.id, metric_id: r.metric_id, label: String(scope.campaign ?? scope.channel ?? scope.entity_id ?? scope.currency ?? r.metric_id),
-              value: r.value, unit: r.unit, null_reason: r.null_reason, scope: r.scope,
-            }); }) };
-          }
+          snapshot = checkedDesignEvidence(entry.bytes, entry.v.metadata);
           evidence.set(id, snapshot!);
         }
         resources.charts.set(designChartKey(layer), selectDesignEvidence(snapshot!.rows, layer.evidence_ids));

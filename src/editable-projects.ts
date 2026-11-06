@@ -11,6 +11,8 @@ import { editableDesignSchema } from "./editable-design-model.js";
 import { renderEditableDesign, packageEditableDesign } from "./editable-design-render.js";
 import { cleanEditableInput, editableScenes, editableRendererProfile, loadEditableResources, readEditableSource,
   type EditableInput, type EditableKind } from "./editable-project-source.js";
+import { designTemplates, designTemplate, designTemplateId } from "./design-templates.js";
+import { registerDesignResources } from "./design-resources.js";
 
 type Scope = { tenant: string; project: string };
 const mode = (db: Database) => db.config.DEMO_MODE ? "simulated" : "configured_services";
@@ -48,6 +50,7 @@ async function availableResult(tx: Tx, scope: Scope, result: { id: string; versi
   if (!p) throw new Problem(410, "REQUEST_RESULT_REMOVED", "The original editable project or its sources were removed; it will not be recreated");
 }
 export function registerEditableProjects(app: FastifyInstance, db: Database, storage: Storage) {
+  registerDesignResources(app, db, storage);
   const base = "/v1/tenants/:tenant/projects/:project/editable-projects", scopeSchema = z.object({ tenant: uuid, project: uuid });
   const guard = { preHandler: requireUser(db) }, workers = new Set<string>();
   const waiting: { user: string; start: () => void }[] = [];
@@ -65,6 +68,13 @@ export function registerEditableProjects(app: FastifyInstance, db: Database, sto
     await new Promise<void>(start => { waiting.push({ user, start }); drain(); });
     try { return await work(); } finally { workers.delete(user); drain(); }
   }
+  app.get(base + "/templates", guard, async req => {
+    const scope = scopeSchema.parse(req.params);
+    return db.tx(async tx => {
+      await projectAccess(tx, req.principal, scope.tenant, scope.project, "write");
+      return { items: designTemplates, ai_cost_micros: "0" };
+    }, scope.tenant);
+  });
   app.get(base + "/sources", guard, async req => {
     const scope = scopeSchema.parse(req.params), q = z.object({ cursor: uuid.optional() }).strict().parse(req.query);
     return db.tx(async tx => {
@@ -116,14 +126,20 @@ export function registerEditableProjects(app: FastifyInstance, db: Database, sto
     }, scope.tenant);
   });
   app.post(base, guard, async req => {
-    const scope = scopeSchema.parse(req.params), body = z.object({ name, source_version_id: uuid, sha256: z.string().regex(/^[a-f0-9]{64}$/), confirm_project_sharing: z.literal(true) }).strict().parse(req.body), requestKey = key(req);
+    const scope = scopeSchema.parse(req.params), body = z.union([
+      z.object({ name, source_version_id: uuid, sha256: z.string().regex(/^[a-f0-9]{64}$/), confirm_project_sharing: z.literal(true) }).strict(),
+      z.object({ name, template_id: designTemplateId, locale: z.enum(["zh-HK", "en-HK"]), confirm_project_sharing: z.literal(true) }).strict(),
+    ]).parse(req.body), requestKey = key(req);
     return bounded(req.principal.id, () => db.tx(async tx => {
       await lockUserAuthorities(tx, [req.principal.id]); await projectAccess(tx, req.principal, scope.tenant, scope.project, "write");
       const result = await replay(tx, req.principal.id, `editable.project.create:${scope.tenant}:${scope.project}`, requestKey, body, async () => {
-        const source = await readEditableSource(tx, storage, scope.project, body.source_version_id, body.sha256);
-        if (source.data_mode !== mode(db)) throw new Problem(404, "NOT_FOUND", "The source is unavailable in this service mode");
+        const source = "template_id" in body ? designTemplate(body.template_id, body.locale)
+          : await readEditableSource(tx, storage, scope.project, body.source_version_id, body.sha256);
+        if ("data_mode" in source && source.data_mode !== mode(db)) throw new Problem(404, "NOT_FOUND", "The source is unavailable in this service mode");
         const p = await createEditableProject(tx, db, storage, req.principal, scope, source.kind, body.name, source.input);
-        await audit(tx, req.principal, "editable.project.create", p.id, "succeeded", { source_version_id: source.source.id, version: p.version, ai_cost_micros: "0" }, scope.tenant);
+        await audit(tx, req.principal, "editable.project.create", p.id, "succeeded", {
+          ...("template_id" in body ? { template_id: body.template_id, locale: body.locale } : { source_version_id: body.source_version_id }),
+          version: p.version, ai_cost_micros: "0" }, scope.tenant);
         return { id: p.id, version: p.version, name: p.name, kind: p.kind, ai_cost_micros: "0" };
       });
       await availableResult(tx, scope, result);
@@ -141,7 +157,7 @@ export function registerEditableProjects(app: FastifyInstance, db: Database, sto
       return { id: p.id, name: p.name, kind: p.kind, version, current_version: p.version, input: v.input, imported_evidence: v.imported_evidence, versions };
     }, scope.tenant);
   });
-  app.put(base + "/:id", guard, async req => {
+  app.put(base + "/:id", { ...guard, bodyLimit: 2_500_000 }, async req => {
     const scope = scopeSchema.extend({ id: uuid }).parse(req.params), body = z.object({ name, expected_version: z.number().int().positive(), input: z.unknown() }).strict().parse(req.body), requestKey = key(req);
     return bounded(req.principal.id, () => db.tx(async tx => {
       await lockUserAuthorities(tx, [req.principal.id]); await projectAccess(tx, req.principal, scope.tenant, scope.project, "write");

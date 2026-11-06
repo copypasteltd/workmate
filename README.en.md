@@ -1,3 +1,31 @@
+<!-- integrated-round-200 -->
+
+## 200 · 0.5.8 · Design production, authorized resources and exact evidence
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-200/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Web/Extension use company-hosted Codex; Desktop runs Codex on the customer computer. All AI requests use company servers; Admin configures each model with its own API URL, key, upstream alias and rates.
+
+2. Six bilingual vector/presentation starters retain strict input, explicit sharing, idempotent create/request receipts, audit and immutable versions without model calls. Three authorized template/resource routes bring the current inventory to756 regular routes plus one conditional route.
+
+3. Resource discovery lists only current-project/current-environment active shared fixed versions,20 per page. PNG≤10MiB is decoded and previewed; analysis JSON≤4MiB returns64 exact facts per page. Bytes/hash and source availability are rechecked. Private analysis requires explicit publication; only verified classification/original provenance transfer.
+
+4. Charts accept at most eight scope-compatible original values across metric/source/account/currency/timezone/period/attribution/dimensions, with missing reasons intact. Unrelated signed changes no longer invalidate usable nonnegative bars. Original analysis is unchanged; schema163 stays.
+
+```mermaid
+flowchart LR
+ A[Choose layout or published source / 版面或已發布來源] --> B[Confirm shared work / 確認共用工程]
+ C[Fixed shared image / 共用圖片固定版本] --> D[Review rights and exact evidence / 核對權限與證據]
+ E[Published analysis source / 已發布分析源] --> D
+ B --> F[Edit layers and pages / 編輯圖層與頁面]
+ D --> F
+ F --> G[Adapt all pages atomically / 全頁原子適配]
+ G --> H[Actual preview and immutable version / 真實預覽與新版本]
+ H --> I[Download editable delivery / 下載可編輯交付]
+```
+
+Earlier release/setup instructions remain below; full original acceptance stays open.
+
 <!-- integrated-round-199 -->
 
 ## 199 · 0.5.7 · Direct editing and source-to-delivery continuity

@@ -22,15 +22,21 @@ export const importedDesignEvidence = z.object({
 });
 export type ImportedDesignEvidence = z.infer<typeof importedDesignEvidence>;
 export type DesignEvidenceRecord = z.infer<typeof designEvidenceRecord>;
+export function designEvidenceScope(row: Pick<DesignEvidenceRecord, "metric_id" | "unit" | "scope">) {
+  const s = JSON.parse(row.scope);
+  return canonical({ metric: row.metric_id, unit: row.unit, source: s.source, timezone: s.timezone,
+    currency: s.currency, account_id: s.account_id, entity_level: s.entity_level,
+    attribution_definition: s.attribution_definition, conversion_definition: s.conversion_definition,
+    period: s.period, date_from: s.date_from, date_to: s.date_to,
+    unverified_source_snapshot_id: s.unverified_source_snapshot_id,
+    dimension_keys: Object.keys(s.dimensions ?? {}).sort(),
+  });
+}
 export function selectDesignEvidence(rows: DesignEvidenceRecord[], ids: string[]) {
   const selected = ids.map(id => rows.find(r => r.id === id));
   if (selected.some(r => !r)) throw new Problem(422, "DESIGN_EVIDENCE_INVALID", "A chart contains an unknown evidence ID");
   const checked = selected as DesignEvidenceRecord[];
-  const scopes = new Set(checked.map(r => { const s = JSON.parse(r.scope); return canonical({
-    metric: r.metric_id, unit: r.unit, currency: s.currency, account_id: s.account_id,
-    attribution_definition: s.attribution_definition, conversion_definition: s.conversion_definition,
-    period: s.period, date_from: s.date_from, date_to: s.date_to,
-  }); }));
+  const scopes = new Set(checked.map(designEvidenceScope));
   if (scopes.size !== 1) throw new Problem(422, "DESIGN_EVIDENCE_SCOPE", "Separate metrics, accounts, currencies, periods and attribution definitions into distinct charts");
   return checked;
 }
