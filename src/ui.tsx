@@ -190,81 +190,31 @@ export function Empty({
 }
 let modalLocks = 0;
 let previousBodyOverflow = "";
-export function Modal({
-  title,
-  children,
-  onClose,
-}: {
-  title: string;
-  children: ReactNode;
-  onClose: () => void;
-}) {
-  const close = useRef(onClose);
-  close.current = onClose;
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement;
-    if (modalLocks++ === 0) {
-      previousBodyOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-    }
-    const key = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close.current();
-      if (e.key === "Tab") {
-        const dialog = document.querySelector('[role="dialog"]');
-        const list = dialog?.querySelectorAll<HTMLElement>(
-          'button,input,select,textarea,[tabindex="0"]',
-        );
-        if (!list?.length) return;
-        const first = list[0],
-          last = list[list.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-    document.addEventListener("keydown", key);
-    requestAnimationFrame(() =>
-      document
-        .querySelector<HTMLElement>(
-          '[role="dialog"] input,[role="dialog"] button',
-        )
-        ?.focus(),
-    );
-    return () => {
-      document.removeEventListener("keydown", key);
-      if (--modalLocks === 0)
-        document.body.style.overflow = previousBodyOverflow;
-      previous?.focus();
-    };
-  }, []);
-  return (
-    <div
-      className="modal-backdrop"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <section
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-      >
-        <header>
-          <h2>{title}</h2>
-          <button className="icon-button" onClick={onClose} aria-label="Close">
-            <X size={20} />
-          </button>
-        </header>
-        {children}
-      </section>
-    </div>
-  );
+const modalFocusStack:HTMLElement[]=[];
+export function Modal({title,children,onClose}:{title:string;children:ReactNode;onClose:()=>void}){
+ const close=useRef(onClose);close.current=onClose;
+ const dialog=useRef<HTMLElement>(null),{t}=useI18n();
+ useEffect(()=>{
+  const element=dialog.current!,previous=document.activeElement as HTMLElement|null;
+  modalFocusStack.push(element);modalFocusStack.sort((a,b)=>a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING?-1:1);
+  if(modalLocks++===0){previousBodyOverflow=document.body.style.overflow;document.body.style.overflow="hidden";}
+  const focusable=()=>[...element.querySelectorAll<HTMLElement>('a[href],button,input,select,textarea,[tabindex="0"]')].filter(node=>!node.matches(':disabled,[aria-hidden="true"]')&&node.getClientRects().length>0);
+  const key=(event:KeyboardEvent)=>{
+   if(modalFocusStack.at(-1)!==element||event.defaultPrevented)return;
+   if(event.key==="Escape"){event.preventDefault();event.stopPropagation();close.current();}
+   if(event.key==="Tab"){const items=focusable(),first=items[0],last=items.at(-1);
+    if(!first){event.preventDefault();element.focus();}
+    else if(event.shiftKey&&(document.activeElement===first||!element.contains(document.activeElement))){event.preventDefault();last?.focus();}
+    else if(!event.shiftKey&&(document.activeElement===last||!element.contains(document.activeElement))){event.preventDefault();first.focus();}
+   }
+  };
+  document.addEventListener("keydown",key);
+  const frame=requestAnimationFrame(()=>{if(modalFocusStack.at(-1)===element)(focusable()[0]??element).focus();});
+  return()=>{cancelAnimationFrame(frame);document.removeEventListener("keydown",key);const index=modalFocusStack.indexOf(element);if(index>=0)modalFocusStack.splice(index,1);if(--modalLocks===0)document.body.style.overflow=previousBodyOverflow;if(previous?.isConnected&&(!modalFocusStack.length||modalFocusStack.at(-1)?.contains(previous)))previous.focus();else modalFocusStack.at(-1)?.focus();};
+ },[]);
+ return <div className="modal-backdrop" onMouseDown={event=>{if(event.target===event.currentTarget&&modalFocusStack.at(-1)===dialog.current)close.current();}}><section ref={dialog} className="modal" role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}><header><h2>{title}</h2><button type="button" className="icon-button" onClick={onClose} aria-label={t("關閉","Close")}><X size={20}/></button></header>{children}</section></div>;
 }
+
 export function PageHeader({
   eyebrow,
   title,
@@ -363,17 +313,19 @@ export function AsyncForm({
   onSubmit,
   children,
   submitLabel,
+  submitDisabled=false,
 }: {
   onSubmit: (form: FormData) => Promise<void>;
   children: ReactNode;
   submitLabel: string;
+  submitDisabled?:boolean;
 }) {
   const [busy, setBusy] = useState(false),
     [error, setError] = useState<Error | null>(null),
     [done, setDone] = useState(false);
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (busy) return;
+    if (busy||submitDisabled) return;
     const form = new FormData(e.currentTarget);
     setBusy(true);
     setError(null);
@@ -397,7 +349,7 @@ export function AsyncForm({
           已儲存 / Saved
         </p>
       )}
-      <button className="button primary" type="submit" disabled={busy}>
+      <button className="button primary" type="submit" disabled={busy||submitDisabled}>
         {busy ? <LoaderCircle size={17} className="spin" /> : null}
         {submitLabel}
         {!busy && <ArrowUpRight size={17} />}

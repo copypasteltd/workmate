@@ -1,3 +1,34 @@
+<!-- integrated-round-195 -->
+
+## 195 · 0.5.1 · 运营管理台 / Admin dashboard
+
+真实接入就绪状态及人工角色验收，支持新增、分页筛选、批量撤回和原始审计。
+
+[Round delivery / 本輪交付](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-195/README.md) · [Download / 下載](https://agent.copypaste.hk/downloads)
+
+![Actual interface / 實際介面](assets/screenshots/195-v6-readiness.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-195-v6-readiness.gif)
+
+`/readiness`: actual dependencies / 真實依賴。`/role-acceptance`: record, filter, batch revoke, audit / 新增、篩選、批次撤回、審計。API/key and rates remain per model in capability management / 接口、密鑰和費率仍跟隨各模型。
+
+<!-- usage-195 -->
+
+本轮使用流程：
+
+1. 管理员完成邮箱验证码与 TOTP 后登录；权限不足或未完成验证的操作由服务端拒绝。
+2. 进入运行就绪，筛选需处理项目并重新检查。模型接口、密钥、别名、费率在对应模型能力中维护。
+3. 进入角色验收，输入真实任务 ID、选择模板版本并读取交付快照，填写案例类型、结论和证据。
+4. 通过记录须符合真实执行成功及客户接受等条件；受控测试不构成专业验收。可筛选、分页并批量撤回，撤回理由和原证据继续保留。
+
+[Actual recording MP4 / 实际录像](assets/screenshots/workmate-195-v6-readiness.mp4) · [Additional view / 页面](assets/screenshots/195-v6-role-acceptance.png)
+
+<!-- /usage-195 -->
+
+本輪實際測試與旅程見報告；保留歷史失敗，不以代碼量替代全部專業/生產驗收。影片/語音/Google/Meta真實配置、至少12角色專業驗收及完整兼容/運營矩陣仍開放。測試郵箱及未簽名安裝按已確認範圍保留。
+
+Selected regression and real journeys are in the report. Historical failures remain. Real video/audio/Google/Meta configuration, at least12 professional role evaluations and the full compatibility/operations matrix remain open. The requested test mailbox and unsigned manual installation remain.
+
 <!-- product-downloads-193 -->
 
 ## 產品下載與安裝 · 193

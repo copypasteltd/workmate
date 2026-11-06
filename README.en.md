@@ -1,3 +1,34 @@
+<!-- integrated-round-195 -->
+
+## 195 · 0.5.1 · 运营管理台 / Admin dashboard
+
+Actual integration readiness and human role evidence with creation, filtering, paging, batch revocation and retained audit.
+
+[Round delivery / 本輪交付](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-195/README.md) · [Download / 下載](https://agent.copypaste.hk/downloads)
+
+![Actual interface / 實際介面](assets/screenshots/195-v6-readiness.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-195-v6-readiness.gif)
+
+`/readiness`: actual dependencies / 真實依賴。`/role-acceptance`: record, filter, batch revoke, audit / 新增、篩選、批次撤回、審計。API/key and rates remain per model in capability management / 接口、密鑰和費率仍跟隨各模型。
+
+<!-- usage-195 -->
+
+Using this release:
+
+1. Sign in using the administrator email code and TOTP. The server enforces verification and permission boundaries.
+2. Open readiness, filter items needing attention and recheck. Maintain each model API URL, key, name and rates in capability management.
+3. Open role acceptance, enter a real task ID, select a template version and load its delivery snapshot before recording case type, conclusion and evidence.
+4. Passing records require the relevant real execution/customer acceptance conditions. Controlled QA is not professional certification. Filter, page and batch-revoke with reasons while preserving original proof.
+
+[Actual recording MP4 / 实际录像](assets/screenshots/workmate-195-v6-readiness.mp4) · [Additional view / 页面](assets/screenshots/195-v6-role-acceptance.png)
+
+<!-- /usage-195 -->
+
+本輪實際測試與旅程見報告；保留歷史失敗，不以代碼量替代全部專業/生產驗收。影片/語音/Google/Meta真實配置、至少12角色專業驗收及完整兼容/運營矩陣仍開放。測試郵箱及未簽名安裝按已確認範圍保留。
+
+Selected regression and real journeys are in the report. Historical failures remain. Real video/audio/Google/Meta configuration, at least12 professional role evaluations and the full compatibility/operations matrix remain open. The requested test mailbox and unsigned manual installation remain.
+
 <!-- product-downloads-193 -->
 
 ## Public product downloads · 193

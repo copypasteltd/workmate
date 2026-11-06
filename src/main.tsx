@@ -3,6 +3,8 @@ import { AdminCloudComputers } from "./cloud-computers";
 import { AdminUsageReports } from "./usage-reports";
 import { resourceUser, userResourceLink, userResourceReturn } from "./user-resources";
 import { QualitySummary } from "./quality-summary";
+import {OperationalReadiness} from "./operational-readiness";
+import {RoleAcceptance} from "./role-acceptance";
 import "./support.css";
 import { AdminConnectionDetail } from "./connections";
 import { ApprovalReview } from "./approvals";
@@ -363,6 +365,8 @@ const nav = [
   ["tenants", Building2, "企業管理", "Workspaces", "admin.tenants.read"],
   ["usage", ChartNoAxesCombined, "用量與消耗", "Usage", "admin.usage.read"],
   ["quality", ListChecks, "交付品質", "Delivery quality", "admin.usage.read"],
+  ["readiness", SlidersHorizontal, "接入與運行就緒", "Service readiness", "admin.catalog.read"],
+  ["role-acceptance", ShieldCheck, "角色交付驗收", "Role acceptance", "admin.catalog.read"],
   [
     "provider-control",
     Workflow,
@@ -573,7 +577,7 @@ function AdminShell() {
                     key={n[0]}
                     path={"/" + n[0]}
                     element={
-                      n[0] === "quality" ? (
+                      n[0] === "readiness" ? (<OperationalReadiness/>) : n[0] === "role-acceptance" ? (<RoleAcceptance access={a}/>) : n[0] === "quality" ? (
                         <QualitySummary url="/v1/admin/quality" />
                       ) : n[0] === "usage" ? (
                         <AdminUsageReports access={a} />

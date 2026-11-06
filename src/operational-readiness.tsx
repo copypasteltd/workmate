@@ -1,0 +1,23 @@
+import {useState} from "react";
+import {Link} from "react-router-dom";
+import {RefreshCw,CheckCircle2,Settings2,AlertCircle} from "lucide-react";
+import {DateText,ErrorNotice,Loading,PageHeader,useData,useI18n} from "./ui";
+import "./readiness.css";
+
+export function OperationalReadiness(){
+ const {t}=useI18n(),[refresh,setRefresh]=useState(0),[filter,setFilter]=useState("all");
+ const {data,error,loading}=useData("/v1/admin/operational-readiness",refresh,60000);
+ const names:Record<string,string>={text:t("文字模型","Text model"),image:t("圖片模型","Image model"),video:t("影片模型","Video model"),speech:t("語音生成","Speech generation"),transcription:t("語音轉錄","Transcription"),google:"Google OAuth",google_ads:"Google Ads",meta:"Meta OAuth",mail:t("驗證郵件","Verification mail"),cloud_programs:t("雲端程式執行","Cloud programs"),cloud_browser:t("雲端瀏覽器","Cloud browser"),office_preview:t("Office 文件預覽","Office preview"),production_profile:t("正式環境設定","Production profile")};
+ const states:Record<string,string>={ready:t("已就緒","Ready"),setup_required:t("待配置","Setup required"),test_only:t("測試設定","Testing profile"),degraded:t("需處理","Needs attention")};
+ return <><PageHeader title={t("接入與運行就緒","Service readiness")} description={t("統一核對真實服務配置。就緒狀態、專業交付驗收和正式環境資格分別記錄。","Review real service configuration. Readiness, professional delivery acceptance and production qualification are recorded separately.")} action={<button className="button secondary" disabled={loading} onClick={()=>setRefresh(n=>n+1)}><RefreshCw size={16}/>{t("重新檢查","Check again")}</button>}/><ErrorNotice error={error}/>{loading&&!data&&<Loading/>}
+ {data&&<><p className="muted">Codex {data.codex_version} · {t("最後檢查：","Last checked: ")}<DateText value={data.checked_at}/></p>
+ <div className="readiness-summary"><strong>{data.checks.filter((c:any)=>c.state==="ready").length} / {data.checks.length}</strong><span>{t("服務已配置就緒","services configured and ready")}</span><span>{data.data_mode==="simulated"?t("模擬資料","Simulated data"):t("真實服務模式","Real service mode")}</span></div>
+ <label className="field">{t("顯示範圍","Show")}<select value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">{t("全部服務","All services")}</option><option value="attention">{t("需要處理","Needs attention")}</option></select></label>
+ <div className="readiness-grid">{data.checks.filter((c:any)=>filter==="all"||c.state!=="ready").map((c:any)=><article className="card readiness-service" key={c.key}><header>{c.state==="ready"?<CheckCircle2 size={20}/>:<AlertCircle size={20}/>}<h3>{names[c.key]??c.key}</h3><span className={"readiness-state state-"+c.state}>{states[c.state]??c.state}</span></header>
+ <p>{c.key==="mail"?t("依目前選擇保留測試收件箱。要寄到外部郵箱，需配置 SMTP 發信服務。","The test inbox remains enabled as requested. External email delivery requires SMTP."):c.key==="production_profile"?t("使用真實模型並不代表已完成正式環境驗收；保留測試收件箱時繼續標記為測試設定。","Real models do not establish production qualification. Keeping the test inbox retains a testing profile."):c.key==="office_preview"?t("Office 文件以獨立原生程序轉換，PDF 預覽獨立提供。","Office documents convert in an isolated native process. PDF preview is available independently."):c.key==="google"||c.key==="meta"||c.key==="google_ads"?t("需要平台應用配置，客戶亦須授權自己的廣告或分析帳戶。","Requires platform application configuration and customer consent for their advertising or analytics accounts."):c.message}</p>
+ {c.fields?.length>0&&<details><summary>{t("需要的設定項","Configuration fields")}</summary><ul>{c.fields.map((field:string)=><li key={field}><code>{field}</code></li>)}</ul><p className="muted small-text">{data.configuration_file}</p></details>}
+ <Link className="text-link" to={c.configure_url}><Settings2 size={15}/>{t("查看配置與管理","Open configuration")}</Link></article>)}</div>
+ <section className="card"><h3>{t("模型配置狀態","Model configuration state")}</h3><p>{t("每個模型獨立保存接口地址、API key、費率及驗證記錄。此面板不顯示任何密鑰。","Each model stores its own upstream address, API key, rates and validation history. This panel does not expose secrets.")}</p><ul>{data.capabilities.map((m:any)=><li key={m.version_id}>{m.profile_key} · {m.model??t("由能力版本指定","Defined by capability version")} · {m.ready?t("已驗證發布","Verified and published"):t("未就緒","Not ready")}</li>)}</ul><Link className="button secondary" to="/catalog?view=capabilities">{t("管理模型接口與密鑰","Manage model API settings")}</Link></section>
+ <section className="card"><h3>{t("儲存狀態","Storage")}</h3><p>{data.storage.kind} · {data.storage.state}{data.storage.free_bytes!==undefined?" · "+(data.storage.free_bytes/1024**3).toFixed(1)+" GiB "+t("可用","free"):""}</p><Link className="text-link" to="/recovery">{t("備份與恢復管理","Backup and recovery management")}</Link></section></>}
+ </>;
+}
