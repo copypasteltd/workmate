@@ -1,3 +1,27 @@
+<!-- integrated-round-205 -->
+
+## 205 · 0.5.12 · 逐项交付与精确修正
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-205/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 本轮先完整盘点102条／32组及全部代码标记，再完成并冻结844份产品源码与166份迁移的整批实现，统一构建和回归。保留首轮23项失败、第二轮原生启动超时、受控页面加载超时及后续集中修正的精确证据。
+
+2. 当前测试入口按数字版本保留历史用例，三份原生集成文件分别绑定绝对Codex可执行文件及匹配版本；其余测试配置保持原约束。Windows目录回收只等待原属工作进程退出，并确认实际目录已释放，不结束其他进程。
+
+3. 沿已有端口切换自身应用，发布不可变20501包，核对真实备份、9份网络文件和实时规则、原凭证及DB／代理进程。暂停期间的中断文件另行完整保留，校验完整副本并落盘后原子发布；以恢复时的当前进程和启动身份为基线。普通原子推送8引用，保护27份原用户文件。
+
+```mermaid
+flowchart LR
+ A[Whole code batch] --> B[Unified checks and retained failures]
+ B --> C[App-only switch and immutable packages]
+ C --> D[Read-only network verification]
+ D --> E[Atomic branch publication]
+```
+
+790项相关通过证据，其中本轮执行675项，其余为原样Admin／Extension沿用。四份公网文件在明确记录的QA路径通过完整字节／SHA；默认直接出口与正常DNS故障转移另行验收。保留全部102条／32组、19角色／50Skills专业签收、真实外部媒体／营销／IdP、设备／并发／长稳／灾备矩阵及WorkBuddy同题盲测。服务器网络只读。本轮精确调用规则取代下方历史版本中仅按工具名称解除失败的说明。
+
+以下保留完整安装／使用指南及明确的历史版本记录。
+
 <!-- integrated-round-204 -->
 
 ## 204 · 0.5.11 · 安全工具反馈与云端执行时效

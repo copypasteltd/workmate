@@ -1,3 +1,27 @@
+<!-- integrated-round-205 -->
+
+## 205 · 0.5.12 · Exact per-call delivery and durable correction
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-205/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Inventory all102 requirements/32 groups and literal source markers, complete/freeze the844-source/166-migration implementation batch, then build and verify as a whole. Retain the initial23 failures, second-attempt native startup timeouts, controlled-page load timeout and measured integrated corrections.
+
+2. Current test discovery selects numeric attempt versions while retaining history. Three native integration files explicitly pin the absolute Codex executable and matching version; other fixture authority remains intact. Windows cleanup waits for the exact owned worker to exit and verifies directory absence without killing other programs.
+
+3. Switch only owned application paths through existing ports, publish immutable20501 downloads and verify backup, nine network files/live rules, credentials and DB/proxy processes. Preserve interrupted files from the pause, flush and verify complete copies before atomic publication, and compare current processes/boot identity against the resume baseline. Ordinary atomic eight-ref publication preserves27 original user files.
+
+```mermaid
+flowchart LR
+ A[Whole code batch] --> B[Unified checks and retained failures]
+ B --> C[App-only switch and immutable packages]
+ C --> D[Read-only network verification]
+ D --> E[Atomic branch publication]
+```
+
+790 qualified related cases, including 675 executed in this round and unchanged Admin/Extension evidence. Four full public files passed exact size/SHA for the explicitly recorded QA path; default direct egress and DNS failover remain separate checks. The original102 requirements/32 groups, professional19-role/50-Skill sign-off, real external media/marketing/IdP services, device/concurrency/long-run/DR matrices and blind WorkBuddy comparison remain explicit. Server networking is read-only. Current exact-call rules supersede historical tool-name-only recovery descriptions below.
+
+The complete setup/usage guide and explicitly historical release notes follow.
+
 <!-- integrated-round-204 -->
 
 ## 204 · 0.5.11 · Safe tool feedback and durable cloud ownership
