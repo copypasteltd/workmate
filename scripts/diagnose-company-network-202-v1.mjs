@@ -1,0 +1,9 @@
+import {lookup} from 'node:dns/promises';
+import tls from 'node:tls';
+import {writeFile,mkdir} from 'node:fs/promises';
+import {launch} from './live-client-189-v2.mjs';
+const hosts=['agent.copypaste.hk','agent-dashboard.copypaste.hk','ai-api.copypaste.hk'],out='.data/acceptance-202/network-v1';await mkdir(out,{recursive:true});
+const report={stage:202,at:new Date().toISOString(),direct:[],original_tls_via_owned_server_egress:[],owned_browser_closed:false};
+await Promise.all(hosts.map(async host=>{const addresses=await lookup(host,{all:true,family:4});const result={host,addresses:addresses.map(a=>a.address),tcp_connected:false,tls_authorized:false};await new Promise(resolve=>{const s=tls.connect({host,port:443,servername:host,rejectUnauthorized:true});const finish=()=>{s.destroy();resolve();};s.once('connect',()=>result.tcp_connected=true);s.once('secureConnect',()=>{result.tls_authorized=s.authorized;result.protocol=s.getProtocol();finish();});s.once('error',e=>{result.error=e.code??e.name;finish();});s.setTimeout(10000,()=>{result.error='TIMEOUT';finish();});});report.direct.push(result);}));
+let browser,context;
+try{browser=await launch();context=await browser.newContext();const page=await context.newPage();for(const host of hosts){const r=await page.goto('https://'+host+'/health/ready',{waitUntil:'domcontentloaded',timeout:45000});let data;try{data=JSON.parse(await page.locator('body').innerText());}catch{}report.original_tls_via_owned_server_egress.push({host,status:r.status(),server:r.headers()['server'],cf_ray:r.headers()['cf-ray']??null,ok:data?.ok,ai_ready:data?.ai_ready,data_mode:data?.data_mode});}}finally{await context?.close();await browser?.close();report.owned_browser_closed=true;await writeFile(out+'/receipt.json',JSON.stringify(report,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify(report));}

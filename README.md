@@ -1,3 +1,30 @@
+<!-- integrated-round-202 -->
+
+## 202 · 0.5.9 · 营销证据复核、交付与请求恢复
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-202/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 823份按扩展名记录的源码及3份原生preload及计划用例／边界／交付脚本先成批实现，再统一六端构建和测试。677项相关用例有通过来源：Backend171／Web57／Admin22／Extension93／Delivery16／Desktop318；不是全部历史或专业／生产验收。原始失败与整批修正保留。
+
+2. 隔离原生PostgreSQL／实际Web验证13口径、精确证据、完整下载和响应丢失后的唯一请求恢复；正式Web／最终0.7.15包验证新授权、真实复核及同字节原生导出，未提交新的付费模型任务。
+
+3. 候选就绪、活动任务0后只切换Workmate应用。沿用原端口、下载alias和静态入口，不改写或重载Nginx，不改DNS／路由／防火墙／代理；发布前后文件和实时规则指纹核对，凭证／数据库／代理进程保持。
+
+4. 下载页、内网全文件200和公网原TLS完整206内容重组后核对SHA／字节，12份双语README、实际PNG／GIF／MP4与102条／32组范围同步。开发机原HTTPS直连三域名健康另有实测；独立SSH出口证据明确区分。
+
+```mermaid
+flowchart LR
+ A[Complete whole code batch] --> B[Unified verification]
+ B --> C[Retain failures and collected corrections]
+ C --> B
+ B --> D[Actual clients and immutable packages]
+ D --> E[Application-only deployment]
+ E --> F[Network preservation and full downloads]
+ F --> G[Bilingual docs and ordinary eight-ref push]
+```
+
+以下保留完整架构、安装与使用细则。
+
 <!-- integrated-round-201 -->
 
 ## 201 · 0.5.8 · 影片製作與實際交付

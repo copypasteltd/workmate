@@ -1,0 +1,16 @@
+import {spawn} from 'node:child_process';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+const root=path.resolve('../..'),out=path.resolve('.data/integrated-202-v5');await mkdir(out,{recursive:true});
+const sha=b=>createHash('sha256').update(b).digest('hex'),prior=JSON.parse(await readFile('.data/integrated-202-v4/verification.json','utf8')),batch=JSON.parse(await readFile(path.join(root,'docs/quality/integrated-round-202/correction-batch-v3.json'),'utf8'));
+for(const row of batch.production_source_files)assert.equal(sha(await readFile(path.join(root,row.path))),row.sha256,row.path);
+for(const check of prior.checks)assert.equal(sha(await readFile(check.log)),check.sha256);
+const original=await readFile('.data/integrated-202-v4/backend-test.log','utf8');
+const cases=text=>[...text.matchAll(/^(not ok|ok) \d+ - (.+)$/gm)].map(m=>({name:m[2],passed:m[1]==='ok'}));
+const before=cases(original);assert.equal(before.length,171);assert.equal(before.filter(c=>c.passed).length,170);assert.equal(before.filter(c=>!c.passed)[0].name,'the real npm test entry includes current creative/native suites and excludes their retained failed attempts');
+let output='';const p=spawn(process.execPath,['--import','tsx','--test','tests/current-test-discovery-189-v4.test.ts'],{cwd:path.resolve('../copypaste-platform'),env:process.env,windowsHide:true,stdio:['ignore','pipe','pipe']});for(const s of [p.stdout,p.stderr])s.on('data',b=>output+=b.toString());const code=await new Promise(r=>{p.once('error',e=>{output+=e.message;r(1);});p.once('close',c=>r(c??1));});
+const log='.data/integrated-202-v5/backend-discovery-replay.log';await writeFile(log,output,{flag:'wx'});const replay=cases(output),replayedNames=new Set(replay.map(c=>c.name)),retained=before.filter(c=>!replayedNames.has(c.name));
+const passed=code===0&&replay.length===6&&replay.every(c=>c.passed)&&retained.length===165&&retained.every(c=>c.passed)&&replay.every(c=>before.some(b=>b.name===c.name));
+const report={stage:202,state:passed?'passed':'failures_for_integrated_debugging',status:passed?'passed':'failures_for_integrated_debugging',scope:'Product sources remain identical to correction-batch-v3. Retain165 passing non-discovery backend cases from the actual171-case run; replay all6 discovery cases after correcting stale expected attempt names.171 distinct passing related cases, with no double count or claim that the original failing run passed.',checks:[{component:'copypaste-platform',phase:'discovery-correction-replay',exit_code:code,log,sha256:sha(output)}],retained_backend:{source:'.data/integrated-202-v4/backend-test.log',source_sha256:sha(original),original_total:171,original_passed:170,original_failed:1,retained_distinct_passes:165,replayed:6,distinct_total:171,retained_cases:retained,replayed_cases:replay},finished_at:new Date().toISOString()};await writeFile(path.join(out,'verification.json'),JSON.stringify(report,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({state:report.state,backend_distinct_cases:passed?171:null,receipt:path.join(out,'verification.json')}));if(!passed)process.exitCode=1;

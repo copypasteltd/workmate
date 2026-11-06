@@ -1,3 +1,30 @@
+<!-- integrated-round-202 -->
+
+## 202 · 0.5.9 · Evidence review, delivery and safe request recovery
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-202/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 823 selected-extension source files and3 native preloads and planned cases/boundaries/operations precede unified six-client builds/tests.677 relevant test cases have passing evidence: Backend171/Web57/Admin22/Extension93/Delivery16/Desktop318. This is not all historical/professional/production acceptance. Preserve original failures and collected corrections.
+
+2. Isolated native PostgreSQL/actual Web verifies13 scopes, exact evidence, complete downloads and unique-request recovery after a lost response. Production Web/final0.7.15 verifies fresh authorization, actual review and byte-identical native exports, without submitting a new paid model task.
+
+3. After candidate readiness/zero active tasks, switch only the owned application using existing ports/download alias/static paths. Do not write/reload Nginx or change DNS/routes/firewall/proxy. Compare file/live-rule fingerprints; preserve credentials and DB/proxy processes.
+
+4. Download-page links, inner full200 files and public original-TLS206 content reassembled to whole-file SHA/bytes bind12 bilingual READMEs, actual media and all102 requirements/32 groups. Direct developer HTTPS readiness has separate actual evidence; owned SSH-egress evidence is labelled.
+
+```mermaid
+flowchart LR
+ A[Complete whole code batch] --> B[Unified verification]
+ B --> C[Retain failures and collected corrections]
+ C --> B
+ B --> D[Actual clients and immutable packages]
+ D --> E[Application-only deployment]
+ E --> F[Network preservation and full downloads]
+ F --> G[Bilingual docs and ordinary eight-ref push]
+```
+
+Earlier architecture, setup and complete use details remain below.
+
 <!-- integrated-round-201 -->
 
 ## 201 · 0.5.8 · Motion production and actual delivery

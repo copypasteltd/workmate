@@ -1,0 +1,7 @@
+import {mkdir,writeFile} from 'node:fs/promises';
+import {launch} from './live-client-189-v2.mjs';
+import {existingOwner} from './live-read-only-owner-198-v1.mjs';
+const out='.data/acceptance-202/live-review-diagnostic-v1';await mkdir(out,{recursive:true});
+const paths=['https://agent.copypaste.hk/v1/tenants/f5b06ebd-ec59-414c-ad1a-04224d202fc0/projects/f3374e9e-d591-4ff0-9b83-0b0dd1f1be8a/tasks/e4872ce5-9c89-4453-b0c2-923d2f791523','https://ai-api.copypaste.hk/health/ready'];
+const report={stage:202,scope:'Read-only original HTTPS diagnosis of the exact safe GET that returned HTML before any dataset import. No response substitution, writes or network changes.',checks:[]};let browser,user;
+try{browser=await launch();user=await existingOwner(browser);for(const url of paths)report.checks.push(await user.page.evaluate(async url=>{const r=await fetch(url,{credentials:'include',signal:AbortSignal.timeout(45000)}),type=r.headers.get('content-type'),text=await r.text();let data;try{data=JSON.parse(text);}catch{}return{url,status:r.status,type,cf_ray:r.headers.get('cf-ray'),server:r.headers.get('server'),...(data?{json_keys:Object.keys(data),task_status:data.status,charged_micros:data.charged_micros,error_code:data.error?.code}:{html_prefix:text.slice(0,200)})};},url));}catch(e){report.error=e.name+': '+e.message.split('\n')[0];}finally{await user?.context.close();await browser?.close();report.owned_browser_closed=true;await writeFile(out+'/receipt.json',JSON.stringify(report,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify(report));}
