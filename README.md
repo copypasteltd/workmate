@@ -1,3 +1,39 @@
+<!-- integrated-round-200 -->
+
+## 200 · 0.5.9 · 從版面開工到可核對交付
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-200/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 登入→選企業／項目→設計畫布→展開「從版面開始新作品」→選六款版面之一及中英文字→確認共用後開工；也可繼續原專員發布來源或導入完整工程包。
+
+2. 在「加入／替換圖片與資料圖表」搜尋並選擇共用固定PNG，核對預覽／使用權後加入或替換；分析源先在檔案中明確發布，再選同口徑原值，最多八條。私人對話文件不會自動暴露給共用項目。
+
+3. 可加空白頁、沿用原複製／排序／刪除、直接畫布編輯及撤銷重做。整份畫布256–1920px適配全部頁面，字形／描邊／圖表最小面積超限時整次拒絕，不留下半修改。保存新版本後產生PNG／SVG／PDF／PPTX及可編輯ZIP，預覽顯示實際已保存版本；重新編輯才顯示未保存。
+
+4. 實際隔離旅程含模擬營銷原值、圖片、四頁／尺寸／撤銷／版本2及真實16MBZIP，模型請求與帳務0；實際已上線Web另完成新工程、版本2、ZIP並接續最終Desktop版本3。淺深色及375／768／1024／1440無頁面橫向溢出。
+
+```mermaid
+flowchart LR
+ A[Choose layout or published source / 版面或已發布來源] --> B[Confirm shared work / 確認共用工程]
+ C[Fixed shared image / 共用圖片固定版本] --> D[Review rights and exact evidence / 核對權限與證據]
+ E[Published analysis source / 已發布分析源] --> D
+ B --> F[Edit layers and pages / 編輯圖層與頁面]
+ D --> F
+ F --> G[Adapt all pages atomically / 全頁原子適配]
+ G --> H[Actual preview and immutable version / 真實預覽與新版本]
+ H --> I[Download editable delivery / 下載可編輯交付]
+```
+
+Actual deployed Web200 / 真實已上線Web200
+
+![Actual interface / 實際頁面](assets/screenshots/200-v3-live-production-dark.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-200-v3-live-production.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-200-v3-live-production.mp4)
+
+下方保留此前版本和完整安裝／使用說明，全部原始驗收範圍仍開放。
+
 <!-- integrated-round-199 -->
 
 ## 199 · 0.5.7 · 直接編輯與來源交付接續

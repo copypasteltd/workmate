@@ -1,3 +1,39 @@
+<!-- integrated-round-200 -->
+
+## 200 · 0.5.9 · From editable layout to verifiable delivery
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-200/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Sign in→choose organization/project→Design canvas→expand “Start a new work from a layout”→choose one of six layouts and text language→confirm sharing. Published specialist sources and complete project imports remain available.
+
+2. Search/select a fixed shared PNG under “Add or replace images & data charts”; review pixels/usage rights before adding or replacing. Explicitly publish an analysis source first, then select up to eight compatible original values. Private chat files never become implicitly shared.
+
+3. Add blank pages and retain existing copy/reorder/delete, direct canvas editing and undo/redo. Whole-work256–1920px adaptation validates every page/font/stroke/minimum chart size atomically. Save a new version before generating PNG/SVG/PDF/PPTX and editable ZIP files. The preview shows the saved version; only a new edit marks it unsaved.
+
+4. The actual isolated journey uses explicitly simulated campaign values with real images/four pages/resizing/undo/version2/16MBZIP and zero model requests/ledger writes. Actual deployed Web separately creates version2/downloads a ZIP and continues into final Desktop version3. Light/dark and375/768/1024/1440 have no page overflow.
+
+```mermaid
+flowchart LR
+ A[Choose layout or published source / 版面或已發布來源] --> B[Confirm shared work / 確認共用工程]
+ C[Fixed shared image / 共用圖片固定版本] --> D[Review rights and exact evidence / 核對權限與證據]
+ E[Published analysis source / 已發布分析源] --> D
+ B --> F[Edit layers and pages / 編輯圖層與頁面]
+ D --> F
+ F --> G[Adapt all pages atomically / 全頁原子適配]
+ G --> H[Actual preview and immutable version / 真實預覽與新版本]
+ H --> I[Download editable delivery / 下載可編輯交付]
+```
+
+Actual deployed Web200 / 真實已上線Web200
+
+![Actual interface / 實際頁面](assets/screenshots/200-v3-live-production-dark.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-200-v3-live-production.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-200-v3-live-production.mp4)
+
+Earlier release/setup instructions remain below; full original acceptance stays open.
+
 <!-- integrated-round-199 -->
 
 ## 199 · 0.5.7 · Direct editing and source-to-delivery continuity
