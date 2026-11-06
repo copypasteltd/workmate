@@ -1,3 +1,34 @@
+<!-- integrated-round-201 -->
+
+## 201 · 0.5.7 · 影片製作與實際交付
+
+[Evidence and limits / 證據與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-201/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 保留已發布0.5.7產品與原ZIP字節；93項回歸通過。新版下載頁仍提供解壓載入ZIP，沒有冒稱Chrome商店上架。
+
+2. 點擊工具列按鈕開啟瀏覽器原生右SidePanel，使用ChatGPT式對話／附件結構；使用者明確選擇檔案後才讀取／上傳，由雲端Codex執行。私人對話檔案不會自動變成共享影片素材。
+
+3. 下方198實際原生SidePanel／授權／附件截圖及錄製為歷史結果；本輪未重跑完整Chrome／大檔案／Native Host矩陣。
+
+```mermaid
+flowchart LR
+ A[Toolbar click] --> B[Native right SidePanel]
+ B --> C[Explicit file choice]
+ C --> D[Authorized read and cloud upload]
+ D --> E[Company cloud Codex]
+ E --> F[Conversation and deliverables]
+```
+
+Historical198 native SidePanel / 歷史198原生側欄
+
+![Actual interface / 實際頁面](assets/screenshots/198-v1-side-panel.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v1-side-panel.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v1-side-panel.mp4)
+
+以下保留完整安裝、架構和使用細則。
+
 <!-- integrated-round-200 -->
 
 ## 200 · 0.5.7 · 原生右側欄與獲准附件上傳

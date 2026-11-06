@@ -1,3 +1,34 @@
+<!-- integrated-round-201 -->
+
+## 201 · 0.5.7 · Motion production and actual delivery
+
+[Evidence and limits / 證據與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-201/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Keep released0.5.7 product/original ZIP bytes;93 regressions pass. The download page provides an unpacked-load ZIP, without a Chrome Web Store claim.
+
+2. Click the toolbar action to open Chrome native right SidePanel with chat/attachment structure. Files are read/uploaded only after explicit selection; Codex runs in the cloud. Private chat files never implicitly become shared video sources.
+
+3. The198 actual native SidePanel/auth/attachment captures below are historical evidence. This round does not repeat the entire Chrome/large-file/Native Host matrix.
+
+```mermaid
+flowchart LR
+ A[Toolbar click] --> B[Native right SidePanel]
+ B --> C[Explicit file choice]
+ C --> D[Authorized read and cloud upload]
+ D --> E[Company cloud Codex]
+ E --> F[Conversation and deliverables]
+```
+
+Historical198 native SidePanel / 歷史198原生側欄
+
+![Actual interface / 實際頁面](assets/screenshots/198-v1-side-panel.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v1-side-panel.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v1-side-panel.mp4)
+
+Earlier installation, architecture and use details remain below.
+
 <!-- integrated-round-200 -->
 
 ## 200 · 0.5.7 · Native right Side Panel and authorized uploads
