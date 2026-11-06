@@ -1,3 +1,31 @@
+<!-- integrated-round-199 -->
+
+## 199 · 0.5.6 · Direct editing and source-to-delivery continuity
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-199/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Complete the full independently implementable round batch before integrated builds/tests/journeys. Six builds, Desktop types and568 relevant regressions pass. All failed attempts remain with integrated corrections; an isolated module pass does not complete the batch.
+
+2. Evidence distinguishes the isolated simulated functional fixture (actual canvas/conflict/ZIP operations) from one real cloud Codex source charged HK$0.038898, deployed Web and final Desktop0.7.11 fresh authorization/cross-client versions. Subsequent editing adds no model request.
+
+3. The199 overlay activates only after candidate/schema163 readiness and zero active tasks, retaining credentials and DB/proxy processes. New Setup/Portable and the original Extension ZIP pass full inner HTTP/SHA checks under immutable/releases/199/. Public Setup full bytes pass; a zero-byte public Portable stall remains unqualified. Previous198-v2 and old downloads remain.
+
+4. Direct development-machine connectivity remains unqualified. Acceptance uses an owned SSH egress with original company hostnames/TLS, without policy changes or response replacement. All32 groups/102 requirements and external/professional/production gaps remain.
+
+```mermaid
+flowchart LR
+ A[Complete round code batch / 完成整批代碼] --> B[Build all clients / 全端構建]
+ B --> C[Integrated regression and journeys / 統一回歸與聯調]
+ C --> D[Retained failures and batch fixes / 保留失敗並整批修正]
+ D --> B
+ C --> E[Candidate and active work checks / 候選與活動任務核對]
+ E --> F[Deploy and publish packages / 部署與發包]
+ F --> G[Actual downloads and honest limits / 實際取件與範圍]
+ G --> H[Bilingual docs and branch publication / 雙語文檔與分支同步]
+```
+
+Earlier release/setup sections remain below. This batch does not close full original acceptance.
+
 <!-- integrated-round-198 -->
 
 ## 198 · 0.5.5 · Integrated delivery and traceable validation

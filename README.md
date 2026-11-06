@@ -1,3 +1,31 @@
+<!-- integrated-round-199 -->
+
+## 199 · 0.5.6 · 直接編輯與來源交付接續
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-199/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 依要求先完成本輪全部可自主處理的代碼包，再統一構建／測試／聯調。六端構建、Desktop類型及568項相關回歸通過；保留所有失敗嘗試並整批修復，不用單個模組通過代表整輪完成。
+
+2. 目前包含隔離模擬功能夾具的實際畫布／並發／ZIP證據，以及真正雲端Codex單次HK$0.038898來源、上線Web及最終Desktop0.7.11的新授權／跨端版本。後續編輯沒有新增模型請求。
+
+3. 199覆蓋目錄以schema163候選就緒／活動任務0後切換；原憑證及DB／代理進程不變。新Setup／Portable與原ExtensionZIP在不可變/releases/199/通過內網完整HTTP／SHA核對；公開Setup完整下載通過，Portable公開取件零字節停滯未完成全文件驗收。保留198-v2回退和舊下載。
+
+4. 開發機直接連線異常；本輪驗收使用原域名與真實TLS的獨立SSH出口，不改安全策略或替換回應，不能稱為直連恢復。32組／102條原要求、外部／專業／生產敞口保持。
+
+```mermaid
+flowchart LR
+ A[Complete round code batch / 完成整批代碼] --> B[Build all clients / 全端構建]
+ B --> C[Integrated regression and journeys / 統一回歸與聯調]
+ C --> D[Retained failures and batch fixes / 保留失敗並整批修正]
+ D --> B
+ C --> E[Candidate and active work checks / 候選與活動任務核對]
+ E --> F[Deploy and publish packages / 部署與發包]
+ F --> G[Actual downloads and honest limits / 實際取件與範圍]
+ G --> H[Bilingual docs and branch publication / 雙語文檔與分支同步]
+```
+
+下方保留此前版本與完整使用／安裝說明。本輪不代表全部原始要求已完成驗收。
+
 <!-- integrated-round-198 -->
 
 ## 198 · 0.5.5 · 整批交付与可追溯验证
