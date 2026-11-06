@@ -1,6 +1,8 @@
 import {conversationAttempt,completeConversationAttempt} from "./conversation-attempt";
 import { ProjectConfigurationSummary } from "./project-configuration";
 import { ConversationDeliveryDownload } from "./delivery-quality";
+import {WorkComposer,type WorkAttachment} from "./work-composer";
+import {TaskWorkbench} from "./task-workbench";
 import { useEffect, useRef, useState } from "react";
 import { AdoptionReview } from "./agent-adoption";
 import { CopyReview } from "./agent-copy-review";
@@ -743,11 +745,13 @@ export function ConversationDetail() {
     [error, setError] = useState<Error | null>(null);
   const pending = useRef<{ fingerprint: string; payload: any } | null>(null);
   const [selectedTaskId,setSelectedTaskId]=useState("");
+  const [attachments,setAttachments]=useState<WorkAttachment[]>([]),[attachmentsReady,setAttachmentsReady]=useState(true),
+    [sending,setSending]=useState(false),[uncertain,setUncertain]=useState(false);
   const account=String(w.me?.user?.id??""),endpoint=w.base+"/conversations/"+id+"/messages",identity=account+":"+endpoint;
   const currentIdentity=useRef(identity),lifetime=useRef(0),alive=useRef(false);
   currentIdentity.current=identity;
   useEffect(()=>{alive.current=true;const revision=++lifetime.current;
-    pending.current=null;setSelectedTaskId("");setBody("");setError(null);
+    pending.current=null;setSelectedTaskId("");setBody("");setError(null);setAttachments([]);setAttachmentsReady(true);setSending(false);setUncertain(false);
     return()=>{alive.current=false;if(lifetime.current===revision)++lifetime.current;};
   },[identity]);
   const data = useData(w.base + "/conversations/" + id, refresh, 3000),
@@ -940,6 +944,7 @@ export function ConversationDetail() {
                 </div>
               ) : (
                 <AsyncForm
+                  submitDisabled={intent==="delegate"&&!attachmentsReady}
                   submitLabel={
                     intent === "note"
                       ? t("保存筆記", "Save note")
@@ -948,10 +953,13 @@ export function ConversationDetail() {
                   onSubmit={async () => {
                     const revision=lifetime.current,session=clientSessionGeneration();
                     const valid=()=>alive.current&&revision===lifetime.current&&currentIdentity.current===identity&&session===clientSessionGeneration();
-                    const input={body,intent,mode,...(intent==="delegate"?{budget_micros:Math.round(Number(budget)*1e6)}:{})};
+                    const input={body,intent,mode,...(intent==="delegate"?{budget_micros:Math.round(Number(budget)*1e6),input:{prompt:body,asset_version_ids:attachments.map(a=>a.id)}}:{})};
                     const fingerprint=JSON.stringify([identity,input]);
+                    setSending(true);setUncertain(true);
                     if(pending.current?.fingerprint!==fingerprint){
-                      const payload=await conversationAttempt(account,endpoint,input,c.version);
+                      let payload;
+                      try{payload=await conversationAttempt(account,endpoint,input,c.version);}
+                      catch(error){if(valid()){setSending(false);setUncertain(false);}throw error;}
                       if(!valid())return;
                       pending.current={fingerprint,payload};
                     }
@@ -960,20 +968,21 @@ export function ConversationDetail() {
                       const accepted=await post(endpoint,attempt.payload);
                       await completeConversationAttempt(account,endpoint,input,attempt.payload.client_message_id);
                       if(!valid()||pending.current!==attempt)return;
-                      pending.current=null;setBody("");
+                      pending.current=null;setBody("");setAttachments([]);setUncertain(false);
                       if(accepted.task?.id)setSelectedTaskId(accepted.task.id);
                       setRefresh(v=>v+1);
                     } catch(e) {
                       if(e instanceof ApiError&&e.status>=400&&e.status<500&&![408,429].includes(e.status)){
                         await completeConversationAttempt(account,endpoint,input,attempt.payload.client_message_id);
-                        if(valid()&&pending.current===attempt)pending.current=null;
+                        if(valid()&&pending.current===attempt){pending.current=null;setUncertain(false);}
                       }
                       if(valid()){setRefresh(v=>v+1);throw e;}
-                    }
+                    } finally {if(valid())setSending(false);}
                   }}
                 >
                   <Field label={t("訊息用途", "Message purpose")}>
                     <select
+                      disabled={sending||uncertain}
                       value={intent}
                       onChange={(e) => setIntent(e.target.value)}
                     >
@@ -985,23 +994,11 @@ export function ConversationDetail() {
                       </option>
                     </select>
                   </Field>
-                  <Field label={t("你的訊息", "Your message")}>
-                    <textarea
-                      value={body}
-                      onChange={(e) => setBody(e.target.value)}
-                      rows={4}
-                      minLength={intent === "delegate" ? 5 : 1}
-                      maxLength={30000}
-                      required
-                      placeholder={t(
-                        "描述目標、素材和交付要求…",
-                        "Describe your goal, materials and deliverables…",
-                      )}
-                    />
-                  </Field>
+                  {intent==="delegate"?<WorkComposer key={identity} value={body} onChange={setBody} attachments={attachments} onAttachments={setAttachments} conversationId={c.id} onReady={setAttachmentsReady} disabled={sending||uncertain}/>:<Field label={t("你的筆記","Your note")}><textarea value={body} onChange={e=>setBody(e.target.value)} minLength={1} maxLength={30000} required disabled={sending||uncertain}/></Field>}
+                  {uncertain&&!sending&&<p className="notice" role="status">{t("上次交辦的回應尚待確認。請重試同一次交辦；核對完成前保持內容和附件固定，不會因重試另建收費工作。","The last response is unconfirmed. Retry this same submission. Its content and attachments remain fixed until confirmed; retrying will not create another billed task.")}</p>}
                   {intent === "delegate" && (
                     <>
-                      <ModeField value={mode} onChange={setMode} />
+                      <fieldset disabled={sending||uncertain} className="composer-options"><legend>{t("本次工作的設定","Settings for this task")}</legend><ModeField value={mode} onChange={setMode} />
                       <Field
                         label={t(
                           "本次工作預算上限（HKD）",
@@ -1017,7 +1014,7 @@ export function ConversationDetail() {
                           onChange={(e) => setBudget(e.target.value)}
                           required
                         />
-                      </Field>
+                      </Field></fieldset>
                       {active && (
                         <p className="muted small-text">
                           {t(
@@ -1032,6 +1029,7 @@ export function ConversationDetail() {
               )}
             </section>
             <aside className="conversation-aside">
+              <TaskWorkbench taskId={active?.id} refresh={refresh}/>
               <div className="card">
                 <h3>{t("這段合作", "This conversation")}</h3>
                 <p className="muted small-text">

@@ -20,7 +20,7 @@ function usePaged(url:string|null,cursorName="cursor"){
     finally{if(!c.signal.aborted)setLoading(false);}};
   return {items,next,loading,error,more};
 }
-export function CloudAssetPicker({shared,required,onChange,onReady}:{shared:boolean;required:boolean;onChange:(id:string|undefined)=>void;onReady:(ready:boolean)=>void}){
+export function CloudAssetPicker({shared,required,onChange,onReady,onReference}:{shared:boolean;required:boolean;onChange:(id:string|undefined)=>void;onReady:(ready:boolean)=>void;onReference?:(value:{id:string;assetId:string;name:string})=>void}){
   const w=useWorkspace(),{t}=useI18n(),[search,setSearch]=useState(""),[query,setQuery]=useState(""),[selected,setSelected]=useState<any|null>(null);
   useEffect(()=>{const timer=setTimeout(()=>setQuery(search.trim()),250);return()=>clearTimeout(timer);},[search]);
   const assets=usePaged(w.base+"/assets?limit=50&scope="+(shared?"shared":"all")+(query?"&q="+encodeURIComponent(query):""));
@@ -35,7 +35,7 @@ export function CloudAssetPicker({shared,required,onChange,onReady}:{shared:bool
     {assets.next!==null&&<button type="button" className="text-button" disabled={assets.loading} onClick={()=>void assets.more()}>{t("載入更多素材","Load more assets")}</button>}
     {selected&&<div className="cloud-asset-selected"><p><Check size={15}/><strong>{selected.name}</strong></p>
       <button type="button" className="text-button" onClick={()=>{setSelected(null);onChange(undefined);onReady(!required);}}>{required?t("清除選擇","Clear selection"):t("保留目前引用","Keep the current reference")}</button>
-      <VersionPicker key={selected.id} assetId={selected.id} onChange={id=>{onChange(id);onReady(!!id);}}/>
+      <VersionPicker key={selected.id} assetId={selected.id} onChange={id=>{onChange(id);onReady(!!id);if(id)onReference?.({id,assetId:selected.id,name:selected.name});}}/>
     </div>}
   </div>;
 }

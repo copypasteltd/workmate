@@ -43,7 +43,7 @@ export function NewWorkTask({ onClose, role, seed }: { onClose: () => void; role
         if (!Number.isSafeInteger(amount) || amount < 1000000 || amount > 10000000000) throw new Error("WORK_BUDGET_INVALID");
         const form = new FormData();
         for (const [key, value] of Object.entries(v)) form.set(key, value);
-        const body = { title: v.title.trim(), prompt: v.role === "video-motion" ? videoGenerationBrief(v.prompt, form) : v.prompt,
+        const body = { title: v.title.trim() || v.prompt.trim().replace(/\s+/g," ").slice(0,80), prompt: v.role === "video-motion" ? videoGenerationBrief(v.prompt, form) : v.prompt,
           mode: v.mode, budget_micros: amount,
           ...(v.role !== "assistant" ? { role_key: v.role } : {}),
           ...(v.required_input ? { dependencies: [v.required_input === "file"
@@ -98,6 +98,9 @@ export function NewWorkTask({ onClose, role, seed }: { onClose: () => void; role
       <ProjectConfigurationSummary compact/>
       <form className="form-stack work-intake" onSubmit={event => { event.preventDefault(); void submit(); }}>
         <fieldset disabled={busy || pending}>
+          <Field label={t("你想完成什麼？", "What would you like to make?")}><textarea name="prompt" value={v.prompt} onChange={e => change({ prompt: e.target.value })}
+            rows={5} minLength={5} maxLength={30000} required placeholder={t("說明目標、對象、交付格式和需要保留的內容…", "Describe your goal, audience, deliverables and anything to preserve…")}/></Field>
+          <details className="work-intake-options"><summary>{t("角色、預算與更多設定", "Specialist, budget and more settings")} · HK$ {v.budget}</summary>
           <Field label={t("專案", "Project")}><input value={w.projects.find(p => p.id === w.project)?.name ?? ""} readOnly/></Field>
           <Field label={t("專業角色", "Specialist")}><select name="role" value={v.role} onChange={e => change({ role: e.target.value, required_input: "" })}>
             <option value="assistant">{t("預設助手 — 答覆、計畫與文字交付", "Default assistant — answers, plans and text deliverables")}</option>
@@ -114,10 +117,8 @@ export function NewWorkTask({ onClose, role, seed }: { onClose: () => void; role
             "Choose a cloud computer with confirmed cost and control permissions, then approve the Codex task and its separate AI budget.")}
             <Link to="/app/computers" onClick={onClose}>{t("選擇雲端電腦", "Choose a cloud computer")}</Link></p>)}
           <ModeField value={v.mode} onChange={mode => change({ mode })}/>
-          <Field label={t("工作名稱", "Task name")}><input name="title" value={v.title} onChange={e => change({ title: e.target.value })} maxLength={160} required
+          <Field label={t("工作名稱", "Task name")}><input name="title" value={v.title} onChange={e => change({ title: e.target.value })} maxLength={160}
             placeholder={t("例如：秋季新品推廣海報", "e.g. Autumn launch campaign")}/></Field>
-          <Field label={t("你想完成什麼？", "What would you like to make?")}><textarea name="prompt" value={v.prompt} onChange={e => change({ prompt: e.target.value })}
-            rows={5} minLength={5} maxLength={30000} required placeholder={t("說明目標、對象、交付格式和需要保留的內容…", "Describe your goal, audience, deliverables and anything to preserve…")}/></Field>
           {v.role === "video-motion" && <div onChange={event => { const field = event.target;
             if (field instanceof HTMLSelectElement && ["video_mode", "video_seconds", "video_size"].includes(field.name)) change({ [field.name]: field.value }); }}>
             <VideoBriefFields defaults={v}/></div>}
@@ -128,6 +129,7 @@ export function NewWorkTask({ onClose, role, seed }: { onClose: () => void; role
             </select></Field>
           <Field label={t("本次工作預算上限（HKD）", "Task budget limit (HKD)")} hint={t("提交時預留，依實際用量結算；等待資料期間保持預留。", "Reserved on submission and settled against measured usage; retained while waiting for inputs.")}>
             <input name="budget" type="number" min="1" max="10000" step="0.01" value={v.budget} onChange={e => change({ budget: e.target.value })} required/></Field>
+          </details>
         </fieldset>
         <button className="button primary" type="submit" disabled={busy || !online || v.role === "computer-operator"}>{busy ? t("正在核對提交…", "Checking submission…") : pending ? t("重試原提交", "Retry original submission") : t("開始工作", "Start task")}<ArrowUpRight size={16}/></button>
         {!pending && <button className="text-button work-draft-reset" type="button" disabled={busy} onClick={() => store(newWorkDraft(scope))}><RotateCcw size={15}/>{t("清除這份草稿", "Clear this draft")}</button>}

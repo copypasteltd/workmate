@@ -149,6 +149,7 @@ import { Members } from "./members";
 import { OwnershipTransferNotice } from "./ownership-transfers";
 import { operationKey } from "./operation-key";
 import { useTaskEvents } from "./task-events";
+import {TaskWorkbench} from "./task-workbench";
 import {
   Preferences,
   useI18n,
@@ -1574,6 +1575,7 @@ function TaskDetail() {
               </div>
             </aside>
           </div>
+          <TaskWorkbench taskId={data.id} refresh={version}/>
           <TaskPlan key={data.id} task={data} />
           <section className="section-block">
             <div className="section-title">

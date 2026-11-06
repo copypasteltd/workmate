@@ -4,11 +4,13 @@ import { desktopSetup, desktopPortable, downloadSize, productDownloads } from ".
 
 test("public download catalog provides distinct installers and valid verification metadata", () => {
   const artifacts = [desktopSetup, desktopPortable, productDownloads.extension.artifact];
+  const releaseDirectory = productDownloads.checksums_url.slice(0, productDownloads.checksums_url.lastIndexOf("/") + 1);
+  assert.match(releaseDirectory, /^\/downloads\/releases\/\d+\/$/);
   assert.equal(new Set(artifacts.map(a => a.url)).size, 3);
   for (const artifact of artifacts) {
     assert.match(artifact.sha256, /^[a-f0-9]{64}$/);
     assert.ok(Number.isSafeInteger(artifact.bytes) && artifact.bytes > 0);
-    assert.equal(artifact.url, `/downloads/releases/193/${artifact.name}`);
+    assert.equal(artifact.url, releaseDirectory + artifact.name);
     assert.ok(!artifact.url.includes("?"));
   }
   assert.match(desktopSetup.name, /-Setup\.exe$/);

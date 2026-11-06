@@ -19,16 +19,22 @@ export function ResumableUpload({
   sourceTaskId,
   onDone,
   accept,
+  initialFile,
+  autoStart = false,
+  onBusy,
 }: {
   asset?: any;
   conversationId?: string;
   sourceTaskId?: string;
   onDone: (asset?: any) => void;
   accept?: string;
+  initialFile?: File;
+  autoStart?: boolean;
+  onBusy?: (busy: boolean) => void;
 }) {
   const { t } = useI18n(),
     w = useWorkspace(),
-    [file, setFile] = useState<File | null>(null),
+    [file, setFile] = useState<File | null>(initialFile ?? null),
     [busy, setBusy] = useState(false),
     [progress, setProgress] = useState(0),
     [stage, setStage] = useState(""),
@@ -37,12 +43,15 @@ export function ResumableUpload({
   const [pending, setPending] = useState<{ id: string; key: string } | null>(
     null,
   );
+  const automatic = useRef(false);
+  const busyCallback = useRef(onBusy); busyCallback.current = onBusy;
   useEffect(() => () => controller.current?.abort(), []);
   const start = async () => {
     if (!file) return;
     const c = new AbortController();
     controller.current = c;
     setBusy(true);
+    busyCallback.current?.(true);
     setError(null);
     setProgress(0);
     try {
@@ -189,6 +198,7 @@ export function ResumableUpload({
       });
       localStorage.removeItem(storageKey);
       localStorage.removeItem(storageKey + ":request");
+      c.signal.throwIfAborted();
       setPending(null);
       onDone(completed);
     } catch (e) {
@@ -202,9 +212,13 @@ export function ResumableUpload({
       else setError(e as Error);
     } finally {
       setBusy(false);
+      busyCallback.current?.(false);
       controller.current = null;
     }
   };
+  useEffect(() => {
+    if (autoStart && file && !automatic.current) { automatic.current = true; void start(); }
+  }, [autoStart, file]);
   const cancel = async () => {
     if (!pending) return;
     setBusy(true);
@@ -240,7 +254,7 @@ export function ResumableUpload({
         )}
       </p>
       <ErrorNotice error={error} />
-      <Field label={t("檔案", "File")}>
+      {!initialFile && <Field label={t("檔案", "File")}>
         <input
           type="file"
           accept={accept}
@@ -254,7 +268,7 @@ export function ResumableUpload({
           }}
           required
         />
-      </Field>
+      </Field>}
       {stage && (
         <div role="status">
           <p>{stage}</p>
@@ -268,6 +282,7 @@ export function ResumableUpload({
       )}
       <div className="row-actions">
         <button
+          type="button"
           className="button primary"
           disabled={!file || busy}
           onClick={() => void start()}
@@ -276,6 +291,7 @@ export function ResumableUpload({
         </button>
         {busy && controller.current && (
           <button
+            type="button"
             className="button secondary"
             onClick={() => controller.current?.abort()}
           >
@@ -283,7 +299,7 @@ export function ResumableUpload({
           </button>
         )}
         {!busy && pending && (
-          <button className="button secondary" onClick={() => void cancel()}>
+          <button type="button" className="button secondary" onClick={() => void cancel()}>
             {t("取消此上傳", "Cancel this upload")}
           </button>
         )}
