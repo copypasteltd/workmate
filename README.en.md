@@ -1,3 +1,31 @@
+<!-- integrated-round-204 -->
+
+## 204 · 0.5.7 · Safe tool feedback and durable cloud ownership
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-204/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Retain the native Chrome right SidePanel: sign in → explicitly select files → confirm access → upload pinned versions → cloud Codex → review, preserving customer file consent boundaries.
+
+2. Extension code and released0.5.7 ZIP bytes are unchanged. Retain 93 related cases against identical source; Web/Desktop review does not replace full Chrome/device/large-file qualification.
+
+```mermaid
+flowchart LR
+ A[Native right SidePanel] --> B[Explicit file consent]
+ B --> C[Pinned upload]
+ C --> D[Company cloud Codex]
+ D --> E[Review result]
+```
+
+725 qualified related cases distinguish current tests from identical-source retention. One linked marketing sample delivered actual files. All four inner files passed full byte/SHA checks. Public installer transfers remain incomplete; the complete public-download gate has NOT passed. This release update and Git synchronization do not close that check. Original102 requirements/32 groups, professional19-role/50-Skill acceptance, external media/marketing/IdP setup, long-run/device/concurrency/DR qualification and blind WorkBuddy comparison remain explicit. Original generic failure/lease root causes, default public HTTP/2 and normal DNS-address failover remain unproven; QA alone selects another current public address without changing server networking; no full-product acceptance claim.
+
+![198轮实际录制，本轮源码未变 · Retained198 capture, identical component source](assets/screenshots/198-v1-side-panel.png)
+
+![198轮实际录制，本轮源码未变 · Retained198 capture, identical component source](assets/screenshots/workmate-198-v1-side-panel.gif)
+
+[Recorded interaction / 实际录影](assets/screenshots/workmate-198-v1-side-panel.mp4)
+
+Historical release notes and the complete setup/usage guide follow.
+
 <!-- integrated-round-203 -->
 
 ## 203 · 0.5.7 · Pinned specialist intake and reliable delivery

@@ -1,3 +1,31 @@
+<!-- integrated-round-204 -->
+
+## 204 · 0.5.7 · 安全工具反馈与云端执行时效
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-204/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 继续使用Chrome原生右侧SidePanel：登录 → 明确选择文件 → 读取确认 → 上传固定版本 → 云端Codex处理 → 审阅；保留用户文件授权边界。
+
+2. 本轮插件代码和已发布0.5.7 ZIP字节未改；既有93项相关证据按原样源码沿用。完整Chrome版本、全机器和大文件矩阵不由本轮Web／Desktop复核替代。
+
+```mermaid
+flowchart LR
+ A[Native right SidePanel] --> B[Explicit file consent]
+ B --> C[Pinned upload]
+ C --> D[Company cloud Codex]
+ D --> E[Review result]
+```
+
+725项相关通过证据区分本轮执行与原样源码沿用。一项关联原失败的营销样例已交付实际文件。四份内网文件完整字节／SHA通过。公网大安装包仅有部分传输证据，完整公网下载检查未通过；本次应用更新与Git同步不代表关闭该项。全部102条／32组、19角色／50Skills专业验收、外部媒体／营销／IdP配置、长稳／设备／并发／灾备及WorkBuddy盲测差距继续保留。原通用错误／租约历史根因、公网默认HTTP/2及正常DNS地址故障转移未因此证明；仅本机验证选用另一个当前公网地址，服务器网络保持不变；不声明完整产品验收通过。
+
+![198轮实际录制，本轮源码未变 · Retained198 capture, identical component source](assets/screenshots/198-v1-side-panel.png)
+
+![198轮实际录制，本轮源码未变 · Retained198 capture, identical component source](assets/screenshots/workmate-198-v1-side-panel.gif)
+
+[Recorded interaction / 实际录影](assets/screenshots/workmate-198-v1-side-panel.mp4)
+
+以下历史版本说明及完整安装／使用指南继续保留。
+
 <!-- integrated-round-203 -->
 
 ## 203 · 0.5.7 · 专业输入与可靠交付
