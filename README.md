@@ -1,3 +1,44 @@
+<!-- integrated-round-195 -->
+
+## 195 · 0.5.5 · 原生右侧栏 / Native Side Panel
+
+工具栏打开原生右侧栏，会话/附件结构获取获准文件与粘贴图片并上传，Codex在云端执行。
+
+[Round delivery / 本輪交付](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-195/README.md) · [Download / 下載](https://agent.copypaste.hk/downloads)
+
+![Actual interface / 實際介面](assets/screenshots/195-v4-side-panel.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-195-v4-side-panel.gif)
+
+```mermaid
+flowchart LR
+ A[Visit / 訪問] --> B[Email sign-in / 郵箱登入]
+ B --> C[Workspace / 企業與專案]
+ C --> D[Role, files, budget / 角色、檔案、預算]
+ D --> E{Client / 客戶端}
+ E -->|Web or Extension| F[Cloud Codex / 雲端]
+ E -->|Desktop native permission| G[Local Codex / 本機]
+ F --> H[Results, revisions, usage / 成果、修改、費用]
+ G --> H
+```
+
+<!-- usage-195 -->
+
+本轮使用流程：
+
+1. 下载0.5.5 ZIP并解压，在 Chrome 扩展管理页开启开发者模式后加载已解压目录。
+2. 点击工具栏图标打开浏览器原生右侧栏，在浏览器授权流程中登录公司账户。
+3. 选择获准文件或目录，拖入附件或粘贴图片；查看上传状态，成功后交给云端任务处理。
+4. 原始访问权限由浏览器与用户授权限制，插件不冒充本机 Desktop Agent。退出后结束该会话的账户使用。
+
+[Actual recording MP4 / 实际录像](assets/screenshots/workmate-195-v4-side-panel.mp4)
+
+<!-- /usage-195 -->
+
+本輪實際測試與旅程見報告；保留歷史失敗，不以代碼量替代全部專業/生產驗收。影片/語音/Google/Meta真實配置、至少12角色專業驗收及完整兼容/運營矩陣仍開放。測試郵箱及未簽名安裝按已確認範圍保留。
+
+Selected regression and real journeys are in the report. Historical failures remain. Real video/audio/Google/Meta configuration, at least12 professional role evaluations and the full compatibility/operations matrix remain open. The requested test mailbox and unsigned manual installation remain.
+
 <!-- product-downloads-193 -->
 
 ## 產品下載與安裝 · 193

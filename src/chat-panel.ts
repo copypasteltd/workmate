@@ -40,6 +40,12 @@ export class ChatPanel {
       void this.run(() => this.state.send(el<HTMLInputElement>("chat-budget").value));
     });
     el("chat-input").addEventListener("input", () => { this.state.draft = el<HTMLTextAreaElement>("chat-input").value; });
+    el("chat-input").addEventListener("paste", event => {
+      const files=[...(event.clipboardData?.items??[])].filter(item=>item.kind==="file").map(item=>item.getAsFile()).filter((file):file is File=>!!file);
+      if(!files.length)return;
+      event.preventDefault();
+      void this.run(async()=>{await Promise.all(files.map(file=>this.state.attach(file)));});
+    });
     el("chat-input").addEventListener("keydown", e => {
       if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); el<HTMLFormElement>("chat-form").requestSubmit(); }
     });
@@ -63,12 +69,15 @@ export class ChatPanel {
       await this.state.attach(new File([page.title + "\n" + page.url + "\n\n" + page.text], "webpage.txt", { type: "text/plain" }));
     }));
     const drop = el("chat-shell");
-    drop.addEventListener("dragover", e => { if (e.dataTransfer?.types.includes("Files")) e.preventDefault(); });
+    drop.addEventListener("dragover", e => { if (e.dataTransfer?.types.includes("Files")){e.preventDefault();drop.classList.add("chat-file-dragging");} });
+    drop.addEventListener("dragleave",e=>{if(!drop.contains(e.relatedTarget as Node|null))drop.classList.remove("chat-file-dragging");});
     drop.addEventListener("drop", e => {
+      drop.classList.remove("chat-file-dragging");
       if (!e.dataTransfer?.files.length) return;
       e.preventDefault(); const files = [...e.dataTransfer.files];
       void this.run(async () => { await Promise.all(files.map(f => this.state.attach(f))); });
     });
+    window.addEventListener("blur",()=>drop.classList.remove("chat-file-dragging"));
     const feed = el("chat-messages");
     feed.addEventListener("scroll", () => {
       if (feed.clientHeight) this.followLatest = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 80;
