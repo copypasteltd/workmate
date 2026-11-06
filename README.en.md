@@ -1,3 +1,31 @@
+<!-- integrated-round-197 -->
+
+## 197 · 0.5.2 · Administration and connection feedback
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-197/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Admins use email verification and TOTP to manage organizations, users, models, funds, VIP, content, permissions, approvals and audit. Highest admins execute according to policy with audit; other roles follow their approval rules.
+2. Each model has its own API URL, key, upstream alias and rates, with edit, validation and delete. Lists and batch operations continue to enforce permissions and impact previews.
+3. Readiness distinguishes real connections, the test mailbox and unconfigured services. Reads recover within a bound; uncertain administrative writes are not automatically replayed.
+4. This round checks fresh sign-in, real readiness and retained role evidence. The protected test mailbox remains as requested; real SMTP delivery is not claimed.
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[Role and permission / 角色與授權]
+  C --> D[Original task / 原工作]
+  D --> E[Review result and usage / 審閱與費用]
+  E --> F[Explicit next action / 明確下一步]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/197-v4-service-readiness.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-197-v4-service-review.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-197-v4-service-review.mp4)
+
+Earlier sections are retained release history. Full external/professional/production acceptance remains open.
+
 <!-- integrated-round-196 -->
 
 ## 196 · 0.5.1 · Admin compatibility and readiness
