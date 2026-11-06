@@ -1,3 +1,33 @@
+<!-- integrated-round-202 -->
+
+## 202 · 0.5.2 · Evidence review, delivery and safe request recovery
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-202/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Product version remains0.5.2;22 related regressions pass. The198 actual Admin screenshots/recordings below are historical, not new acceptance.
+
+2. Each model retains editable OpenAI-compatible upstream URL, API key, upstream alias and rates, with separate save/validation and no client credential exposure. Organization/user create/delete/bulk, credit/VIP/content controls, super-admin direct execution, policy approval for other roles and full audit stay.
+
+3. New review/export routes enforce current tenant/project/private/source authority, make no model call/AI charge and do not grant public distribution rights. Real video/voice/Google/Meta still need their original configuration and acceptance.
+
+```mermaid
+flowchart LR
+ A[Admin identity and role] --> B[Per-model upstream and key]
+ A --> C[Organizations users credit VIP content bulk]
+ C --> D[Direct or policy approval]
+ D --> E[Complete audit]
+```
+
+Historical198 actual client / 历史198实际客户端
+
+![Actual interface / 实际页面](assets/screenshots/198-v4-service-readiness.png)
+
+![Actual interaction / 实际交互](assets/screenshots/workmate-198-v4-service-review.gif)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-198-v4-service-review.mp4)
+
+Earlier architecture, setup and complete use details remain below.
+
 <!-- integrated-round-201 -->
 
 ## 201 · 0.5.2 · Motion production and actual delivery

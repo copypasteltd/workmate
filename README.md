@@ -1,3 +1,33 @@
+<!-- integrated-round-202 -->
+
+## 202 · 0.5.2 · 营销证据复核、交付与请求恢复
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-202/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 产品版本仍为0.5.2；22项相关回归通过。下方198真实后台截图／录制为历史素材，本轮未将其标成新验收。
+
+2. 每个模型可编辑上游OpenAI相容地址、API key、上游模型名和费率；保存与验证分开，密钥不下发用户端。企业／用户新建、删除、批量、额度／VIP／内容控制及最高管理员直接执行、其他角色策略审批与完整审计保持。
+
+3. 新复核／导出路由仍受当前企业／项目／私人范围／来源状态限制；不调用模型且无AI费用。导出的完整证据和摘要不授权公开分发。视频／语音、Google／Meta真实服务仍须原配置和实际验收。
+
+```mermaid
+flowchart LR
+ A[Admin identity and role] --> B[Per-model upstream and key]
+ A --> C[Organizations users credit VIP content bulk]
+ C --> D[Direct or policy approval]
+ D --> E[Complete audit]
+```
+
+Historical198 actual client / 历史198实际客户端
+
+![Actual interface / 实际页面](assets/screenshots/198-v4-service-readiness.png)
+
+![Actual interaction / 实际交互](assets/screenshots/workmate-198-v4-service-review.gif)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-198-v4-service-review.mp4)
+
+以下保留完整架构、安装与使用细则。
+
 <!-- integrated-round-201 -->
 
 ## 201 · 0.5.2 · 影片製作與實際交付
