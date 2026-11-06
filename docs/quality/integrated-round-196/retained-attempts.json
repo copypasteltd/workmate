@@ -1,0 +1,44 @@
+{
+  "stage": 196,
+  "scope": "Failures, crashed execution and superseded artifacts are retained locally. Later success does not rewrite their results. Private sessions, transport headers and raw screenshots are excluded from this public summary.",
+  "journey_failures": [
+    {
+      "receipt": "copypaste-delivery/.data/acceptance-196/real-desktop-5aa049c1-10c1-4d27-8b09-d0480ffa901a/receipt.json",
+      "sha256": "e5cb7a9de3ebef722513456afa3ec2ca28e155a2ca165976b5d98410f3b567d2",
+      "error": "AssertionError: CLIENT_CONNECTION_UNAVAILABLE",
+      "checks_passed_before_failure": 5
+    },
+    {
+      "receipt": "copypaste-delivery/.data/acceptance-196/workspace-17a3f12f-aa03-4c3f-8126-a3821cb785d9/receipt.json",
+      "sha256": "7d13a0898df23292a67e1c6b52b0a9950f53d961419409fbfc475b562f1591cb",
+      "error": "Error: locator.waitFor: Error: strict mode violation: locator('.software-checks') resolved to 2 elements:",
+      "checks_passed_before_failure": 3
+    },
+    {
+      "receipt": "copypaste-delivery/.data/acceptance-196/workspace-2b3ac22c-e1c6-486d-934b-4481cbcc34ca/receipt.json",
+      "sha256": "e5d2f0da4e171b0d87dec3b64b0b602e710b86e70e705e7100b5c69883e3970b",
+      "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.",
+      "checks_passed_before_failure": 5
+    }
+  ],
+  "crashed_workspace_runs": [
+    "copypaste-delivery/.data/acceptance-196/workspace-015fc417-4a88-40cc-8665-ce7b23c8b02b"
+  ],
+  "verification_directories": [
+    "integrated-196-v1",
+    "integrated-196-v2",
+    "integrated-196-v3",
+    "integrated-196-v4"
+  ],
+  "notes": [
+    "Initial Desktop bundle import/type failures were repaired as a complete batch before repeating integrated validation.",
+    "The backend review-creation fixture expected200 instead of the existing201; the versioned fixture was corrected.",
+    "Workspace v1 used an ambiguous selector for two existing check panels; v3 scoped the task workbench. Its final New task selector was completed separately against the actual sidebar control.",
+    "Workspace v2 encountered a browser automation transport crash. An owned QA browser session exposed in that exception was revoked and verified401; browser-native response interception and first-line-only errors replaced that path.",
+    "The first native run stopped on a read-side HTTPS timeout before any model request. Its zero-request reservation was reconciled and read back; the separate second actual native task passed.",
+    "The first package upload began before its checksum sidecar existed; partial upload was never staged or activated. A new versioned upload validated all inputs.",
+    "The initial SFTP manifest create mode rejected writing; a separate manifest was completed before activation.",
+    "The first full public download probe timed out after verifying Setup; browser-native download verification completed Portable, Extension and checksums, reusing only the same immutable Setup body receipt.",
+    "The first reconciliation sign-in navigation timed out before any mutation; the second attempt used bounded navigation retries and one immutable commit."
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "stage": 196,
+  "status": "read_back",
+  "operation": {
+    "stage": 196,
+    "status": "committed_pending_readback",
+    "task_id": "79b3fe90-269a-4c23-b4cd-cfbbee18bdb4",
+    "scope": "Only the owned abandoned startup qualification; server-observed zero model requests and zero cost. Existing highest-admin preview/commit, permission checks and audit are retained. No customer task, balance grant or unknown provider request is changed.",
+    "basis": {
+      "receipt": ".data/deployment-196/owned-native-tasks-v2.sanitized.json",
+      "sha256": "ae1221fdbf9d334a326a952a5d17ae769e896506567f70af1709daea6dcd55f4"
+    },
+    "operation": {
+      "id": "f4a627aa-c5c9-4e3e-ad60-abaed3458994",
+      "state": "succeeded",
+      "result": {
+        "task_id": "79b3fe90-269a-4c23-b4cd-cfbbee18bdb4",
+        "actual_micros": 0
+      }
+    },
+    "owned_browser_closed": true,
+    "finished_at": "2026-11-06T02:39:00.558Z"
+  },
+  "readback": {
+    "stage": 196,
+    "status": "inspected",
+    "scope": "Read-only review of the two explicitly owned Desktop qualification tasks; actual provider usage and capacity only. No task or accounting record is changed.",
+    "tasks": [
+      {
+        "id": "4b34b469-dcfd-4683-9897-8dcba36acd80",
+        "status": "succeeded",
+        "version": 3,
+        "error_code": null,
+        "execution_location": "desktop",
+        "data_mode": "configured_services",
+        "charged_micros": "57310"
+      },
+      {
+        "id": "79b3fe90-269a-4c23-b4cd-cfbbee18bdb4",
+        "status": "failed",
+        "version": 6,
+        "error_code": "RECONCILED",
+        "execution_location": "desktop",
+        "data_mode": "configured_services",
+        "charged_micros": "0"
+      }
+    ],
+    "reservations": [
+      {
+        "task_id": "4b34b469-dcfd-4683-9897-8dcba36acd80",
+        "status": "settled",
+        "amount_micros": "2000000"
+      },
+      {
+        "task_id": "79b3fe90-269a-4c23-b4cd-cfbbee18bdb4",
+        "status": "released",
+        "amount_micros": "2000000"
+      }
+    ],
+    "requests": [
+      {
+        "id": "2830ce99-814a-40de-ba00-bacb21266186",
+        "task_id": "4b34b469-dcfd-4683-9897-8dcba36acd80",
+        "state": "completed",
+        "outcome_code": null,
+        "usage_known": true,
+        "input_tokens": "15777",
+        "output_tokens": "1059",
+        "known_charge_micros": "16836",
+        "capacity_released": true
+      },
+      {
+        "id": "f851f350-36f6-499b-922c-494d42e27660",
+        "task_id": "4b34b469-dcfd-4683-9897-8dcba36acd80",
+        "state": "completed",
+        "outcome_code": null,
+        "usage_known": true,
+        "input_tokens": "18964",
+        "output_tokens": "1154",
+        "known_charge_micros": "20118",
+        "capacity_released": true
+      },
+      {
+        "id": "4ebebfd3-05f5-4e77-b69c-035fe12fcb08",
+        "task_id": "4b34b469-dcfd-4683-9897-8dcba36acd80",
+        "state": "completed",
+        "outcome_code": null,
+        "usage_known": true,
+        "input_tokens": "20227",
+        "output_tokens": "129",
+        "known_charge_micros": "20356",
+        "capacity_released": true
+      }
+    ],
+    "executions": [
+      {
+        "task_id": "4b34b469-dcfd-4683-9897-8dcba36acd80",
+        "state": "finished",
+        "client_status": "completed",
+        "client_error_code": null
+      },
+      {
+        "task_id": "79b3fe90-269a-4c23-b4cd-cfbbee18bdb4",
+        "state": "reconciling",
+        "client_status": null,
+        "client_error_code": null
+      }
+    ],
+    "receipts": [
+      {
+        "task_id": "79b3fe90-269a-4c23-b4cd-cfbbee18bdb4",
+        "requests": 0,
+        "knownChargeMicros": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "uncertain": false,
+        "violation": false
+      },
+      {
+        "task_id": "4b34b469-dcfd-4683-9897-8dcba36acd80",
+        "requests": 3,
+        "knownChargeMicros": 57310,
+        "inputTokens": 54968,
+        "outputTokens": 2342,
+        "uncertain": false,
+        "violation": false
+      }
+    ]
+  },
+  "boundary": "The abandoned startup remains a failed task; its zero-request reservation is released through the existing audited highest-admin operation. The successful separate native task retains its actual HK$0.057310 charge. No unknown provider usage is declared free."
+}

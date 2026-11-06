@@ -1,3 +1,9 @@
+<!-- integrated-round-196 -->
+
+196輪已整批完成文字新版本、固定版本比較、雲端/本機任務綁定執行視圖及角色交付指引，統一驗證後上線；完整專業、外部與生產驗收繼續保留。
+
+[交付 / Delivery](quality/integrated-round-196/README.md) · [102條追溯 / Requirements](quality/integrated-round-196/requirements-102.md) · [更新 / Changes](changes/196-task-review-and-native-context.md)
+
 <!-- integrated-round-195 -->
 
 195輪已整批補齊統一私人輸入/成果、後台就緒/角色驗收、Linux Office及客戶端輸入，統一回歸與實機證據見報告；完整外部、專業及生產驗收仍開放。

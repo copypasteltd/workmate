@@ -8,4 +8,5 @@
 - CLIENT01：Desktop 必须在客户本机运行 Codex Agent，并提供客户可主动授予的完整本机权限；不得以云端 Agent 加文件桥接替代。Extension 使用 ChatGPT 式对话和附件结构，承担获准文件获取、读取及上传，Agent 在云端运行；保留原生右侧 Side Panel。权威补充见 docs/requirements/03-client-execution-amendment.md。
 - 严禁调度任何本地 Docker、WSL 或其他虚拟化环境，使用原生工具开发和核查。
 - 使用浏览器后，关闭本次调用创建且不再需要的页面、上下文及独立浏览器实例，释放内存；保留用户原有页面。
+- 开发按完整轮次推进：先系统盘点原始需求、所有代码待办和未定事项，完成本轮可自主处理的全部代码包后，再统一构建、测试和联调；发现的问题汇总为整批修复后复验，不以逐模块开发/调测循环代替整轮交付。保留失败证据；外部配置、专业及生产验收不得通过缩小目标或清除 TODO 标记自动判定完成。
 - 各端独立仓库按 [Git 分支与同步规则](docs/governance/04-git-branches-and-publication.md) 发布至 `git@github.com:copypasteltd/workmate.git` 的对应分支；后续代码修改需同步中英双语 README、相关实际截图/交互 GIF 和更新说明，再提交并推送。用户已经授权此持续同步，不重复询问常规推送权限；不得强推覆盖其他人的工作。

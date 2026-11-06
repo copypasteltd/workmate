@@ -1,3 +1,9 @@
+<!-- integrated-round-196 -->
+
+Round196 ships immutable manual text revisions, pinned comparisons, task-bound native/cloud execution and specialist guidance after a full implementation batch and integrated validation. Professional/external/production acceptance remains open.
+
+[交付 / Delivery](quality/integrated-round-196/README.md) · [102條追溯 / Requirements](quality/integrated-round-196/requirements-102.md) · [更新 / Changes](changes/196-task-review-and-native-context.md)
+
 <!-- integrated-round-195 -->
 
 Round195 ships unified private inputs/results, Admin readiness/role evidence, native Linux Office and improved client inputs. External, professional and production acceptance remains scoped.
