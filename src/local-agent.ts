@@ -1631,7 +1631,7 @@ export class LocalAgentController {
             },
             event: async (kind, value) => {
               if (generation !== this.generation) return;
-              r.events.push({ kind, value });
+              r.events.push({ kind, value:{...value,workmate_task_id:op.taskId} });
               if (r.events.length > 500) r.events.shift();
               this.io.changed();
             },
@@ -2034,6 +2034,7 @@ export class LocalAgentController {
                 workflow_run_id: runId,
                 workflow_cursor: cursor,
                 workflow_task_id: child.task_id,
+                workmate_task_id: child.task_id,
               },
             });
             if (r.events.length > 500) r.events.shift();

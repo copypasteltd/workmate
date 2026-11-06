@@ -1,3 +1,35 @@
+<!-- integrated-round-196 -->
+
+## 196 · 0.7.6 · 本机Codex与执行成果
+
+[完整交付與限制 / Delivery and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-196/README.md) · [下載 / Downloads](https://agent.copypaste.hk/downloads)
+
+1. 从产品下载页安装0.7.6或运行便携版，在系统浏览器完成账户授权；窗口无边框且无Electron菜单。
+2. 选择本机目录和专业角色，原生确认后授予所需权限。完整本机权限由客户明确确认，可读取工作区范围之外文件，也可随时撤销。
+3. 选择/拖入本机引用并提交任务，本机Codex读取、运行命令和写出结果；所有模型调用与费用走公司服务器。本轮实际发布包完成真实本机命令、结果和HK$0.057310结算。
+4. 在当前任务的成果工作区查看执行记录和当前文件。记录只接受明确公司任务ID绑定；命令输出、退出码、文件/工具事件分别保留，旧无绑定记录不猜测任务归属。
+5. 当前本机预览通过主进程重新校验授权、规范路径、边界、读取前后变化；最多4MiB支持图片或256KiBUTF-8文字。它是当前内容，可能不同于历史修改；预览本身不上传或执行文件。撤权后拒绝预览。
+
+```mermaid
+flowchart LR
+ A[Sign in / 登入] --> B[Project, role and budget / 專案角色預算]
+ B --> C{Execution / 執行}
+ C -->|Web or Extension| D[Company cloud Codex / 公司雲端]
+ C -->|Desktop native permission| E[Local Codex / 本機]
+ D --> F[Results, files and actual usage / 成果檔案實際費用]
+ E --> F
+ F --> G[Review and compare / 審閱比較]
+ G --> H[Explicit revision / 明確修改]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/196-native-execution.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-196-v2-local-workspace.gif)
+
+[Actual MP4 / 實際錄影](assets/screenshots/workmate-196-v2-local-workspace.mp4) · [Additional view / 其他頁面](assets/screenshots/196-local-workspace.png)
+
+範圍：本輪相關旅程通過，原失敗保留。間歇公網連線超時、專業產出、外部接入及完整生產/兼容驗收仍開放。下方較早章節為歷史版本。
+
 <!-- integrated-round-195 -->
 
 ## 195 · 0.7.5 · 本机客户端 / Local desktop

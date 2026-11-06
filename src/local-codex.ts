@@ -574,15 +574,15 @@ export class LocalCodexSession {
                 throw new BrowserToolError("BROWSER_CALL_SCOPE_INVALID", false);
               this.validateGrant(); await this.hooks.authorize(); this.validateGrant();
               if (this.grant.mode !== "full-access") throw new BrowserToolError("BROWSER_FULL_ACCESS_REQUIRED");
-              await this.emit("local.browser-tool.started", { tool: call.tool, call_id: call.callId });
+              await this.emit("local.browser-tool.started", { tool: call.tool, call_id: call.callId, turnId: call.turnId });
               result = await this.hooks.browserTool(call, this.shutdown.signal);
               this.validateGrant();
               if (this.closed || this.revoked || this.shutdown.signal.aborted) throw new BrowserToolError("BROWSER_INTERRUPTED", false);
-              await this.emit("local.browser-tool.completed", { tool: call.tool, call_id: call.callId });
+              await this.emit("local.browser-tool.completed", { tool: call.tool, call_id: call.callId, turnId: call.turnId });
             } catch (error) {
               const code = error instanceof BrowserToolError ? error.code : "BROWSER_AUTHORITY_OR_OUTCOME_UNKNOWN";
               fatal = !(error instanceof BrowserToolError && error.recoverable);
-              await this.emit("local.browser-tool.failed", { code, tool: typeof call?.tool === "string" ? call.tool.slice(0, 64) : "unknown" });
+              await this.emit("local.browser-tool.failed", { code, tool: typeof call?.tool === "string" ? call.tool.slice(0, 64) : "unknown", call_id: typeof call?.callId === "string" ? call.callId.slice(0,150) : undefined, turnId: typeof call?.turnId === "string" ? call.turnId.slice(0,100) : undefined });
               result = { success: false, contentItems: [{ type: "inputText", text: code + ". Do not invent an output or automatically replay an accepted action. Full local access can only be granted by the customer in the trusted application." }] };
             }
             if (this.child && !this.hasExited && !this.child.stdin.destroyed) this.child.stdin.write(JSON.stringify({ id: message.id, result }) + "\n");

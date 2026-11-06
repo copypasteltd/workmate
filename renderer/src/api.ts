@@ -3,6 +3,7 @@ import { saveScopeArchive } from "./scope-export-download";
 import { clientFetch, clientJson, connectionFailure } from "./client-failure";
 import { clearDeliveryRevisionDrafts } from "./delivery-revision-state";
 import { clearEditableProjectRequests } from "./editable-project-state";
+import {clearWorkspaceSaves} from "./workspace-edit-state";
 import { sessionProtectedRequest } from "./session-request";
 export let csrfToken = "";
 let sessionRevision = 0;
@@ -11,7 +12,7 @@ export function endClientSession(broadcast = true) {
   ++sessionRevision;
   csrfToken = "";
   redactWorkspaceAttempts();
-  if (broadcast) { clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); }
+  if (broadcast) { clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); clearWorkspaceSaves(); }
   window.dispatchEvent(new Event("copypaste:session-ended"));
   if (broadcast)
     localStorage.setItem(

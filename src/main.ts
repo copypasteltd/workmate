@@ -731,6 +731,7 @@ async function createWindow() {
       keys["revision"] = ["id", "requestId", "prompt", "budget", "selection"];
       keys["attachment.choose"]=["id"];keys["attachment.paste-image"]=["id"];
       keys["attachment.references"]=["id","paths"];
+      keys["result.preview"]=["id","path"];
       keys["team.prepare"] = ["tenant", "project", "group", "plan", "mode"];
       keys["team.start"] = ["id", "preflightId"];
       keys["team.resume"] = ["id"];
@@ -747,6 +748,7 @@ async function createWindow() {
         case "attachment.choose": value=await localAttachments.choose(payload.id);break;
         case "attachment.references": value=await localAttachments.references(payload.id,payload.paths);break;
         case "attachment.paste-image": value=await localAttachments.paste(payload.id);break;
+        case "result.preview": value=await localAttachments.preview(payload.id,payload.path);break;
         case "team.prepare": value = await localAgent.prepareTeam(payload); break;
         case "team.start": value = await localAgent.startTeam(payload.id, payload.preflightId); break;
         case "team.resume": value = await localAgent.resumeTeam(payload.id); break;

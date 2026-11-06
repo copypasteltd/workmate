@@ -1,3 +1,35 @@
+<!-- integrated-round-196 -->
+
+## 196 · 0.7.6 · Local Codex and execution results
+
+[完整交付與限制 / Delivery and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-196/README.md) · [下載 / Downloads](https://agent.copypaste.hk/downloads)
+
+1. Install0.7.6 or run its Portable build from the product download page. Authorize in the system browser. The application is frameless with no Electron menu.
+2. Choose a local folder and specialist, then grant permission in the native confirmation. Explicit customer full access can read beyond the working folder and can be revoked.
+3. Choose/drop local references and submit work. Local Codex reads files, executes commands and writes results; company servers handle all model calls and billing. The actual release build completed native commands/results andHK$0.057310 settlement.
+4. Open the current task result workspace for execution records and current files. Records require an explicit company taskID; outputs, exit codes and file/tool events are retained. Older unbound events are never assigned by guess.
+5. Main-process preview rechecks the grant, canonical path, boundary and read consistency. It supports selected images up to4MiB or UTF-8text up to256KiB. This is current local content, possibly different from historical edits. Preview does not upload/execute a file and is rejected after revocation.
+
+```mermaid
+flowchart LR
+ A[Sign in / 登入] --> B[Project, role and budget / 專案角色預算]
+ B --> C{Execution / 執行}
+ C -->|Web or Extension| D[Company cloud Codex / 公司雲端]
+ C -->|Desktop native permission| E[Local Codex / 本機]
+ D --> F[Results, files and actual usage / 成果檔案實際費用]
+ E --> F
+ F --> G[Review and compare / 審閱比較]
+ G --> H[Explicit revision / 明確修改]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/196-native-execution.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-196-v2-local-workspace.gif)
+
+[Actual MP4 / 實際錄影](assets/screenshots/workmate-196-v2-local-workspace.mp4) · [Additional view / 其他頁面](assets/screenshots/196-local-workspace.png)
+
+Scope: selected current journeys pass; original failures remain. Intermittent public HTTPS timeouts, professional outcomes, external integrations and full production/compatibility acceptance remain open. Earlier sections below describe historical releases.
+
 <!-- integrated-round-195 -->
 
 ## 195 · 0.7.5 · 本机客户端 / Local desktop

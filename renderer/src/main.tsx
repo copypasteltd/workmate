@@ -12,6 +12,7 @@ import { Connections, ConnectorLaunch } from "./connections";
 import { Publications } from "./publications";
 import "./support.css";
 import { RoleTemplateCards, roleEnglish } from "./role-templates";
+import {RoleDirectoryCount} from "./work-role-guide";
 import { DesignExports } from "./design-exports";
 import { CreativePackages } from "./creative-packages";
 import { EditableProjects } from "./editable-projects";
@@ -1218,7 +1219,7 @@ function Workbench() {
         <div className="section-title">
           <h2>{t("選擇你的專家", "Meet your specialists")}</h2>
           <Link to="/app/roles" className="text-link">
-            {t("全部 18 個角色", "All 18 specialists")}
+            <RoleDirectoryCount/>
             <ArrowRight size={15} />
           </Link>
         </div>
@@ -1281,8 +1282,8 @@ function Roles() {
         eyebrow="THE RIGHT MIND FOR THE JOB."
         title={t("你的專業團隊", "Your specialist team")}
         description={t(
-          "18 個專業角色，從完整設計到軟件開發。選擇角色，查看方法和交付標準。",
-          "18 specialists, from full design services to software development. Explore their methods and what they deliver.",
+          "從完整設計到軟件開發，選擇預設角色，查看方法和交付標準。",
+          "Preset specialists cover full design services and software development. Explore their methods and what they deliver.",
         )}
       />
       <div className="filter-row">
