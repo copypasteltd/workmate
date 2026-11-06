@@ -1,3 +1,31 @@
+<!-- integrated-round-196 -->
+
+## 196 · 0.5.3 · Codex服务与审阅接口
+
+[完整交付與限制 / Delivery and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-196/README.md) · [下載 / Downloads](https://agent.copypaste.hk/downloads)
+
+1. 管理员为每个模型设置其API地址、密钥、上游别名和费率；客户选择企业与项目后提交任务，云端由公司服务器运行Codex，Desktop仍在客户本机执行。
+2. 任务工作区新增版本、比较、编辑读取及保存接口。仅成功云端执行任务的受权项目写入者可修改当前UTF-8文字；上限256KiB，二进制、混合换行及大文件保持只读/下载。
+3. 保存同时验证任务版本、交付散列、资产版本和原文件散列；事务锁定任务与资产头，新建不可变版本并使旧审阅失效，原字节保留。人工编辑不运行模型或增加模型费用。
+4. 未确定保存只能明确复用原请求键和正文；服务端先重新授权再返回原结果。比较候选限定同一资产早期版本及获准原交付，读取后复核来源权限，响应private/no-store。
+5. 程序记录的view=all/terminal/browser在SQL分页前过滤。新增路由契约记录11个195/196工作区接口，最终751个常规路由另含1个条件路由；没有静默重写旧契约。
+
+```mermaid
+flowchart LR
+ A[Sign in / 登入] --> B[Project, role and budget / 專案角色預算]
+ B --> C{Execution / 執行}
+ C -->|Web or Extension| D[Company cloud Codex / 公司雲端]
+ C -->|Desktop native permission| E[Local Codex / 本機]
+ D --> F[Results, files and actual usage / 成果檔案實際費用]
+ E --> F
+ F --> G[Review and compare / 審閱比較]
+ G --> H[Explicit revision / 明確修改]
+```
+
+`GET .../workspace/versions` · `GET .../workspace/compare` · `GET .../workspace/editor` · `POST .../workspace/edit`
+
+範圍：本輪相關旅程通過，原失敗保留。間歇公網連線超時、專業產出、外部接入及完整生產/兼容驗收仍開放。下方較早章節為歷史版本。
+
 <!-- integrated-round-195 -->
 
 ## 195 · 0.5.2 · 后台与运行内核 / Backend and runtime

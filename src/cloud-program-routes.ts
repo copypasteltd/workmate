@@ -27,6 +27,7 @@ export function registerCloudProgramRoutes(
       .object({
         limit: z.coerce.number().int().min(1).max(20).default(10),
         before: uuid.optional(),
+        view: z.enum(["all","terminal","browser"]).default("all"),
       })
       .strict()
       .parse(req.query);
@@ -78,12 +79,13 @@ export function registerCloudProgramRoutes(
           )
             throw error;
         }
+        const tools=query.view==="all"?cloudCheckTools:cloudCheckTools.filter(name=>query.view==="browser"?name==="browser_preview":name!=="browser_preview");
         const rows = (
           await tx.query(
             `SELECT id,created_at,result FROM task_tool_receipts WHERE task_id=$1 AND tool_name=ANY($4::text[])
         AND ($2::uuid IS NULL OR (created_at,id)<(SELECT created_at,id FROM task_tool_receipts WHERE id=$2 AND task_id=$1 AND tool_name=ANY($4::text[])))
         ORDER BY created_at DESC,id DESC LIMIT $3`,
-            [t.id, query.before ?? null, query.limit + 1, cloudCheckTools],
+            [t.id, query.before ?? null, query.limit + 1, tools],
           )
         ).rows;
         const items = [];

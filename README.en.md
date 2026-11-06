@@ -1,3 +1,31 @@
+<!-- integrated-round-196 -->
+
+## 196 · 0.5.3 · Codex services and review APIs
+
+[完整交付與限制 / Delivery and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-196/README.md) · [下載 / Downloads](https://agent.copypaste.hk/downloads)
+
+1. Configure each model with its own API URL, key, upstream name and rates. Customers choose an organization/project. Company servers run cloud Codex; Desktop Codex runs on the customer computer.
+2. Workspace APIs expose eligible versions, comparison, editor reads and saving. Only authorized project writers can revise the current UTF-8 file of a successful cloud execution; the limit is256KiB. Binary, mixed-newline and larger files retain read/download behavior.
+3. Saving verifies task version, delivery digest, asset version and source digest under task/head locks. It creates an immutable version and invalidates the old review while retaining original bytes. Manual editing starts no model work or model fee.
+4. An uncertain save requires an explicit retry of the original key/body. Authorization precedes replay. Comparisons include eligible older versions and authorized originals only, rechecking source access after reads and returning private/no-store.
+5. view=all/terminal/browser filters program records before SQL pagination. An additive contract declares11 workspace routes from195/196; the inventory contains751 regular routes and1 conditional route without rewriting the historical baseline.
+
+```mermaid
+flowchart LR
+ A[Sign in / 登入] --> B[Project, role and budget / 專案角色預算]
+ B --> C{Execution / 執行}
+ C -->|Web or Extension| D[Company cloud Codex / 公司雲端]
+ C -->|Desktop native permission| E[Local Codex / 本機]
+ D --> F[Results, files and actual usage / 成果檔案實際費用]
+ E --> F
+ F --> G[Review and compare / 審閱比較]
+ G --> H[Explicit revision / 明確修改]
+```
+
+`GET .../workspace/versions` · `GET .../workspace/compare` · `GET .../workspace/editor` · `POST .../workspace/edit`
+
+Scope: selected current journeys pass; original failures remain. Intermittent public HTTPS timeouts, professional outcomes, external integrations and full production/compatibility acceptance remain open. Earlier sections below describe historical releases.
+
 <!-- integrated-round-195 -->
 
 ## 195 · 0.5.2 · 后台与运行内核 / Backend and runtime

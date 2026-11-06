@@ -53,6 +53,7 @@ import { registerGeoObservations } from "./geo-observations.js";
 import { registerTasks } from "./tasks.js";
 import { registerBusinessQuality } from "./business-quality.js";
 import {registerTaskWorkspace} from "./task-workspace.js";
+import {registerTaskWorkspaceEdit} from "./task-workspace-edit.js";
 import {registerRoleAcceptance} from "./role-acceptance.js";
 import {registerOperationalReadiness} from "./operational-readiness.js";
 import { registerDeliveryPackages } from "./delivery-package.js";
@@ -495,6 +496,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerMediaEffects(app, db, catalog, storage);
   registerBusinessQuality(app, db);
   registerTaskWorkspace(app, db, storage);
+  registerTaskWorkspaceEdit(app, db, storage);
   registerDeliveryPackages(app, db, storage);
   registerScopeExports(app, db, storage);
   registerDeliveryRevisions(app, db, catalog, storage);

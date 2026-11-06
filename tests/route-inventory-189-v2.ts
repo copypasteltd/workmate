@@ -14,5 +14,11 @@ export async function currentRouteInventory() {
   assert.equal(new Set(keys).size, keys.length, "Explicit route declarations overlap");
   assert.equal(routes.length, addition.expected_current_routes);
   assert.equal(conditional_routes.length, addition.expected_current_conditional_routes);
-  return {...previous, routes, conditional_routes};
+  const workspace = JSON.parse(await readFile("contracts/workspace-route-additions-196.json", "utf8"));
+  assert.equal(workspace.baseline_lf_sha256, addition.baseline_lf_sha256);
+  const currentRoutes=[...routes,...workspace.routes],currentConditional=[...conditional_routes,...workspace.conditional_routes];
+  assert.equal(new Set([...currentRoutes,...currentConditional].map(row=>row.method+" "+row.path)).size,currentRoutes.length+currentConditional.length);
+  assert.equal(currentRoutes.length,workspace.expected_current_routes);
+  assert.equal(currentConditional.length,workspace.expected_current_conditional_routes);
+  return {...previous,routes:currentRoutes,conditional_routes:currentConditional};
 }

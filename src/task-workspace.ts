@@ -10,7 +10,8 @@ const params=z.object({tenant:uuid,project:uuid,task:uuid});
 const base="/v1/tenants/:tenant/projects/:project/tasks/:task/workspace";
 /** The workspace is a view over existing authorized tasks and immutable versions. */
 export function registerTaskWorkspace(app:FastifyInstance,db:Database,storage:Storage){
- app.get(base,{preHandler:requireUser(db)},async req=>{
+ app.get(base,{preHandler:requireUser(db)},async(req,reply)=>{
+  reply.header("Cache-Control","private, no-store");
   const p=params.parse(req.params);
   return db.tx(async tx=>{
    const task=await deliveryTaskAccess(tx,req.principal,p.tenant,p.task,p.project);
@@ -19,7 +20,7 @@ export function registerTaskWorkspace(app:FastifyInstance,db:Database,storage:St
    const files=(await tx.query(`SELECT a.id,a.name,v.id AS version_id,v.version,v.mime_type,v.bytes,v.sha256
     FROM assets a JOIN asset_versions v ON v.asset_id=a.id WHERE v.id=ANY($1::uuid[])
     AND a.state='active' AND v.erased_at IS NULL ORDER BY a.name,a.id LIMIT 201`,[ids])).rows;
-   return {task:{id:task.id,title:task.title,status:task.status,mode:task.mode,output:task.output,
+   return {task:{id:task.id,title:task.title,status:task.status,mode:task.mode,output:task.output,execution_location:task.execution_location,
     version:task.version,charged_micros:task.charged_micros,accrued_micros:task.accrued_micros,budget_micros:task.budget_micros,
     input_tokens:task.input_tokens,output_tokens:task.output_tokens},files:files.slice(0,200),files_truncated:files.length>200};
   },p.tenant,false,req.principal.id);

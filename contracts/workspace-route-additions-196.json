@@ -1,0 +1,23 @@
+{
+  "schema": "copypaste-workspace-routes-196-v1",
+  "baseline_lf_sha256": "4cfe133903ad3e046a697453a3aefbf498de83dbaede3085b4224057297146e0",
+  "routes": [
+    {"method":"GET","path":"/v1/admin/operational-readiness"},
+    {"method":"GET","path":"/v1/admin/role-acceptance"},
+    {"method":"POST","path":"/v1/admin/role-acceptance"},
+    {"method":"GET","path":"/v1/admin/role-acceptance/tasks/:task/snapshot"},
+    {"method":"POST","path":"/v1/admin/role-acceptance/revoke"},
+    {"method":"GET","path":"/v1/tenants/:tenant/projects/:project/tasks/:task/workspace"},
+    {"method":"GET","path":"/v1/tenants/:tenant/projects/:project/tasks/:task/workspace/preview"},
+    {"method":"GET","path":"/v1/tenants/:tenant/projects/:project/tasks/:task/workspace/versions"},
+    {"method":"GET","path":"/v1/tenants/:tenant/projects/:project/tasks/:task/workspace/compare"},
+    {"method":"GET","path":"/v1/tenants/:tenant/projects/:project/tasks/:task/workspace/editor"},
+    {"method":"POST","path":"/v1/tenants/:tenant/projects/:project/tasks/:task/workspace/edit"}
+  ],
+  "conditional_routes": [],
+  "expected_current_routes":751,
+  "expected_current_conditional_routes":1,
+  "authorization":"Current user, tenant/project/private-task and available source authorization; manual writes also require project write permission. Idempotent replay reauthorizes. Admin requires its existing scoped capabilities.",
+  "manual_edit":"Completed cloud execute tasks only. UTF-8 up to 256 KiB. New immutable asset version under task version, delivery hash and original file hash locks. No model request, task creation or AI fee.",
+  "cloud_execution_query":"GET software-checks accepts view=all|terminal|browser. Filtering precedes pagination and applies to its cursor lookup."
+}
