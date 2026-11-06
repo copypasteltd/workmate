@@ -1,3 +1,33 @@
+<!-- integrated-round-203 -->
+
+## 203 · 0.5.2 · 专业输入与可靠交付
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-203/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Admin产品版本0.5.2和22项原样源码相关回归保持；下方198截图／录影是历史真实页面，不是本轮重新全后台验收。
+
+2. 模型逐项维护OpenAI兼容接口地址、API key、上游别名和费率；企业／用户新建、删除、批量、额度／VIP和内容权限保持。最高管理员可按现行策略直接执行，其他角色按策略审批，保留完整审计。
+
+3. 本轮真实使用既有费用核账预览／执行接口，按原始已知调用结清受控超时任务HK$0.250508，释放其余预留；未修改套餐并发、网络或未知用量。原操作和失败证据均保留。
+
+```mermaid
+flowchart LR
+ A[Admin identity and role] --> B[Per-model upstream and key]
+ A --> C[Users organizations credit VIP content bulk]
+ C --> D[Direct or policy approval]
+ D --> E[Exact original receipts and audit]
+```
+
+当前开放项：marketing-analyst未交付图表文件，技术状态succeeded不计为通过；通用工具错误的准确原因尚未验证。公网默认HTTP/2停滞及一次任务租约根因也保持开放。详细见证据报告，不声称完整产品验收通过。
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/198-v4-service-readiness.png)
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/workmate-198-v4-service-review.gif)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-198-v4-service-review.mp4)
+
+以下保留完整架构、安装与使用细则。
+
 <!-- integrated-round-202 -->
 
 ## 202 · 0.5.2 · 营销证据复核、交付与请求恢复

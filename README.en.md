@@ -1,3 +1,33 @@
+<!-- integrated-round-203 -->
+
+## 203 · 0.5.2 · Pinned specialist intake and reliable delivery
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-203/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Admin stays0.5.2 with22 identical-source related cases retained. The198 actual screenshots/recordings below are historical, not a fresh full-dashboard acceptance.
+
+2. Maintain each model’s OpenAI-compatible upstream URL, API key, upstream alias and rates. Organization/user create/delete/bulk, credit/VIP and content authority remain. Highest admin follows current direct-execution policy; other roles follow approval policy with complete audit.
+
+3. Actually use the existing settlement preview/operation APIs to settle the owned known-cost timed-out sample for HK$0.250508 and release the remaining hold. Do not alter plan concurrency, networking or unknown usage. Preserve original operation and failed evidence.
+
+```mermaid
+flowchart LR
+ A[Admin identity and role] --> B[Per-model upstream and key]
+ A --> C[Users organizations credit VIP content bulk]
+ C --> D[Direct or policy approval]
+ D --> E[Exact original receipts and audit]
+```
+
+Open delivery: marketing-analyst returned no chart files; technical succeeded does not qualify it. The exact generic tool failure remains unverified. Default public HTTP/2 stalls and one worker-lease investigation also stay open. See the evidence report; no full-product acceptance is claimed.
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/198-v4-service-readiness.png)
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/workmate-198-v4-service-review.gif)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-198-v4-service-review.mp4)
+
+The complete architecture, setup and usage guide follows.
+
 <!-- integrated-round-202 -->
 
 ## 202 · 0.5.2 · Evidence review, delivery and safe request recovery
