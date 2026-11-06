@@ -1,3 +1,33 @@
+<!-- integrated-round-203 -->
+
+## 203 · 0.5.7 · Pinned specialist intake and reliable delivery
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-203/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Extension remains0.5.7 with exact original released ZIP bytes;93 related cases retain identical-source qualification. Downloads provide unpacked installation, without a Chrome Web Store claim.
+
+2. The toolbar opens Chrome’s native right SidePanel with ChatGPT-style chat/attachments. Read/upload only explicitly chosen customer files. Codex runs in the company cloud and all AI uses internal APIs.
+
+3. 198 native SidePanel/auth/attachment media below remain historical actual evidence. New Web specialist intake and Web/Desktop review do not replace full Chrome, directory revocation, Native Host, large-file or browser-version qualification.
+
+```mermaid
+flowchart LR
+ A[Toolbar] --> B[Native right SidePanel]
+ B --> C[Explicit file choice]
+ C --> D[Authorized read and upload]
+ D --> E[Company cloud Codex]
+```
+
+Open delivery: marketing-analyst returned no chart files; technical succeeded does not qualify it. The exact generic tool failure remains unverified. Default public HTTP/2 stalls and one worker-lease investigation also stay open. See the evidence report; no full-product acceptance is claimed.
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/198-v1-side-panel.png)
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/workmate-198-v1-side-panel.gif)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-198-v1-side-panel.mp4)
+
+The complete architecture, setup and usage guide follows.
+
 <!-- integrated-round-202 -->
 
 ## 202 · 0.5.7 · Evidence review, delivery and safe request recovery
