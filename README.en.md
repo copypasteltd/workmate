@@ -1,3 +1,38 @@
+<!-- integrated-round-200 -->
+
+## 200 · 0.7.13 · Local Codex and complete design production
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-200/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Download Setup/Portable and authorize in the system browser. The app stays frameless without Electron menus. Codex executes locally with explicit, revocable full native access; all model requests use company APIs.
+
+2. Shared design matches Web six layouts, fixed images/data charts, new slides, whole-document adaptation, undo/drafts and immutable delivery. Local tasks and shared cloud designs retain their execution locations.
+
+3. The final0.7.13 package passes fresh S256PKCE, frameless/no-menu/no-root-or-horizontal-scrollbar checks and actual Web version2→native version3→Web readback. Every main-process/pinned Codex0.163.0-alpha.11 byte matches0.7.12. This round does not repeat paid native execution.
+
+4. Earlier local execution/revocation evidence stays. Arbitrary applications, other machines, offline/sleep, update failures and long-running acceptance remain open. Trusted Windows signing is excluded by user instruction.
+
+```mermaid
+flowchart LR
+ A[Install and browser PKCE / 安裝與授權] --> B[Local folder and specialist / 本機目錄與專員]
+ B --> C[Explicit revocable access / 明確可撤銷權限]
+ C --> D[Local Codex via company API / 本機Codex與公司API]
+ D --> E[Local actions and files / 本機執行與成果]
+ A --> F[Authorized shared design / 有權共用設計]
+ F --> G[Layouts, resources and pages / 版面素材與頁面]
+ G --> H[Immutable version and delivery / 版本與交付]
+```
+
+Final actual0.7.13 package / 最終實際0.7.13包
+
+![Actual interface / 實際頁面](assets/screenshots/200-v2-native-production.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-200-v2-native-production.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-200-v2-native-production.mp4)
+
+Earlier release/setup instructions remain below; full original acceptance stays open.
+
 <!-- integrated-round-199 -->
 
 ## 199 · 0.7.11 · Local Codex and design continuity

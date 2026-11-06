@@ -1,3 +1,38 @@
+<!-- integrated-round-200 -->
+
+## 200 · 0.7.13 · 本機Codex與完整設計製作
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-200/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 從站點下載Setup／Portable，在系統瀏覽器安全授權。保持無邊框、無Electron原生選單；Codex在客戶本機執行，可明確授予並撤銷完整本機權限，全部模型請求仍走公司API。
+
+2. 共用設計同步Web的六種版面、固定圖片／資料圖表、新空白頁、全頁尺寸適配、撤銷／草稿及不可變交付。本機任務和共用雲端工程保留各自執行位置。
+
+3. 最終0.7.13實際包完成新S256PKCE、無邊框／無選單／無根和橫向滾動條、真實Web版本2→本機保存版本3→Web讀回。全部主進程與固定Codex0.163.0-alpha.11字節同0.7.12原生實現；本輪沒有重複付費本機任務。
+
+4. 保留原本機執行／撤權證據；完整任意應用、其他機器、離線／休眠、更新故障和長期驗收繼續開放。受信Windows簽名按用戶要求排除。
+
+```mermaid
+flowchart LR
+ A[Install and browser PKCE / 安裝與授權] --> B[Local folder and specialist / 本機目錄與專員]
+ B --> C[Explicit revocable access / 明確可撤銷權限]
+ C --> D[Local Codex via company API / 本機Codex與公司API]
+ D --> E[Local actions and files / 本機執行與成果]
+ A --> F[Authorized shared design / 有權共用設計]
+ F --> G[Layouts, resources and pages / 版面素材與頁面]
+ G --> H[Immutable version and delivery / 版本與交付]
+```
+
+Final actual0.7.13 package / 最終實際0.7.13包
+
+![Actual interface / 實際頁面](assets/screenshots/200-v2-native-production.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-200-v2-native-production.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-200-v2-native-production.mp4)
+
+下方保留此前版本和完整安裝／使用說明，全部原始驗收範圍仍開放。
+
 <!-- integrated-round-199 -->
 
 ## 199 · 0.7.11 · 本機Codex與設計交付接續

@@ -7,6 +7,9 @@ import { editablePendingPrefix, readEditableAttempt, type EditableAttempt } from
 import { DesignCanvas } from "./design-canvas";
 import { alignedLayer, fitLayer, rememberDesign, travelDesign, type Alignment, type DesignHistory } from "./design-editor-model";
 import { forgetDesignDraft, keepDesignDraft, readDesignDraft, type DesignDraft } from "./design-draft-state";
+import { DesignResourcePicker } from "./design-resource-picker";
+import { DesignTemplateStart } from "./design-template-start";
+import { blankDesignSlide, designResourceLayer, resizedDesign } from "./design-production-model";
 import "./editable-projects.css";
 
 export function EditableProjects({ refresh, onChanged }: { refresh: number; onChanged: () => void }) {
@@ -21,7 +24,8 @@ function EditableWorkspace({ refresh, onChanged }: { refresh: number; onChanged:
     [delivery, setDelivery] = useState<any>(null), [busy, setBusy] = useState(false), [error, setError] = useState<unknown>(null),
     [pending, setPending] = useState<EditableAttempt | null>(() => readEditableAttempt(pendingKey, root)),
     [history, setHistory] = useState<DesignHistory>({ past: [], future: [] }), [recovery, setRecovery] = useState<DesignDraft | null>(null),
-    [acceptRebase, setAcceptRebase] = useState(false), [draftStorage, setDraftStorage] = useState(true), [switchTo, setSwitchTo] = useState<{ id: string; version?: number } | null>(null);
+    [acceptRebase, setAcceptRebase] = useState(false), [draftStorage, setDraftStorage] = useState(true), [switchTo, setSwitchTo] = useState<{ id: string; version?: number } | null>(null),
+    [resourcesOpen, setResourcesOpen] = useState(false);
   const live = useRef(true), locked = useRef(false), epoch = useRef(0);
   useEffect(() => { live.current = true; return () => { live.current = false; epoch.current++; }; }, []);
   const cursor = pages.at(-1)!, sourceCursor = sourcePages.at(-1)!;
@@ -47,7 +51,7 @@ function EditableWorkspace({ refresh, onChanged }: { refresh: number; onChanged:
     const stamp = ++epoch.current, p = await api(`${root}/${id}${version ? "?version=" + version : ""}`);
     if (!live.current || stamp !== epoch.current) return;
     setCurrent(p); setDraft(structuredClone(p.input)); setProjectName(p.name); setOldVersion(p.version); setPage(0); setLayer(0); setDirty(false); setDelivery(null);
-    setHistory({ past: [], future: [] }); setRecovery(readDesignDraft(pendingKey, p.id)); setAcceptRebase(false); setSwitchTo(null); setDraftStorage(true);
+    setHistory({ past: [], future: [] }); setRecovery(readDesignDraft(pendingKey, p.id)); setAcceptRebase(false); setSwitchTo(null); setDraftStorage(true); setResourcesOpen(false);
   }
   function choose(id: string, version?: number) { if (dirty) setSwitchTo({ id, version }); else void run(() => open(id, version)); }
   async function finish(attempt: EditableAttempt, result: any) {
@@ -73,7 +77,7 @@ function EditableWorkspace({ refresh, onChanged }: { refresh: number; onChanged:
   const kindName = (kind: string) => kind === "vector" ? t("矢量設計", "Vector design") : t("演示文稿", "Presentation");
   return <section className="editable-projects" aria-label={t("矢量與演示工程", "Vector & presentation projects")}>
     <header className="matrix-section-heading"><div><p className="eyebrow">MAKE THE NEXT VERSION.</p><h2>{t("讓好設計，繼續生長。", "Good work. Ready for its next chapter.")}</h2>
-      <p className="muted">{t("從專員交付的可編輯來源或恢復工程繼續。保留圖片、圖表、分頁及每個儲存版本。", "Continue from a specialist's editable source or a restored project. Keep images, charts, pages and every saved version.")}</p></div><FilePenLine size={27} /></header>
+      <p className="muted">{t("從版面開始，或延續專員交付的工程。加入自己的圖片與資料，保留每個儲存版本。", "Start from a layout or continue a specialist's work. Add your images and data, and keep every saved version.")}</p></div><FilePenLine size={27} /></header>
     <ErrorNotice error={error ?? list.error ?? sources.error} />
     {pending && <div className="editable-pending" role="status"><p>{t("有一項操作需要核對；重試會沿用原請求。", "An operation needs checking. Retrying keeps the original request.")}</p>
       <button className="button secondary" disabled={busy} onClick={() => void run(() => submit(pending))}>{t("核對並繼續", "Check & continue")}</button>
@@ -83,6 +87,7 @@ function EditableWorkspace({ refresh, onChanged }: { refresh: number; onChanged:
         if (!["not_recorded", "removed"].includes(r.state)) throw new Error(t("請保留尚未確認的操作。", "Keep the unresolved operation."));
         localStorage.removeItem(pendingKey); setPending(null); setDelivery(null); setRevision(r => r + 1);
       })}>{t("核對後重新選擇", "Check before choosing again")}</button></div>}
+    {writable && <DesignTemplateStart root={root} disabled={disabled} create={body => void run(() => submit({ key: crypto.randomUUID(), operation: "create", path: root, method: "POST", body }))} />}
     {writable && <details className="editable-create"><summary>{t("從已交付來源建立工程", "Create a project from delivered source")}</summary><div className="form-stack">
       <Field label={t("可編輯來源", "Editable source")}><select value={chosenSource} disabled={disabled || sources.loading} onChange={e => { setChosenSource(e.target.value); const v = sources.data?.items.find(v => v.source_version_id === e.target.value); if (v) setName(v.name); }}>
         <option value="">{t("選擇專員交付的來源", "Choose a specialist's source")}</option>{sources.data?.items.map(s => <option key={s.source_version_id} value={s.source_version_id}>{s.name} · {kindName(s.kind)}</option>)}</select></Field>
@@ -126,11 +131,22 @@ function EditableWorkspace({ refresh, onChanged }: { refresh: number; onChanged:
           <Field label={t("頁面", "Page")}><select value={page} disabled={disabled} onChange={e => { setPage(Number(e.target.value)); setLayer(0); }}>{draft.slides.map((s: any, i: number) => <option key={s.id} value={i}>{i + 1}. {s.title}</option>)}</select></Field>
           <Field label={t("頁面標題", "Page title")}><input value={draft.slides[page].title} disabled={editorDisabled || !writable} maxLength={150} onChange={e => change(d => { d.slides[page].title = e.target.value; })} /></Field>
           <Field label={t("演講備註", "Speaker notes")}><textarea value={draft.slides[page].notes} disabled={editorDisabled || !writable} maxLength={6000} onChange={e => change(d => { d.slides[page].notes = e.target.value; })} /></Field>
-          <div className="row-actions">{[-1, 1].map(direction => <button key={direction} className="text-button" disabled={editorDisabled || !writable || page + direction < 0 || page + direction >= scenes.length} onClick={() => { change(d => { [d.slides[page], d.slides[page + direction]] = [d.slides[page + direction], d.slides[page]]; }); setPage(page + direction); }}>{direction < 0 ? t("頁面上移", "Move page up") : t("頁面下移", "Move page down")}</button>)}
+          <div className="row-actions"><button className="text-button" disabled={editorDisabled || !writable || scenes.length >= 20} onClick={() => { change(d => { d.slides.splice(page + 1, 0, blankDesignSlide(scenes[page], "page_" + crypto.randomUUID().replaceAll("-", ""), t("新頁面", "New page"))); }); setPage(page + 1); setLayer(0); }}>{t("加入空白頁面", "Add blank page")}</button>{[-1, 1].map(direction => <button key={direction} className="text-button" disabled={editorDisabled || !writable || page + direction < 0 || page + direction >= scenes.length} onClick={() => { change(d => { [d.slides[page], d.slides[page + direction]] = [d.slides[page + direction], d.slides[page]]; }); setPage(page + direction); }}>{direction < 0 ? t("頁面上移", "Move page up") : t("頁面下移", "Move page down")}</button>)}
             <button className="text-button" disabled={editorDisabled || !writable || scenes.length >= 20} onClick={() => { change(d => { const copy = structuredClone(d.slides[page]); copy.id = "page_" + crypto.randomUUID().replaceAll("-", ""); d.slides.splice(page + 1, 0, copy); }); setPage(page + 1); setLayer(0); }}>{t("複製頁面", "Duplicate page")}</button>
             <button className="text-button" disabled={editorDisabled || !writable || scenes.length < 2} onClick={() => { change(d => { d.slides.splice(page, 1); }); setPage(Math.max(0, page - 1)); setLayer(0); }}>{t("移除此頁", "Remove page")}</button></div>
         </>}
+        <DesignSizeControl width={scenes[page].width} height={scenes[page].height} disabled={editorDisabled || !writable} apply={(width, height) => void run(async () => {
+          let next: any; try { next = resizedDesign(draft, current.kind, width, height); } catch { throw new Error(t("這個尺寸無法完整容納目前文字、圖表或描邊。請選擇較大的畫布，或先調整內容。所有頁面維持原樣。", "This size cannot preserve the text, readable charts or outlines. Choose a larger canvas or adjust the content first. All pages remain unchanged.")); }
+          change(d => Object.assign(d, next));
+        })} />
         <Field label={t("背景顏色", "Background color")}><input type="color" value={scenes[page].background} disabled={editorDisabled || !writable} onChange={e => change(d => { (current.kind === "vector" ? d.scene : d.slides[page].scene).background = e.target.value; })} /></Field>
+        {writable && <details className="design-resources" onToggle={e => setResourcesOpen(e.currentTarget.open)}><summary>{t("加入或替換圖片與資料圖表", "Add or replace images & data charts")}</summary>{resourcesOpen && <DesignResourcePicker root={root} disabled={editorDisabled} canAdd={scenes[page].layers.length < 80} replaceKind={selected?.kind} apply={(resource, title, evidence, replace) => void run(async () => {
+          if (!replace && scenes[page].layers.length >= 80) return;
+          let next: ReturnType<typeof designResourceLayer>; try { next = designResourceLayer(scenes[page], resource, "layer_" + crypto.randomUUID().replaceAll("-", ""), title, evidence); }
+          catch { throw new Error(t("目前畫布太小，或已選資料口徑不同。請放大畫布，並選擇最多八項同口徑數值。", "This canvas is too small or the selected values use different scopes. Enlarge the canvas and choose up to eight compatible values.")); }
+          if (replace && selected?.kind === next.kind) changeLayer({ ...next, id: selected.id, x: selected.x, y: selected.y, w: selected.w, h: selected.h });
+          else if (!replace) { const count = scenes[page].layers.length; change(d => { (current.kind === "vector" ? d.scene : d.slides[page].scene).layers.push(next); }); setLayer(count); }
+        })} />}</details>}
         <Field label={t("圖層", "Layer")}><select value={layer} disabled={disabled} onChange={e => setLayer(Number(e.target.value))}>{scenes[page].layers.map((l: any, i: number) => <option key={l.id} value={i}>{i + 1}. {l.kind === "text" ? l.text.slice(0, 50) : l.kind === "image" ? l.alt : l.kind === "chart" ? l.title : l.kind}</option>)}</select></Field>
         <div className="row-actions">{["text", "rect", "ellipse"].map(kind => <button key={kind} className="text-button" disabled={editorDisabled || !writable || scenes[page].layers.length >= 80} onClick={() => { const count = scenes[page].layers.length;
           change(d => { const s = current.kind === "vector" ? d.scene : d.slides[page].scene, geometry = { id: "layer_" + crypto.randomUUID().replaceAll("-", ""), x: 24, y: 24, w: Math.min(320, s.width - 48), h: 96 };
@@ -156,12 +172,20 @@ function EditableWorkspace({ refresh, onChanged }: { refresh: number; onChanged:
         {dirty && <p role="status">{draftStorage ? t("有未儲存修改；此分頁保留 8 小時草稿。儲存後才會建立版本。", "Unsaved changes. This tab retains a draft for 8 hours. Save to create a version.") : t("無法保留分頁草稿，請在離開前儲存版本。", "This tab cannot retain a draft. Save a version before leaving.")}</p>}
         <div className="row-actions"><button className="button primary" disabled={editorDisabled || !writable || !dirty || !projectName.trim()} onClick={() => void run(() => submit({ key: crypto.randomUUID(), operation: "update", path: root + "/" + current.id, method: "PUT", body: { name: projectName.trim(), expected_version: current.current_version, input: draft } }))}>{t("儲存為新版本", "Save as new version")}</button>
           <button className="button secondary" disabled={editorDisabled || !writable || dirty || current.version !== current.current_version} onClick={() => void run(() => submit({ key: crypto.randomUUID(), operation: "render", path: `${root}/${current.id}/render`, method: "POST", body: { expected_version: current.current_version } }))}>{t("製作交付檔案", "Create delivery files")}</button></div>
-      </div><div className="editable-preview-column"><DesignCanvas root={root} current={current} input={draft} page={page} selected={layer} disabled={editorDisabled || !writable || !!recovery} select={setLayer} commit={next => changeLayer(next)} />
+      </div><div className="editable-preview-column"><DesignCanvas root={root} current={current} input={draft} page={page} selected={layer} disabled={editorDisabled || !writable || !!recovery} unsaved={dirty} select={setLayer} commit={next => changeLayer(next)} />
         <SavedReference key={`${current.id}:${current.version}:${page}`} path={`${root}/${current.id}/preview?version=${current.version}&page=${page + 1}`} label={`${current.name} · v${current.version} · ${page + 1}`} /></div></div>
       {delivery && <div className="editable-delivery" role="status"><h4>{t("交付檔案已就緒", "Delivery files are ready")}</h4><p>v{delivery.version} · {t("無 AI 調用費用", "No AI request charge")}</p>
         <div className="editable-delivery-files">{delivery.files.map((f: any) => <button key={f.asset_id} className="text-button" disabled={busy} onClick={() => void run(async () => { await download(`${w.base}/assets/${f.asset_id}/download`, f.name, w.tenant); })}><Download size={14} />{f.name}</button>)}</div></div>}
     </div>}
   </section>;
+}
+function DesignSizeControl({ width, height, disabled, apply }: { width: number; height: number; disabled: boolean; apply: (width: number, height: number) => void }) {
+  const { t } = useI18n(), [w, setW] = useState(width), [h, setH] = useState(height);
+  useEffect(() => { setW(width); setH(height); }, [width, height]);
+  return <details className="design-size-control"><summary>{t("調整整份作品尺寸", "Resize the whole work")}</summary><p className="muted">{t("所有頁面按比例適配。文字、圖表與描邊必須仍符合可讀及邊界要求。", "Adapt every page proportionally. Text, charts and outlines must retain readable sizes and stay inside the canvas.")}</p>
+    <Field label={t("常用畫布", "Canvas preset")}><select value="" disabled={disabled} onChange={e => { const [a, b] = e.target.value.split("x").map(Number); setW(a); setH(b); }}><option value="">{t("選擇尺寸", "Choose a size")}</option><option value="1080x1080">1080 × 1080</option><option value="1080x1920">1080 × 1920</option><option value="1600x900">1600 × 900</option><option value="1200x800">1200 × 800</option></select></Field>
+    <div className="editable-properties"><Field label={t("畫布寬度", "Canvas width")}><input type="number" min={256} max={1920} value={w} disabled={disabled} onChange={e => setW(Number(e.target.value))} /></Field><Field label={t("畫布高度", "Canvas height")}><input type="number" min={256} max={1920} value={h} disabled={disabled} onChange={e => setH(Number(e.target.value))} /></Field></div>
+    <button className="text-button" disabled={disabled || w === width && h === height || ![w, h].every(v => Number.isInteger(v) && v >= 256 && v <= 1920)} onClick={() => apply(w, h)}>{t("適配所有頁面", "Adapt all pages")}</button></details>;
 }
 function SavedReference({ path, label }: { path: string; label: string }) {
   const { t } = useI18n(), [opened, setOpened] = useState(false);

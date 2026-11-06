@@ -3,8 +3,8 @@ import { api } from "./api";
 import { ErrorNotice, useI18n } from "./ui";
 import { gestureLayer, type CanvasLayer, type CanvasScene } from "./design-editor-model";
 
-export function DesignCanvas({ root, current, input, page, selected, disabled, select, commit }: {
-  root: string; current: any; input: any; page: number; selected: number; disabled: boolean;
+export function DesignCanvas({ root, current, input, page, selected, disabled, unsaved, select, commit }: {
+  root: string; current: any; input: any; page: number; selected: number; disabled: boolean; unsaved: boolean;
   select: (index: number) => void; commit: (layer: CanvasLayer) => void;
 }) {
   const { t } = useI18n(), scene: CanvasScene = current.kind === "vector" ? input.scene : input.slides[page].scene;
@@ -52,7 +52,7 @@ export function DesignCanvas({ root, current, input, page, selected, disabled, s
     <div className="design-canvas-caption"><strong>{t("草稿畫布", "Draft canvas")}</strong><span>{scene.width} × {scene.height} · {page + 1}</span></div>
     <p className="muted">{t("選擇圖層後拖動，拖動右下角調整尺寸。方向鍵微調，Shift 加快；儲存後才會建立版本。", "Select and drag a layer. Resize from its lower-right corner. Arrow keys nudge; Shift moves faster. Save to create a version.")}</p>
     <div className="design-canvas-stage" style={{ aspectRatio: `${scene.width}/${scene.height}`, background: scene.background }} aria-busy={!ready && !error}>
-      {ready && <img src={preview!.url} alt={t("目前未儲存草稿的實際預覽", "Actual preview of the current unsaved draft")} draggable={false} />}
+      {ready && <img src={preview!.url} alt={unsaved ? t("目前未儲存草稿的實際預覽", "Actual preview of the current unsaved draft") : t(`已儲存版本 v${current.version} 的實際預覽`, `Actual preview of saved version v${current.version}`)} draggable={false} />}
       {!ready && <div className="design-canvas-wait" role="status">{error ? t("草稿預覽暫不可用", "Draft preview unavailable") : t("正在繪製目前草稿…", "Rendering this draft…")}</div>}
       <svg ref={svg} viewBox={`0 0 ${scene.width} ${scene.height}`} role="group" aria-label={t("畫布圖層操作", "Canvas layer controls")}
         onPointerMove={move} onPointerUp={e => finish(e)} onPointerCancel={e => finish(e, true)} onLostPointerCapture={() => { drag.current = null; setGhost(null); }}
@@ -71,7 +71,7 @@ export function DesignCanvas({ root, current, input, page, selected, disabled, s
           role="button" tabIndex={0} aria-label={t("調整所選圖層尺寸", "Resize selected layer")} className="design-layer-handle" vectorEffect="non-scaling-stroke" onPointerDown={e => begin(e, selected, true)} />}
       </svg>
     </div>
-    <div className="design-preview-status" role="status">{ready ? t("草稿預覽已更新 · 尚未儲存", "Draft preview updated · not saved") : null}</div>
+    <div className="design-preview-status" role="status">{ready ? unsaved ? t("草稿預覽已更新 · 尚未儲存", "Draft preview updated · not saved") : t(`預覽已更新 · 已儲存 v${current.version}`, `Preview updated · saved v${current.version}`) : null}</div>
     <ErrorNotice error={error} />{!!error && <button className="text-button" onClick={() => setRetry(v => v + 1)}>{t("重新繪製草稿", "Render draft again")}</button>}
   </section>;
 }
