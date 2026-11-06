@@ -1,4 +1,5 @@
 import { desktopClientError, isDesktopClientErrorCode } from "./desktop-errors.js";
+import { desktopUnstartedSettlementProof } from "./desktop-unstarted-settlement.js";
 import { lockCurrentScopeSession } from "./scope-closure-authority.js";
 import { lockMemberships } from "./membership.js";
 import type { FastifyInstance, FastifyRequest } from "fastify";
@@ -1187,14 +1188,16 @@ export async function registerDesktopExecutions(
           return publicExecution(d, t);
         await tx.query("SELECT set_config('app.task_id',$1,true)", [t.id]);
         const cost = await taskProviderBudgetReceipt(tx, t.id);
+        const unstartedProof = await desktopUnstartedSettlementProof(tx, t, d, cost);
         const uncertain =
           cost.uncertain ||
           cost.violation ||
-          report.status === "unknown" ||
+          (!unstartedProof && (report.status === "unknown" ||
           t.status === "reconciling" ||
-          new Date(t.lease_until).getTime() <= Date.now();
+          new Date(t.lease_until).getTime() <= Date.now()));
         const status = uncertain
           ? "reconciling"
+          : unstartedProof ? report.status === "failed" ? "failed" : "cancelled"
           : erased || t.cancel_requested || report.status === "interrupted"
             ? "cancelled"
             : report.status === "completed"
@@ -1205,9 +1208,9 @@ export async function registerDesktopExecutions(
           [
             t.id,
             status,
-            report.output,
-            report.thread_id,
-            report.turn_id,
+            unstartedProof ? null : report.output,
+            unstartedProof ? null : report.thread_id,
+            unstartedProof ? null : report.turn_id,
             cost.inputTokens,
             cost.outputTokens,
             cost.knownChargeMicros,
@@ -1232,6 +1235,7 @@ export async function registerDesktopExecutions(
           provider_usage: "company_server_receipt",
           charged_micros: String(cost.knownChargeMicros),
           usage_known: !uncertain,
+          startup_zero_admission: unstartedProof,
           client_error_code: desktopClientError(report),
           error_code: uncertain ? "USAGE_RECONCILIATION_REQUIRED" : status === "failed" ? report.error_code ?? "DESKTOP_LOCAL_EXECUTION_FAILED" : null,
         });
@@ -1456,7 +1460,8 @@ export async function registerDesktopExecutions(
           )
             return;
           const cost = await taskProviderBudgetReceipt(tx, t.id),
-            uncertain = !unclaimed || cost.uncertain || cost.violation;
+            unstartedProof = await desktopUnstartedSettlementProof(tx, t, d, cost),
+            uncertain = (!unclaimed && !unstartedProof) || cost.uncertain || cost.violation;
           await tx.query(
             "UPDATE tasks SET status=$2,error_code=$3,lease_until=NULL,accrued_micros=$4,version=version+1 WHERE id=$1",
             [
@@ -1480,6 +1485,7 @@ export async function registerDesktopExecutions(
           );
           await event(tx, t.tenant_id, t.id, "desktop.execution.owner_lost", {
             usage_known: !uncertain,
+            startup_zero_admission: unstartedProof,
             automatically_replayed: false,
           });
         },

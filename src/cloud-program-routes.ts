@@ -129,7 +129,7 @@ export function registerCloudProgramRoutes(
                   name: v.preview.name,
                 }
               : null,
-            elapsed_ms: c.host.elapsed_ms,
+            elapsed_ms: receiptElapsedMs(c),
             files: c.output_manifest,
             receipt: {
               id: v.record.id,
@@ -282,3 +282,4 @@ export function registerCloudProgramRoutes(
     preview(true),
   );
 }
+import { receiptElapsedMs } from "./execution-timing.js";

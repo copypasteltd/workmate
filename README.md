@@ -1,3 +1,25 @@
+<!-- integrated-round-197 -->
+
+## 197 · 0.5.5 · 服务端启动结算
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-197/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 客户在 Web 或 Extension 选择企业、项目和角色后，由云端 Codex 执行；Desktop 的 Codex 始终在客户本机执行。管理员仍按模型分别设置上游接口、密钥、模型别名与费率。
+2. 原生启动失败／失联时，先关闭公司工具和推理网关并锁定原任务，再核对当前启动协议、fencing token、所有者及六类持久准入记录。只有未准入执行回合且费用和 token 明确为零，才自动释放原预留。
+3. unknown 或暂未见费用不能证明已准入任务没有执行。此类任务仍待核账；伪报 completed 的未准入启动不能生成成功结果或交付文本，既有未知记录保持。
+4. 本轮提供预留释放、并发准入／完成、零费用工具准入与费用边界回归，并修复 Linux 任务回执耗时。schema163 不变；私有配置仍在服务器 /root/cfg/workmate/，不进入 Git。
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[Role and permission / 角色與授權]
+  C --> D[Original task / 原工作]
+  D --> E[Review result and usage / 審閱與費用]
+  E --> F[Explicit next action / 明確下一步]
+```
+
+下方保留較早版本記錄。完整外部、專業與生產驗收仍開放。
+
 <!-- integrated-round-196 -->
 
 ## 196 · 0.5.3 · Codex服务与审阅接口

@@ -1,3 +1,25 @@
+<!-- integrated-round-197 -->
+
+## 197 · 0.5.5 · Server startup settlement
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-197/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Web and Extension run company-hosted Codex after organization, project and role selection. Desktop Codex runs on the customer computer. Admin still configures an upstream URL, key, alias and rates per model.
+2. On startup failure or owner loss, close company tools and inference gateways, lock the original task, and verify the current startup protocol, fencing token, owner and six durable admission categories. Release the existing hold only before turn admission with proven zero cost and tokens.
+3. An unknown result or temporarily empty ledger cannot prove an admitted turn did no work. Keep it in reconciliation. A fabricated completed pre-turn report cannot publish successful output; existing uncertain history is preserved.
+4. Includes concurrent admission/finish and zero-cost tool admission regressions. Schema163 is unchanged. Private configuration remains in /root/cfg/workmate/ and is excluded from Git.
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[Role and permission / 角色與授權]
+  C --> D[Original task / 原工作]
+  D --> E[Review result and usage / 審閱與費用]
+  E --> F[Explicit next action / 明確下一步]
+```
+
+Earlier sections are retained release history. Full external/professional/production acceptance remains open.
+
 <!-- integrated-round-196 -->
 
 ## 196 · 0.5.3 · Codex services and review APIs
