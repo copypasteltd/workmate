@@ -1,3 +1,35 @@
+<!-- integrated-round-196 -->
+
+## 196 · 0.5.5 · Chrome原生右侧栏
+
+[完整交付與限制 / Delivery and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-196/README.md) · [下載 / Downloads](https://agent.copypaste.hk/downloads)
+
+1. 本轮扩展源码和0.5.5ZIP字节保持不变，已对当前服务器重新完成真实侧栏和附件上传兼容验收。
+2. 下载ZIP并解压，在Chrome扩展管理页启用开发者模式并加载已解压目录；当前为手动安装，未宣称已上架商店。
+3. 点击工具栏图标，在浏览器原生右SidePanel中使用对话和附件；通过真实浏览器授权登录，选择企业/项目。
+4. 获准文件/目录、拖入附件或粘贴图片后检查上传状态。附件实际上传到公司云端；Codex任务在云端执行，需要本机Agent执行时使用Desktop。
+5. 本轮实测实际右侧停靠、PKCE及CSV/图片两份私人附件上传，并关闭自建侧栏/浏览器；受控粘贴/拖入携带真实字节，不替代全部操作系统/浏览器矩阵。
+
+```mermaid
+flowchart LR
+ A[Sign in / 登入] --> B[Project, role and budget / 專案角色預算]
+ B --> C{Execution / 執行}
+ C -->|Web or Extension| D[Company cloud Codex / 公司雲端]
+ C -->|Desktop native permission| E[Local Codex / 本機]
+ D --> F[Results, files and actual usage / 成果檔案實際費用]
+ E --> F
+ F --> G[Review and compare / 審閱比較]
+ G --> H[Explicit revision / 明確修改]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/196-v1-side-panel.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-196-v1-side-panel.gif)
+
+[Actual MP4 / 實際錄影](assets/screenshots/workmate-196-v1-side-panel.mp4)
+
+範圍：本輪相關旅程通過，原失敗保留。間歇公網連線超時、專業產出、外部接入及完整生產/兼容驗收仍開放。下方較早章節為歷史版本。
+
 <!-- integrated-round-195 -->
 
 ## 195 · 0.5.5 · 原生右侧栏 / Native Side Panel

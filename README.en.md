@@ -1,3 +1,35 @@
+<!-- integrated-round-196 -->
+
+## 196 · 0.5.5 · Chrome native right Side Panel
+
+[完整交付與限制 / Delivery and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-196/README.md) · [下載 / Downloads](https://agent.copypaste.hk/downloads)
+
+1. Extension source and the0.5.5ZIP bytes are unchanged. The native Side Panel and attachment flow were requalified against the current deployed server.
+2. Download/unzip the package, enable developer mode in Chrome extension management and load the unpacked folder. Installation is manual; Chrome Store publication is not claimed.
+3. Click the toolbar action for conversation/attachments in the actual right-docked Side Panel. Complete real browser account authorization and choose an organization/project.
+4. Check upload state after choosing approved files/folders, dropping files or pasting images. Attachments upload to company cloud services, where Codex executes. Use Desktop for local agent execution.
+5. This round verifies actual right docking, PKCE and two private CSV/image uploads, then closes owned windows. Controlled paste/drop carries real bytes but does not certify the whole OS/browser matrix.
+
+```mermaid
+flowchart LR
+ A[Sign in / 登入] --> B[Project, role and budget / 專案角色預算]
+ B --> C{Execution / 執行}
+ C -->|Web or Extension| D[Company cloud Codex / 公司雲端]
+ C -->|Desktop native permission| E[Local Codex / 本機]
+ D --> F[Results, files and actual usage / 成果檔案實際費用]
+ E --> F
+ F --> G[Review and compare / 審閱比較]
+ G --> H[Explicit revision / 明確修改]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/196-v1-side-panel.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-196-v1-side-panel.gif)
+
+[Actual MP4 / 實際錄影](assets/screenshots/workmate-196-v1-side-panel.mp4)
+
+Scope: selected current journeys pass; original failures remain. Intermittent public HTTPS timeouts, professional outcomes, external integrations and full production/compatibility acceptance remain open. Earlier sections below describe historical releases.
+
 <!-- integrated-round-195 -->
 
 ## 195 · 0.5.5 · 原生右侧栏 / Native Side Panel
