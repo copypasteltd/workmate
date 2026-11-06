@@ -1,3 +1,27 @@
+<!-- integrated-round-202 -->
+
+## 202 · 0.5.10 · 营销证据复核、交付与请求恢复
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-202/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 当前项目的数据集／私人报告历史增加搜索和稳定游标分页，保留数据库微秒排序、绑定身份／项目／查询并逐页重核权限；目前760个常规路由及1个条件路由。
+
+2. 确定性预览具有稳定计算引用和摘要；精确指标、全部独立口径、对应期间与缺失原因可复核。新增 /analysis/preview/export 导出完整 HTML／CSV／JSON，当前权限及摘要重验，最多8MiB，不产生模型调用／任务／费用。HTML隔离外部网络与脚本，CSV防公式注入。
+
+3. 付费创建在原幂等事务中校验 expected_calculation_sha256 后才入队；摘要变化返回409。相同已接受幂等键继续返回原任务；不能因重试创建重复费用。AI仍经公司服务器，模型地址／key／别名／费率在Admin按模型维护；schema163不变。
+
+```mermaid
+flowchart LR
+ A[Current identity and project] --> B[Search and cursor history]
+ B --> C[Stable preview and digest]
+ C --> D[Bounded exact evidence export]
+ C --> E[Explicit paid request]
+ E --> F[Current digest and idempotency]
+ F --> G[One private task]
+```
+
+以下保留完整架构、安装与使用细则。
+
 <!-- integrated-round-201 -->
 
 ## 201 · 0.5.9 · 影片製作與實際交付

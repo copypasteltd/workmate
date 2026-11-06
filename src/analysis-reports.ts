@@ -16,6 +16,7 @@ import { enqueueTask } from "./task-service.js";
 import { saveAsset, type Storage } from "./storage.js";
 import { assertSeoSources } from "./seo-source-access.js";
 import { assertSeoChangeSources } from "./seo-changes.js";
+import { calculatePreview, reviewDigest, previewExport, exportPreview, assertPreviewDigest, reviewPage } from "./analysis-review.js";
 import {
   analysisSpec,
   normalizedAnalysis,
@@ -31,6 +32,7 @@ const create = z
     project_id: uuid,
     agent_id: uuid,
     analysis: analysisSpec,
+    expected_calculation_sha256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
     budget: z
       .object({
         currency: z.literal("HKD"),
@@ -411,17 +413,25 @@ export function registerAnalysisReports(
     return db.tx(
       async (tx) => {
         await projectAccess(tx, req.principal, tenant, project, "write");
-        return calculateAnalysis(
-          randomUUID(),
-          project,
-          spec,
-          await analysisDatasets(tx, project, spec.snapshot_ids),
-        );
+        const calculation = calculatePreview(tenant, req.principal.id, project, spec, await analysisDatasets(tx, project, spec.snapshot_ids));
+        return { ...calculation, calculation_sha256: reviewDigest(calculation), preview: { kind: "deterministic_preview", model_charges: false, data_mode: db.config.DEMO_MODE ? "simulated" : "configured_services" } };
       },
       tenant,
       false,
       req.principal.id,
     );
+  });
+  app.post(base + "/preview/export", { preHandler: requireUser(db) }, async (req, reply) => {
+    const { tenant, project } = params.parse(req.params), input = previewExport.parse(req.body), spec = normalizedAnalysis(input.specification);
+    const output = await db.tx(async tx => {
+      await projectAccess(tx, req.principal, tenant, project, "write");
+      const calculation = calculatePreview(tenant, req.principal.id, project, spec, await analysisDatasets(tx, project, spec.snapshot_ids));
+      assertPreviewDigest(calculation, input.calculation_sha256);
+      const file = exportPreview(calculation, db.config.DEMO_MODE ? "simulated" : "configured_services", input.format, input.locale);
+      await audit(tx, req.principal, "analysis.preview.export", project, "accepted", { calculation_sha256: input.calculation_sha256, format: input.format, bytes: file.bytes.length }, tenant);
+      return file;
+    }, tenant, false, req.principal.id);
+    return reply.header("Cache-Control", "no-store").header("X-Content-Type-Options", "nosniff").header("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'").header("X-Content-SHA256", output.sha256).header("Content-Length", String(output.bytes.length)).header("Content-Disposition", `attachment; filename="${output.filename}"`).type(output.mime).send(output.bytes);
   });
   app.post(
     "/v1/reports",
@@ -462,12 +472,14 @@ export function registerAnalysisReports(
                   "REPORT_AGENT_TOOLS",
                   "Choose a specialist with dataset reading and artifact writing permissions",
                 );
+              const datasets = await analysisDatasets(tx, b.project_id, spec.snapshot_ids);
+              if (b.expected_calculation_sha256) assertPreviewDigest(calculatePreview(tenant, req.principal.id, b.project_id, spec, datasets), b.expected_calculation_sha256);
               const id = randomUUID(),
                 calculation = calculateAnalysis(
                   id,
                   b.project_id,
                   spec,
-                  await analysisDatasets(tx, b.project_id, spec.snapshot_ids),
+                  datasets,
                 );
               const context = {
                 ...(await freezeWorkContext(
@@ -574,17 +586,19 @@ export function registerAnalysisReports(
   );
   app.get(base + "/reports", { preHandler: requireUser(db) }, async (req) => {
     const { tenant, project } = params.parse(req.params);
+    const page = reviewPage(req.query, `reports:${tenant}:${project}:${req.principal.id}`, 50);
     return db.tx(
       async (tx) => {
         await projectAccess(tx, req.principal, tenant, project);
         const rows = (
           await tx.query(
-            "SELECT r.*,t.status AS task_status,t.error_code FROM analysis_reports r JOIN tasks t ON t.id=r.task_id WHERE r.project_id=$1 ORDER BY r.created_at DESC,r.id DESC LIMIT 50",
-            [project],
+            `SELECT r.*,to_char(r.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS list_cursor_at,t.status AS task_status,t.error_code FROM analysis_reports r JOIN tasks t ON t.id=r.task_id WHERE r.project_id=$1 AND ($2='' OR strpos(lower(r.spec->>'prompt'),lower($2))>0) AND ($3::timestamptz IS NULL OR (r.created_at,r.id)<($3::timestamptz,$4::uuid)) ORDER BY r.created_at DESC,r.id DESC LIMIT $5`,
+            [project, page.search, page.at, page.id, page.limit + 1],
           )
         ).rows;
         return {
-          items: rows.map((r) => ({
+          next_cursor: rows.length > page.limit ? page.next(rows[page.limit - 1]) : null,
+          items: rows.slice(0, page.limit).map((r) => ({
             ...reportFields(r),
             prompt: r.spec.prompt,
             created_at: r.created_at,

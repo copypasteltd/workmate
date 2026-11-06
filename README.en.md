@@ -1,3 +1,27 @@
+<!-- integrated-round-202 -->
+
+## 202 · 0.5.10 · Evidence review, delivery and safe request recovery
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-202/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Current-project dataset/private-report history adds literal search and stable keyset pagination, retaining database microseconds and binding identity/project/query while rechecking current authority on every page:760 regular routes plus one conditional route.
+
+2. Deterministic previews have stable calculation references/digests. Review exact metrics, every independent scope, periods and missing reasons. New /analysis/preview/export delivers complete HTML/CSV/JSON after current-authority/digest checks, bounded to8MiB with no model/task/charge. HTML isolates scripts/external networking; CSV prevents formula injection.
+
+3. Paid creation checks expected_calculation_sha256 inside the original idempotent transaction before enqueue; stale previews return409. Replaying an accepted key returns the original task. All AI still uses company servers and per-model Admin upstream/key/alias/rates. Schema163 stays.
+
+```mermaid
+flowchart LR
+ A[Current identity and project] --> B[Search and cursor history]
+ B --> C[Stable preview and digest]
+ C --> D[Bounded exact evidence export]
+ C --> E[Explicit paid request]
+ E --> F[Current digest and idempotency]
+ F --> G[One private task]
+```
+
+Earlier architecture, setup and complete use details remain below.
+
 <!-- integrated-round-201 -->
 
 ## 201 · 0.5.9 · Motion production and actual delivery

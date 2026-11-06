@@ -211,6 +211,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   await app.register(cors, {
     origin: (origin, done) => done(null, !origin || origins.includes(origin)),
     credentials: true,
+    exposedHeaders: ["X-Content-SHA256", "Content-Disposition"],
     allowedHeaders: [
       "Content-Type",
       "X-CSRF-Token",
@@ -274,6 +275,20 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
         "Strict-Transport-Security",
         "max-age=31536000; includeSubDomains",
       );
+  });
+  // Downloaded HTML is immutable evidence. Intermediaries must not inject
+  // analytics/scripts or rewrite it after its length/hash have been computed.
+  // Preserve existing private/no-store policy and every payload byte.
+  app.addHook("onSend", async (_req, reply, payload) => {
+    const mime = String(reply.getHeader("Content-Type") ?? ""),
+      disposition = String(reply.getHeader("Content-Disposition") ?? "");
+    if (/^text\/html(?:;|$)/i.test(mime) &&
+        (/^attachment(?:;|$)/i.test(disposition) || reply.hasHeader("X-Content-SHA256"))) {
+      const policy = String(reply.getHeader("Cache-Control") ?? "no-store");
+      if (!policy.split(",").some(value => value.trim().toLowerCase() === "no-transform"))
+        reply.header("Cache-Control", policy + ", no-transform");
+    }
+    return payload;
   });
   app.setErrorHandler(async (error, req, reply) => {
     let status = 500,

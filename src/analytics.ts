@@ -6,6 +6,7 @@ import { projectAccess } from "./access.js";
 import { name, Problem, uuid, csvCell, hash, canonical } from "./lib.js";
 import { campaignSource } from "./analytics-sources.js";
 import { XLSX_MIME } from "./analytics-workbook.js";
+import { reviewPage } from "./analysis-review.js";
 import {
   importOptions,
   normalizeMetricsCSV,
@@ -113,6 +114,7 @@ export function publicDataset(d: any, details = false) {
     rows,
     import_key: _key,
     metric_snapshot: _snapshot,
+      list_cursor_at: _cursor,
     ...rest
   } = d;
   return {
@@ -292,21 +294,22 @@ export function registerAnalytics(
   const params = z.object({ tenant: uuid, project: uuid });
   app.get(base, { preHandler: requireUser(db) }, async (req) => {
     const { tenant, project } = params.parse(req.params);
+    const page = reviewPage(req.query, `datasets:${tenant}:${project}:${req.principal.id}`, 100);
     return db.tx(async (tx) => {
       await projectAccess(tx, req.principal, tenant, project);
       const rows = (
         await tx.query(
-          `SELECT id,tenant_id,project_id,name,currency,timezone,source,created_by,created_at,
+          `SELECT id,tenant_id,project_id,name,currency,timezone,source,created_by,created_at,to_char(created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS list_cursor_at,
             source_filename,source_sha256,spec_hash,import_spec,import_metadata,content_state,moderation_version,retention_expires_at,
             source_asset_version_id,supersedes_id,correction_ancestors,source_state,(raw_csv IS NOT NULL OR source_asset_version_id IS NOT NULL) AS source_available,jsonb_array_length(rows) AS row_count,
             CASE WHEN metric_snapshot IS NULL THEN rows ELSE '[]'::jsonb END AS rows,
             CASE WHEN metric_snapshot IS NULL THEN NULL ELSE jsonb_build_object('summary',metric_snapshot->'summary') END AS metric_snapshot
-            FROM analytics_datasets WHERE project_id=$1 ORDER BY created_at DESC,id DESC LIMIT 100`,
-          [project],
+            FROM analytics_datasets WHERE project_id=$1 AND ($2='' OR strpos(lower(name),lower($2))>0) AND ($3::timestamptz IS NULL OR (created_at,id)<($3::timestamptz,$4::uuid)) ORDER BY created_at DESC,id DESC LIMIT $5`,
+          [project, page.search, page.at, page.id, page.limit + 1],
         )
       ).rows;
-      return { items: rows.map((d) => publicDataset(d)) };
-    }, tenant);
+      return { items: rows.slice(0, page.limit).map((d) => publicDataset(d)), next_cursor: rows.length > page.limit ? page.next(rows[page.limit - 1]) : null };
+    }, tenant, false, req.principal.id);
   });
   app.post(base + "/preview", { preHandler: requireUser(db) }, async (req) => {
     const { tenant, project } = params.parse(req.params);
