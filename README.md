@@ -1,3 +1,30 @@
+<!-- integrated-round-201 -->
+
+## 201 · 0.5.8 · 影片製作與實際交付
+
+[Evidence and limits / 證據與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-201/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 先完成整批809份產品源碼清單，再統一六端構建／類型與測試；624項相關斷言有通過證據，初始失敗、測試故障注入修正、畫面檢視文案修正和未變源碼沿用範圍均完整記錄。
+
+2. 真實隔離Web／原生PostgreSQL／390幀MP4與實際下載播放，和真實上線Web／最終0.7.14包新授權／跨端版本分開記錄，不調新的付費模型。
+
+3. 候選就緒及活動客戶任務0後切換，schema163／原憑證／DB和代理進程保持。三包與校驗文件掛站並核對內網／公網完整字節；舊20002下載與200回退原樣保留。
+
+4. 12份雙語README、實際PNG／GIF／MP4、完整102條／32組追溯與普通八引用同步。使用公司原域名TLS經獨立SSH出口，非開發機直連驗收；外部／專業／生產敞口保持。
+
+```mermaid
+flowchart LR
+ A[Complete whole code batch] --> B[Unified builds and tests]
+ B --> C[Actual isolated and production journeys]
+ C --> D[Collect corrections and retain failures]
+ D --> B
+ C --> E[Candidate readiness and zero active tasks]
+ E --> F[Deploy and verify full download bytes]
+ F --> G[Bilingual docs and eight ordinary refs]
+```
+
+以下保留完整安裝、架構和使用細則。
+
 <!-- integrated-round-200 -->
 
 ## 200 · 0.5.7 · 完整輪次構建、上線與證據

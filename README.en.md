@@ -1,3 +1,30 @@
+<!-- integrated-round-201 -->
+
+## 201 · 0.5.8 · Motion production and actual delivery
+
+[Evidence and limits / 證據與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-201/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Record the whole809-file product source batch before unified builds/types/tests.624 distinct relevant assertions have passing evidence. Initial failures, fixture correction, visual-copy correction and the exact unchanged-source evidence scope remain explicit.
+
+2. Actual isolated Web/native PostgreSQL/390-frame MP4 play/download is distinct from actual deployed Web/final0.7.14 package fresh authorization/cross-client versions. No new paid model task is submitted.
+
+3. Activate after candidate readiness/zero active customer tasks; retain schema163, credentials, DB/proxy processes. Three packages/checksums are linked and verified as full inner/public bytes; old20002 downloads/200 rollback stay.
+
+4. Twelve bilingual READMEs, actual PNG/GIF/MP4, all102 requirements/32 groups and ordinary eight-ref synchronization bind delivery. Original company TLS through owned SSH egress is distinct from direct developer connectivity; external/professional/production gaps remain.
+
+```mermaid
+flowchart LR
+ A[Complete whole code batch] --> B[Unified builds and tests]
+ B --> C[Actual isolated and production journeys]
+ C --> D[Collect corrections and retain failures]
+ D --> B
+ C --> E[Candidate readiness and zero active tasks]
+ E --> F[Deploy and verify full download bytes]
+ F --> G[Bilingual docs and eight ordinary refs]
+```
+
+Earlier installation, architecture and use details remain below.
+
 <!-- integrated-round-200 -->
 
 ## 200 · 0.5.7 · Complete-round construction, deployment and evidence
