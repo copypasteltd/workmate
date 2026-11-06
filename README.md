@@ -1,3 +1,39 @@
+<!-- integrated-round-199 -->
+
+## 199 · 0.5.7 · 直接編輯與來源交付接續
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-199/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 登入後選擇企業、項目及專員，在雲端Codex交付後明確將私人源文件發布到項目。從「設計畫布」選取可編輯來源，確認共用後建立工程。
+
+2. 直接選取、拖動、縮放、方向鍵微調（Shift加速）、六向對齊、複製圖層及撤銷重做；文字對齊／行高、圖片適配、形狀描邊／圓角與位置尺寸遵循幾何、品牌與來源約束。未儲存畫面由真正伺服器渲染器產生，不調模型。
+
+3. 草稿只在目前分頁依帳戶／企業／項目／工程有界保留：8小時、2MB、最多8份，退出清理。刷新後明確恢復；伺服器版本改變需確認，復原前重新查權，不靜默覆蓋。先儲存新版本，再產生交付檔案與ZIP。
+
+4. 實際隔離旅程覆蓋拖動／縮放、刷新恢復、併發v3衝突及v4ZIP。真實雲端Codex來源在已上線Web完成v2保存／下載，與Desktop接續；375／768／1024／1440及淺深色有當前證據。修復重選同一企業導致項目列表清空。
+
+```mermaid
+flowchart LR
+ A[Cloud Codex source / 雲端來源] --> B[Explicit publication / 明確發布]
+ B --> C[Shared project / 共用工程]
+ C --> D[Direct canvas and draft / 畫布與草稿]
+ D --> E[Current authority and actual preview / 授權與真實預覽]
+ E --> F[Save immutable version / 儲存新版本]
+ F --> G[Download delivery / 下載交付]
+ D --> H[Review and recover / 核對並恢復]
+ H --> D
+```
+
+Current actual deployed Web / 本輪真實Web
+
+![Actual interface / 實際頁面](assets/screenshots/199-v3-live-design-dark.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-199-v3-live-design.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-199-v3-live-design.mp4)
+
+下方保留此前版本與完整使用／安裝說明。本輪不代表全部原始要求已完成驗收。
+
 <!-- integrated-round-198 -->
 
 ## 198 · 0.5.6 · 查找工作与准确返回

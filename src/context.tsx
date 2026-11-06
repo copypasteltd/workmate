@@ -57,6 +57,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("cp_project", id);
   };
   const setTenant = (id: string) => {
+    if (tenantRef.current === id) return;
     ++projectLoadRevision.current;
     tenantRef.current = id;
     setProjects([]);

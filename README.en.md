@@ -1,3 +1,39 @@
+<!-- integrated-round-199 -->
+
+## 199 · 0.5.7 · Direct editing and source-to-delivery continuity
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-199/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Sign in, select an organization/project/specialist and explicitly publish the private editable source produced by cloud Codex. Open Design canvas, choose that source and confirm sharing to create an editable project.
+
+2. Select/drag/resize, nudge with arrow keys (Shift accelerates), align in six directions, duplicate layers and undo/redo. Text alignment/line height, image fitting, shape stroke/radius and geometry retain brand/source constraints. Unsaved previews use the real server renderer without model calls.
+
+3. Drafts remain bounded in the current tab, scoped to account/organization/project/work:8 hours,2MB and8 snapshots, cleared on sign-out. Refresh recovery is explicit; changed server heads require review and renewed authorization. Save a new version before creating files/ZIP.
+
+4. The isolated journey covers pointer edits, reload recovery, concurrent version3 conflict and version4 ZIP. The actual deployed Web saves/downloads version2 from a real cloud Codex source and continues in Desktop, with current375/768/1024/1440 and light/dark evidence. Re-selecting the current organization no longer clears project options.
+
+```mermaid
+flowchart LR
+ A[Cloud Codex source / 雲端來源] --> B[Explicit publication / 明確發布]
+ B --> C[Shared project / 共用工程]
+ C --> D[Direct canvas and draft / 畫布與草稿]
+ D --> E[Current authority and actual preview / 授權與真實預覽]
+ E --> F[Save immutable version / 儲存新版本]
+ F --> G[Download delivery / 下載交付]
+ D --> H[Review and recover / 核對並恢復]
+ H --> D
+```
+
+Current actual deployed Web / 本輪真實Web
+
+![Actual interface / 實際頁面](assets/screenshots/199-v3-live-design-dark.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-199-v3-live-design.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-199-v3-live-design.mp4)
+
+Earlier release/setup sections remain below. This batch does not close full original acceptance.
+
 <!-- integrated-round-198 -->
 
 ## 198 · 0.5.6 · Find work and return precisely

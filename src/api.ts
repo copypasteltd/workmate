@@ -5,6 +5,7 @@ import { clientFetch, clientJson, connectionFailure } from "./client-failure";
 import { clearWorkDrafts } from "./work-draft";
 import { clearDeliveryRevisionDrafts } from "./delivery-revision-state";
 import { clearEditableProjectRequests } from "./editable-project-state";
+import { clearDesignDrafts } from "./design-draft-state";
 import {clearWorkspaceSaves} from "./workspace-edit-state";
 import { sessionProtectedRequest } from "./session-request";
 export let csrfToken = "";
@@ -29,7 +30,7 @@ export function endClientSession(
   ++sessionRevision;
   if (reason === "sign_out") ++authenticationRevision;
   csrfToken = "";
-  if (reason === "sign_out") { redactWorkspaceAttempts(); clearWorkDrafts(); clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); clearWorkspaceSaves(); }
+  if (reason === "sign_out") { redactWorkspaceAttempts(); clearWorkDrafts(); clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); clearDesignDrafts(); clearWorkspaceSaves(); }
   window.dispatchEvent(new Event("copypaste:session-ended"));
   if (broadcast)
     localStorage.setItem(
