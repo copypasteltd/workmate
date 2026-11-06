@@ -1,3 +1,9 @@
+<!-- integrated-round-197 -->
+
+Round197: isolated company transport, bounded recovery, proven pre-turn settlement and compact native review. Six builds and 528 selected tests pass; full original acceptance remains open.
+
+[交付 / Delivery](quality/integrated-round-197/README.md) · [完整追溯 / Scope](quality/integrated-round-197/requirements-102.md) · [更新 / Changes](changes/197-connection-and-native-review.md)
+
 <!-- integrated-round-196 -->
 
 Round196 ships immutable manual text revisions, pinned comparisons, task-bound native/cloud execution and specialist guidance after a full implementation batch and integrated validation. Professional/external/production acceptance remains open.

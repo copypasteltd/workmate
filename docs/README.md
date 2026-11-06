@@ -1,3 +1,9 @@
+<!-- integrated-round-197 -->
+
+197 轮：公司连接隔离、有界恢复、持久零准入结算和本机结果审阅。六端构建及 528 项相关测试通过；完整原始验收仍开放。
+
+[交付 / Delivery](quality/integrated-round-197/README.md) · [完整追溯 / Scope](quality/integrated-round-197/requirements-102.md) · [更新 / Changes](changes/197-connection-and-native-review.md)
+
 <!-- integrated-round-196 -->
 
 196輪已整批完成文字新版本、固定版本比較、雲端/本機任務綁定執行視圖及角色交付指引，統一驗證後上線；完整專業、外部與生產驗收繼續保留。
