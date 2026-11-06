@@ -1,3 +1,9 @@
+<!-- integrated-round-201 -->
+
+201輪：六款雙語影片版面、原子鏡頭／字幕／幀率、實際轉場與授權畫面預覽、分區草稿及真實MP4交付；624項相關斷言與完整原始驗收邊界。
+
+[交付 / Delivery](quality/integrated-round-201/README.md) · [102條 / Scope](quality/integrated-round-201/requirements-102.md) · [更新 / Changes](changes/201-motion-production.md)
+
 <!-- integrated-round-200 -->
 
 200輪：六款可編輯版面、獲准圖片／證據素材、新頁及全部頁面原子適配；631項相關回歸、真實上線Web／最終Desktop及不可變下載。全部原始驗收範圍保留。

@@ -1,3 +1,9 @@
+<!-- integrated-round-201 -->
+
+Round201: six bilingual video layouts, atomic timing/captions/rates, actual transitions and authorized frame previews, scoped recovery and real MP4 delivery.624 relevant assertions, exact source-bound evidence and full original acceptance limits.
+
+[交付 / Delivery](quality/integrated-round-201/README.md) · [102條 / Scope](quality/integrated-round-201/requirements-102.md) · [更新 / Changes](changes/201-motion-production.md)
+
 <!-- integrated-round-200 -->
 
 Round200: six editable layouts, authorized image/evidence resources, new pages and atomic whole-document adaptation;631 relevant checks, actual deployed Web/final Desktop and immutable downloads. All original acceptance remains.
