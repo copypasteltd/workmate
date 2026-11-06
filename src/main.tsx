@@ -17,7 +17,6 @@ import {
 } from "./project-configuration";
 import { BrandLibrary } from "./brand-library";
 import { DeliveryQuality } from "./delivery-quality";
-import { SoftwareChecks } from "./software-checks";
 import { ClientContentContext, useClientContent } from "./client-content";
 import { QualitySummary } from "./quality-summary";
 import { Connections, ConnectorLaunch } from "./connections";
@@ -1524,7 +1523,6 @@ function TaskDetail() {
               )}
               {data.role_key === "workflow-consultant" && data.execution_location !== "desktop" && <CloudSchedules key={"cloud-plans:" + w.base + id} taskId={id!} />}
               {data.role_key === "workflow-consultant" && data.execution_location !== "desktop" && <CloudEvents key={"cloud-events:" + w.base + id} taskId={id!} />}
-              {data.execution_location !== "desktop" && ["fullstack","frontend","backend-api","software-qa","ui-ux","landing-page"].includes(data.role_key) && <SoftwareChecks key={"software-checks:"+w.base+id} base={w.base} taskId={id!}/>}
               {["succeeded", "failed", "cancelled"].includes(data.status) &&
                 data.mode !== "plan" && (
                   <DeliveryQuality

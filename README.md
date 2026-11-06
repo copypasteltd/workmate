@@ -1,3 +1,31 @@
+<!-- integrated-round-197 -->
+
+## 197 · 0.5.4 · 统一任务审阅
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-197/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 登录后选择企业和项目、专业角色及材料，提交云端 Codex 工作。任务工作台保留成果、文件、变更、执行、网页、活动和费用七个视图。
+2. 软件执行检查集中在执行标签内；旧详情页不再重复显示同一面板。文字手工编辑继续产生不可变版本，并保留原请求核对及历史比较。
+3. 无请求体的读取连接中断最多重试一次；收到服务响应即交由业务处理。写入结果未知时先查原记录，明确重试原操作，不自动重新派发工作。
+4. 实际 HTTPS 页面完成七标签键盘操作、375/768/1024/1440 宽度和暗色审阅检查。下载页包含本轮三个客户端包和实际校验值。Linux 执行耗时使用真实测量或规范起止时间；缺失或非法值不显示为 NaN。
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[Role and permission / 角色與授權]
+  C --> D[Original task / 原工作]
+  D --> E[Review result and usage / 審閱與費用]
+  E --> F[Explicit next action / 明確下一步]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/197-v5-task-review.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-197-v5-task-review.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-197-v5-task-review.mp4)
+
+下方保留較早版本記錄。完整外部、專業與生產驗收仍開放。
+
 <!-- integrated-round-196 -->
 
 ## 196 · 0.5.2 · 云端成果与编辑

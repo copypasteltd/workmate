@@ -1,4 +1,5 @@
 import { browserCrypto as crypto } from "./browser-crypto";
+import { executionSeconds } from "./execution-timing";
 import { useEffect, useId, useRef, useState } from "react";
 import {
   Check,
@@ -141,7 +142,7 @@ interface CheckRecord {
   stdout: string;
   stderr: string;
   output_truncated: boolean;
-  elapsed_ms: number;
+  elapsed_ms?: number | null;
   created_at: string;
   receipt: FileRef;
   artifacts: FileRef;
@@ -318,7 +319,7 @@ export function SoftwareChecks({
                           : t("指令未通過", "Command failed")}
                 </strong>
                 <small>
-                  {check.program} · {(check.elapsed_ms / 1000).toFixed(1)}s ·{" "}
+                  {check.program}{executionSeconds(check.elapsed_ms) !== null && <> · {executionSeconds(check.elapsed_ms)}</>} ·{" "}
                   {t("結束碼", "Exit")} {check.exit_code}
                 </small>
               </div>

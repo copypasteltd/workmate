@@ -45,17 +45,26 @@ export function connectionFailure(method?: string) {
 export function invalidResponse(method?: string) {
   return new ClientFailure(readOnlyRequest(method) ? "CLIENT_RESPONSE_INVALID" : "CLIENT_RESULT_UNCONFIRMED");
 }
+/** Chromium's network errors are ordinary Errors; never expose their URL/text. */
+export function isConnectionFailure(error: unknown): boolean {
+  if (error instanceof TypeError) return true;
+  if (!(error instanceof Error)) return false;
+  const match = /^net::(ERR_[A-Z_]+)(?:\s|$)/.exec(error.message);
+  return !!match && ["ERR_CONNECTION_CLOSED", "ERR_CONNECTION_RESET", "ERR_CONNECTION_REFUSED",
+    "ERR_CONNECTION_TIMED_OUT", "ERR_TIMED_OUT", "ERR_NETWORK_CHANGED", "ERR_INTERNET_DISCONNECTED",
+    "ERR_NAME_NOT_RESOLVED", "ERR_PROXY_CONNECTION_FAILED", "ERR_TUNNEL_CONNECTION_FAILED"].includes(match[1]);
+}
 /** Retry one failed, body-free read. Writes and received responses are never replayed. */
-export async function clientFetch(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
+export async function clientFetch(input: RequestInfo | URL, init: RequestInit = {}, send: typeof fetch = fetch): Promise<Response> {
   const request = typeof Request !== "undefined" && input instanceof Request ? input : null;
   const method = init.method ?? request?.method ?? "GET";
   const signal = init.signal === undefined ? request?.signal : init.signal;
   const retryRead = readOnlyRequest(method) && init.body == null && request?.body == null;
   for (let attempt = 0; ; attempt++) {
-    try { return await fetch(input, init); }
+    try { return await send(input, init); }
     catch (error) {
       if (signal?.aborted) throw signal.reason ?? error;
-      if (attempt === 0 && retryRead && error instanceof TypeError) continue;
+      if (attempt === 0 && retryRead && isConnectionFailure(error)) continue;
       throw connectionFailure(method);
     }
   }

@@ -1,3 +1,31 @@
+<!-- integrated-round-197 -->
+
+## 197 · 0.5.4 · Consistent task review
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-197/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Sign in, choose an organization/project, specialist and materials, then submit cloud Codex work. The task workbench retains Results, Files, Changes, Execution, Browser, Activity and Usage.
+2. Software checks appear once in Execution. Manual text editing still creates immutable versions with original-request recovery and historical comparison.
+3. A failed body-free read retries at most once. Received HTTP responses are handled by the business flow. Uncertain writes require checking the original result and explicitly retrying that operation; work is never silently dispatched again.
+4. Actual HTTPS checks cover keyboard navigation, 375/768/1024/1440 widths and dark review. Downloads contain this round’s three real client packages and checksums. Linux duration uses actual measurements or canonical timestamps; missing/invalid values never render as NaN.
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[Role and permission / 角色與授權]
+  C --> D[Original task / 原工作]
+  D --> E[Review result and usage / 審閱與費用]
+  E --> F[Explicit next action / 明確下一步]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/197-v5-task-review.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-197-v5-task-review.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-197-v5-task-review.mp4)
+
+Earlier sections are retained release history. Full external/professional/production acceptance remains open.
+
 <!-- integrated-round-196 -->
 
 ## 196 · 0.5.2 · Cloud deliverables and editing
