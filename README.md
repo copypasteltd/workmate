@@ -1,3 +1,26 @@
+<!-- integrated-round-195 -->
+
+## 195 · 0.5.1 · 交付与实机证据 / Delivery and real-device evidence
+
+先整批代码后统一构建/测试/调试，提供不可变候选包、真实旅程/录制、下载散列、备份及自动回滚。
+
+[Round delivery / 本輪交付](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-195/README.md) · [Download / 下載](https://agent.copypaste.hk/downloads)
+
+<!-- usage-195 -->
+
+本轮使用流程：
+
+1. 先完成本轮全部代码包，再执行六仓库统一构建和选定测试；本轮最终517项通过，历史失败仍保留。
+2. 独立记录付费云端任务、本机安装包 Codex、原生 Side Panel 和后台管理旅程，录制保留真实响应时间。
+3. 生成不可变候选包与文件散列，服务器先检查非 root 候选与无活动任务条件，再切换并检查就绪；失败恢复兼容旧版本。
+4. 发布安装版、便携版、扩展 ZIP 和校验清单，核对真实完整下载；更新双语说明和本轮需求覆盖层，再普通推送对应分支。
+
+<!-- /usage-195 -->
+
+本輪實際測試與旅程見報告；保留歷史失敗，不以代碼量替代全部專業/生產驗收。影片/語音/Google/Meta真實配置、至少12角色專業驗收及完整兼容/運營矩陣仍開放。測試郵箱及未簽名安裝按已確認範圍保留。
+
+Selected regression and real journeys are in the report. Historical failures remain. Real video/audio/Google/Meta configuration, at least12 professional role evaluations and the full compatibility/operations matrix remain open. The requested test mailbox and unsigned manual installation remain.
+
 <!-- system-assessment-194 -->
 
 ## 当前完整性和体验评估 · 194

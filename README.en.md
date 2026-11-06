@@ -1,3 +1,26 @@
+<!-- integrated-round-195 -->
+
+## 195 · 0.5.1 · 交付与实机证据 / Delivery and real-device evidence
+
+Implementation-first integrated builds/testing/debugging, immutable candidates, actual journeys/recordings, download hashes, backups and automatic rollback.
+
+[Round delivery / 本輪交付](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-195/README.md) · [Download / 下載](https://agent.copypaste.hk/downloads)
+
+<!-- usage-195 -->
+
+Using this release:
+
+1. Complete the entire code batch before six-repository builds and selected tests. All517 final tests passed; historical failures remain.
+2. Record paid cloud, packaged local Codex, native Side Panel and Admin journeys independently, preserving actual response time.
+3. Create immutable candidate archives/hashes. Validate a non-root candidate and the no-active-task condition before switching; restore a compatible prior version on failure.
+4. Publish Setup, Portable, extension ZIP and checksums; verify complete downloads. Update bilingual documentation and requirement coverage before ordinary branch pushes.
+
+<!-- /usage-195 -->
+
+本輪實際測試與旅程見報告；保留歷史失敗，不以代碼量替代全部專業/生產驗收。影片/語音/Google/Meta真實配置、至少12角色專業驗收及完整兼容/運營矩陣仍開放。測試郵箱及未簽名安裝按已確認範圍保留。
+
+Selected regression and real journeys are in the report. Historical failures remain. Real video/audio/Google/Meta configuration, at least12 professional role evaluations and the full compatibility/operations matrix remain open. The requested test mailbox and unsigned manual installation remain.
+
 <!-- system-assessment-194 -->
 
 ## Completeness and UX assessment · 194

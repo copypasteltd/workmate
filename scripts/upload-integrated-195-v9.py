@@ -1,0 +1,18 @@
+"""Upload the verified immutable candidate to the pinned application host."""
+from pathlib import Path
+import base64,hashlib,json,paramiko
+root=Path(__file__).resolve().parents[1]
+spec=json.loads((root/'.data/deployment-189/server-access.private.json').read_text(encoding='utf-8'))
+source=root/'.data/deployment-195'
+t=paramiko.Transport((spec['host'],22))
+try:
+ t.start_client(timeout=15)
+ assert base64.b64encode(hashlib.sha256(t.get_remote_server_key().asbytes()).digest()).decode().rstrip('=')=='kE5X8/plm2Sr6rI1XOnE82hIcddnpP/i9gvybtg2GNE'
+ t.auth_password(spec['username'],spec['password']);s=paramiko.SFTPClient.from_transport(t)
+ target='/home/carzygod/workmate-upload-195-v9'
+ try:s.mkdir(target)
+ except OSError:raise RuntimeError('Candidate upload directory already exists; preserve original receipt')
+ for name in ['integrated-195-v9.zip','integrated-195-v9.zip.sha256']:
+  s.put(str(source/name),target+'/'+name)
+ print(json.dumps({'status':'uploaded','destination':target,'sha256':hashlib.sha256((source/'integrated-195-v9.zip').read_bytes()).hexdigest()}))
+finally:t.close()

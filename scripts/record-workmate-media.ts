@@ -47,6 +47,8 @@ export class WorkmateRecording {
     })();
     await new Promise(r => setTimeout(r, 800));
   }
+  /** Preserve the completion API used by earlier reproducible QA scripts. */
+  async finish(){return this.stop();}
   async stop() {
     if (!this.running) return null;
     await new Promise(r => setTimeout(r, 900));
