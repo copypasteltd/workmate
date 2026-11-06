@@ -1,3 +1,25 @@
+<!-- integrated-round-198 -->
+
+## 198 · 0.5.5 · 整批交付与可追溯验证
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-198/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 先完成本轮全部可自主实现代码，再统一构建、测试和联调。六端构建、Desktop主进程／渲染类型检查及555项相关测试通过；金额措辞修正后Web／Desktop343项再次通过；后端69项为选定风险回归，不等于重跑全部历史矩阵。
+2. 真实Web／Admin、发布包本机Codex和原生Extension右侧栏提供当前截图、GIF与MP4；保留失败脚本、超时和弱证据。修正后的安全页面GET有限恢复，不替换响应、不自动重放业务写入。
+3. 三个不可变客户端包和校验文本在/releases/19802/实际完整下载核对；候选就绪及活动任务检查后部署integrated-198-v2，schema163和原凭证保持，数据库／代理主进程未改动，保留198-v1回退路径。
+4. 七仓库按既有授权普通原子推送八引用并回读，保护用户原文件及无关分支。32组／102条原始要求保留，外部、专业和完整生产验收继续开放。
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[All tasks / 查找工作]
+  C --> D[Verify current authority / 當前授權]
+  D --> E[Original session and results / 原會話與成果]
+  E --> F[Return with context / 保留上下文返回]
+```
+
+下方保留早期版本與完整安裝說明。本輪交付不代表全部原始需求已驗收。
+
 <!-- integrated-round-197 -->
 
 ## 197 · 0.5.3 · 整批验证与发布

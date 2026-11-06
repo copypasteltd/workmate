@@ -1,3 +1,25 @@
+<!-- integrated-round-198 -->
+
+## 198 · 0.5.5 · Integrated delivery and traceable validation
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-198/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Complete all independently implementable round code before integrated builds/tests/journeys. Six builds, Desktop main/renderer types and 555 relevant tests pass, followed by 343 Web/Desktop checks after the wording correction. The 69 backend cases are selected risk regressions, not the complete historical matrix.
+2. Live Web/Admin, actual packaged native Codex and the real extension Side Panel provide current PNG/GIF/MP 4 evidence. Failed drivers, timeouts and weak evidence remain. Bounded safe-page GET recovery neither replaces responses nor replays business writes.
+3. Three immutable client packages and the checksum text pass full public downloads under/releases/19802/. Candidate readiness/active-work checks precede integrated-198-v 2 deployment. Schema 163/credentials and database/proxy processes stay unchanged;198-v 1 remains a rollback path.
+4. Seven repositories publish eight ordinary atomic refs with remote readback under existing authorization, preserving user files/unrelated branches. All 32 groups/102 original requirements remain, with external/professional/full production acceptance open.
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[All tasks / 查找工作]
+  C --> D[Verify current authority / 當前授權]
+  D --> E[Original session and results / 原會話與成果]
+  E --> F[Return with context / 保留上下文返回]
+```
+
+Earlier sections retain previous release/setup history. Current delivery does not close full original acceptance.
+
 <!-- integrated-round-197 -->
 
 ## 197 · 0.5.3 · Integrated validation and publication
