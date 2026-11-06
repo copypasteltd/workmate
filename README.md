@@ -1,3 +1,33 @@
+<!-- integrated-round-201 -->
+
+## 201 · 0.5.2 · 影片製作與實際交付
+
+[Evidence and limits / 證據與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-201/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 本輪後台產品版本不變；22項相關回歸和當前三域名就緒核查通過，下方198實際畫面明確為歷史素材。
+
+2. 模型能力仍按單一模型編輯上游OpenAI相容地址／API key／上游名稱／費率，保存與驗證分開；密鑰不下發客戶端。企業／使用者／費用／VIP／內容與批量控制、最高管理員直接執行及完整審計保留。
+
+3. 新增影片預覽／素材路由繼續遵守當前項目、資料環境、私人範圍和原版本權限。新增模板數量不代替內容專業驗收；真實生成影片／語音和Google／Meta授權仍需原外部配置。
+
+```mermaid
+flowchart LR
+ A[Administrator identity and role] --> B[Per-model upstream and key]
+ A --> C[Users organizations fees VIP and content]
+ C --> D[Policy direct execution or approval]
+ D --> E[Complete audit]
+```
+
+Historical198 actual Admin / 歷史198實際後台
+
+![Actual interface / 實際頁面](assets/screenshots/198-v4-service-readiness.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v4-service-review.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v4-service-review.mp4)
+
+以下保留完整安裝、架構和使用細則。
+
 <!-- integrated-round-200 -->
 
 ## 200 · 0.5.2 · 模型、用戶與內容管理相容覆核

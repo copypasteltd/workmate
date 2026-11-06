@@ -1,3 +1,33 @@
+<!-- integrated-round-201 -->
+
+## 201 · 0.5.2 · Motion production and actual delivery
+
+[Evidence and limits / 證據與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-201/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. The Admin product stays0.5.2. Its22 related regressions and current three-domain readiness checks pass. The198 actual UI media below is explicitly historical.
+
+2. Per-model capability settings retain editable OpenAI-compatible upstream URL/key/model alias/rates with separate save/validation. Credentials never reach clients. Organization/user/fees/VIP/content/bulk controls, super-admin direct execution and full audit stay.
+
+3. New video preview/resource routes enforce current project/data mode/private scope/original version. Template counts do not replace professional acceptance; actual generated video/voice and Google/Meta still require their external configuration.
+
+```mermaid
+flowchart LR
+ A[Administrator identity and role] --> B[Per-model upstream and key]
+ A --> C[Users organizations fees VIP and content]
+ C --> D[Policy direct execution or approval]
+ D --> E[Complete audit]
+```
+
+Historical198 actual Admin / 歷史198實際後台
+
+![Actual interface / 實際頁面](assets/screenshots/198-v4-service-readiness.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v4-service-review.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v4-service-review.mp4)
+
+Earlier installation, architecture and use details remain below.
+
 <!-- integrated-round-200 -->
 
 ## 200 · 0.5.2 · Model, user and content management compatibility
