@@ -1,3 +1,9 @@
+<!-- integrated-round-199 -->
+
+Round199 adds direct design editing, authorized draft previews/recovery and real-source Web/Desktop continuation;568 selected checks pass. Full original acceptance stays open.
+
+[交付 / Delivery](quality/integrated-round-199/README.md) · [102條 / Scope](quality/integrated-round-199/requirements-102.md) · [更新 / Changes](changes/199-direct-design-editing.md)
+
 <!-- integrated-round-198 -->
 
 Round198 ships a full task directory and scoped return/navigation context, with555 selected regressions, native0.7.10/Side Panel0.5.7 and complete public downloads. Full original acceptance remains open.
