@@ -1,3 +1,37 @@
+<!-- integrated-round-200 -->
+
+## 200 · 0.5.7 · Native right Side Panel and authorized uploads
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-200/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Download/unzip the ZIP and load it in Chrome developer mode. Clicking the toolbar opens the actual right Side Panel with ChatGPT-style conversation/attachments; the agent executes in the company cloud.
+
+2. Authorize with company PKCE, select organization/project and explicitly choose/drop files or paste images. Only authorized content is read/uploaded. History/archive/continuation re-read current server authority/state.
+
+3. No Extension product change;93 regressions pass. The original0.5.7 ZIP is preserved byte-for-byte and provided under/releases/20002/ with new Desktop and complete inner SHA checks. No inflated version or Chrome Web Store publication is claimed.
+
+4. The198 toolbar/real Side Panel/authentication/attachment media is explicitly historical, not a newly repeated200 full Chrome/large-file matrix.
+
+```mermaid
+flowchart LR
+ A[Toolbar click / 工具列點擊] --> B[Native right Side Panel / 原生右側欄]
+ B --> C[Company PKCE and project / 公司授權與項目]
+ C --> D[Explicit file or image selection / 明確選擇附件]
+ D --> E[Private upload / 私人上傳]
+ E --> F[Cloud Codex via company API / 公司雲端Codex]
+ F --> G[Conversation and delivery / 會話與交付]
+```
+
+Earlier198 real native Side Panel / 歷史198真實原生側欄
+
+![Actual interface / 實際頁面](assets/screenshots/198-v1-side-panel.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v1-side-panel.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v1-side-panel.mp4)
+
+Earlier release/setup instructions remain below; full original acceptance stays open.
+
 <!-- integrated-round-199 -->
 
 ## 199 · 0.5.7 · Native Side Panel and authorized uploads

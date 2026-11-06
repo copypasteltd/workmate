@@ -1,3 +1,37 @@
+<!-- integrated-round-200 -->
+
+## 200 · 0.5.7 · 原生右側欄與獲准附件上傳
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-200/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 下載／解壓ZIP，以Chrome開發者模式載入。點擊工具列打開真正右側Side Panel，採ChatGPT式會話／附件；Agent在公司雲端執行。
+
+2. 以公司PKCE授權，選企業／項目，明確選擇／拖入附件或貼上圖片；只讀取上傳獲准內容。歷史／歸檔／接續每次重新讀當前權限和服務端狀態。
+
+3. 本輪插件無產品變更，93項回歸通過；原0.5.7 ZIP逐字節保留，在/releases/20002/與新Desktop一起提供下載並通過內網完整SHA。未虛增版本或聲稱Chrome商店已發布。
+
+4. 下方198工具列／真實側欄／授權與附件錄影為明確歷史證據，不能用來聲稱本輪重跑全部Chrome／大型文件矩陣。
+
+```mermaid
+flowchart LR
+ A[Toolbar click / 工具列點擊] --> B[Native right Side Panel / 原生右側欄]
+ B --> C[Company PKCE and project / 公司授權與項目]
+ C --> D[Explicit file or image selection / 明確選擇附件]
+ D --> E[Private upload / 私人上傳]
+ E --> F[Cloud Codex via company API / 公司雲端Codex]
+ F --> G[Conversation and delivery / 會話與交付]
+```
+
+Earlier198 real native Side Panel / 歷史198真實原生側欄
+
+![Actual interface / 實際頁面](assets/screenshots/198-v1-side-panel.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v1-side-panel.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v1-side-panel.mp4)
+
+下方保留此前版本和完整安裝／使用說明，全部原始驗收範圍仍開放。
+
 <!-- integrated-round-199 -->
 
 ## 199 · 0.5.7 · 原生側欄與授權文件上傳
