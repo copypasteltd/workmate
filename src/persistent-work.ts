@@ -1180,8 +1180,17 @@ export function registerPersistentWork(
           body: z.string().trim().min(1).max(30000),
           mode: workMode.default("execute"),
           budget_micros: micros.optional(),
+          input: z.object({
+            prompt: z.string().trim().min(1).max(30000),
+            asset_version_ids: z.array(uuid).max(20)
+              .refine(ids => new Set(ids).size === ids.length, "Select distinct pinned versions"),
+          }).strict().optional(),
         })
         .strict()
+        .superRefine((value, issue) => {
+          if (value.input && (value.intent !== "delegate" || value.input.prompt !== value.body))
+            issue.addIssue({code:"custom",path:["input"],message:"Task input must match the delegated message"});
+        })
         .parse(req.body);
       return db.tx(async (tx) => {
         await projectAccess(tx, req.principal, tenant, project, "write");
@@ -1261,6 +1270,10 @@ export function registerPersistentWork(
                   role_key: a.role_key,
                   budget_micros: b.budget_micros,
                   mode: b.mode,
+                  dependencies: inputDependencies.parse(b.input?.asset_version_ids.length ? [{
+                    kind: "file", description: "Explicitly pinned conversation attachments",
+                    resource_ids: b.input.asset_version_ids,
+                  }] : []),
                 },
                 `conversation:${id}:${b.client_message_id}`,
                 { context, conversation: c },

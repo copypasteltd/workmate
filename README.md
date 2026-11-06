@@ -1,3 +1,40 @@
+<!-- integrated-round-195 -->
+
+## 195 · 0.5.2 · 后台与运行内核 / Backend and runtime
+
+任务成果与受权预览、真实运行就绪、不可重写角色验收、Linux Office和私人附件协议。
+
+[Round delivery / 本輪交付](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-195/README.md) · [Download / 下載](https://agent.copypaste.hk/downloads)
+
+```mermaid
+flowchart LR
+ A[Visit / 訪問] --> B[Email sign-in / 郵箱登入]
+ B --> C[Workspace / 企業與專案]
+ C --> D[Role, files, budget / 角色、檔案、預算]
+ D --> E{Client / 客戶端}
+ E -->|Web or Extension| F[Cloud Codex / 雲端]
+ E -->|Desktop native permission| G[Local Codex / 本機]
+ F --> H[Results, revisions, usage / 成果、修改、費用]
+ G --> H
+```
+
+`GET .../tasks/:task/workspace` · `GET .../workspace/preview?asset_version_id=...` · `GET /v1/admin/operational-readiness` · `GET/POST /v1/admin/role-acceptance` · `POST /v1/admin/role-acceptance/revoke`. Schema163 is additive; owner migrations and non-root runtime remain separate.
+
+<!-- usage-195 -->
+
+本轮使用流程：
+
+1. 管理员先在每个模型能力中保存其 API 地址、密钥、模型别名与费率，运行就绪视图只显示状态，不泄露配置值。
+2. 客户附件通过原有分片接口完成并固定版本；会话交办同时验证私人归属、项目、版本与预算，消息/任务/预留款原子提交。
+3. 任务工作区按当前授权返回成果、最多200个交付文件、预览入口及实际费用；原始下载与分页 Office 预览使用独立受权接口。
+4. 角色人工验收保留任务、模板、技能和交付快照。schema163仅新增不可改写记录和受限统计，不清除旧账务或审计。
+
+<!-- /usage-195 -->
+
+本輪實際測試與旅程見報告；保留歷史失敗，不以代碼量替代全部專業/生產驗收。影片/語音/Google/Meta真實配置、至少12角色專業驗收及完整兼容/運營矩陣仍開放。測試郵箱及未簽名安裝按已確認範圍保留。
+
+Selected regression and real journeys are in the report. Historical failures remain. Real video/audio/Google/Meta configuration, at least12 professional role evaluations and the full compatibility/operations matrix remain open. The requested test mailbox and unsigned manual installation remain.
+
 <!-- product-downloads-193 -->
 
 ## 產品下載與安裝 · 193

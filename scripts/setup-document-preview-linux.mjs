@@ -1,0 +1,18 @@
+import {execFileSync} from 'node:child_process';
+import {mkdir,readFile,writeFile,realpath,rename,chmod} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+if(process.platform!=='linux')throw new Error('Run this native setup on the Linux API host. No local virtualization is used.');
+const root=fileURLToPath(new URL('../',import.meta.url)),directory=path.join(root,'.data/document-preview');
+const office=await realpath(process.env.WORKMATE_OFFICE_BIN??'/usr/lib/libreoffice/program/soffice.bin');
+const source=path.join(root,'src/document-preview-host-linux.c'),host=path.join(directory,'office-preview-host-linux');
+await mkdir(directory,{recursive:true,mode:0o700});
+execFileSync('cc',['-std=c11','-O2','-Wall','-Wextra','-Werror','-fstack-protector-strong','-D_FORTIFY_SOURCE=2',source,'-o',host],{stdio:'inherit',timeout:60000});
+await chmod(host,0o700);
+const hash=async file=>createHash('sha256').update(await readFile(file)).digest('hex');
+const version=execFileSync(office,['--version'],{encoding:'utf8',timeout:15000}).trim();
+const runtime={platform:'linux',office_path:office,office_sha256:await hash(office),host_path:host,host_sha256:await hash(host),host_source_sha256:await hash(source),bubblewrap_sha256:await hash('/usr/bin/bwrap'),version};
+const temporary=path.join(directory,'runtime.json.new');await writeFile(temporary,JSON.stringify(runtime,null,2)+'\n',{mode:0o600});
+await rename(temporary,path.join(directory,'runtime.json'));
+console.log(JSON.stringify({configured:true,platform:'linux',version,manifest:path.join(directory,'runtime.json')}));

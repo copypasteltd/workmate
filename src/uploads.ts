@@ -167,8 +167,7 @@ function verifyType(mime: string, head: Buffer) {
                       : mime === "application/pdf"
                         ? t.startsWith("%PDF-")
                         : mime === "application/zip" ||
-                            mime ===
-                              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            /^application\/vnd\.openxmlformats-officedocument\.(wordprocessingml\.document|spreadsheetml\.sheet|presentationml\.presentation)$/.test(mime)
                           ? h.startsWith("504b0304") || h.startsWith("504b0506")
                           : mime.startsWith("text/") ||
                               mime === "application/json"
@@ -207,7 +206,7 @@ export function registerUploads(
     // Validate supported MIME before reserving disk; the actual bytes are
     // validated again at completion. SVG/HTML remain safe attachment downloads.
     if (
-      !/^(font\/(ttf|otf)|image\/(png|jpeg|webp|gif)|video\/(mp4|quicktime|webm)|audio\/(wav|mpeg|mp4|webm)|text\/[a-z0-9.+-]+|application\/(json|pdf|zip|octet-stream|vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet))$/.test(
+      !/^(font\/(ttf|otf)|image\/(png|jpeg|webp|gif)|video\/(mp4|quicktime|webm)|audio\/(wav|mpeg|mp4|webm)|text\/[a-z0-9.+-]+|application\/(json|pdf|zip|octet-stream|vnd\.openxmlformats-officedocument\.(wordprocessingml\.document|spreadsheetml\.sheet|presentationml\.presentation)))$/.test(
         b.content_type,
       )
     )

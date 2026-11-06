@@ -20,6 +20,7 @@ class WorkmateDocumentPreview {
   [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
   [DllImport("kernel32.dll",SetLastError=true)] static extern IntPtr OpenProcess(uint access,bool inherit,uint pid);
   [DllImport("kernel32.dll")] static extern IntPtr GetStdHandle(int kind);
+  [DllImport("kernel32.dll")] static extern uint SetErrorMode(uint mode);
   static string Quote(string value) {
     var b=new StringBuilder("\"");int slashes=0;
     foreach(char c in value){if(c=='\\'){slashes++;continue;}if(c=='"'){b.Append('\\',slashes*2+1);b.Append(c);}else{b.Append('\\',slashes);b.Append(c);}slashes=0;}
@@ -36,15 +37,37 @@ class WorkmateDocumentPreview {
       if(!SetInformationJobObject(job,9,ref limits,(uint)Marshal.SizeOf(typeof(Limits))))return 67;
       var extension=System.IO.Path.GetExtension(args[4]).ToLowerInvariant();
       var filter=extension==".pptx"?"impress_pdf_Export":extension==".xlsx"?"calc_pdf_Export":"writer_pdf_Export";
-      var command=new StringBuilder(Quote(args[1])+" -env:UserInstallation="+Quote(args[2])+" --headless --invisible --nologo --nodefault --nofirststartwizard --norestore --convert-to "+Quote("pdf:"+filter)+" --outdir "+Quote(args[3])+" "+Quote(args[4]));
       var startup=new Startup();startup.cb=(uint)Marshal.SizeOf(typeof(Startup));startup.flags=1|0x100;startup.show=0;
       startup.input=GetStdHandle(-10);startup.output=GetStdHandle(-11);startup.error=GetStdHandle(-12);
-      if(!CreateProcess(args[1],command,IntPtr.Zero,IntPtr.Zero,true,0x08000000|0x4,IntPtr.Zero,args[5],ref startup,out p))return 68;
-      if(!AssignProcessToJobObject(job,p.process)){TerminateProcess(p.process,69);return 69;}
-      ResumeThread(p.thread);CloseHandle(p.thread);p.thread=IntPtr.Zero;
+      // Headless conversion must not inherit company credentials, proxy settings,
+      // graphics probes or an interactive Windows error dialog from the API.
+      SetErrorMode(0x8003);
+      string systemRoot=Environment.GetEnvironmentVariable("SystemRoot");
+      if(String.IsNullOrEmpty(systemRoot))return 68;
+      string environment="PATH="+System.IO.Path.GetDirectoryName(args[1])+";"+System.IO.Path.Combine(systemRoot,"System32")+"\0SAL_DISABLEGL=1\0SAL_DISABLESKIA=1\0SAL_DISABLE_OPENCL=1\0SystemRoot="+systemRoot+"\0TEMP="+args[5]+"\0TMP="+args[5]+"\0WINDIR="+systemRoot+"\0\0";
+      IntPtr block=Marshal.StringToHGlobalUni(environment);
+      // Run the pinned binary itself. The console bootstrap may request a
+      // private-profile restart while retaining its wrapper process. Exit81
+      // permits one restart in this same profile, job and total deadline.
       var end=DateTime.UtcNow.AddSeconds(45);
-      while(DateTime.UtcNow<end){if(WaitForSingleObject(parent,0)==0)return 70;if(WaitForSingleObject(p.process,100)==0){uint exit;return GetExitCodeProcess(p.process,out exit)?(int)exit:71;}}
-      return 72;
+      try {
+        for(int attempt=0;attempt<2;attempt++) {
+          var command=new StringBuilder(Quote(args[1])+" -env:UserInstallation="+Quote(args[2])+" --headless --invisible --nologo --nodefault --nofirststartwizard --norestore --convert-to "+Quote("pdf:"+filter)+" --outdir "+Quote(args[3])+" "+Quote(args[4]));
+          if(!CreateProcess(args[1],command,IntPtr.Zero,IntPtr.Zero,true,0x08000000|0x4|0x400,block,args[5],ref startup,out p))return 68;
+          if(!AssignProcessToJobObject(job,p.process)){TerminateProcess(p.process,69);return 69;}
+          ResumeThread(p.thread);CloseHandle(p.thread);p.thread=IntPtr.Zero;
+          bool restart=false;
+          while(DateTime.UtcNow<end) {
+            if(WaitForSingleObject(parent,0)==0)return 70;
+            if(WaitForSingleObject(p.process,100)!=0)continue;
+            uint exit;if(!GetExitCodeProcess(p.process,out exit))return 71;
+            if(exit!=81||attempt!=0)return (int)exit;
+            CloseHandle(p.process);p.process=IntPtr.Zero;restart=true;break;
+          }
+          if(!restart)return 72;
+        }
+        return 71;
+      } finally {Marshal.FreeHGlobal(block);}
     } finally {if(job!=IntPtr.Zero)CloseHandle(job);if(p.thread!=IntPtr.Zero)CloseHandle(p.thread);if(p.process!=IntPtr.Zero)CloseHandle(p.process);CloseHandle(parent);}
   }
 }

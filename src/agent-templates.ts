@@ -239,6 +239,7 @@ async function presentationContext(
     native,
     cloudPrograms: native || (await cloudProgramAvailable()),
     cloudBrowser: native || (await cloudBrowserAvailable()),
+    acceptanceEvidence:new Map((await tx.query("SELECT * FROM role_acceptance_counts()")).rows.map(row=>[row.template_version_id,row])),
   };
 }
 function present(
@@ -293,6 +294,7 @@ function present(
           : (configured?.reason ?? null);
   return {
     ...body,
+    qualification_evidence:context.acceptanceEvidence.get(row.id)??{passed:0,failed:0,case_kinds:[],latest_at:null},
     id: row.template_id,
     version: row.version,
     state: disabled ? "disabled" : "published",

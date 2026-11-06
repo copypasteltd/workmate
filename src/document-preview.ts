@@ -30,7 +30,7 @@ async function reclaimOwnedWork(work:string){
     }catch{/* Preserve unknown directories and unreadable ownership markers. */}
   }
 }
-type Runtime={office_path:string;office_sha256:string;host_path:string;host_sha256:string;host_source_sha256:string;version:string};
+type Runtime={platform?:string;office_path:string;office_sha256:string;host_path:string;host_sha256:string;host_source_sha256:string;bubblewrap_sha256?:string;version:string};
 type Page={page:number;page_count:number;width:number;height:number;preview_image:{content_type:string;base64:string};text:string};
 export function documentFormat(mime:string,name:string){
   if(mime==='application/pdf'||/\.pdf$/i.test(name))return 'pdf';
@@ -45,10 +45,13 @@ export class DocumentPreviews {
   private expiry=setInterval(()=>{for(const [key,item] of this.cache)if(item.until<Date.now())this.cache.delete(key);},30000).unref();
   private office(){return this.runtime??= (async()=>{
     try{const r=JSON.parse(await readFile(path.join(root,'.data/document-preview/runtime.json'),'utf8')) as Runtime;
-      if(process.platform!=='win32'||![r.office_path,r.host_path].every(path.isAbsolute)
+      if(!['win32','linux'].includes(process.platform)||(process.platform==='linux'&&r.platform!=='linux')||(process.platform==='win32'&&r.platform&&r.platform!=='win32')||![r.office_path,r.host_path].every(path.isAbsolute)
         ||!['office_sha256','host_sha256','host_source_sha256'].every(k=>/^[a-f0-9]{64}$/.test((r as any)[k])))return null;
       if(hash(await readFile(r.office_path))!==r.office_sha256||hash(await readFile(r.host_path))!==r.host_sha256
-        ||hash(await readFile(path.join(root,'src/document-preview-host.cs')))!==r.host_source_sha256)return null;return r;
+        ||hash(await readFile(path.join(root,process.platform==='linux'?'src/document-preview-host-linux.c':'src/document-preview-host.cs')))!==r.host_source_sha256)return null;
+      if(process.platform==='linux'&&process.geteuid?.()===0)return null;
+      if(process.platform==='linux'&&(!/^[a-f0-9]{64}$/.test(r.bubblewrap_sha256??'')||hash(await readFile('/usr/bin/bwrap'))!==r.bubblewrap_sha256))return null;
+      return r;
     }catch{return null;}
   })();}
   async capability(mime:string,name:string,size:number){
@@ -95,22 +98,23 @@ export class DocumentPreviews {
   private async convertOnce(bytes:Buffer,format:string,signal:AbortSignal){
     const runtime=await this.office();if(!runtime)throw new Problem(503,'DOCUMENT_PREVIEW_SETUP_REQUIRED','Office preview is unavailable. Download the original document.');
     // Check the operator-owned launchers at each conversion, including cache renewal.
-    if(hash(await readFile(runtime.office_path))!==runtime.office_sha256||hash(await readFile(runtime.host_path))!==runtime.host_sha256)throw invalid();
+    if(hash(await readFile(runtime.office_path))!==runtime.office_sha256||hash(await readFile(runtime.host_path))!==runtime.host_sha256||(process.platform==='linux'&&hash(await readFile('/usr/bin/bwrap'))!==runtime.bubblewrap_sha256)
+      ||hash(await readFile(path.join(root,process.platform==='linux'?'src/document-preview-host-linux.c':'src/document-preview-host.cs')))!==runtime.host_source_sha256)throw invalid();
     const work=workRoot;await(reclaimed??=reclaimOwnedWork(work));signal.throwIfAborted();
     const directory=await mkdtemp(path.join(work,'preview-'));
     try{
       await writeFile(directory+'.owner.json',JSON.stringify({schema:'workmate-document-preview-1',pid:process.pid,created_at:new Date().toISOString()}),{flag:'wx',mode:0o600});
       const profile=path.join(directory,'profile'),output=path.join(directory,'output'),input=path.join(directory,'input.'+format);
       await mkdir(path.join(profile,'user'),{recursive:true});await mkdir(output);await writeFile(input,bytes,{mode:0o600});
-      await writeFile(path.join(profile,'user/registrymodifications.xcu'),`<?xml version="1.0"?><oor:items xmlns:oor="http://openoffice.org/2001/registry"><item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="MacroSecurityLevel" oor:op="fuse"><value>3</value></prop></item><item oor:path="/org.openoffice.Office.Common/Load"><prop oor:name="UpdateDocMode" oor:op="fuse"><value>0</value></prop></item><item oor:path="/org.openoffice.Office.Calc/Content/Update"><prop oor:name="Link" oor:op="fuse"><value>0</value></prop></item></oor:items>`);
+      await writeFile(path.join(profile,'user/registrymodifications.xcu'),`<?xml version="1.0"?><oor:items xmlns:oor="http://openoffice.org/2001/registry"><item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="MacroSecurityLevel" oor:op="fuse"><value>3</value></prop></item><item oor:path="/org.openoffice.Office.Common/Load"><prop oor:name="UpdateDocMode" oor:op="fuse"><value>0</value></prop></item><item oor:path="/org.openoffice.Office.Calc/Content/Update"><prop oor:name="Link" oor:op="fuse"><value>0</value></prop></item><item oor:path="/org.openoffice.Setup/Office"><prop oor:name="FirstStartWizardCompleted" oor:op="fuse"><value>true</value></prop></item></oor:items>`);
       // The native .com launcher needs valid inherited output handles on Windows.
       // Keep diagnostics inside this operation's private directory, then remove
       // them with the source/profile. Never return converter output to callers.
       const log=await open(path.join(directory,'converter.log'),'wx',0o600);
       try{await new Promise<void>((resolve,reject)=>{
-        const child=spawn(runtime.host_path,[String(process.pid),runtime.office_path,pathToFileURL(profile).href,output,input,directory],{windowsHide:true,stdio:['ignore',log.fd,log.fd]});
-        let settled=false;const finish=(e?:unknown)=>{if(settled)return;settled=true;clearTimeout(timer);signal.removeEventListener('abort',abort);e?reject(e):resolve();};
-        const abort=()=>{child.kill('SIGKILL');};const timer=setTimeout(abort,50000);
+        const child=spawn(runtime.host_path,[String(process.pid),runtime.office_path,pathToFileURL(profile).href,output,input,directory],{windowsHide:true,detached:process.platform==='linux',stdio:['ignore',log.fd,log.fd]});
+        let settled=false,hardStop:ReturnType<typeof setTimeout>|undefined;const finish=(e?:unknown)=>{if(settled)return;settled=true;clearTimeout(timer);if(hardStop)clearTimeout(hardStop);signal.removeEventListener('abort',abort);e?reject(e):resolve();};
+        const abort=()=>{child.kill(process.platform==='linux'?'SIGTERM':'SIGKILL');if(process.platform==='linux'&&!hardStop)hardStop=setTimeout(()=>{try{if(child.pid)process.kill(-child.pid,'SIGKILL');}catch{}},2000);};const timer=setTimeout(abort,50000);
         child.once('error',finish);child.once('close',code=>finish(signal.aborted?signal.reason:code===0?undefined:new Problem(422,'DOCUMENT_PREVIEW_CONVERSION_FAILED','The Office document could not be converted. Download the original or try an unencrypted copy.',{native_exit_code:code})));
         signal.addEventListener('abort',abort,{once:true});if(signal.aborted)abort();
       });}finally{await log.close();}

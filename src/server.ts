@@ -52,6 +52,9 @@ import { registerCreativeFeedback } from "./creative-feedback.js";
 import { registerGeoObservations } from "./geo-observations.js";
 import { registerTasks } from "./tasks.js";
 import { registerBusinessQuality } from "./business-quality.js";
+import {registerTaskWorkspace} from "./task-workspace.js";
+import {registerRoleAcceptance} from "./role-acceptance.js";
+import {registerOperationalReadiness} from "./operational-readiness.js";
 import { registerDeliveryPackages } from "./delivery-package.js";
 import { registerScopeExports } from "./scope-export.js";
 import { registerDeliveryRevisions } from "./delivery-revisions.js";
@@ -491,6 +494,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerTasks(app, db, catalog);
   registerMediaEffects(app, db, catalog, storage);
   registerBusinessQuality(app, db);
+  registerTaskWorkspace(app, db, storage);
   registerDeliveryPackages(app, db, storage);
   registerScopeExports(app, db, storage);
   registerDeliveryRevisions(app, db, catalog, storage);
@@ -540,6 +544,8 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerPublicationAdmin(app, db, storage);
   registerNativeRecovery(app, db);
   registerCapabilityReleases(app, db, catalog);
+  registerRoleAcceptance(app,db);
+  registerOperationalReadiness(app,db,catalog);
   registerAdminVip(app, db);
   registerAdminVipCredit(app, db);
   registerAdminOperations(app, db);

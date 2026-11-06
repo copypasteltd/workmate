@@ -1,3 +1,40 @@
+<!-- integrated-round-195 -->
+
+## 195 · 0.5.2 · 后台与运行内核 / Backend and runtime
+
+Authorized task workspaces, actual readiness, append-only role evidence, Linux Office and private attachment delegation.
+
+[Round delivery / 本輪交付](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-195/README.md) · [Download / 下載](https://agent.copypaste.hk/downloads)
+
+```mermaid
+flowchart LR
+ A[Visit / 訪問] --> B[Email sign-in / 郵箱登入]
+ B --> C[Workspace / 企業與專案]
+ C --> D[Role, files, budget / 角色、檔案、預算]
+ D --> E{Client / 客戶端}
+ E -->|Web or Extension| F[Cloud Codex / 雲端]
+ E -->|Desktop native permission| G[Local Codex / 本機]
+ F --> H[Results, revisions, usage / 成果、修改、費用]
+ G --> H
+```
+
+`GET .../tasks/:task/workspace` · `GET .../workspace/preview?asset_version_id=...` · `GET /v1/admin/operational-readiness` · `GET/POST /v1/admin/role-acceptance` · `POST /v1/admin/role-acceptance/revoke`. Schema163 is additive; owner migrations and non-root runtime remain separate.
+
+<!-- usage-195 -->
+
+Using this release:
+
+1. Configure each model with its own API URL, key, upstream model name and rates. Readiness exposes state without disclosing values.
+2. Complete resumable uploads and pin their versions. Conversation delegation validates private ownership, project, version and budget; message/task/reservation commit atomically.
+3. Authorized task workspaces expose results, up to200 deliverables, preview actions and actual usage. Original downloads and paged Office previews use separate authorized endpoints.
+4. Human role reviews preserve task, template, skill and deliverable snapshots. Additive schema163 retains existing billing and audit history.
+
+<!-- /usage-195 -->
+
+本輪實際測試與旅程見報告；保留歷史失敗，不以代碼量替代全部專業/生產驗收。影片/語音/Google/Meta真實配置、至少12角色專業驗收及完整兼容/運營矩陣仍開放。測試郵箱及未簽名安裝按已確認範圍保留。
+
+Selected regression and real journeys are in the report. Historical failures remain. Real video/audio/Google/Meta configuration, at least12 professional role evaluations and the full compatibility/operations matrix remain open. The requested test mailbox and unsigned manual installation remain.
+
 <!-- product-downloads-193 -->
 
 ## Public product downloads · 193

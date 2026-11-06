@@ -14,13 +14,12 @@ const source=`https://download.documentfoundation.org/libreoffice/stable/${versi
 const pinned='ff4b911403b67ee9e6249f820f9782c44bb32c94fdaa45b0da53a8e419e5307a';
 const sha=body=>createHash('sha256').update(body).digest('hex');
 await mkdir(directory,{recursive:true});
-const html=await (await fetch(source+'.mirrorlist',{signal:AbortSignal.timeout(30000)})).text();
-const match=html.match(/SHA-?256(?:\s|<[^>]+>|:)*([a-f0-9]{64})/i)??html.match(/\b([a-f0-9]{64})\b/i);
-if(!match)throw new Error('The official download page did not provide its SHA-256 checksum');
-const expected=match[1].toLowerCase(),msi=path.join(directory,'LibreOffice_'+version+'.msi');
-if(expected!==pinned)throw new Error('The official release checksum changed; review a new pinned Office runtime before installing it');
+const expected=pinned,msi=path.join(directory,'LibreOffice_'+version+'.msi');
 let valid=false;try{valid=sha(await readFile(msi))===expected;}catch{}
 if(!valid){
+  const html=await (await fetch(source+'.mirrorlist',{signal:AbortSignal.timeout(30000)})).text();
+  const match=html.match(/SHA-?256(?:\s|<[^>]+>|:)*([a-f0-9]{64})/i)??html.match(/\b([a-f0-9]{64})\b/i);
+  if(!match||match[1].toLowerCase()!==pinned)throw new Error('Review the official checksum before obtaining a new pinned Office runtime');
   const response=await fetch(source,{signal:AbortSignal.timeout(300000)});
   if(!response.ok||!response.body)throw new Error('Official Office runtime download failed');
   let total=0;const digest=createHash('sha256'),partial=msi+'.partial';
@@ -29,7 +28,7 @@ if(!valid){
   const {rename}=await import('node:fs/promises');await rename(partial,msi);
 }
 await mkdir(office,{recursive:true});
-const candidates=[path.join(office,'program/soffice.com'),path.join(office,'LibreOffice/program/soffice.com')];
+const candidates=[path.join(office,'program/soffice.bin'),path.join(office,'LibreOffice/program/soffice.bin')];
 let officePath;for(const p of candidates){try{await access(p);officePath=p;break;}catch{}}
 if(!officePath){
   const log=path.join(directory,'extract-'+Date.now()+'.log');
