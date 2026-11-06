@@ -1,3 +1,31 @@
+<!-- integrated-round-198 -->
+
+## 198 · 0.5.2 · 就绪与配置复核
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-198/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 管理员通过邮箱验证码和TOTP登录，管理企业、用户、额度、VIP、权限、模型、内容、审批和审计。最高管理员按既有策略直接执行并保留审计，其他角色按策略审批。
+2. 每个模型分别编辑API地址、API key、上游别名及费率，支持原有编辑、验证、删除和有权限的列表批量操作；本轮不改写这些业务。
+3. 服务就绪页如实区分真实接通、测试邮箱和待配置服务。本轮新登录检查Office就绪、保留的角色验收记录及当前部署兼容；版本保持0.5.2，没有把未变更的后台称为新增功能版本。
+4. 测试收件箱按要求保留；真实SMTP、视频／语音及Google／Meta等未配置项仍开放。当前截图和GIF直接来自上线后的真实后台，不把4／13服务就绪写成全体系已验收。
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[All tasks / 查找工作]
+  C --> D[Verify current authority / 當前授權]
+  D --> E[Original session and results / 原會話與成果]
+  E --> F[Return with context / 保留上下文返回]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/198-v4-service-readiness.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v4-service-review.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v4-service-review.mp4)
+
+下方保留早期版本與完整安裝說明。本輪交付不代表全部原始需求已驗收。
+
 <!-- integrated-round-197 -->
 
 ## 197 · 0.5.2 · 管理与连接反馈

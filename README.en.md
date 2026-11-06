@@ -1,3 +1,31 @@
+<!-- integrated-round-198 -->
+
+## 198 · 0.5.2 · Readiness and configuration review
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-198/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Admins sign in with email verification and TOTP to manage organizations, users, funds, VIP, permissions, models, content, approvals and audit. Highest admins execute under policy with audit; other roles retain their approval policies.
+2. Each model independently edits its API URL, API key, upstream alias and rates, with existing edit/validate/delete and authorized list batch actions. This round preserves these businesses.
+3. Readiness distinguishes live services, the test mailbox and setup requirements. Fresh sign-in verifies Office readiness, retained role acceptance evidence and deployment compatibility. Version remains 0.5.2; no new Admin feature version is claimed.
+4. The requested protected test mailbox remains. Real SMTP, video/speech and Google/Meta setup stays open. Current screenshots/GIFs come from the deployed dashboard;4/13 ready services does not mean full-product acceptance.
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[All tasks / 查找工作]
+  C --> D[Verify current authority / 當前授權]
+  D --> E[Original session and results / 原會話與成果]
+  E --> F[Return with context / 保留上下文返回]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/198-v4-service-readiness.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v4-service-review.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v4-service-review.mp4)
+
+Earlier sections retain previous release/setup history. Current delivery does not close full original acceptance.
+
 <!-- integrated-round-197 -->
 
 ## 197 · 0.5.2 · Administration and connection feedback
