@@ -1,3 +1,31 @@
+<!-- integrated-round-197 -->
+
+## 197 · 0.5.6 · Browser side-panel workspace
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-197/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Unzip the download, load the directory in Chrome developer mode and click the toolbar action to open the real right Side Panel. It retains ChatGPT-style conversation, input and attachments.
+2. Complete PKCE through company Web, choose an organization/project and explicitly select/drop files or paste images. Only authorized materials upload; the agent executes in the company cloud.
+3. Reads recover within a bound; uncertain writes are not automatically replayed. Session withdrawal and account changes continue to isolate private attachments/results.
+4. Actual toolbar, native panel, PKCE, two private uploads and dock width pass. Delivery is an unpacked extension ZIP; Chrome Web Store publication is not claimed.
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[Role and permission / 角色與授權]
+  C --> D[Original task / 原工作]
+  D --> E[Review result and usage / 審閱與費用]
+  E --> F[Explicit next action / 明確下一步]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/197-v2-side-panel.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-197-v2-side-panel.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-197-v2-side-panel.mp4)
+
+Earlier sections are retained release history. Full external/professional/production acceptance remains open.
+
 <!-- integrated-round-196 -->
 
 ## 196 · 0.5.5 · Chrome native right Side Panel

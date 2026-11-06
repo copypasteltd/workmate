@@ -1,3 +1,31 @@
+<!-- integrated-round-197 -->
+
+## 197 · 0.5.6 · 右侧工作栏
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-197/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 从下载页解压 ZIP，在 Chrome 扩展开发者模式加载目录，点击工具栏图标打开真正的右侧 Side Panel。保留 ChatGPT 式对话、输入和附件结构。
+2. 通过公司 Web 完成 PKCE 授权，选择企业与项目，明确选择／拖入文件或粘贴图片。仅获准材料上传至云端，Agent 在公司云端运行。
+3. 连接读取有限恢复，写入结果未知不自动重发；撤销会话及账号切换继续隔离私人附件与结果。
+4. 本轮实际工具栏、原生右侧栏、PKCE、两份私人附件上传及宽度检查通过；当前交付为解压加载包，未声称已在 Chrome 商店上架。
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[Role and permission / 角色與授權]
+  C --> D[Original task / 原工作]
+  D --> E[Review result and usage / 審閱與費用]
+  E --> F[Explicit next action / 明確下一步]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/197-v2-side-panel.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-197-v2-side-panel.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-197-v2-side-panel.mp4)
+
+下方保留較早版本記錄。完整外部、專業與生產驗收仍開放。
+
 <!-- integrated-round-196 -->
 
 ## 196 · 0.5.5 · Chrome原生右侧栏
