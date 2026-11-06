@@ -1,3 +1,37 @@
+<!-- integrated-round-202 -->
+
+## 202 · 0.5.11 · Evidence review, delivery and safe request recovery
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-202/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Sign in→select workspace/project→Marketing insights→search/page history→set the question/periods→Preview report scope. Review current/comparison values, every independent scope, metric filters and missing reasons; expand evidence for original eight-decimal precision and sources.
+
+2. Download complete review HTML/CSV/JSON, including all scopes and fixed sources, without a model call. Explicitly confirm a maximum budget only when requesting a private AI narrative. Source/report histories both support search/pagination.
+
+3. Persist the exact body/key before a paid request. Unknown outcomes lock editing; reload/reopen allows explicit continuation of that original request, without automatically creating another key/charge. Sign-out clears state. Isolated committed-but-lost-response injection proves one private task/reservation and is labelled separately from production.
+
+4. Actual production13-scope review/evidence/three downloads pass. Isolated375/768/1024/1440 layouts and light/dark views have no horizontal overflow. PNG/GIF/MP4 below use real deployed services with explicitly controlled acceptance CSV, not actual ad-account performance.
+
+```mermaid
+flowchart LR
+ A[Sign in and project] --> B[Choose history and periods]
+ B --> C[All scopes and exact evidence]
+ C --> D[Free review downloads]
+ C --> E[Explicit budget]
+ E --> F[Persist original body and key]
+ F --> G[Create or explicitly resume same request]
+```
+
+Actual deployed services with controlled acceptance CSV / 正式服务与明确验收CSV
+
+![Actual interface / 实际页面](assets/screenshots/202-v7-marketing-review-live.png)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-202-v7-marketing-review-live.mp4)
+
+![Actual interaction / 实际交互](assets/screenshots/workmate-202-v7-marketing-review-live.gif)
+
+Earlier architecture, setup and complete use details remain below.
+
 <!-- integrated-round-201 -->
 
 ## 201 · 0.5.10 · Motion production and actual delivery

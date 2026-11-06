@@ -1,3 +1,37 @@
+<!-- integrated-round-202 -->
+
+## 202 · 0.5.11 · 营销证据复核、交付与请求恢复
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-202/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 登录→选择企业／项目→Marketing insights→搜索或分页选择历史来源→填写业务问题和期间→Preview report scope。复核区展示本期／比较期、全部独立口径、指标筛选与缺失原因，展开证据可看到原始八位精度及来源。
+
+2. 直接下载复核 HTML／CSV／JSON，文件包含全部口径和固定来源，无需调用模型。需要AI分析时再明确确认最高预算，结果为私人报告；付费不是预览操作的隐含后果。报告／来源历史都支持搜索分页。
+
+3. 发出付费请求前先持久化原请求和幂等键。结果不明时锁定编辑；刷新重开后明确继续同一请求，不能自动换键重复付费，退出清理。实际隔离环境已注入提交成功但响应丢失，确认仅一个私人任务／预留；该故障注入与线上真实业务分开记录。
+
+4. 正式站点实际13口径、精确证据和三种完整下载已核验；隔离页面在375／768／1024／1440宽度及明暗主题检查，无横向溢出。下方PNG／GIF／MP4来自正式服务，导入的数据明确为验收用CSV，并非实际广告账户成绩。
+
+```mermaid
+flowchart LR
+ A[Sign in and project] --> B[Choose history and periods]
+ B --> C[All scopes and exact evidence]
+ C --> D[Free review downloads]
+ C --> E[Explicit budget]
+ E --> F[Persist original body and key]
+ F --> G[Create or explicitly resume same request]
+```
+
+Actual deployed services with controlled acceptance CSV / 正式服务与明确验收CSV
+
+![Actual interface / 实际页面](assets/screenshots/202-v7-marketing-review-live.png)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-202-v7-marketing-review-live.mp4)
+
+![Actual interaction / 实际交互](assets/screenshots/workmate-202-v7-marketing-review-live.gif)
+
+以下保留完整架构、安装与使用细则。
+
 <!-- integrated-round-201 -->
 
 ## 201 · 0.5.10 · 影片製作與實際交付
