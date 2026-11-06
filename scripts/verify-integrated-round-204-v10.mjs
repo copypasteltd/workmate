@@ -1,0 +1,30 @@
+import {spawn,execFileSync} from 'node:child_process';import {readFile,writeFile,mkdir,open} from 'node:fs/promises';
+import {createHash} from 'node:crypto';import path from 'node:path';import assert from 'node:assert/strict';
+const root=path.resolve('../..'),out=path.resolve('.data/integrated-204-v10');await mkdir(out,{recursive:false});const sha=b=>createHash('sha256').update(b).digest('hex');
+const batch=JSON.parse(await readFile(path.join(root,'docs/quality/integrated-round-204/implementation-batch-v6.json'),'utf8'));
+for(const row of [...batch.production_source_files,...batch.migration_files])assert.equal(sha(await readFile(path.join(root,row.path))),row.sha256,row.path);
+const old=JSON.parse(await readFile('.data/integrated-204-v6/verification.json','utf8')),retained=[...old.retained_checks,...old.checks.filter(c=>c.component!=='platform')];assert.equal(retained.length,6);
+const earlier=JSON.parse(await readFile(path.join(root,'docs/quality/integrated-round-204/implementation-batch-v4.json'),'utf8'));
+for(const row of earlier.production_source_files.filter(r=>!r.path.startsWith('dev/copypaste-platform/')))assert.equal(sha(await readFile(path.join(root,row.path))),row.sha256,row.path);
+for(const c of retained){assert.equal(c.exit_code,0);assert.equal(sha(await readFile(c.log)),c.sha256);}
+const pin=JSON.parse(await readFile('../copypaste-desktop/contracts/local-codex-runtime.json','utf8')),native=path.resolve('../copypaste-desktop/.data/runtime/windows-x64/codex.exe');assert.equal(sha(await readFile(native)),pin.windows_x64_sha256);assert.equal(execFileSync(native,['--version'],{windowsHide:true,encoding:'utf8'}).trim().replace(/^codex-cli\s+/,''),pin.runtime_version);
+const report={stage:204,status:'running',state:'running',checks:[],retained_checks:retained,explicit_native_pin:{version:pin.runtime_version,sha256:pin.windows_x64_sha256},backend_groups:3,scope:'Complete final204-v6 product source, full related204 Backend cases in three independent isolated-database groups; files remain serial within each owned launcher. The Windows audio accounting fixture explicitly binds its native CODEX_VERSION; other fixtures retain their own cloud/native profiles. Native binary/hash remain explicit. Unchanged-source client build/type/Web70/Desktop320 and Delivery16 retain passed logs. All earlier whole failures remain failed. No customer timeout widening, removed assertions, network changes or full-product acceptance claim.'};
+const npm=path.join(path.dirname(process.execPath),'node_modules/npm/bin/npm-cli.js'),env={...process.env,PATH:path.dirname(process.execPath)+path.delimiter+(process.env.PATH??process.env.Path??''),COPYPASTE_LOCAL_CODEX_TEST_BIN:native,COPYPASTE_RUNTIME_STARTUP_TEST_BIN:native,COPYPASTE_RUNTIME_STARTUP_TEST_SHA256:pin.windows_x64_sha256,COPYPASTE_RUNTIME_STARTUP_TEST_VERSION:pin.runtime_version};
+delete env.CODEX_VERSION; // Each fixture explicitly selects its profile; .env/default cloud profile remains independent.
+async function run(phase,args){
+ const log='platform-'+phase+'.log',handle=await open(path.join(out,log),'wx');let writes=Promise.resolve();
+ const p=spawn(process.execPath,args,{cwd:path.resolve('../copypaste-platform'),env,windowsHide:true,stdio:['ignore','pipe','pipe']});for(const stream of[p.stdout,p.stderr])stream.on('data',b=>{writes=writes.then(()=>handle.write(b));});
+ const code=await new Promise(resolve=>{p.once('error',()=>resolve(1));p.once('close',c=>resolve(c??1));});await writes;await handle.close();const bytes=await readFile(path.join(out,log));
+ const row={component:'platform',phase,exit_code:code,log:'.data/integrated-204-v10/'+log,sha256:sha(bytes)};
+ if(phase.startsWith('test')){const text=bytes.toString();row.counts=Object.fromEntries(['tests','pass','fail','cancelled','skipped','todo'].map(k=>[k,Number([...text.matchAll(new RegExp('^# '+k+' (\\d+)','gm'))].at(-1)?.[1]??NaN)]));}
+ report.checks.push(row);await writeFile(path.join(out,'verification.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({phase,exit_code:code,counts:row.counts}));
+}
+await run('build',[npm,'run','build']);
+if(report.checks.every(c=>c.exit_code===0)){
+ const files=['runtime-tool-feedback-204-v1','runtime-feedback-native-204-v2','runtime-image-failure-189-v1','cloud-task-lease-204-v3','provider-request-control','paid-task-inputs','execution-capacity','task-pause-154-v3','schema-compatibility','audio-production','audio-authorization-upgrade-189-v2','audio-accounting-188-v2','generated-video-jobs-188-v1','cloud-workflows','analysis-role-tools','analysis-role-delivery','analysis-calculation','analysis-review-202-v3','desktop-executions-139-v3'].map(f=>'tests/'+f+'.test.ts');report.test_files=files;
+ report.test_file_sha256=await Promise.all(files.map(async file=>({path:file,sha256:sha(await readFile(path.resolve('../copypaste-platform',file)))})));
+ await Promise.all(['a','b','c'].map((name,group)=>run('test-'+name,['--env-file=.env','scripts/run-tests-owned.mjs',...files.filter((_,i)=>i%3===group)]))); 
+}
+const tests=report.checks.filter(c=>c.phase.startsWith('test'));report.qualified_backend_case_count=tests.reduce((n,c)=>n+(c.counts?.pass??0),0);report.backend_failed_cases=tests.reduce((n,c)=>n+(c.counts?.fail??0),0);
+const passed=report.checks.length===4&&report.checks.every(c=>c.exit_code===0)&&tests.length===3&&tests.every(c=>c.counts.tests===c.counts.pass&&['fail','cancelled','skipped','todo'].every(k=>c.counts[k]===0))&&report.qualified_backend_case_count===204;
+report.status=report.state=passed?'passed':'failures_for_integrated_debugging';report.finished_at=new Date().toISOString();await writeFile(path.join(out,'verification.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({status:report.status,backend_pass:report.qualified_backend_case_count,backend_failed:report.backend_failed_cases,receipt:path.join(out,'verification.json')}));if(!passed)process.exitCode=1;

@@ -1,3 +1,27 @@
+<!-- integrated-round-204 -->
+
+## 204 · 0.5.11 · Safe tool feedback and durable cloud ownership
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-204/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Complete842 production-source files within listed extensions,165 migrations, planned tests and operational scripts before unified validation. Preserve compilation/fault-scenario failures and collected corrections.
+
+2. Record real long-transaction lease/expiry/revocation checks, pinned native Codex feedback, controlled UI and actual deployed client observations separately. Version/file SHA, complete downloads and actual costs are independent evidence.
+
+3. Update only owned application paths and20401 downloads; copy two native runtime folders as real directories, retain backup/compatible fallback. Verify nine network files/live rules, credentials and DB/proxy processes; ordinary atomic eight-ref publication protects27 original user files.
+
+```mermaid
+flowchart LR
+ A[Whole implementation batch] --> B[Unified evidence and retained failures]
+ B --> C[App-only deploy and immutable downloads]
+ C --> D[Read-only network verification]
+ D --> E[Eight ordinary branch updates]
+```
+
+725 qualified related cases distinguish current tests from identical-source retention. One linked marketing sample delivered actual files. All four inner files passed full byte/SHA checks. Public installer transfers remain incomplete; the complete public-download gate has NOT passed. This release update and Git synchronization do not close that check. Original102 requirements/32 groups, professional19-role/50-Skill acceptance, external media/marketing/IdP setup, long-run/device/concurrency/DR qualification and blind WorkBuddy comparison remain explicit. Original generic failure/lease root causes, default public HTTP/2 and normal DNS-address failover remain unproven; QA alone selects another current public address without changing server networking; no full-product acceptance claim.
+
+Historical release notes and the complete setup/usage guide follow.
+
 <!-- integrated-round-203 -->
 
 ## 203 · 0.5.10 · Pinned specialist intake and reliable delivery

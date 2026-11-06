@@ -1,3 +1,27 @@
+<!-- integrated-round-204 -->
+
+## 204 · 0.5.11 · 安全工具反馈与云端执行时效
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-204/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 先完成842份选定扩展名的产品源码、165份迁移、计划用例和操作脚本，再统一构建与相关验证；编译／故障情境的原失败和集中修正保留。
+
+2. 真实长事务续租／过期／撤权、固定原生Codex反馈、受控界面与真实正式客户端观察分别记录。版本、文件SHA、完整下载和客户费用是独立证据。
+
+3. 仅更新应用及20401下载；复制两份原生运行时为真实目录，保留备份与兼容回退。核对9份网络文件、实时规则、凭证及DB／代理进程，普通原子推送8引用，保护27份原用户文件。
+
+```mermaid
+flowchart LR
+ A[Whole implementation batch] --> B[Unified evidence and retained failures]
+ B --> C[App-only deploy and immutable downloads]
+ C --> D[Read-only network verification]
+ D --> E[Eight ordinary branch updates]
+```
+
+725项相关通过证据区分本轮执行与原样源码沿用。一项关联原失败的营销样例已交付实际文件。四份内网文件完整字节／SHA通过。公网大安装包仅有部分传输证据，完整公网下载检查未通过；本次应用更新与Git同步不代表关闭该项。全部102条／32组、19角色／50Skills专业验收、外部媒体／营销／IdP配置、长稳／设备／并发／灾备及WorkBuddy盲测差距继续保留。原通用错误／租约历史根因、公网默认HTTP/2及正常DNS地址故障转移未因此证明；仅本机验证选用另一个当前公网地址，服务器网络保持不变；不声明完整产品验收通过。
+
+以下历史版本说明及完整安装／使用指南继续保留。
+
 <!-- integrated-round-203 -->
 
 ## 203 · 0.5.10 · 专业输入与可靠交付

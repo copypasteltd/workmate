@@ -1,0 +1,26 @@
+// Qualify the complete unchanged-source batch after the whole200-case run.
+// Rerun all12 accounting cases with the explicit Windows native version;
+// retain the other188 actual passes and every original failed whole result.
+import {spawn,execFileSync} from 'node:child_process';import {readFile,writeFile,mkdir,open} from 'node:fs/promises';
+import {createHash} from 'node:crypto';import path from 'node:path';import assert from 'node:assert/strict';
+const root=path.resolve('../..'),out=path.resolve('.data/integrated-204-v7');await mkdir(out,{recursive:false});const sha=b=>createHash('sha256').update(b).digest('hex');
+const previous=JSON.parse(await readFile('.data/integrated-204-v6/verification.json','utf8'));assert.equal(previous.status,'failures_for_integrated_debugging');
+const batch=JSON.parse(await readFile(path.join(root,'docs/quality/integrated-round-204/implementation-batch-v4.json'),'utf8'));
+for(const r of [...batch.production_source_files,...batch.migration_files])assert.equal(sha(await readFile(path.join(root,r.path))),r.sha256,r.path);
+const check=previous.checks.find(c=>c.component==='platform'&&c.phase==='test');assert.equal(check.exit_code,1);const original=await readFile(check.log);assert.equal(sha(original),check.sha256);
+const parse=bytes=>[...bytes.toString().matchAll(/^(ok|not ok) \d+ - ([^\r\n]+)$/gm)].map(m=>({name:m[2],passed:m[1]==='ok'}));
+const all=parse(original),titles=[...String(await readFile('../copypaste-platform/tests/audio-accounting-188-v1.test.ts')).matchAll(/^test\("([^"\r\n]+)"/gm)].map(m=>m[1]);
+assert.equal(all.length,200);assert.equal(new Set(all.map(c=>c.name)).size,200);assert.equal(titles.length,12);assert.equal(new Set(titles).size,12);
+const selected=new Set(titles),retained=all.filter(c=>!selected.has(c.name));assert.equal(retained.length,188);assert.ok(retained.every(c=>c.passed));assert.ok(all.filter(c=>!c.passed).every(c=>selected.has(c.name)));
+const retainedChecks=[...previous.retained_checks,...previous.checks.filter(c=>c!==check)];
+for(const c of retainedChecks){assert.equal(c.exit_code,0);assert.equal(sha(await readFile(c.log)),c.sha256);}
+const pin=JSON.parse(await readFile('../copypaste-desktop/contracts/local-codex-runtime.json','utf8')),native=path.resolve('../copypaste-desktop/.data/runtime/windows-x64/codex.exe');assert.equal(sha(await readFile(native)),pin.windows_x64_sha256);
+const actualVersion=execFileSync(native,['--version'],{windowsHide:true,encoding:'utf8'}).trim().split(/\s+/).at(-1);assert.equal(actualVersion,pin.runtime_version);
+const report={stage:204,status:'running',state:'running',checks:[],retained_checks:retainedChecks,retained_backend_cases:retained,retained_backend_log:{...check,whole_attempt_remains_failed:true},all_related_test_files:previous.test_files,current_test_files:['tests/audio-accounting-188-v1.test.ts'],explicit_native_pin:{version:pin.runtime_version,sha256:pin.windows_x64_sha256},scope:'Final qualification of unchanged whole204-v4 source: retain188 actual passed cases from the full200-case v6 attempt; rerun every12 accounting case with explicit Windows CODEX_VERSION matching the already SHA-pinned executable. All original failed whole results remain failed. Client builds/types/Web70/Desktop320 and unchanged Delivery16 retain exact passed logs. Not full historical/professional/production acceptance.'};
+const env={...process.env,PATH:path.dirname(process.execPath)+path.delimiter+(process.env.PATH??process.env.Path??''),CODEX_VERSION:pin.runtime_version,COPYPASTE_LOCAL_CODEX_TEST_BIN:native,COPYPASTE_RUNTIME_STARTUP_TEST_BIN:native,COPYPASTE_RUNTIME_STARTUP_TEST_SHA256:pin.windows_x64_sha256,COPYPASTE_RUNTIME_STARTUP_TEST_VERSION:pin.runtime_version};
+const handle=await open(path.join(out,'platform-accounting-test.log'),'wx');let writes=Promise.resolve();
+const child=spawn(process.execPath,['--env-file=.env','scripts/run-tests-owned.mjs',...report.current_test_files],{cwd:path.resolve('../copypaste-platform'),env,windowsHide:true,stdio:['ignore','pipe','pipe']});for(const stream of[child.stdout,child.stderr])stream.on('data',b=>{writes=writes.then(()=>handle.write(b));});
+const code=await new Promise(resolve=>{child.once('error',()=>resolve(1));child.once('close',c=>resolve(c??1));});await writes;await handle.close();const bytes=await readFile(path.join(out,'platform-accounting-test.log')),cases=parse(bytes);
+report.checks.push({component:'platform',phase:'test',exit_code:code,log:'.data/integrated-204-v7/platform-accounting-test.log',sha256:sha(bytes)});report.current_backend_cases=cases;
+const complete=code===0&&cases.length===12&&cases.every(c=>c.passed)&&cases.every(c=>selected.has(c.name))&&new Set(cases.map(c=>c.name)).size===12&&/^# fail 0$/m.test(bytes.toString())&&/^# skipped 0$/m.test(bytes.toString())&&/^# cancelled 0$/m.test(bytes.toString());
+report.qualified_backend_case_count=complete?retained.length+cases.length:retained.length;report.status=report.state=complete?'passed':'failures_for_integrated_debugging';report.finished_at=new Date().toISOString();await writeFile(path.join(out,'verification.json'),JSON.stringify(report,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({status:report.status,qualified_backend_cases:report.qualified_backend_case_count,receipt:path.join(out,'verification.json')}));if(!complete)process.exitCode=1;
