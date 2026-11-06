@@ -1,3 +1,31 @@
+<!-- integrated-round-205 -->
+
+## 205 · 0.5.2 · 逐项交付与精确修正
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-205/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 按模型配置独立的OpenAI兼容接口地址及API Key，管理用户／企业／消耗／额度与VIP、内容和权限、创建／删除及列表批量操作。最高管理员直接执行，其他角色按策略审批，全程保留审计。
+
+2. 本轮管理端业务与界面源码未改，沿用原样22项相关证据及198实际PNG／GIF／MP4，不冒充本轮重新全站验收。新schema166维持当前任务和租户授权，没有增加管理绕过。
+
+```mermaid
+flowchart LR
+ A[Administrator login] --> B[Current role and policy]
+ B --> C[Direct highest admin or approval]
+ C --> D[User content and cost control]
+ D --> E[Audit]
+```
+
+790项相关通过证据，其中本轮执行675项，其余为原样Admin／Extension沿用。四份公网文件在明确记录的QA路径通过完整字节／SHA；默认直接出口与正常DNS故障转移另行验收。保留全部102条／32组、19角色／50Skills专业签收、真实外部媒体／营销／IdP、设备／并发／长稳／灾备矩阵及WorkBuddy同题盲测。服务器网络只读。本轮精确调用规则取代下方历史版本中仅按工具名称解除失败的说明。
+
+![原样保留198实际操作录影；本轮界面源码未改 · Retained198 actual interaction, unchanged UI](assets/screenshots/198-v4-service-readiness.png)
+
+![原样保留198实际操作录影；本轮界面源码未改 · Retained198 actual interaction, unchanged UI](assets/screenshots/workmate-198-v4-service-review.gif)
+
+[Recorded interaction / 实际录影](assets/screenshots/workmate-198-v4-service-review.mp4)
+
+以下保留完整安装／使用指南及明确的历史版本记录。
+
 <!-- integrated-round-204 -->
 
 ## 204 · 0.5.2 · 安全工具反馈与云端执行时效
