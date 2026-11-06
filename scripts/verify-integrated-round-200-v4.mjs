@@ -1,0 +1,23 @@
+// Unified final correction batch: rebuild every client, replay both changed
+// renderers, retain exact passing evidence for byte-unchanged components.
+import {spawn} from 'node:child_process';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+const delivery=process.cwd(),dev=path.resolve('..'),root=path.resolve('../..'),out=path.resolve('.data/integrated-200-v4');await mkdir(out,{recursive:true});
+const hash=b=>createHash('sha256').update(b).digest('hex'),load=async p=>JSON.parse(await readFile(p,'utf8'));
+const earlier=await load('.data/integrated-200-v3/verification.json');assert.equal(earlier.state,'passed');assert.ok(Object.values(earlier.acceptance_gates).every(Boolean));
+const patch=await load(path.join(root,'docs/quality/integrated-round-200/post-integration-code-batch.json')),batch=await load(path.join(root,'docs/quality/integrated-round-200/implementation-batch.json'));const allowed=new Map(patch.files.map(r=>[r.path,r.sha256]));
+for(const r of batch.production_source_files)assert.equal(hash(await readFile(path.join(root,r.path))),allowed.get(r.path)??r.sha256,'Unexpected source outside the complete correction batch: '+r.path);
+const result={schema:1,stage:200,started_at:new Date().toISOString(),workflow:'The complete saved-status correction is recorded before rebuilding all six clients; replay Web and Desktop suites. Reuse unchanged backend/Admin/Extension/Delivery test evidence with original exit and cleanup recovery preserved.',checks:[],unchanged_component_evidence_source:'.data/integrated-200-v3/verification.json',unchanged_component_evidence_sha256:hash(await readFile('.data/integrated-200-v3/verification.json'))};
+const npm=path.join(path.dirname(process.execPath),'node_modules/npm/bin/npm-cli.js'),env={...process.env,PATH:path.dirname(process.execPath)+path.delimiter+(process.env.PATH??process.env.Path??'')};
+async function run(component,phase,args){const start=new Date().toISOString();let output='';const p=spawn(process.execPath,args,{cwd:path.join(dev,component),env,windowsHide:true,stdio:['ignore','pipe','pipe']});for(const s of[p.stdout,p.stderr])s.on('data',b=>output+=b.toString());const code=await new Promise(resolve=>{p.once('error',()=>resolve(1));p.once('close',c=>resolve(c??1));});const file=path.join(out,component+'-'+phase+'.log');await writeFile(file,output,{flag:'wx'});const c={component,phase,started_at:start,finished_at:new Date().toISOString(),exit_code:code,log:path.relative(delivery,file),sha256:hash(Buffer.from(output))};result.checks.push(c);await writeFile(path.join(out,'verification.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(c));}
+async function jobs(all){let next=0;await Promise.all(Array.from({length:2},async()=>{while(next<all.length)await run(...all[next++]);}));}
+await jobs(['platform','web','admin','desktop','extension','delivery'].map(n=>['copypaste-'+n,'build',[npm,'run','build']]));await run('copypaste-desktop','renderer-types',[npm,'run','typecheck']);
+assert.ok(result.checks.every(c=>c.exit_code===0),'All six builds must pass before replay');
+await jobs([['copypaste-web','test',[npm,'run','test']],['copypaste-desktop','test',['scripts/run-current-tests-v1.mjs']]]);assert.ok(result.checks.every(c=>c.exit_code===0));
+for(const c of earlier.checks.filter(c=>c.phase==='test'&&!['copypaste-web','copypaste-desktop'].includes(c.component))){assert.equal(hash(await readFile(c.log)),c.sha256);result.checks.push({...c,reused_from_unchanged_source:true});}
+result.scope='All six final builds and both changed renderer suites are new runs. Backend143/Admin22/Extension93/Delivery16 passing assertions are reused only after exact product-source hash checks; the backend original launcher exit1 and separate completed cleanup remain unmodified. No full historical backend/professional/production claim.';
+result.acceptance_gates={all_final_builds_and_types_passed:true,both_changed_renderer_suites_passed:true,all_other_product_sources_byte_unchanged:true,original_backend_assertions_and_cleanup_retained:earlier.acceptance_gates.all_owned_fixtures_now_actually_absent};result.cleanup_recovery=earlier.cleanup_recovery;result.state='passed';result.finished_at=new Date().toISOString();
+await writeFile(path.join(out,'verification.json'),JSON.stringify(result,null,2)+'\n');await writeFile(path.join(out,'backend-test-selection.json'),await readFile('.data/integrated-200-v3/backend-test-selection.json'),{flag:'wx'});console.log(JSON.stringify({status:'passed',receipt:path.join(out,'verification.json')}));

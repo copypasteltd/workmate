@@ -1,3 +1,31 @@
+<!-- integrated-round-200 -->
+
+## 200 · 0.5.7 · Complete-round construction, deployment and evidence
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-200/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Complete the whole independently implementable code batch before unified builds/types/tests/actual journeys;631 relevant cases pass. Initial45 database-recovery failures, two validation-code expectations and an ambiguous same-value UI selector are corrected together in new drivers; original attempts remain.
+
+2. Isolated simulated campaign functionality is distinct from actual deployed Web/final Desktop0.7.13 fresh authorization/cross-client versions/ZIP. Native Codex bytes/permissions stay; shared design does not replace the local agent.
+
+3. Activate200 only after candidate readiness/zero active tasks. Schema163, credentials and DB/proxy processes stay, with200-v1/199 rollback and old downloads retained. Three packages/checksums pass complete inner HTTP/SHA; current public event result ispartial, and all four complete public byte/hash checks pass=True. Original click-event timeouts stay distinct from full-file fetch verification.
+
+4. Twelve bilingual READMEs, actual PNG/GIF/MP4, all102 requirements/32 groups and ordinary eight-ref synchronization bind the delivery. Original-TLS SSH egress does not establish direct developer connectivity; external/professional/production gaps stay.
+
+```mermaid
+flowchart LR
+ A[Complete round code batch / 完成整批代碼] --> B[Build all clients / 全端構建]
+ B --> C[Unified tests and real journeys / 統一測試與實際旅程]
+ C --> D[Retain failures and batch corrections / 保留失敗並整批修正]
+ D --> B
+ C --> E[Candidate and zero active tasks / 候選與活動任務核對]
+ E --> F[Deploy and immutable downloads / 上線與不可變下載]
+ F --> G[Qualify actual bytes and public limits / 驗收實際字節與公網邊界]
+ G --> H[Bilingual docs and eight refs / 雙語文檔與八引用同步]
+```
+
+Earlier release/setup instructions remain below; full original acceptance stays open.
+
 <!-- integrated-round-199 -->
 
 ## 199 · 0.5.6 · Direct editing and source-to-delivery continuity

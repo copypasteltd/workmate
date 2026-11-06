@@ -1,3 +1,31 @@
+<!-- integrated-round-200 -->
+
+## 200 · 0.5.7 · 完整輪次構建、上線與證據
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-200/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 先完成本輪全部可自主處理代碼，再六端統一構建／類型／測試／實際聯調；631項相關回歸通過。首次45個資料庫恢復失敗、兩處狀態碼預期及UI同值選擇器已以新版本驅動整批修正／復驗，原失敗保留。
+
+2. 隔離模擬營銷功能旅程、真實上線Web及最終Desktop0.7.13新授權／跨端版本／ZIP交付分別記錄；原本機Codex字節與原生權限保持，不以設計工程取代本機Agent。
+
+3. 200候選就緒／活動客戶任務0後切換，schema163／原憑證／DB及代理進程不變，保留200-v1／199回退與舊下載。三個包／校驗文件全部內網完整HTTP和SHA通過；本輪公開事件結果為partial，三包／校驗文件公網完整字節通過為True；原點擊下載事件超時仍保留，文件字節不等於完整瀏覽器體驗。
+
+4. 12份雙語README、真實PNG／GIF／MP4、完整102條／32組原始追溯與正常八引用同步。原域名HTTPS驗收使用獨立SSH出口，不等於開發機直連恢復；外部／專業／生產敞口不自動關閉。
+
+```mermaid
+flowchart LR
+ A[Complete round code batch / 完成整批代碼] --> B[Build all clients / 全端構建]
+ B --> C[Unified tests and real journeys / 統一測試與實際旅程]
+ C --> D[Retain failures and batch corrections / 保留失敗並整批修正]
+ D --> B
+ C --> E[Candidate and zero active tasks / 候選與活動任務核對]
+ E --> F[Deploy and immutable downloads / 上線與不可變下載]
+ F --> G[Qualify actual bytes and public limits / 驗收實際字節與公網邊界]
+ G --> H[Bilingual docs and eight refs / 雙語文檔與八引用同步]
+```
+
+下方保留此前版本和完整安裝／使用說明，全部原始驗收範圍仍開放。
+
 <!-- integrated-round-199 -->
 
 ## 199 · 0.5.6 · 直接編輯與來源交付接續
