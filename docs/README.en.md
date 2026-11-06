@@ -1,3 +1,9 @@
+<!-- integrated-round-200 -->
+
+Round200: six editable layouts, authorized image/evidence resources, new pages and atomic whole-document adaptation;631 relevant checks, actual deployed Web/final Desktop and immutable downloads. All original acceptance remains.
+
+[交付 / Delivery](quality/integrated-round-200/README.md) · [102條 / Scope](quality/integrated-round-200/requirements-102.md) · [更新 / Changes](changes/200-design-production.md)
+
 <!-- integrated-round-199 -->
 
 Round199 adds direct design editing, authorized draft previews/recovery and real-source Web/Desktop continuation;568 selected checks pass. Full original acceptance stays open.

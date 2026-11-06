@@ -1,3 +1,9 @@
+<!-- integrated-round-200 -->
+
+200輪：六款可編輯版面、獲准圖片／證據素材、新頁及全部頁面原子適配；631項相關回歸、真實上線Web／最終Desktop及不可變下載。全部原始驗收範圍保留。
+
+[交付 / Delivery](quality/integrated-round-200/README.md) · [102條 / Scope](quality/integrated-round-200/requirements-102.md) · [更新 / Changes](changes/200-design-production.md)
+
 <!-- integrated-round-199 -->
 
 199輪交付直接設計畫布、授權草稿預覽／恢復及真實來源跨端接續；568項相關檢查通過，保留全部原始驗收範圍。
