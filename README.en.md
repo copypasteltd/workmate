@@ -1,3 +1,36 @@
+<!-- integrated-round-203 -->
+
+## 203 · 0.7.16 · Pinned specialist intake and reliable delivery
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-203/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Install Setup or run Portable0.7.16 from Downloads and complete fresh browser S256 authorization. Pinned Codex0.163.0-alpha.11 runs on the customer computer, with explicitly granted/revocable full local permission; all AI uses company services. Keep the frameless window and no native Electron menu.
+
+2. Open Marketing insights in the current project. The wide review rearranges controls/evidence by container width and preserves Comparison labels. Original native save dialogs export HTML/CSV/JSON with current-session, size/SHA checks and atomic writes; all six Web/native exports are byte-identical.
+
+3. Selectively update review components and optional source validation only. Preserve native login/auth/API/crypto/local-Agent implementation. All current318 cases pass serially; the original parallel timeout remains failed. This is not a full new local-operation, OS installation/upgrade or machine matrix.
+
+4. 203-v4 below records the actual final package/deployed service at a wider window. Original TLS HTTP/1.1 is selected only in QA processes, without server protocol changes. Trusted Windows signing is excluded by user instruction. Downloads use immutable20301 paths.
+
+```mermaid
+flowchart LR
+ A[Download and browser S256] --> B[Frameless local Codex]
+ B --> C[Explicit revocable local permission]
+ B --> D[Current project evidence]
+ D --> E[Wide responsive review]
+ E --> F[Original native save and exact hash]
+```
+
+Open delivery: marketing-analyst returned no chart files; technical succeeded does not qualify it. The exact generic tool failure remains unverified. Default public HTTP/2 stalls and one worker-lease investigation also stay open. See the evidence report; no full-product acceptance is claimed.
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/203-v4-marketing-review-live.png)
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/workmate-203-v4-marketing-review-live.gif)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-203-v4-marketing-review-live.mp4)
+
+The complete architecture, setup and usage guide follows.
+
 <!-- integrated-round-202 -->
 
 ## 202 · 0.7.15 · Evidence review, delivery and safe request recovery

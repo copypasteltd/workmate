@@ -310,6 +310,7 @@ export function MarketingReports({
       )}
       {evidence && (
         <Modal
+          size="wide"
           title={t("原始證據引用", "Evidence reference")}
           onClose={() => setEvidence(null)}
         >
@@ -444,6 +445,7 @@ function CreateReport({
   };
   return (
     <Modal
+          size="wide"
       title={t("建立分析報告", "Create analysis report")}
       onClose={() => {
         if (!saving.current) onClose();

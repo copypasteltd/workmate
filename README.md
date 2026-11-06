@@ -1,3 +1,36 @@
+<!-- integrated-round-203 -->
+
+## 203 · 0.7.16 · 专业输入与可靠交付
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-203/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 从下载页安装Setup或启动Portable0.7.16，在浏览器完成新S256授权。Codex0.163.0-alpha.11固定在客户本机运行，完整本机权限须明确授予且可撤销；全部AI仍经公司服务。应用保持无边框、无Electron原生菜单。
+
+2. 进入当前项目的Marketing insights，宽版复核区按自身宽度重排筛选器／证据，Comparison完整显示。使用原生保存对话框下载HTML／CSV／JSON，保留当前会话与大小／SHA核查和原子写入；线上与Web六次导出同字节通过。
+
+3. 本轮只选择性同步复核组件和可选素材校验，没有覆盖原生登录、鉴权、API、加密或本机Agent实现。当前318项用例全部串行通过，原并行超时记录保留；不是新的完整本机操作、OS安装升级或机器矩阵验收。
+
+4. 下方203-v4是真实最终包／正式服务的较宽窗口及交互。原TLS HTTP/1.1只用于本次QA进程，不改服务器协议。Windows受信签名按用户要求排除；下载保持独立不可变20301路径。
+
+```mermaid
+flowchart LR
+ A[Download and browser S256] --> B[Frameless local Codex]
+ B --> C[Explicit revocable local permission]
+ B --> D[Current project evidence]
+ D --> E[Wide responsive review]
+ E --> F[Original native save and exact hash]
+```
+
+当前开放项：marketing-analyst未交付图表文件，技术状态succeeded不计为通过；通用工具错误的准确原因尚未验证。公网默认HTTP/2停滞及一次任务租约根因也保持开放。详细见证据报告，不声称完整产品验收通过。
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/203-v4-marketing-review-live.png)
+
+![Actual interface or interaction / 实际页面或交互](assets/screenshots/workmate-203-v4-marketing-review-live.gif)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-203-v4-marketing-review-live.mp4)
+
+以下保留完整架构、安装与使用细则。
+
 <!-- integrated-round-202 -->
 
 ## 202 · 0.7.15 · 营销证据复核、交付与请求恢复
