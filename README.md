@@ -1,3 +1,33 @@
+<!-- integrated-round-202 -->
+
+## 202 · 0.5.7 · 营销证据复核、交付与请求恢复
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-202/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 产品仍为0.5.7，沿用原已发布ZIP的完整字节；93项相关回归通过。下载页提供解压载入，未声称Chrome商店发布。
+
+2. 点击工具栏打开浏览器原生右SidePanel，使用ChatGPT式对话／附件结构；用户明确选择文件后才读取上传，Codex在云端运行，全部AI请求经公司服务。
+
+3. 下方198原生SidePanel／授权／附件PNG／GIF／MP4保留为历史实际证据。本轮新营销复核只在Web／Desktop交付，未用它替代插件全Chrome／大文件／Native Host矩阵。
+
+```mermaid
+flowchart LR
+ A[Toolbar action] --> B[Native right SidePanel]
+ B --> C[Explicit file choice]
+ C --> D[Authorized read and upload]
+ D --> E[Company cloud Codex]
+```
+
+Historical198 actual client / 历史198实际客户端
+
+![Actual interface / 实际页面](assets/screenshots/198-v1-side-panel.png)
+
+![Actual interaction / 实际交互](assets/screenshots/workmate-198-v1-side-panel.gif)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-198-v1-side-panel.mp4)
+
+以下保留完整架构、安装与使用细则。
+
 <!-- integrated-round-201 -->
 
 ## 201 · 0.5.7 · 影片製作與實際交付

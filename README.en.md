@@ -1,3 +1,33 @@
+<!-- integrated-round-202 -->
+
+## 202 · 0.5.7 · Evidence review, delivery and safe request recovery
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-202/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Product stays0.5.7 with the exact original released ZIP;93 related regressions pass. Downloads provide unpacked loading, without a Chrome Web Store publication claim.
+
+2. The toolbar action opens native right SidePanel with ChatGPT-style chat/attachments. Read/upload only explicitly selected files. Codex runs in the cloud and all AI uses company services.
+
+3. The198 native SidePanel/auth/attachment PNG/GIF/MP4 below remain historical actual evidence. New marketing review is delivered on Web/Desktop and does not replace full Chrome/large-file/Native Host qualification.
+
+```mermaid
+flowchart LR
+ A[Toolbar action] --> B[Native right SidePanel]
+ B --> C[Explicit file choice]
+ C --> D[Authorized read and upload]
+ D --> E[Company cloud Codex]
+```
+
+Historical198 actual client / 历史198实际客户端
+
+![Actual interface / 实际页面](assets/screenshots/198-v1-side-panel.png)
+
+![Actual interaction / 实际交互](assets/screenshots/workmate-198-v1-side-panel.gif)
+
+[Actual recording / 实际录影](assets/screenshots/workmate-198-v1-side-panel.mp4)
+
+Earlier architecture, setup and complete use details remain below.
+
 <!-- integrated-round-201 -->
 
 ## 201 · 0.5.7 · Motion production and actual delivery
