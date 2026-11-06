@@ -1,3 +1,4 @@
+import {clearMotionDrafts} from "./motion-draft-state";
 import { redactWorkspaceAttempts } from "./workspace-creation";
 import { saveScopeArchive } from "./scope-export-download";
 import { clientFetch, clientJson, connectionFailure } from "./client-failure";
@@ -22,7 +23,7 @@ export function endClientSession(broadcast = true) {
   ++sessionRevision;
   csrfToken = "";
   redactWorkspaceAttempts();
-  if (broadcast) { clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); clearDesignDrafts(); clearWorkspaceSaves(); }
+  if (broadcast) { clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); clearDesignDrafts(); clearMotionDrafts(); clearWorkspaceSaves(); }
   window.dispatchEvent(new Event("copypaste:session-ended"));
   if (broadcast)
     localStorage.setItem(

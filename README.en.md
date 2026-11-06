@@ -1,3 +1,36 @@
+<!-- integrated-round-201 -->
+
+## 201 · 0.7.14 · Motion production and actual delivery
+
+[Evidence and limits / 證據與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-201/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Download Setup/Portable and complete browser S256 authorization. The final package is frameless with no Electron menu. Codex runs locally; customers can explicitly grant/revoke full local permission. AI still uses company APIs.
+
+2. Continue the same project video in Design canvas: six bilingual starters, atomic scene/caption timing, real transitions, fixed shared sources, actual frame preview, undo/redo and scoped drafts. Company media rendering does not replace the local agent.
+
+3. The final actual0.7.14 package completes fresh authorization/no-menu/frameless checks and continues Web video v1 into v2 while retaining its original render. Main process/pinned Codex0.163.0-alpha.11 bytes match the previously qualified package. Full arbitrary-app/machine/install/update matrices remain open.
+
+4. Setup/Portable/checksums are linked at the download page and/releases/20101/; full inner/public original-TLS bytes and hashes are checked. Trusted code signing remains excluded by user instruction; full OS installation acceptance is not claimed.
+
+```mermaid
+flowchart LR
+ A[Download and S256 authorization] --> B[Frameless local app]
+ B --> C[Local Codex with explicit permissions]
+ C --> D[Company model API]
+ B --> E[Continue authorized shared video]
+ E --> F[Actual preview immutable save and MP4]
+```
+
+Actual final0.7.14 package / 最終實際0.7.14包
+
+![Actual interface / 實際頁面](assets/screenshots/201-v3-motion-production-live.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-201-v3-motion-production-live.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-201-v3-motion-production-live.mp4)
+
+Earlier installation, architecture and use details remain below.
+
 <!-- integrated-round-200 -->
 
 ## 200 · 0.7.13 · Local Codex and complete design production

@@ -1,3 +1,36 @@
+<!-- integrated-round-201 -->
+
+## 201 · 0.7.14 · 影片製作與實際交付
+
+[Evidence and limits / 證據與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-201/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 下載Setup或Portable，在系統瀏覽器完成S256授權。最終包保持無邊框、無Electron選單；Codex在本機執行，客戶可明確授予並撤銷完整本機權限，AI仍走公司API。
+
+2. 在設計畫布繼續同一項目影片：六種雙語版面、鏡頭／字幕時間調整、實際轉場、固定共享素材、真實畫面預覽、撤銷／重做與分區草稿。影片製作使用公司媒體服務，並未替代本機Agent。
+
+3. 最終0.7.14實際包的新授權／無邊框／無選單、Web影片版本1接續至版本2、原成片保留已驗證；主進程和固定Codex0.163.0-alpha.11字節與此前合格包相同。完整任意應用／機器／安裝升級矩陣仍開放。
+
+4. Setup／Portable和校驗文件已掛在下載頁及/releases/20101/，整文件內網／公網原TLS字節與SHA驗證。受信代碼簽名按使用者要求排除；不冒稱已做所有OS安裝驗收。
+
+```mermaid
+flowchart LR
+ A[Download and S256 authorization] --> B[Frameless local app]
+ B --> C[Local Codex with explicit permissions]
+ C --> D[Company model API]
+ B --> E[Continue authorized shared video]
+ E --> F[Actual preview immutable save and MP4]
+```
+
+Actual final0.7.14 package / 最終實際0.7.14包
+
+![Actual interface / 實際頁面](assets/screenshots/201-v3-motion-production-live.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-201-v3-motion-production-live.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-201-v3-motion-production-live.mp4)
+
+以下保留完整安裝、架構和使用細則。
+
 <!-- integrated-round-200 -->
 
 ## 200 · 0.7.13 · 本機Codex與完整設計製作
