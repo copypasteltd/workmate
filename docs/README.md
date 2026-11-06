@@ -1,3 +1,9 @@
+<!-- integrated-round-204 -->
+
+204轮：安全工具反馈、真实交付状态与独立云端续租；服务器网络只读，完整原始目标和验收边界继续保留。
+
+[交付 / Evidence](quality/integrated-round-204/README.md) · [全部范围 / Scope](quality/integrated-round-204/requirements-102.md)
+
 <!-- integrated-round-203 -->
 
 203轮：专业附件与范围草稿、持久化付费请求恢复、宽版实际原生复核、688项相关用例及服务器网络保持；全部原始验收和失败边界继续保留。

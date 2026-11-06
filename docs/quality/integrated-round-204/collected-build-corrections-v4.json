@@ -1,0 +1,112 @@
+{
+  "stage": 204,
+  "at": "2026-11-06T15:00:42.576266+00:00",
+  "failed_verifier_v4": {
+    "failure": "Verifier launched before async source inventory completed; no build/test/server change",
+    "retained_script": "dev/copypaste-delivery/scripts/verify-integrated-round-204-v4.mjs"
+  },
+  "failed_verifier_v5": {
+    "stage": 204,
+    "status": "failures_for_integrated_debugging",
+    "state": "failures_for_integrated_debugging",
+    "checks": [
+      {
+        "component": "platform",
+        "phase": "build",
+        "exit_code": 0,
+        "log": ".data/integrated-204-v5/platform-build.log",
+        "sha256": "580a0fba16a9222c3b60ade4909f53c3cf91a5c84f1d0c586f89c1782d726634"
+      },
+      {
+        "component": "platform",
+        "phase": "test",
+        "exit_code": 1,
+        "log": ".data/integrated-204-v5/platform-test.log",
+        "sha256": "fdff29c8a8ed654c5da2a925faa7fee625c556550d5dcdef0e1ced208491f658"
+      }
+    ],
+    "retained_checks": [
+      {
+        "component": "desktop",
+        "phase": "build",
+        "exit_code": 0,
+        "log": ".data/integrated-204-v2/desktop-build.log",
+        "sha256": "f30c0a278cdc0890e307f17b3df0cad25a52e3f1d71585efe012a31818a53f4f"
+      },
+      {
+        "component": "web",
+        "phase": "build",
+        "exit_code": 0,
+        "log": ".data/integrated-204-v2/web-build.log",
+        "sha256": "54dd3ae5fa1e4e06b5560775b4a5703cfb2ebc5301ee6759b1eaf15c6dc407c0"
+      },
+      {
+        "component": "desktop",
+        "phase": "types",
+        "exit_code": 0,
+        "log": ".data/integrated-204-v2/desktop-types.log",
+        "sha256": "1c221c018b547b3257647b1965a954e94116d0fa6b0e73c09ced858a8b432079"
+      },
+      {
+        "component": "web",
+        "phase": "test",
+        "exit_code": 0,
+        "log": ".data/integrated-204-v3/web-test.log",
+        "sha256": "ffe653f286533d38c331d20ce0de2ffe4e1b0975dccb41584e677e1d634f7981"
+      },
+      {
+        "component": "delivery",
+        "phase": "test",
+        "exit_code": 0,
+        "log": ".data/integrated-204-v3/delivery-test.log",
+        "sha256": "457b86bfe9563391defbd6e6845b520eb329159d58741634503053189b444d65"
+      },
+      {
+        "component": "desktop",
+        "phase": "test",
+        "exit_code": 0,
+        "log": ".data/integrated-204-v3/desktop-test.log",
+        "sha256": "aa67303ba3c5eecb166c9d86973d0e60b11570230995796a0e00e1e290a37267"
+      }
+    ],
+    "explicit_native_pin": {
+      "version": "0.163.0-alpha.11",
+      "sha256": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c"
+    },
+    "scope": "Full related Backend19 suites including all original181 passes/17 failures and two new real PostgreSQL race cases. Retain unchanged source-qualified Web70/Desktop320/Delivery16 and three client build/type checks. Admin/Extension remain separately source-qualified; not complete original102/professional/production acceptance.",
+    "test_files": [
+      "tests/runtime-tool-feedback-204-v1.test.ts",
+      "tests/runtime-feedback-native-204-v1.test.ts",
+      "tests/runtime-image-failure-189-v1.test.ts",
+      "tests/cloud-task-lease-204-v2.test.ts",
+      "tests/provider-request-control.test.ts",
+      "tests/paid-task-inputs.test.ts",
+      "tests/execution-capacity.test.ts",
+      "tests/task-pause-154-v3.test.ts",
+      "tests/schema-compatibility.test.ts",
+      "tests/audio-production.test.ts",
+      "tests/audio-authorization-upgrade-189-v2.test.ts",
+      "tests/audio-accounting-188-v1.test.ts",
+      "tests/generated-video-jobs-188-v1.test.ts",
+      "tests/cloud-workflows.test.ts",
+      "tests/analysis-role-tools.test.ts",
+      "tests/analysis-role-delivery.test.ts",
+      "tests/analysis-calculation.test.ts",
+      "tests/analysis-review-202-v3.test.ts",
+      "tests/desktop-executions-139-v3.test.ts"
+    ],
+    "finished_at": "2026-11-06T14:59:57.753Z"
+  },
+  "failed_unapplied_sql165": {
+    "path": "docs/quality/integrated-round-204/failed-sql165-v1.txt",
+    "sha256": "b8d108f9f38b772252f65b306916fab430227721a0409c54a1e747eddafb2949",
+    "completed_applications": 0
+  },
+  "corrections": [
+    "Parenthesize the SQL CASE expression embedded in the two original PL/pgSQL IF guards",
+    "Make status feedback readable as vertical blocks at narrow widths; retain prior automated pass and manual visual rejection separately",
+    "Record legible real UI capture intervals and assert four distinct interaction states",
+    "Correct new download stage204 and immutable public path20401 before deployment",
+    "Rebuild changed clients and create a new immutable packaging attempt rather than overwrite prior packages"
+  ]
+}

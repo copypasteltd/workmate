@@ -1,0 +1,22 @@
+{
+  "stage": 204,
+  "status": "retained_preflight_failures",
+  "recorded_at": "2026-11-06T16:30:11.223444+00:00",
+  "scope": "Operator-observed command failures before any business task, client session or model call; original executed scripts remain unchanged.",
+  "items": [
+    {
+      "script": "qualify-marketing-correction-204-v1.py",
+      "error": "AssertionError before role filtering; three retained successful roles were incorrectly included in the precondition.",
+      "business_posts": 0,
+      "paid_tasks_submitted": 0,
+      "correction": "v2 selects the single previously failed marketing role before applying the original guard; successful roles remain excluded."
+    },
+    {
+      "script": "qualify-live-marketing-review-204-v1.mjs",
+      "error": "ERR_UNKNOWN_FILE_EXTENSION for record-workmate-media.ts, before module evaluation.",
+      "browser_created": false,
+      "business_posts": 0,
+      "correction": "v2 runs with the existing package-defined node --import tsx loader; no application source changes."
+    }
+  ]
+}

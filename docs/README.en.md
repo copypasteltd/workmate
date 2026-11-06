@@ -1,3 +1,9 @@
+<!-- integrated-round-204 -->
+
+204: safe tool feedback, truthful delivery and independent fenced cloud leases. Server networking is read-only; evidence and complete original scope remain explicit.
+
+[交付 / Evidence](quality/integrated-round-204/README.md) · [全部范围 / Scope](quality/integrated-round-204/requirements-102.md)
+
 <!-- integrated-round-203 -->
 
 203: Pinned specialist attachments, scope-bound drafts and durable paid-request recovery, wide actual native review, source-qualified688 related cases and preserved server networking. All original acceptance and failed outcomes remain explicit.

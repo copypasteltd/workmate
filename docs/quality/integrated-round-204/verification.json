@@ -1,0 +1,1836 @@
+{
+  "stage": 204,
+  "status": "passed",
+  "state": "passed",
+  "checks": [
+    {
+      "component": "platform",
+      "phase": "test-b",
+      "exit_code": 0,
+      "file": "tests/cloud-workflows.test.ts",
+      "log": ".data/integrated-204-v11/platform-test-b.log",
+      "sha256": "8b757dd8342befabb5a37bc3556a737d7cf7744537c6dde78f500d9af3ab0a80",
+      "counts": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "cases": [
+        {
+          "name": "private cloud consultant validates, versions and requests; only customer-approved fixed steps execute and settle once",
+          "passed": true,
+          "file": "tests/cloud-workflows.test.ts",
+          "tap_header": "ok 1 - private cloud consultant validates, versions and requests; only customer-approved fixed steps execute and settle once"
+        },
+        {
+          "name": "cloud drafts retain immutable versions, reject stale edits and stay in their originating private conversation",
+          "passed": true,
+          "file": "tests/cloud-workflows.test.ts",
+          "tap_header": "ok 2 - cloud drafts retain immutable versions, reject stale edits and stay in their originating private conversation"
+        },
+        {
+          "name": "ask exposes workflow validation and current reads, without writers or fee approval",
+          "passed": true,
+          "file": "tests/cloud-workflows.test.ts",
+          "tap_header": "ok 3 - ask exposes workflow validation and current reads, without writers or fee approval"
+        },
+        {
+          "name": "plan exposes workflow validation and current reads, without writers or fee approval",
+          "passed": true,
+          "file": "tests/cloud-workflows.test.ts",
+          "tap_header": "ok 4 - plan exposes workflow validation and current reads, without writers or fee approval"
+        },
+        {
+          "name": "source withdrawal blocks pending approval and cancellation releases a queued child without another fee",
+          "passed": true,
+          "file": "tests/cloud-workflows.test.ts",
+          "tap_header": "ok 5 - source withdrawal blocks pending approval and cancellation releases a queued child without another fee"
+        },
+        {
+          "name": "customer cancellation releases a queued private child and never replays it",
+          "passed": true,
+          "file": "tests/cloud-workflows.test.ts",
+          "tap_header": "ok 6 - customer cancellation releases a queued private child and never replays it"
+        },
+        {
+          "name": "a reconciling child stops the sequence; fee uncertainty cannot authorize a replacement",
+          "passed": true,
+          "file": "tests/cloud-workflows.test.ts",
+          "tap_header": "ok 7 - a reconciling child stops the sequence; fee uncertainty cannot authorize a replacement"
+        },
+        {
+          "name": "the pinned native Codex process loads the workflow Skills and prepares a real fixed pending request",
+          "passed": true,
+          "file": "tests/cloud-workflows.test.ts",
+          "tap_header": "ok 8 - the pinned native Codex process loads the workflow Skills and prepares a real fixed pending request"
+        }
+      ]
+    },
+    {
+      "component": "platform",
+      "phase": "test-c",
+      "exit_code": 0,
+      "file": "tests/paid-task-inputs.test.ts",
+      "log": ".data/integrated-204-v11/platform-test-c.log",
+      "sha256": "b3eba1d784db359cfeb1bf143b2848d8dcaac7d4cac9d97de621ed4fcd15122b",
+      "counts": {
+        "tests": 17,
+        "pass": 17,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "cases": [
+        {
+          "name": "a paid model input gap waits on the original task, resumes the same thread and settles one cumulative charge",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 1 - a paid model input gap waits on the original task, resumes the same thread and settles one cumulative charge"
+        },
+        {
+          "name": "cancelling a paid input checkpoint settles its already measured work once",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 2 - cancelling a paid input checkpoint settles its already measured work once"
+        },
+        {
+          "name": "a failure before another provider dispatch retains the prior paid turn's cumulative usage",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 3 - a failure before another provider dispatch retains the prior paid turn's cumulative usage"
+        },
+        {
+          "name": "an accepted turn without complete usage never becomes an automatically resumable input checkpoint",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 4 - an accepted turn without complete usage never becomes an automatically resumable input checkpoint"
+        },
+        {
+          "name": "models cannot select inputs themselves or perform more tool writes after requesting human input",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 5 - models cannot select inputs themselves or perform more tool writes after requesting human input"
+        },
+        {
+          "name": "revoking an actually consumed source prevents paid continuation while preserving measured cancellation cost",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 6 - revoking an actually consumed source prevents paid continuation while preserving measured cancellation cost"
+        },
+        {
+          "name": "private and tenant boundaries still govern a paid input request and its immutable checkpoint facts",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 7 - private and tenant boundaries still govern a paid input request and its immutable checkpoint facts"
+        },
+        {
+          "name": "a paid continuation waits for the same capacity limits without consuming another attempt or reservation",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 8 - a paid continuation waits for the same capacity limits without consuming another attempt or reservation"
+        },
+        {
+          "name": "paid native checkpoints are bounded to eight rounds and retain one cumulative charge across them",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 9 - paid native checkpoints are bounded to eight rounds and retain one cumulative charge across them"
+        },
+        {
+          "name": "the database rejects an input checkpoint without a live lease even with the correct native scope",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 10 - the database rejects an input checkpoint without a live lease even with the correct native scope"
+        },
+        {
+          "name": "a completed output revoked during an input wait is not recreated from its old tool receipt",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 11 - a completed output revoked during an input wait is not recreated from its old tool receipt"
+        },
+        {
+          "name": "source packages reuse unchanged work but include a source edit made in the resumed turn",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 12 - source packages reuse unchanged work but include a source edit made in the resumed turn"
+        },
+        {
+          "name": "an invalid paid checkpoint retains reconciliation in Worker and queued-recovery events",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 13 - an invalid paid checkpoint retains reconciliation in Worker and queued-recovery events"
+        },
+        {
+          "name": "revoking an approved input cancels paid continuation before dispatch and preserves measured spend",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 14 - revoking an approved input cancels paid continuation before dispatch and preserves measured spend"
+        },
+        {
+          "name": "completed paid images are reused across an input gap without another provider call or duplicate charge",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 15 - completed paid images are reused across an input gap without another provider call or duplicate charge"
+        },
+        {
+          "name": "erasing a private paid input task removes checkpoint content and tool receipts while retaining its measured ledger",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 16 - erasing a private paid input task removes checkpoint content and tool receipts while retaining its measured ledger"
+        },
+        {
+          "name": "real Codex resumes a paid Worker task, restores tools and reuses its completed artifact across native processes",
+          "passed": true,
+          "file": "tests/paid-task-inputs.test.ts",
+          "tap_header": "ok 17 - real Codex resumes a paid Worker task, restores tools and reuses its completed artifact across native processes"
+        }
+      ]
+    },
+    {
+      "component": "platform",
+      "phase": "test-a",
+      "exit_code": 0,
+      "file": "tests/analysis-role-tools.test.ts",
+      "log": ".data/integrated-204-v11/platform-test-a.log",
+      "sha256": "02f9919adef92a3104b61058aa709cba42fb81cf150c2772e6bb6c9003ed8ed3",
+      "counts": {
+        "tests": 12,
+        "pass": 12,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "cases": [
+        {
+          "name": "marketing-analyst: template, fixed Skills, authorized facts, real private deliverables, exact replay and one original settlement",
+          "passed": true,
+          "file": "tests/analysis-role-tools.test.ts",
+          "tap_header": "ok 1 - marketing-analyst: template, fixed Skills, authorized facts, real private deliverables, exact replay and one original settlement"
+        },
+        {
+          "name": "information-design: template, fixed Skills, authorized facts, real private deliverables, exact replay and one original settlement",
+          "passed": true,
+          "file": "tests/analysis-role-tools.test.ts",
+          "tap_header": "ok 2 - information-design: template, fixed Skills, authorized facts, real private deliverables, exact replay and one original settlement"
+        },
+        {
+          "name": "an Agent cannot discover or open another conversation's private file even for the same customer",
+          "passed": true,
+          "file": "tests/analysis-role-tools.test.ts",
+          "tap_header": "ok 3 - an Agent cannot discover or open another conversation's private file even for the same customer"
+        },
+        {
+          "name": "a private XLSX preserves its actual worksheet, exact fractional conversions, provenance and private delivery",
+          "passed": true,
+          "file": "tests/analysis-role-tools.test.ts",
+          "tap_header": "ok 4 - a private XLSX preserves its actual worksheet, exact fractional conversions, provenance and private delivery"
+        },
+        {
+          "name": "marketing-analyst: the pinned native Codex process consumes actual source/calculation tools and delivers real files",
+          "passed": true,
+          "file": "tests/analysis-role-tools.test.ts",
+          "tap_header": "ok 5 - marketing-analyst: the pinned native Codex process consumes actual source/calculation tools and delivers real files"
+        },
+        {
+          "name": "information-design: the pinned native Codex process consumes actual source/calculation tools and delivers real files",
+          "passed": true,
+          "file": "tests/analysis-role-tools.test.ts",
+          "tap_header": "ok 6 - information-design: the pinned native Codex process consumes actual source/calculation tools and delivers real files"
+        },
+        {
+          "name": "a private conversation CSV is calculated and delivered without copying it into shared datasets",
+          "passed": true,
+          "file": "tests/analysis-role-tools.test.ts",
+          "tap_header": "ok 7 - a private conversation CSV is calculated and delivered without copying it into shared datasets"
+        },
+        {
+          "name": "revising dates reads the original source, recomputes facts and retains old bytes and separate exact receipts",
+          "passed": true,
+          "file": "tests/analysis-role-tools.test.ts",
+          "tap_header": "ok 8 - revising dates reads the original source, recomputes facts and retains old bytes and separate exact receipts"
+        },
+        {
+          "name": "ask cannot regain chart/artifact writes by selecting a professional role",
+          "passed": true,
+          "file": "tests/analysis-role-tools.test.ts",
+          "tap_header": "ok 9 - ask cannot regain chart/artifact writes by selecting a professional role"
+        },
+        {
+          "name": "plan cannot regain chart/artifact writes by selecting a professional role",
+          "passed": true,
+          "file": "tests/analysis-role-tools.test.ts",
+          "tap_header": "ok 10 - plan cannot regain chart/artifact writes by selecting a professional role"
+        },
+        {
+          "name": "source revocation fences identical read/write replay and hides previously delivered files without deleting the fee receipt",
+          "passed": true,
+          "file": "tests/analysis-role-tools.test.ts",
+          "tap_header": "ok 11 - source revocation fences identical read/write replay and hides previously delivered files without deleting the fee receipt"
+        },
+        {
+          "name": "connector tool pages captured HTTP facts, retains authorized history after OAuth revocation and fences quarantined sources",
+          "passed": true,
+          "file": "tests/analysis-role-tools.test.ts",
+          "tap_header": "ok 12 - connector tool pages captured HTTP facts, retains authorized history after OAuth revocation and fences quarantined sources"
+        }
+      ]
+    }
+  ],
+  "retained_checks": [
+    {
+      "component": "delivery",
+      "phase": "test",
+      "exit_code": 0,
+      "log": ".data/integrated-204-v3/delivery-test.log",
+      "sha256": "457b86bfe9563391defbd6e6845b520eb329159d58741634503053189b444d65"
+    },
+    {
+      "component": "web",
+      "phase": "build",
+      "exit_code": 0,
+      "log": ".data/integrated-204-v6/web-build.log",
+      "sha256": "7cd4cf67244734d4b8ed1620d98913a50b69c22efcde3de0e16540716261f28f"
+    },
+    {
+      "component": "desktop",
+      "phase": "build",
+      "exit_code": 0,
+      "log": ".data/integrated-204-v6/desktop-build.log",
+      "sha256": "9f779421f3ed87eadd09b803ba6f600b901a3df8c951a14d390c17cc97c42d3f"
+    },
+    {
+      "component": "desktop",
+      "phase": "types",
+      "exit_code": 0,
+      "log": ".data/integrated-204-v6/desktop-types.log",
+      "sha256": "1c221c018b547b3257647b1965a954e94116d0fa6b0e73c09ced858a8b432079"
+    },
+    {
+      "component": "web",
+      "phase": "test",
+      "exit_code": 0,
+      "log": ".data/integrated-204-v6/web-test.log",
+      "sha256": "10e5daea776f53b3b3dba708fd5fa49617f28ae00e61860e8c9c52d9264c3c72"
+    },
+    {
+      "component": "desktop",
+      "phase": "test",
+      "exit_code": 0,
+      "log": ".data/integrated-204-v6/desktop-test.log",
+      "sha256": "794fcd851a95c11b925ebe2bad677acc5d141158ed32fed48acd625a7af8d5f0"
+    },
+    {
+      "component": "platform",
+      "phase": "build",
+      "exit_code": 0,
+      "log": ".data/integrated-204-v10/platform-build.log",
+      "sha256": "580a0fba16a9222c3b60ade4909f53c3cf91a5c84f1d0c586f89c1782d726634"
+    }
+  ],
+  "backend_groups": 3,
+  "explicit_native_pin": {
+    "binary": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\.data\\runtime\\windows-x64\\codex.exe",
+    "version": "0.163.0-alpha.11",
+    "sha256": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c"
+  },
+  "default_cli_observation": {
+    "binary": "codex",
+    "actual": "codex-cli 0.166.0-alpha.6",
+    "inherited_version": "0.166.0-alpha.6",
+    "env_file_version": "0.163.0-alpha.10.2"
+  },
+  "original_failed_whole": {
+    "path": ".data/integrated-204-v10/verification.json",
+    "sha256": "5495e897d924ad6ca635d17106a96fd75c54d39cac7ccd39982bcee61b341ab6",
+    "status": "failures_for_integrated_debugging",
+    "tests": 204,
+    "passed": 183,
+    "failed": 21
+  },
+  "test_files": [
+    "tests/analysis-role-tools.test.ts",
+    "tests/cloud-workflows.test.ts",
+    "tests/paid-task-inputs.test.ts"
+  ],
+  "test_file_sha256": [
+    {
+      "path": "tests/runtime-tool-feedback-204-v1.test.ts",
+      "sha256": "fce23bfb776addd7eaf41c91f884ce8904b96e9750776aa7ddc8120a1662c817"
+    },
+    {
+      "path": "tests/runtime-feedback-native-204-v2.test.ts",
+      "sha256": "40162d872f8a7a5343df89d40c83f2e95c9d32cf85326a4846cf5c2c14097c8b"
+    },
+    {
+      "path": "tests/runtime-image-failure-189-v1.test.ts",
+      "sha256": "7edfb58c2b271da7010c0be10c83163fd0a00b5bd1781865cc443988fae05897"
+    },
+    {
+      "path": "tests/cloud-task-lease-204-v3.test.ts",
+      "sha256": "f0053a2577daf27b1d86cb7b75132202a9297b4ddf3241e2da863921f0e9c082"
+    },
+    {
+      "path": "tests/provider-request-control.test.ts",
+      "sha256": "015d3cbc50cc6c0e7b7d0d84d91ff5f16ab03432da38b8e2e05ffa504184a731"
+    },
+    {
+      "path": "tests/paid-task-inputs.test.ts",
+      "sha256": "93abc1566a93c3bbf96d2942f6d46ed973c4e658c3a0040e38121f5a8036a5cb"
+    },
+    {
+      "path": "tests/execution-capacity.test.ts",
+      "sha256": "7f0f6e5893cd648bb7588650a079fdb081c2b6b7cb29200f8a5e606312d3adaa"
+    },
+    {
+      "path": "tests/task-pause-154-v3.test.ts",
+      "sha256": "f22757e858dbeff287af85011fbb79d47da295f231893c23aa4079311f709a28"
+    },
+    {
+      "path": "tests/schema-compatibility.test.ts",
+      "sha256": "2c6494c8630e6b84c0656a4d4c930b65ea808f560290a99fa478b5ad11c1ae88"
+    },
+    {
+      "path": "tests/audio-production.test.ts",
+      "sha256": "ddb95e52469043be88c3899b2477581649d7ae3edc85c759b2b80313a756079d"
+    },
+    {
+      "path": "tests/audio-authorization-upgrade-189-v2.test.ts",
+      "sha256": "6b5813dc06477d5ad59a32f92edd5151db3c13ea7a4a9ce5c59ff22c4d978ec7"
+    },
+    {
+      "path": "tests/audio-accounting-188-v2.test.ts",
+      "sha256": "ccf0016a9283dd2d79cce42aa1eb965c5b4b2914fae96dd31dcc91aebdf84911"
+    },
+    {
+      "path": "tests/generated-video-jobs-188-v1.test.ts",
+      "sha256": "dc4fdcc9d38d74b53bc1d84d20e674a22518e787ea9345f0fb855a1fc1e4a510"
+    },
+    {
+      "path": "tests/cloud-workflows.test.ts",
+      "sha256": "95c59852654beb2f9b9f85c86ddce953d673c7cf0cbff1c56ce03cc797bc295d"
+    },
+    {
+      "path": "tests/analysis-role-tools.test.ts",
+      "sha256": "fb0cebedaa802da7581c03da2eb83a6515601e82e4683daf1e3c88c67f2423b8"
+    },
+    {
+      "path": "tests/analysis-role-delivery.test.ts",
+      "sha256": "4485b9dc974793e228c38f4ca98a24cdf1458672a7ee1648c4865124a9a6e517"
+    },
+    {
+      "path": "tests/analysis-calculation.test.ts",
+      "sha256": "f39b36c1e11b66677384aa969e26c334437ac077761857ffedcd49684ce16bb9"
+    },
+    {
+      "path": "tests/analysis-review-202-v3.test.ts",
+      "sha256": "a3aa4892bde31e60b25f89c7d981ac7c6d51da647f27abfb26dfe91bd3dcbcf0"
+    },
+    {
+      "path": "tests/desktop-executions-139-v3.test.ts",
+      "sha256": "b7efce72d792bdd116b1e2008c6b1dd4a2c0c85ea329291a718df7db2796935a"
+    }
+  ],
+  "scope": "Final product source and all19 entry test files match whole204-v10 exactly. Rerun the complete37 cases in the three affected files with both absolute Codex executable and matching version/hash pinned. Retain167 distinct passed cases outside those files by exact source/test/log SHA and unique TAP identity. The original204-case whole attempt remains failed with all21 failures. No changed product assertions, production version bypass, server network changes or full-product acceptance claim.",
+  "retained_backend_cases": [
+    {
+      "name": "stable current-authority review exports every scope and exact evidence in HTML/CSV/JSON without model work or charges",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 1 - stable current-authority review exports every scope and exact evidence in HTML/CSV/JSON without model work or charges"
+    },
+    {
+      "name": "dataset history reaches beyond100 and private report history beyond50 with literal search, no duplicate pages and query-bound cursors",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 2 - dataset history reaches beyond100 and private report history beyond50 with literal search, no duplicate pages and query-bound cursors"
+    },
+    {
+      "name": "cursor positions retain database microseconds and reject changed project/search scope",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 3 - cursor positions retain database microseconds and reject changed project/search scope"
+    },
+    {
+      "name": "SQL122 preserves budget/capacity/receipt function OIDs and prepared SQL121 callers",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 16 - SQL122 preserves budget/capacity/receipt function OIDs and prepared SQL121 callers"
+    },
+    {
+      "name": "a real dropped customer POST accepts independently approved cost, retains capacity and never invents media",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 17 - a real dropped customer POST accepts independently approved cost, retains capacity and never invents media"
+    },
+    {
+      "name": "platform validation requires both approvals before a new explicit run; original verification and POST remain unchanged",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 18 - platform validation requires both approvals before a new explicit run; original verification and POST remain unchanged"
+    },
+    {
+      "name": "termination-only evidence can release capacity with a price discrepancy while cost stays unknown",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 19 - termination-only evidence can release capacity with a price discrepancy while cost stays unknown"
+    },
+    {
+      "name": "immutable evidence is exactly idempotent, deduplicated and bound to original model/source/hash/time",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 20 - immutable evidence is exactly idempotent, deduplicated and bound to original model/source/hash/time"
+    },
+    {
+      "name": "evidence authors cannot approve consequences requested by a different administrator",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 21 - evidence authors cannot approve consequences requested by a different administrator"
+    },
+    {
+      "name": "cost and evidence access is scoped; requests-only readers never receive amounts or evidence",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 22 - cost and evidence access is scoped; requests-only readers never receive amounts or evidence"
+    },
+    {
+      "name": "project explicit deny and expired MFA block every audio write and sensitive read",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 23 - project explicit deny and expired MFA block every audio write and sensitive read"
+    },
+    {
+      "name": "visible confirmations invalidate signed cursors and filters cannot be swapped",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 24 - visible confirmations invalidate signed cursors and filters cannot be swapped"
+    },
+    {
+      "name": "cost facts settle one original customer task exactly once and retain a failed business outcome",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 25 - cost facts settle one original customer task exactly once and retain a failed business outcome"
+    },
+    {
+      "name": "external overquote is recorded as a violation without silently expanding the original customer reservation",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 26 - external overquote is recorded as a violation without silently expanding the original customer reservation"
+    },
+    {
+      "name": "confirmation race produces one immutable fact and database roles cannot forge accounting",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 27 - confirmation race produces one immutable fact and database roles cannot forge accounting"
+    },
+    {
+      "name": "a real native completed turn cannot report success after an unrecovered image tool failure",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 45 - a real native completed turn cannot report success after an unrecovered image tool failure"
+    },
+    {
+      "name": "a later successful image call in the same native turn clears that tool failure without discarding actual usage",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 46 - a later successful image call in the same native turn clears that tool failure without discarding actual usage"
+    },
+    {
+      "name": "the release schema requirement matches every published forward migration",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 47 - the release schema requirement matches every published forward migration"
+    },
+    {
+      "name": "API and every worker entry reject partial, missing and future schema history before seeding or paid work",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-c.log",
+      "log_sha256": "82496e62a3f65f26e9dd3a4ee7e3e9152e7eb88b882964c708520d1c52a1e0e9",
+      "tap_header": "ok 48 - API and every worker entry reject partial, missing and future schema history before seeding or paid work"
+    },
+    {
+      "name": "integer count metrics produce actual charts alongside decimal spend and percentage metrics",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 1 - integer count metrics produce actual charts alongside decimal spend and percentage metrics"
+    },
+    {
+      "name": "professional analysis delivery contains real reproducible files with exact ratios, source scope and a byte-checked ZIP",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 2 - professional analysis delivery contains real reproducible files with exact ratios, source scope and a byte-checked ZIP"
+    },
+    {
+      "name": "a changed source timestamp or requested specification invalidates the frozen hash before any delivery",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 3 - a changed source timestamp or requested specification invalidates the frozen hash before any delivery"
+    },
+    {
+      "name": "mixed currencies remain independent chart scopes and null values never become a false zero",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 4 - mixed currencies remain independent chart scopes and null values never become a false zero"
+    },
+    {
+      "name": "scope/metric substitution, duplicates, invented numerical narrative and numerical headline are rejected",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 5 - scope/metric substitution, duplicates, invented numerical narrative and numerical headline are rejected"
+    },
+    {
+      "name": "hostile source labels remain literal text and spreadsheet formula cells cannot execute",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 6 - hostile source labels remain literal text and spreadsheet formula cells cannot execute"
+    },
+    {
+      "name": "evidence paging retains all evidence exactly once with bounded scope context",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 7 - evidence paging retains all evidence exactly once with bounded scope context"
+    },
+    {
+      "name": "revision files preserve the old source version while changed dates recompute all metrics",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 8 - revision files preserve the old source version while changed dates recompute all metrics"
+    },
+    {
+      "name": "model audio declarations cannot dispatch or reserve audio before an independent customer confirms exact contents and quote",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 9 - model audio declarations cannot dispatch or reserve audio before an independent customer confirms exact contents and quote"
+    },
+    {
+      "name": "customer confirmation requires CSRF/current session and cannot be forged by a privileged model-style update",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 10 - customer confirmation requires CSRF/current session and cannot be forged by a privileged model-style update"
+    },
+    {
+      "name": "customer decline terminates the waiting tool without audio spend and cannot be revived by model replay",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 11 - customer decline terminates the waiting tool without audio spend and cannot be revived by model replay"
+    },
+    {
+      "name": "confirmation retries retain one immutable decision and return current withdrawn state instead of stale success",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 12 - confirmation retries retain one immutable decision and return current withdrawn state instead of stale success"
+    },
+    {
+      "name": "withdrawing during an audio POST retains the actual late charge and blocks every delivery",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 13 - withdrawing during an audio POST retains the actual late charge and blocks every delivery"
+    },
+    {
+      "name": "withdrawal after task completion blocks original previews/downloads without rewriting original cost or bytes",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 14 - withdrawal after task completion blocks original previews/downloads without rewriting original cost or bytes"
+    },
+    {
+      "name": "revoked confirming session blocks dispatch even while another current native session still owns the task",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 15 - revoked confirming session blocks dispatch even while another current native session still owns the task"
+    },
+    {
+      "name": "source quarantine before human confirmation rejects approval and terminates waiting without dispatch",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 16 - source quarantine before human confirmation rejects approval and terminates waiting without dispatch"
+    },
+    {
+      "name": "audio authorization metadata, customer action and independently audited Admin bodies respect separate owner/project/cost scopes",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 17 - audio authorization metadata, customer action and independently audited Admin bodies respect separate owner/project/cost scopes"
+    },
+    {
+      "name": "an elapsed immutable proposal expires without an audio job and cannot be approved after its real database deadline",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 18 - an elapsed immutable proposal expires without an audio job and cannot be approved after its real database deadline"
+    },
+    {
+      "name": "actual native Stop cancels a waiting authorization without audio fees and task deletion erases confirmed rights bodies but retains hashes",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 19 - actual native Stop cancels a waiting authorization without audio fees and task deletion erases confirmed rights bodies but retains hashes"
+    },
+    {
+      "name": "recovery rechecks a renewed task lease after the actual row-lock wait and preserves its confirmed unsubmitted audio",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 20 - recovery rechecks a renewed task lease after the actual row-lock wait and preserves its confirmed unsubmitted audio"
+    },
+    {
+      "name": "audio speech persists before network, delivers decoded WAV and settles its company tariff exactly once",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 21 - audio speech persists before network, delivers decoded WAV and settles its company tariff exactly once"
+    },
+    {
+      "name": "transcription pins actual source bytes, retains exact raw JSON and exports provider timed SRT and VTT",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 22 - transcription pins actual source bytes, retains exact raw JSON and exports provider timed SRT and VTT"
+    },
+    {
+      "name": "text-only transcription never fabricates subtitle times or empty timed exports",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 23 - text-only transcription never fabricates subtitle times or empty timed exports"
+    },
+    {
+      "name": "subtitle edits preserve original response and audio, enforce exact revisions, and make no new AI request",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 24 - subtitle edits preserve original response and audio, enforce exact revisions, and make no new AI request"
+    },
+    {
+      "name": "audio rights, verified voices, malformed Unicode and cross-project sources reject before provider dispatch",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 25 - audio rights, verified voices, malformed Unicode and cross-project sources reject before provider dispatch"
+    },
+    {
+      "name": "retained audio previews and downloads recheck current source quarantine, while exact files match their recorded hashes",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 26 - retained audio previews and downloads recheck current source quarantine, while exact files match their recorded hashes"
+    },
+    {
+      "name": "subtitle revisions reject malformed Unicode and overlapping or out-of-duration timing without AI calls",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 27 - subtitle revisions reject malformed Unicode and overlapping or out-of-duration timing without AI calls"
+    },
+    {
+      "name": "database rejects cross-project or mismatched artifact origin even through a privileged insert",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 28 - database rejects cross-project or mismatched artifact origin even through a privileged insert"
+    },
+    {
+      "name": "audio same-call and same-specification replays retain one operation and changed input conflicts",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 29 - audio same-call and same-specification replays retain one operation and changed input conflicts"
+    },
+    {
+      "name": "concurrent audio quotes share the original budget and cannot reserve three unaffordable operations",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 30 - concurrent audio quotes share the original budget and cannot reserve three unaffordable operations"
+    },
+    {
+      "name": "audio capacity is a separate explicit policy and shares global slots with text image and video",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 31 - audio capacity is a separate explicit policy and shares global slots with text image and video"
+    },
+    {
+      "name": "lost audio POST remains unknown, holds the original funds and never resubmits on replay or recovery",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 32 - lost audio POST remains unknown, holds the original funds and never resubmits on replay or recovery"
+    },
+    {
+      "name": "corrupt speech bytes and incomplete transcription retain uncertainty without claiming delivery or zero cost",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 33 - corrupt speech bytes and incomplete transcription retain uncertainty without claiming delivery or zero cost"
+    },
+    {
+      "name": "cancelling prepared audio proves zero and cannot later start HTTP",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 34 - cancelling prepared audio proves zero and cannot later start HTTP"
+    },
+    {
+      "name": "cancel racing a validated audio response preserves actual charge and blocks late content delivery",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 35 - cancel racing a validated audio response preserves actual charge and blocks late content delivery"
+    },
+    {
+      "name": "source quarantine while transcription is in flight blocks delivery and generated files inherit exact sources",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 36 - source quarantine while transcription is in flight blocks delivery and generated files inherit exact sources"
+    },
+    {
+      "name": "private audio list, source and transcript previews are isolated from same-project peers",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 37 - private audio list, source and transcript previews are isolated from same-project peers"
+    },
+    {
+      "name": "Admin audio metadata uses distinct request and cost scopes and returns no prompt rights or transcript bodies",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 38 - Admin audio metadata uses distinct request and cost scopes and returns no prompt rights or transcript bodies"
+    },
+    {
+      "name": "audio immutable operation and usage facts reject direct intent rewrites",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 39 - audio immutable operation and usage facts reject direct intent rewrites"
+    },
+    {
+      "name": "audio waiting locks the task before authorization even with an access-only caller",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 40 - audio waiting locks the task before authorization even with an access-only caller"
+    },
+    {
+      "name": "real local Codex calls audio through company tools, keeps its native task and settles one charge",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 41 - real local Codex calls audio through company tools, keeps its native task and settles one charge"
+    },
+    {
+      "name": "worker renews beyond forty-five seconds while the existing tool authority task lock is held, then actually delivers",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 42 - worker renews beyond forty-five seconds while the existing tool authority task lock is held, then actually delivers"
+    },
+    {
+      "name": "expired ownership cannot be renewed or admitted by a correct but stale fence; explicit NULL invalidation also fences it",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 43 - expired ownership cannot be renewed or admitted by a correct but stale fence; explicit NULL invalidation also fences it"
+    },
+    {
+      "name": "cross-tenant, stale fence, cancelled task and revoked authentication cannot renew a live cloud lease",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 44 - cross-tenant, stale fence, cancelled task and revoked authentication cannot renew a live cloud lease"
+    },
+    {
+      "name": "an authenticated canonical renewal in flight is never reaped using its old committed deadline",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 45 - an authenticated canonical renewal in flight is never reaped using its old committed deadline"
+    },
+    {
+      "name": "expired cloud ownership is recovered once after its real authority lock ends, preserving unknown money",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 46 - expired cloud ownership is recovered once after its real authority lock ends, preserving unknown money"
+    },
+    {
+      "name": "durable tool outcomes stay scoped through long activity and only same-tool success clears the original failure",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 47 - durable tool outcomes stay scoped through long activity and only same-tool success clears the original failure"
+    },
+    {
+      "name": "canonical worker finish rejects unresolved prior-turn delivery while retaining real partial files and known usage",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 48 - canonical worker finish rejects unresolved prior-turn delivery while retaining real partial files and known usage"
+    },
+    {
+      "name": "only actual desktop native authorization can reserve local execution; no API can grant local full permission",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 49 - only actual desktop native authorization can reserve local execution; no API can grant local full permission"
+    },
+    {
+      "name": "one immutable local owner and hold survive duplicate create; queue, cloud claims and recovery cannot run it",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 50 - one immutable local owner and hold survive duplicate create; queue, cloud claims and recovery cannot run it"
+    },
+    {
+      "name": "native template instantiation loads the saved instructions and exact brand, preserves session identity and rechecks revoked content",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 51 - native template instantiation loads the saved instructions and exact brand, preserves session identity and rechecks revoked content"
+    },
+    {
+      "name": "saved specialist company tools retain their configured subset and inaccessible experts cannot reserve local work",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 52 - saved specialist company tools retain their configured subset and inaccessible experts cannot reserve local work"
+    },
+    {
+      "name": "lost start acceptance replays a single encrypted credential without exposing it in public reads or replay storage",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 53 - lost start acceptance replays a single encrypted credential without exposing it in public reads or replay storage"
+    },
+    {
+      "name": "company gateway meters actual native Responses and settles once from server facts, excluding client usage",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 54 - company gateway meters actual native Responses and settles once from server facts, excluding client usage"
+    },
+    {
+      "name": "native tool declarations are explicit; hosted tools, model changes and arbitrary namespaces never dispatch",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 55 - native tool declarations are explicit; hosted tools, model changes and arbitrary namespaces never dispatch"
+    },
+    {
+      "name": "unknown company response cannot be replaced by a client zero report or release its reservation",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 56 - unknown company response cannot be replaced by a client zero report or release its reservation"
+    },
+    {
+      "name": "unstarted cancellation releases only its original hold and a fresh task can continue the same local session",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 57 - unstarted cancellation releases only its original hold and a fresh task can continue the same local session"
+    },
+    {
+      "name": "an expired owner lease cannot revive through heartbeat or cloud recovery; its hold requires reconciliation",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 58 - an expired owner lease cannot revive through heartbeat or cloud recovery; its hold requires reconciliation"
+    },
+    {
+      "name": "revoking the desktop sign-in family fences already-issued model credentials",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 59 - revoking the desktop sign-in family fences already-issued model credentials"
+    },
+    {
+      "name": "a lost local outcome or expired lease cannot be reported as zero-cost successful completion",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 60 - a lost local outcome or expired lease cannot be reported as zero-cost successful completion"
+    },
+    {
+      "name": "eighteen native specialists and the default helper load exact Skills and company descriptors without cloud dispatch",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 61 - eighteen native specialists and the default helper load exact Skills and company descriptors without cloud dispatch"
+    },
+    {
+      "name": "brand-visual: native bridge delivers editable files, scopes private sources to its actual desktop session and preserves revisions",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 62 - brand-visual: native bridge delivers editable files, scopes private sources to its actual desktop session and preserves revisions"
+    },
+    {
+      "name": "presentation: native bridge delivers editable files, scopes private sources to its actual desktop session and preserves revisions",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 63 - presentation: native bridge delivers editable files, scopes private sources to its actual desktop session and preserves revisions"
+    },
+    {
+      "name": "native company tools recheck owner, native family, role and the complete call binding before any effect",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 64 - native company tools recheck owner, native family, role and the complete call binding before any effect"
+    },
+    {
+      "name": "native designer generation and editing share exact company prices and never duplicate accepted images",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 65 - native designer generation and editing share exact company prices and never duplicate accepted images"
+    },
+    {
+      "name": "native company namespace rejects altered schemas and unregistered names before provider dispatch",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 66 - native company namespace rejects altered schemas and unregistered names before provider dispatch"
+    },
+    {
+      "name": "an unknown native company image result fences further calls and keeps the original reconciliation hold",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 67 - an unknown native company image result fences further calls and keeps the original reconciliation hold"
+    },
+    {
+      "name": "native methods reserve the complete pinned batch once, never enter the cloud queue, and require actual source reads and every local delivery before publication",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 68 - native methods reserve the complete pinned batch once, never enter the cloud queue, and require actual source reads and every local delivery before publication"
+    },
+    {
+      "name": "native method admission rejects browser/extension/cloud fallbacks, stale previews, duplicate or altered sessions and insufficient total budgets without paid tasks",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 69 - native method admission rejects browser/extension/cloud fallbacks, stale previews, duplicate or altered sessions and insufficient total budgets without paid tasks"
+    },
+    {
+      "name": "a timely native heartbeat blocked by its actual company tool survives the lock without reviving an expired owner",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 70 - a timely native heartbeat blocked by its actual company tool survives the lock without reviving an expired owner"
+    },
+    {
+      "name": "native failure code persists on the task and immutable client receipt, including duplicate finish",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 71 - native failure code persists on the task and immutable client receipt, including duplicate finish"
+    },
+    {
+      "name": "terminal local outcomes free execution slots while retaining every reconciliation hold and inference fence",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 72 - terminal local outcomes free execution slots while retaining every reconciliation hold and inference fence"
+    },
+    {
+      "name": "an unreleased unknown upstream still occupies its slot after local finish, without invented cost",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 73 - an unreleased unknown upstream still occupies its slot after local finish, without invented cost"
+    },
+    {
+      "name": "authenticated native inference renews its still-live lease but cannot revive an expired or completed execution",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 74 - authenticated native inference renews its still-live lease but cannot revive an expired or completed execution"
+    },
+    {
+      "name": "restricted admission rejects another tenant, another actor and direct policy access without exposing counts",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 75 - restricted admission rejects another tenant, another actor and direct policy access without exposing counts"
+    },
+    {
+      "name": "two workers enforce the shared enterprise cap, leave one original hold queued, allow a second enterprise and settle each task once",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 76 - two workers enforce the shared enterprise cap, leave one original hold queued, allow a second enterprise and settle each task once"
+    },
+    {
+      "name": "current user downgrade limits queued work even when the original business reservation allowed more active tasks",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 77 - current user downgrade limits queued work even when the original business reservation allowed more active tasks"
+    },
+    {
+      "name": "platform, image and per-enterprise media limits coordinate across transactions while read-only work uses the text class",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 78 - platform, image and per-enterprise media limits coordinate across transactions while read-only work uses the text class"
+    },
+    {
+      "name": "uncertain paid execution keeps its slot, while an unclaimed input wait occupies no execution slot",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 79 - uncertain paid execution keeps its slot, while an unclaimed input wait occupies no execution slot"
+    },
+    {
+      "name": "fair outbox dispatch includes the other enterprise before an older flood and excludes deferred or wrong-mode tasks",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 80 - fair outbox dispatch includes the other enterprise before an older flood and excludes deferred or wrong-mode tasks"
+    },
+    {
+      "name": "native pg-boss starts multiple handlers and automatically resumes the original deferred task without a second reservation",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 81 - native pg-boss starts multiple handlers and automatically resumes the original deferred task without a second reservation"
+    },
+    {
+      "name": "a frozen native video operation persists before HTTP and real MP4 delivery decodes, bills once and remains private",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 82 - a frozen native video operation persists before HTTP and real MP4 delivery decodes, bills once and remains private"
+    },
+    {
+      "name": "PNG and JPEG references are bounded before native decode and invalid sources never dispatch or consume a generation fee",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 83 - PNG and JPEG references are bounded before native decode and invalid sources never dispatch or consume a generation fee"
+    },
+    {
+      "name": "lost submit response resumes the original operation by lookup without a second generation POST",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 84 - lost submit response resumes the original operation by lookup without a second generation POST"
+    },
+    {
+      "name": "an unconfirmed lookup, terminal status without usage and repeated tool ids retain the original budget hold",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 85 - an unconfirmed lookup, terminal status without usage and repeated tool ids retain the original budget hold"
+    },
+    {
+      "name": "concurrent video quotes share the original budget and exactly one of three excess admissions is refused before HTTP",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 86 - concurrent video quotes share the original budget and exactly one of three excess admissions is refused before HTTP"
+    },
+    {
+      "name": "cancelling before dispatch proves zero while cancel versus completion retains actual paid usage",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 87 - cancelling before dispatch proves zero while cancel versus completion retains actual paid usage"
+    },
+    {
+      "name": "customer and Admin revisions ignore background leases but reject a stale changed video outcome",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 88 - customer and Admin revisions ignore background leases but reject a stale changed video outcome"
+    },
+    {
+      "name": "authenticated observations deduplicate and reject conflicting, stale-signature and cross-operation callbacks",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 89 - authenticated observations deduplicate and reject conflicting, stale-signature and cross-operation callbacks"
+    },
+    {
+      "name": "revoking a reference while real media is in flight blocks publication and generic downloads retain source fences",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 90 - revoking a reference while real media is in flight blocks publication and generic downloads retain source fences"
+    },
+    {
+      "name": "completed status with corrupt actual bytes cannot fabricate an MP4 asset or erase its measured fee",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 91 - completed status with corrupt actual bytes cannot fabricate an MP4 asset or erase its measured fee"
+    },
+    {
+      "name": "same-project peers and other tenants cannot list, read, preview or cancel a private generated operation",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 92 - same-project peers and other tenants cannot list, read, preview or cancel a private generated operation"
+    },
+    {
+      "name": "over-quote final usage is retained as an immutable violation and cannot publish or silently consume a larger budget",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 93 - over-quote final usage is retained as an immutable violation and cannot publish or silently consume a larger budget"
+    },
+    {
+      "name": "an interrupted processor resumes only its retained operation and concurrent processors never dispatch twice",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 94 - an interrupted processor resumes only its retained operation and concurrent processors never dispatch twice"
+    },
+    {
+      "name": "an expired processor cannot overwrite a replacement lease or publish a second paid result",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 95 - an expired processor cannot overwrite a replacement lease or publish a second paid result"
+    },
+    {
+      "name": "revoked native login permits resource-only cost reconciliation while refusing content download and new generation",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 96 - revoked native login permits resource-only cost reconciliation while refusing content download and new generation"
+    },
+    {
+      "name": "higher sequence observations cannot regress active progress or replace a retained terminal state",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 97 - higher sequence observations cannot regress active progress or replace a retained terminal state"
+    },
+    {
+      "name": "a pre-upgrade native video task keeps its frozen role, Skills and seven template tools without new paid capabilities",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 98 - a pre-upgrade native video task keeps its frozen role, Skills and seven template tools without new paid capabilities"
+    },
+    {
+      "name": "video Admin metadata, cost visibility and recheck obey separate scoped permissions and current MFA",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 99 - video Admin metadata, cost visibility and recheck obey separate scoped permissions and current MFA"
+    },
+    {
+      "name": "real native Codex completes generated video tools through the company gateway and persists exact job history with one settlement",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 100 - real native Codex completes generated video tools through the company gateway and persists exact job history with one settlement"
+    },
+    {
+      "name": "a video-only uncertain task holds funds until final usage and settles exactly once through two independent Admins",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 101 - a video-only uncertain task holds funds until final usage and settles exactly once through two independent Admins"
+    },
+    {
+      "name": "video holds and measured native reasoning spend share the same original budget in both admission directions",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 102 - video holds and measured native reasoning spend share the same original budget in both admission directions"
+    },
+    {
+      "name": "video admission includes completed input counts in rate limits and shares live concurrency with reasoning",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 103 - video admission includes completed input counts in rate limits and shares live concurrency with reasoning"
+    },
+    {
+      "name": "safe input feedback identifies only trusted fields without values, messages, rejected keys or dynamic paths",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 104 - safe input feedback identifies only trusted fields without values, messages, rejected keys or dynamic paths"
+    },
+    {
+      "name": "argument parse boundary prevents business execution, while downstream validation is not proof of no side effects",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 105 - argument parse boundary prevents business execution, while downstream validation is not proof of no side effects"
+    },
+    {
+      "name": "domain feedback is static; arbitrary provider messages, Problem details and prototype keys never become correction permission",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 106 - domain feedback is static; arbitrary provider messages, Problem details and prototype keys never become correction permission"
+    },
+    {
+      "name": "unrecovered delivery fails, actual same-tool recovery clears it, read failure alone does not invent a failed delivery",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 107 - unrecovered delivery fails, actual same-tool recovery clears it, read failure alone does not invent a failed delivery"
+    },
+    {
+      "name": "canonical stream preserves bounded safe tool feedback and excludes arbitrary private body fields",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-a.log",
+      "log_sha256": "5dc264075a7234777c1569bbc2f96f7b65373ed4dd513b50bf850bbcf70d3e96",
+      "tap_header": "ok 108 - canonical stream preserves bounded safe tool feedback and excludes arbitrary private body fields"
+    },
+    {
+      "name": "AnalysisSpec separates currencies, platforms and attribution instead of inventing cross-source totals",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 1 - AnalysisSpec separates currencies, platforms and attribution instead of inventing cross-source totals"
+    },
+    {
+      "name": "overlapping snapshots deduplicate identical facts and reject conflicting totals",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 2 - overlapping snapshots deduplicate identical facts and reject conflicting totals"
+    },
+    {
+      "name": "comparison changes are exact, align date offsets and keep no-row and previous-zero reasons",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 3 - comparison changes are exact, align date offsets and keep no-row and previous-zero reasons"
+    },
+    {
+      "name": "narrative binds frozen evidence, rejects unknown references, invented numeric literals and malformed placeholders",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 4 - narrative binds frozen evidence, rejects unknown references, invented numeric literals and malformed placeholders"
+    },
+    {
+      "name": "populated SQL101 audio upgrade cancels unsubmitted work, retains unknown spend and exact completed bytes without backfilling human confirmation",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 5 - populated SQL101 audio upgrade cancels unsubmitted work, retains unknown spend and exact completed bytes without backfilling human confirmation"
+    },
+    {
+      "name": "actual worker request commits frozen attribution, dispatch and validated usage without recording private input or charging twice",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 14 - actual worker request commits frozen attribution, dispatch and validated usage without recording private input or charging twice"
+    },
+    {
+      "name": "terminal frames wait for durable usage and hand off to the next request without an asynchronous busy gap",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 15 - terminal frames wait for durable usage and hand off to the next request without an asynchronous busy gap"
+    },
+    {
+      "name": "the database rejects missing usage, inconsistent prices and unsuccessful HTTP outcomes without releasing a dispatched request",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 16 - the database rejects missing usage, inconsistent prices and unsuccessful HTTP outcomes without releasing a dispatched request"
+    },
+    {
+      "name": "fractional per-request costs retain an exact numerator for one aggregate rounding without posting duplicate ledger charges",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 17 - fractional per-request costs retain an exact numerator for one aggregate rounding without posting duplicate ledger charges"
+    },
+    {
+      "name": "prepared rate promises serialize before any HTTP dispatch and cancellation returns only unused promises",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 18 - prepared rate promises serialize before any HTTP dispatch and cancellation returns only unused promises"
+    },
+    {
+      "name": "new policy is enforced again at dispatch without silently applying an old permit's limits",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 19 - new policy is enforced again at dispatch without silently applying an old permit's limits"
+    },
+    {
+      "name": "revocation after admission is rechecked before fetch and retains known zero spend",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 20 - revocation after admission is rechecked before fetch and retains known zero spend"
+    },
+    {
+      "name": "cancellation after durable dispatch intent but before fetch is proven zero and releases both capacity and rate promise",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 21 - cancellation after durable dispatch intent but before fetch is proven zero and releases both capacity and rate promise"
+    },
+    {
+      "name": "unterminated response remains unknown and consumes actor capacity across a fresh runtime",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 22 - unterminated response remains unknown and consumes actor capacity across a fresh runtime"
+    },
+    {
+      "name": "an orphaned dispatch intent becomes unknown once and retains shared capacity without replay or zero-spend fabrication",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 23 - an orphaned dispatch intent becomes unknown once and retains shared capacity without replay or zero-spend fabrication"
+    },
+    {
+      "name": "expired prepared permits are reclaimed with immutable zero-spend events and cannot later dispatch",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 24 - expired prepared permits are reclaimed with immutable zero-spend events and cannot later dispatch"
+    },
+    {
+      "name": "a completed provider request keeps its rolling-minute rate charge after freeing concurrency",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 25 - a completed provider request keeps its rolling-minute rate charge after freeing concurrency"
+    },
+    {
+      "name": "one operation can never be replayed into another provider request even after a known cancellation",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 26 - one operation can never be replayed into another provider request even after a known cancellation"
+    },
+    {
+      "name": "request and policy history cannot be rewritten and ordinary RLS cannot expose another actor's or tenant's request",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 27 - request and policy history cannot be rewritten and ordinary RLS cannot expose another actor's or tenant's request"
+    },
+    {
+      "name": "four actual Node workers share the database admission ceiling across two tenants",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 28 - four actual Node workers share the database admission ceiling across two tenants"
+    },
+    {
+      "name": "exact counting includes the normalized context and binds one proof to the actual generation bytes",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 29 - exact counting includes the normalized context and binds one proof to the actual generation bytes"
+    },
+    {
+      "name": "unverified or unpriced input counting makes zero provider calls and never guesses a token count",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 30 - unverified or unpriced input counting makes zero provider calls and never guesses a token count"
+    },
+    {
+      "name": "malformed exact count retains its platform commitment and blocks a new attempt without generation",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 31 - malformed exact count retains its platform commitment and blocks a new attempt without generation"
+    },
+    {
+      "name": "text and image share one original reservation and an over-budget image is blocked before HTTP",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 32 - text and image share one original reservation and an over-budget image is blocked before HTTP"
+    },
+    {
+      "name": "concurrent requests serialize one task budget while task counting is funded only by the platform",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 33 - concurrent requests serialize one task budget while task counting is funded only by the platform"
+    },
+    {
+      "name": "input count mismatch preserves actual spend then blocks the next call and final settlement for reconciliation",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 34 - input count mismatch preserves actual spend then blocks the next call and final settlement for reconciliation"
+    },
+    {
+      "name": "output above its explicit bound is recorded as real usage and cannot widen the customer budget",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 35 - output above its explicit bound is recorded as real usage and cannot widen the customer budget"
+    },
+    {
+      "name": "the platform counting pool is shared across tasks and cannot draw from a customer wallet",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 36 - the platform counting pool is shared across tasks and cannot draw from a customer wallet"
+    },
+    {
+      "name": "one count proof cannot authorize a different generation hash or be consumed twice",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 37 - one count proof cannot authorize a different generation hash or be consumed twice"
+    },
+    {
+      "name": "unsupported context fields are rejected before counting rather than omitting part of a paid model input",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 38 - unsupported context fields are rejected before counting rather than omitting part of a paid model input"
+    },
+    {
+      "name": "actual native Codex receives safe invalid-input feedback, corrects before one delivery, and retains all measured usage",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 39 - actual native Codex receives safe invalid-input feedback, corrects before one delivery, and retains all measured usage"
+    },
+    {
+      "name": "actual native final prose cannot declare success while chart delivery failed",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 40 - actual native final prose cannot declare success while chart delivery failed"
+    },
+    {
+      "name": "a new native turn inherits durable delivery failure and cannot replace it with completion prose",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 41 - a new native turn inherits durable delivery failure and cannot replace it with completion prose"
+    },
+    {
+      "name": "a recorded successful registered tool clears inherited failure while retaining measured native usage",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 42 - a recorded successful registered tool clears inherited failure while retaining measured native usage"
+    },
+    {
+      "name": "running cloud work pauses at a measured boundary and resumes the original thread, results and budget",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 43 - running cloud work pauses at a measured boundary and resumes the original thread, results and budget"
+    },
+    {
+      "name": "canceling a paused measured task settles its known cumulative usage once",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 44 - canceling a paused measured task settles its known cumulative usage once"
+    },
+    {
+      "name": "supplying an input requested before pause does not silently dispatch another turn",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 45 - supplying an input requested before pause does not silently dispatch another turn"
+    },
+    {
+      "name": "accepted work with unknown usage cannot create a resumable pause checkpoint",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 46 - accepted work with unknown usage cannot create a resumable pause checkpoint"
+    },
+    {
+      "name": "an administrator cannot resume paused work under the original user's revoked identity",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 47 - an administrator cannot resume paused work under the original user's revoked identity"
+    },
+    {
+      "name": "initial queued pause remains available and permanent erasure removes measured pause facts",
+      "passed": true,
+      "log": ".data/integrated-204-v10/platform-test-b.log",
+      "log_sha256": "7dd2203ab6fdc61d36848f06022a85655bebe93a3ab18671dc5e34e6c178cb75",
+      "tap_header": "ok 48 - initial queued pause remains available and permanent erasure removes measured pause facts"
+    }
+  ],
+  "current_backend_cases": [
+    {
+      "name": "private cloud consultant validates, versions and requests; only customer-approved fixed steps execute and settle once",
+      "passed": true,
+      "file": "tests/cloud-workflows.test.ts",
+      "tap_header": "ok 1 - private cloud consultant validates, versions and requests; only customer-approved fixed steps execute and settle once"
+    },
+    {
+      "name": "cloud drafts retain immutable versions, reject stale edits and stay in their originating private conversation",
+      "passed": true,
+      "file": "tests/cloud-workflows.test.ts",
+      "tap_header": "ok 2 - cloud drafts retain immutable versions, reject stale edits and stay in their originating private conversation"
+    },
+    {
+      "name": "ask exposes workflow validation and current reads, without writers or fee approval",
+      "passed": true,
+      "file": "tests/cloud-workflows.test.ts",
+      "tap_header": "ok 3 - ask exposes workflow validation and current reads, without writers or fee approval"
+    },
+    {
+      "name": "plan exposes workflow validation and current reads, without writers or fee approval",
+      "passed": true,
+      "file": "tests/cloud-workflows.test.ts",
+      "tap_header": "ok 4 - plan exposes workflow validation and current reads, without writers or fee approval"
+    },
+    {
+      "name": "source withdrawal blocks pending approval and cancellation releases a queued child without another fee",
+      "passed": true,
+      "file": "tests/cloud-workflows.test.ts",
+      "tap_header": "ok 5 - source withdrawal blocks pending approval and cancellation releases a queued child without another fee"
+    },
+    {
+      "name": "customer cancellation releases a queued private child and never replays it",
+      "passed": true,
+      "file": "tests/cloud-workflows.test.ts",
+      "tap_header": "ok 6 - customer cancellation releases a queued private child and never replays it"
+    },
+    {
+      "name": "a reconciling child stops the sequence; fee uncertainty cannot authorize a replacement",
+      "passed": true,
+      "file": "tests/cloud-workflows.test.ts",
+      "tap_header": "ok 7 - a reconciling child stops the sequence; fee uncertainty cannot authorize a replacement"
+    },
+    {
+      "name": "the pinned native Codex process loads the workflow Skills and prepares a real fixed pending request",
+      "passed": true,
+      "file": "tests/cloud-workflows.test.ts",
+      "tap_header": "ok 8 - the pinned native Codex process loads the workflow Skills and prepares a real fixed pending request"
+    },
+    {
+      "name": "a paid model input gap waits on the original task, resumes the same thread and settles one cumulative charge",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 1 - a paid model input gap waits on the original task, resumes the same thread and settles one cumulative charge"
+    },
+    {
+      "name": "cancelling a paid input checkpoint settles its already measured work once",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 2 - cancelling a paid input checkpoint settles its already measured work once"
+    },
+    {
+      "name": "a failure before another provider dispatch retains the prior paid turn's cumulative usage",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 3 - a failure before another provider dispatch retains the prior paid turn's cumulative usage"
+    },
+    {
+      "name": "an accepted turn without complete usage never becomes an automatically resumable input checkpoint",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 4 - an accepted turn without complete usage never becomes an automatically resumable input checkpoint"
+    },
+    {
+      "name": "models cannot select inputs themselves or perform more tool writes after requesting human input",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 5 - models cannot select inputs themselves or perform more tool writes after requesting human input"
+    },
+    {
+      "name": "revoking an actually consumed source prevents paid continuation while preserving measured cancellation cost",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 6 - revoking an actually consumed source prevents paid continuation while preserving measured cancellation cost"
+    },
+    {
+      "name": "private and tenant boundaries still govern a paid input request and its immutable checkpoint facts",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 7 - private and tenant boundaries still govern a paid input request and its immutable checkpoint facts"
+    },
+    {
+      "name": "a paid continuation waits for the same capacity limits without consuming another attempt or reservation",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 8 - a paid continuation waits for the same capacity limits without consuming another attempt or reservation"
+    },
+    {
+      "name": "paid native checkpoints are bounded to eight rounds and retain one cumulative charge across them",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 9 - paid native checkpoints are bounded to eight rounds and retain one cumulative charge across them"
+    },
+    {
+      "name": "the database rejects an input checkpoint without a live lease even with the correct native scope",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 10 - the database rejects an input checkpoint without a live lease even with the correct native scope"
+    },
+    {
+      "name": "a completed output revoked during an input wait is not recreated from its old tool receipt",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 11 - a completed output revoked during an input wait is not recreated from its old tool receipt"
+    },
+    {
+      "name": "source packages reuse unchanged work but include a source edit made in the resumed turn",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 12 - source packages reuse unchanged work but include a source edit made in the resumed turn"
+    },
+    {
+      "name": "an invalid paid checkpoint retains reconciliation in Worker and queued-recovery events",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 13 - an invalid paid checkpoint retains reconciliation in Worker and queued-recovery events"
+    },
+    {
+      "name": "revoking an approved input cancels paid continuation before dispatch and preserves measured spend",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 14 - revoking an approved input cancels paid continuation before dispatch and preserves measured spend"
+    },
+    {
+      "name": "completed paid images are reused across an input gap without another provider call or duplicate charge",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 15 - completed paid images are reused across an input gap without another provider call or duplicate charge"
+    },
+    {
+      "name": "erasing a private paid input task removes checkpoint content and tool receipts while retaining its measured ledger",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 16 - erasing a private paid input task removes checkpoint content and tool receipts while retaining its measured ledger"
+    },
+    {
+      "name": "real Codex resumes a paid Worker task, restores tools and reuses its completed artifact across native processes",
+      "passed": true,
+      "file": "tests/paid-task-inputs.test.ts",
+      "tap_header": "ok 17 - real Codex resumes a paid Worker task, restores tools and reuses its completed artifact across native processes"
+    },
+    {
+      "name": "marketing-analyst: template, fixed Skills, authorized facts, real private deliverables, exact replay and one original settlement",
+      "passed": true,
+      "file": "tests/analysis-role-tools.test.ts",
+      "tap_header": "ok 1 - marketing-analyst: template, fixed Skills, authorized facts, real private deliverables, exact replay and one original settlement"
+    },
+    {
+      "name": "information-design: template, fixed Skills, authorized facts, real private deliverables, exact replay and one original settlement",
+      "passed": true,
+      "file": "tests/analysis-role-tools.test.ts",
+      "tap_header": "ok 2 - information-design: template, fixed Skills, authorized facts, real private deliverables, exact replay and one original settlement"
+    },
+    {
+      "name": "an Agent cannot discover or open another conversation's private file even for the same customer",
+      "passed": true,
+      "file": "tests/analysis-role-tools.test.ts",
+      "tap_header": "ok 3 - an Agent cannot discover or open another conversation's private file even for the same customer"
+    },
+    {
+      "name": "a private XLSX preserves its actual worksheet, exact fractional conversions, provenance and private delivery",
+      "passed": true,
+      "file": "tests/analysis-role-tools.test.ts",
+      "tap_header": "ok 4 - a private XLSX preserves its actual worksheet, exact fractional conversions, provenance and private delivery"
+    },
+    {
+      "name": "marketing-analyst: the pinned native Codex process consumes actual source/calculation tools and delivers real files",
+      "passed": true,
+      "file": "tests/analysis-role-tools.test.ts",
+      "tap_header": "ok 5 - marketing-analyst: the pinned native Codex process consumes actual source/calculation tools and delivers real files"
+    },
+    {
+      "name": "information-design: the pinned native Codex process consumes actual source/calculation tools and delivers real files",
+      "passed": true,
+      "file": "tests/analysis-role-tools.test.ts",
+      "tap_header": "ok 6 - information-design: the pinned native Codex process consumes actual source/calculation tools and delivers real files"
+    },
+    {
+      "name": "a private conversation CSV is calculated and delivered without copying it into shared datasets",
+      "passed": true,
+      "file": "tests/analysis-role-tools.test.ts",
+      "tap_header": "ok 7 - a private conversation CSV is calculated and delivered without copying it into shared datasets"
+    },
+    {
+      "name": "revising dates reads the original source, recomputes facts and retains old bytes and separate exact receipts",
+      "passed": true,
+      "file": "tests/analysis-role-tools.test.ts",
+      "tap_header": "ok 8 - revising dates reads the original source, recomputes facts and retains old bytes and separate exact receipts"
+    },
+    {
+      "name": "ask cannot regain chart/artifact writes by selecting a professional role",
+      "passed": true,
+      "file": "tests/analysis-role-tools.test.ts",
+      "tap_header": "ok 9 - ask cannot regain chart/artifact writes by selecting a professional role"
+    },
+    {
+      "name": "plan cannot regain chart/artifact writes by selecting a professional role",
+      "passed": true,
+      "file": "tests/analysis-role-tools.test.ts",
+      "tap_header": "ok 10 - plan cannot regain chart/artifact writes by selecting a professional role"
+    },
+    {
+      "name": "source revocation fences identical read/write replay and hides previously delivered files without deleting the fee receipt",
+      "passed": true,
+      "file": "tests/analysis-role-tools.test.ts",
+      "tap_header": "ok 11 - source revocation fences identical read/write replay and hides previously delivered files without deleting the fee receipt"
+    },
+    {
+      "name": "connector tool pages captured HTTP facts, retains authorized history after OAuth revocation and fences quarantined sources",
+      "passed": true,
+      "file": "tests/analysis-role-tools.test.ts",
+      "tap_header": "ok 12 - connector tool pages captured HTTP facts, retains authorized history after OAuth revocation and fences quarantined sources"
+    }
+  ],
+  "qualified_backend_case_count": 204,
+  "backend_failed_cases": 0,
+  "finished_at": "2026-11-06T16:04:30.083Z"
+}

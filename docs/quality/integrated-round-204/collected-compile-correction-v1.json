@@ -1,0 +1,13 @@
+{
+  "stage": 204,
+  "at": "2026-11-06T15:35:01.514749+00:00",
+  "original_verification": ".data/integrated-204-v8/verification.json",
+  "failure": "TS2304: new runtime context used a finish-method variable outside its scope. No backend tests or activation ran.",
+  "correction": "Use existing tenant/id/owner in the authenticated application database transaction, retaining tenant/actor RLS and prior outcome boundaries.",
+  "production_files_changed": [
+    "dev/copypaste-platform/src/worker.ts"
+  ],
+  "whole_backend_cases": 204,
+  "client_artifacts_unchanged": true,
+  "server_network_changes": false
+}
