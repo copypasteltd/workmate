@@ -1,3 +1,37 @@
+<!-- integrated-round-199 -->
+
+## 199 · 0.5.7 · Native Side Panel and authorized uploads
+
+[Delivery and limits / 交付與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-199/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Download/unzip the ZIP and load it in Chrome developer mode. The toolbar opens the actual right Side Panel with ChatGPT-style conversation/input/attachments; the agent executes in the company cloud.
+
+2. Complete company PKCE, choose an organization/project and explicitly select/drop attachments or paste images. Only authorized files upload. Existing scoped history/archive/continuation state reloads current server data and authority.
+
+3. No Extension product code changes this round;93 regressions pass. The original0.5.7 released ZIP is retained byte-for-byte and provided under/releases/199/ with complete inner HTTP SHA checks; public qualification is reported separately. No inflated version, repackaging or Chrome Web Store publication is claimed.
+
+4. The198 recording below retains earlier actual toolbar/Side Panel, PKCE and attachment evidence. This round does not claim new Side Panel businesses or full browser/large-file matrix coverage.
+
+```mermaid
+flowchart LR
+ A[Toolbar click / 工具列點擊] --> B[Native right Side Panel / 原生右側欄]
+ B --> C[Company PKCE and project / 公司授權與項目]
+ C --> D[Explicit files or images / 明確選擇附件]
+ D --> E[Private upload / 私人上傳]
+ E --> F[Cloud Codex via company API / 公司雲端Codex]
+ F --> G[Conversation and results / 會話與成果]
+```
+
+Earlier198 actual Side Panel evidence / 此前198真實側欄
+
+![Actual interface / 實際頁面](assets/screenshots/198-v1-side-panel.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-198-v1-side-panel.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-198-v1-side-panel.mp4)
+
+Earlier release/setup sections remain below. This batch does not close full original acceptance.
+
 <!-- integrated-round-198 -->
 
 ## 198 · 0.5.7 · Side Panel and restored history
