@@ -1,3 +1,25 @@
+<!-- integrated-round-198 -->
+
+## 198 · 0.5.6 · Full task directory and current authority
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-198/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Web/Extension run company-hosted Codex; Desktop Codex executes on the customer computer. Every AI call uses company servers. Admin continues to configure the upstream API URL, key, alias and rates separately on each model.
+2. Adds GET /v 1/tenants/:tenant/projects/:project/task-directory, returning authorized task metadata only. Literal title search, nine statuses, cloud/desktop, ask/plan/execute and 1–100 rows per page remove the recent 100-only UI limit.
+3. Domain-separated HMAC cursors bind user, session/auth version, tenant, project, filters, page size and a 30-minute lifetime with microsecond ordering. Every read rechecks current project authority, private tasks and revoked sources. Expired pages return 409; malformed cursors 400.
+4. Directory reads never dispatch work, invoke models or create charges. Schema 163 is unchanged. Regressions cover 237 database fixture rows, ordering, combined filters, tampering/session changes, read-only access and source isolation. Fixtures retain native-owner invariants; real Desktop work provides native coverage.
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[All tasks / 查找工作]
+  C --> D[Verify current authority / 當前授權]
+  D --> E[Original session and results / 原會話與成果]
+  E --> F[Return with context / 保留上下文返回]
+```
+
+Earlier sections retain previous release/setup history. Current delivery does not close full original acceptance.
+
 <!-- integrated-round-197 -->
 
 ## 197 · 0.5.5 · Server startup settlement

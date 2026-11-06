@@ -20,5 +20,10 @@ export async function currentRouteInventory() {
   assert.equal(new Set([...currentRoutes,...currentConditional].map(row=>row.method+" "+row.path)).size,currentRoutes.length+currentConditional.length);
   assert.equal(currentRoutes.length,workspace.expected_current_routes);
   assert.equal(currentConditional.length,workspace.expected_current_conditional_routes);
-  return {...previous,routes:currentRoutes,conditional_routes:currentConditional};
+  const directory=JSON.parse(await readFile("contracts/task-directory-route-additions-198.json","utf8"));
+  assert.equal(directory.baseline_lf_sha256,addition.baseline_lf_sha256);
+  const finalRoutes=[...currentRoutes,...directory.routes],finalConditional=[...currentConditional,...directory.conditional_routes];
+  assert.equal(new Set([...finalRoutes,...finalConditional].map(row=>row.method+" "+row.path)).size,finalRoutes.length+finalConditional.length);
+  assert.equal(finalRoutes.length,directory.expected_current_routes);assert.equal(finalConditional.length,directory.expected_current_conditional_routes);
+  return {...previous,routes:finalRoutes,conditional_routes:finalConditional};
 }

@@ -1,3 +1,25 @@
+<!-- integrated-round-198 -->
+
+## 198 · 0.5.6 · 完整任务目录与当前授权
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-198/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Web／Extension在公司云端运行Codex，Desktop在客户电脑本机运行Codex；所有AI请求经公司服务器。模型仍在后台按每个模型分别配置上游API地址、key、别名与费率。
+2. 新增GET /v1/tenants/:tenant/projects/:project/task-directory，只返回有权读取的任务元数据。支持标题字面搜索、九种状态、cloud／desktop、ask／plan／execute和1–100条页大小，不再受最近100项界面限制。
+3. 分页游标使用独立域HMAC，绑定用户、会话授权版本、企业、项目、筛选、页大小及30分钟期限，保留微秒顺序。每次重新核对当前项目权限、私有任务及来源撤销；过期页409、无效游标400，调用方明确刷新。
+4. 目录不创建任务、不执行模型、不产生费用；schema163不变。相关回归覆盖237条实际数据库夹具、跨页顺序、组合筛选、游标篡改／换会话、只读项目和来源隔离。夹具遵守原生所有者约束；原生任务另由真实Desktop旅程验证。
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[All tasks / 查找工作]
+  C --> D[Verify current authority / 當前授權]
+  D --> E[Original session and results / 原會話與成果]
+  E --> F[Return with context / 保留上下文返回]
+```
+
+下方保留早期版本與完整安裝說明。本輪交付不代表全部原始需求已驗收。
+
 <!-- integrated-round-197 -->
 
 ## 197 · 0.5.5 · 服务端启动结算

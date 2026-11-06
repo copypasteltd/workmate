@@ -52,6 +52,7 @@ import { registerCreativeFeedback } from "./creative-feedback.js";
 import { registerGeoObservations } from "./geo-observations.js";
 import { registerTasks } from "./tasks.js";
 import { registerBusinessQuality } from "./business-quality.js";
+import {registerTaskDirectory} from "./task-directory.js";
 import {registerTaskWorkspace} from "./task-workspace.js";
 import {registerTaskWorkspaceEdit} from "./task-workspace-edit.js";
 import {registerRoleAcceptance} from "./role-acceptance.js";
@@ -495,6 +496,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerTasks(app, db, catalog);
   registerMediaEffects(app, db, catalog, storage);
   registerBusinessQuality(app, db);
+  registerTaskDirectory(app, db);
   registerTaskWorkspace(app, db, storage);
   registerTaskWorkspaceEdit(app, db, storage);
   registerDeliveryPackages(app, db, storage);

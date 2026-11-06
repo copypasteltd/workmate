@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "copypaste/task-directory-v1",
+  "description": "GET /v1/tenants/{tenant}/projects/{project}/task-directory. Read-only current-authority metadata. q literal title, status, location cloud/desktop, mode ask/plan/execute, limit 1..100 (40 default), signed cursor. No-store. Cursor binds account/session/auth/project/filter/page size and expires after 30 minutes.",
+  "type": "object", "additionalProperties": false, "required": ["items", "next_cursor"],
+  "properties": {
+    "next_cursor": {"type": ["string", "null"], "maxLength": 2048},
+    "items": {"type": "array", "maxItems": 100, "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "title", "role_key", "status", "mode", "execution_location", "conversation_id", "charged_micros", "accrued_micros", "budget_micros", "created_at", "updated_at", "version", "cancel_requested", "source_unavailable"],
+      "properties": {
+        "id": {"type": "string", "format": "uuid"}, "title": {"type": "string"}, "role_key": {"type": "string"},
+        "status": {"enum": ["queued", "running", "needs_input", "awaiting_approval", "paused", "reconciling", "succeeded", "failed", "cancelled"]},
+        "mode": {"enum": ["ask", "plan", "execute"]}, "execution_location": {"enum": ["cloud", "desktop"]},
+        "conversation_id": {"type": ["string", "null"]},
+        "charged_micros": {"type": "string", "pattern": "^[0-9]+$"}, "accrued_micros": {"type": "string", "pattern": "^[0-9]+$"}, "budget_micros": {"type": "string", "pattern": "^[0-9]+$"},
+        "created_at": {"type": "string", "format": "date-time"}, "updated_at": {"type": "string", "format": "date-time"}, "version": {"type": "integer"}, "cancel_requested": {"type": "boolean"}, "source_unavailable": {"type": "boolean"}
+      }
+    }}
+  }
+}
