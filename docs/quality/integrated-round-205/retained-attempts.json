@@ -1,0 +1,48 @@
+{
+  "interrupted_deployment": {
+    "original_receipt_sha256": "a3f843c288d612a032b5d97a4374049310ce01fb8c693d478582ac9cfb8a2ee2",
+    "server_boot_time": "2026-11-06 19:53:48",
+    "partial_files_preserved": true,
+    "fresh_preservation_baseline": true
+  },
+  "stage": 205,
+  "attempts": [
+    {
+      "kind": "public_download_initial_observer",
+      "sha256": "767e0b91ff7d4634b49f29f25e3dedb7cb079c99a593d7699a8cac71281a9baa",
+      "status": "partial",
+      "owned_browser_closed": true,
+      "qualified_complete_files": 3,
+      "note": "Checksum link lives inside a closed details element. Retain actual complete files and original action failure; new observer expands the real summary before clicking."
+    },
+    {
+      "kind": "unified_verification",
+      "attempt": 1,
+      "sha256": "028acb2ae63bbecb6c7082103c0460524ad11a348bef06e9210a4b3126594f46",
+      "status": "failures_for_integrated_debugging",
+      "passed": 631,
+      "failed": 23
+    },
+    {
+      "kind": "unified_verification",
+      "attempt": 2,
+      "sha256": "b66d39e20d23be2c82174327eb2d868dfb281d7d14e8e62e1e80f6fc141479b5",
+      "status": "failures_for_integrated_debugging",
+      "passed": 666,
+      "failed": 3
+    },
+    {
+      "kind": "controlled_ui_initial_load",
+      "sha256": "f70bce35d78c45fcd1506d7f26ee35d2c6e022208ed48f3dece79233bc22a75d",
+      "status": "failed",
+      "error": [
+        "page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:2568/__qa/tool-feedback\", waiting until \"load\"\u001b[22m\n"
+      ],
+      "owned_browser_closed": true,
+      "owned_local_server_closed": true
+    }
+  ],
+  "original_failed_receipts_unchanged": true,
+  "first_fixture_reclamation_failed_receipt_preserved": true,
+  "note": "Source/test pin fixes and correction-state hardening completed in one v2 batch. Three v2 pre-provider startup timeouts were rerun as whole files sequentially; current product sources are identical. Controlled v2 load timeout is retained separately from fresh v3 UI success. Neither a later pass nor Git publication rewrites the original failures."
+}

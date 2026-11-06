@@ -1,3 +1,9 @@
+<!-- integrated-round-205 -->
+
+205: exact per-call delivery, durable correction state and actual media confirmation. Read-only server networking, measured release evidence and complete original scope.
+
+[交付 / Evidence](quality/integrated-round-205/README.md) · [全部范围 / Scope](quality/integrated-round-205/requirements-102.md)
+
 <!-- integrated-round-204 -->
 
 204: safe tool feedback, truthful delivery and independent fenced cloud leases. Server networking is read-only; evidence and complete original scope remain explicit.

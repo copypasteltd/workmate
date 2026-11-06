@@ -1,3 +1,9 @@
+<!-- integrated-round-205 -->
+
+205轮：逐项交付、持久修正状态和真实音视频完成判定；服务器网络只读，保留实际发版证据及完整原始范围。
+
+[交付 / Evidence](quality/integrated-round-205/README.md) · [全部范围 / Scope](quality/integrated-round-205/requirements-102.md)
+
 <!-- integrated-round-204 -->
 
 204轮：安全工具反馈、真实交付状态与独立云端续租；服务器网络只读，完整原始目标和验收边界继续保留。
