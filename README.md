@@ -1,3 +1,29 @@
+<!-- integrated-round-196 -->
+
+## 196 · 0.5.2 · 整轮开发验证与发布
+
+[完整交付與限制 / Delivery and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-196/README.md) · [下載 / Downloads](https://agent.copypaste.hk/downloads)
+
+1. 按完整轮次先盘点需求与全部代码待办，完成整批代码后再统一六仓构建、类型检查和相关测试。发现问题汇总修复后复验，原失败文件保留。
+2. 本轮最终476相关测试通过，另保留63项未变更后端较早成功证据；没有把它描述为所有历史后端测试全部重跑。
+3. 独立记录真实Web保存与恢复、发布包本机Codex和费用、原生SidePanel、后台兼容及公开完整下载SHA，录像使用实际响应时间。测试会话或密钥不进入公开证据。
+4. 打包完成且散列/元数据校验通过后才上传；服务器先检查非root候选和活动任务，再切换并核对。保留195兼容回滚、旧下载及/root/cfg/workmate/私有配置。
+5. 交付Desktop0.7.6安装/便携版与同字节Extension0.5.5ZIP，更新六端双语README、实际截图/GIF/MP4、32组及102条需求覆盖层，再普通推送对应分支。
+
+```mermaid
+flowchart LR
+ A[Sign in / 登入] --> B[Project, role and budget / 專案角色預算]
+ B --> C{Execution / 執行}
+ C -->|Web or Extension| D[Company cloud Codex / 公司雲端]
+ C -->|Desktop native permission| E[Local Codex / 本機]
+ D --> F[Results, files and actual usage / 成果檔案實際費用]
+ E --> F
+ F --> G[Review and compare / 審閱比較]
+ G --> H[Explicit revision / 明確修改]
+```
+
+範圍：本輪相關旅程通過，原失敗保留。間歇公網連線超時、專業產出、外部接入及完整生產/兼容驗收仍開放。下方較早章節為歷史版本。
+
 <!-- integrated-round-195 -->
 
 ## 195 · 0.5.1 · 交付与实机证据 / Delivery and real-device evidence

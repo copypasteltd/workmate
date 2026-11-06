@@ -1,3 +1,29 @@
+<!-- integrated-round-196 -->
+
+## 196 · 0.5.2 · Integrated implementation and release
+
+[完整交付與限制 / Delivery and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-196/README.md) · [下載 / Downloads](https://agent.copypaste.hk/downloads)
+
+1. Inventory requirements and all code work before a complete implementation batch. Only then build six repositories, type-check and run selected tests. Aggregate repairs before revalidation and preserve failed attempts.
+2. All476 final relevant tests pass;63 unchanged earlier backend successes remain separately recorded. This does not claim rerunning every historical backend suite.
+3. Record real Web save/recovery, packaged local Codex/billing, native Side Panel, Admin compatibility and complete public download digests independently. Preserve actual response timing and exclude sessions/keys from public evidence.
+4. Finish and hash packages/metadata before upload. Validate a non-root candidate and active-task preconditions before switching. Retain compatible195 rollback, prior downloads and private/root/cfg/workmate/configuration.
+5. Deliver Desktop0.7.6Setup/Portable and byte-identical Extension0.5.5ZIP. Update bilingual READMEs, actual screenshots/GIF/MP4 and all32 groups/102 requirements before ordinary branch publication.
+
+```mermaid
+flowchart LR
+ A[Sign in / 登入] --> B[Project, role and budget / 專案角色預算]
+ B --> C{Execution / 執行}
+ C -->|Web or Extension| D[Company cloud Codex / 公司雲端]
+ C -->|Desktop native permission| E[Local Codex / 本機]
+ D --> F[Results, files and actual usage / 成果檔案實際費用]
+ E --> F
+ F --> G[Review and compare / 審閱比較]
+ G --> H[Explicit revision / 明確修改]
+```
+
+Scope: selected current journeys pass; original failures remain. Intermittent public HTTPS timeouts, professional outcomes, external integrations and full production/compatibility acceptance remain open. Earlier sections below describe historical releases.
+
 <!-- integrated-round-195 -->
 
 ## 195 · 0.5.1 · 交付与实机证据 / Delivery and real-device evidence
