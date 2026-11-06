@@ -139,7 +139,7 @@ export function useTaskEvents(
                   continue;
                 after = e.seq;
                 batch.push({
-                  id: e.seq,
+                  id: /^\d+$/.test(String(e.activity_id)) ? e.activity_id : e.seq,
                   kind: e.type,
                   body: e.payload,
                   created_at: e.occurred_at,

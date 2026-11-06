@@ -35,7 +35,7 @@ function Workspace({taskId,refresh,review,native,activity:externalActivity}:{tas
  useEffect(()=>{if(result.data&&!result.error&&remembered.selected&&!files.some((f:any)=>f.version_id===remembered.selected))setSelected(null);},[result.data]);
  return <section className="card task-workbench" aria-label={t("工作成果與活動","Work results and activity")}>
   <header className="workbench-heading"><h3>{task?.title??t("成果工作區","Work results")}</h3>{task&&<Badge value={task.status}/>}</header>
-  {!externalActivity&&<TaskToolFeedback events={activity.data.items} status={task?.status} errorCode={task?.error_code}/>}
+  {!externalActivity&&<TaskToolFeedback events={activity.data.items} status={task?.status} errorCode={task?.error_code} summary={task?.tool_outcomes}/>}
   <div className="workbench-tabs" role="tablist" aria-label={t("成果檢視","Result views")} onKeyDown={e=>{let index=tabs.indexOf(tab);if(e.key==="ArrowRight")index=(index+1)%tabs.length;else if(e.key==="ArrowLeft")index=(index+tabs.length-1)%tabs.length;else if(e.key==="Home")index=0;else if(e.key==="End")index=tabs.length-1;else return;e.preventDefault();setTab(tabs[index]);tabButtons.current[index]?.focus();}}>
    {tabs.map((key,index)=>{const Icon=icons[key];return <button key={key} ref={el=>{tabButtons.current[index]=el;}} id={uid+key} type="button" role="tab" aria-selected={tab===key} aria-controls={uid+"panel"} tabIndex={tab===key?0:-1} onClick={()=>setTab(key)}><Icon size={16}/>{labels[key]}{key==="files"&&!!files.length&&<span>{files.length}</span>}</button>;})}
   </div>

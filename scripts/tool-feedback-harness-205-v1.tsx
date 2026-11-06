@@ -1,0 +1,11 @@
+import React,{useState} from 'react';import {createRoot} from 'react-dom/client';
+import {Preferences,useI18n} from '../src/ui';import {TaskToolFeedback} from '../src/task-tool-feedback';
+import {retainTaskActivity,type ActivityEvent} from '../src/task-tool-state';import '../src/style.css';
+const a='205a205a205a205a',b='205b205b205b205b';
+const failure=(id:number,ref:string)=>({id,kind:'runtime.tool.failed',body:{outcome_version:2,tool:'chart_render',code:'TOOL_INPUT_INVALID',category:'validation',call_ref:ref,failure_ref:ref}});
+function Preview(){const {t}=useI18n();const [events,setEvents]=useState<ActivityEvent[]>([failure(1,a),failure(2,b)]),[status,setStatus]=useState('running');
+ const complete=(id:number,ref?:string)=>setEvents(old=>retainTaskActivity(old,[{id,kind:'runtime.tool.completed',body:{outcome_version:2,tool:'chart_render',call_ref:'205c205c205c205c',...(ref?{repair_of:ref}:{})}}]));
+ return <main style={{maxWidth:800,margin:'3rem auto',padding:'1.5rem'}}><section className="card"><p className="eyebrow">COPYPASTE · CONTROLLED UI SCENARIO</p><h1>{t('逐項交付與修正','Delivery and individual corrections')}</h1><p>{t('受控情境：兩份圖表各自失敗，另一份成功不會抹去它們。此頁並非正式用戶工作或模型驗收。','Controlled scenario: two chart outputs failed independently. Another successful output does not clear them. This is not a live customer task or model acceptance.')}</p>
+ <div className="button-row"><button onClick={()=>complete(3)}>{t('完成另一份成果','Complete another output')}</button><button onClick={()=>setEvents(old=>retainTaskActivity(old,Array.from({length:800},(_,i)=>({id:i+4,kind:'message.appended'}))))}>{t('加入長回覆','Add a long reply')}</button><button onClick={()=>setStatus('failed')}>{t('工作結束','Finish task')}</button><button onClick={()=>complete(900,a)}>{t('修正第一項','Correct the first output')}</button><button onClick={()=>{complete(901,b);setStatus('succeeded');}}>{t('修正第二項','Correct the second output')}</button></div>
+ <TaskToolFeedback events={events} status={status} errorCode={status==='failed'?'TOOL_DELIVERY_INCOMPLETE':null}/>{status==='succeeded'&&<p className="notice" role="status">{t('兩項修正均已確認，原用量記錄保留。','Both corrections are confirmed. Original recorded usage remains.')}</p>}</section></main>;}
+createRoot(document.getElementById('root')!).render(<Preferences><Preview/></Preferences>);
