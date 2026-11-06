@@ -45,6 +45,7 @@ declare global {
       onDesktopUpdatesChanged: (fn: () => void) => () => void;
       openCloudWorkspace: (section?: "geo" | "devices") => Promise<void>;
       localAgent: (action: string, payload: unknown) => Promise<{ ok: boolean; value?: any; code?: string }>;
+      localFilePath:(file:File)=>string;
       onLocalAgentChanged: (fn: () => void) => () => void;
       request: (
         path: string,

@@ -45,12 +45,19 @@ export function connectionFailure(method?: string) {
 export function invalidResponse(method?: string) {
   return new ClientFailure(readOnlyRequest(method) ? "CLIENT_RESPONSE_INVALID" : "CLIENT_RESULT_UNCONFIRMED");
 }
-/** One attempt only. A failed write does not prove that the server did not commit it. */
+/** Retry one failed, body-free read. Writes and received responses are never replayed. */
 export async function clientFetch(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
-  try { return await fetch(input, init); }
-  catch (error) {
-    if (init.signal?.aborted) throw init.signal.reason ?? error;
-    throw connectionFailure(init.method);
+  const request = typeof Request !== "undefined" && input instanceof Request ? input : null;
+  const method = init.method ?? request?.method ?? "GET";
+  const signal = init.signal === undefined ? request?.signal : init.signal;
+  const retryRead = readOnlyRequest(method) && init.body == null && request?.body == null;
+  for (let attempt = 0; ; attempt++) {
+    try { return await fetch(input, init); }
+    catch (error) {
+      if (signal?.aborted) throw signal.reason ?? error;
+      if (attempt === 0 && retryRead && error instanceof TypeError) continue;
+      throw connectionFailure(method);
+    }
   }
 }
 export async function clientJson(response: Response, method?: string, signal?: AbortSignal): Promise<any> {

@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, webUtils } from "electron";
 
 // Kept outside the Web renderer snapshot so every explicit renderer sync retains
 // the native-only shell. No window IPC or Node primitives are exposed to Web UI.
@@ -249,6 +249,7 @@ contextBridge.exposeInMainWorld(
     },
     openCloudWorkspace: (section?: "geo" | "devices") => ipcRenderer.invoke("workspace:cloud", section),
     localAgent: (action: string, payload: unknown) => ipcRenderer.invoke("local-agent", action, payload),
+    localFilePath:(file:File)=>webUtils.getPathForFile(file),
     onLocalAgentChanged: (fn: () => void) => {
       ipcRenderer.on("local-agent:changed", fn);
       return () => ipcRenderer.removeListener("local-agent:changed", fn);

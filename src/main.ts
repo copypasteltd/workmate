@@ -19,6 +19,7 @@ import { LocalVault } from "./vault.js";
 import { NativeSession, NativeSessionError, type NativeTokens } from "./native-session.js";
 import { exchangeNativeCode } from "./native-code.js";
 import { LocalAgentController, type LocalAgentJournal } from "./local-agent.js";
+import {LocalAttachments} from "./local-attachments.js";
 import { LocalScheduleController, type ScheduleJournal } from "./local-schedule.js";
 import { LocalProgramController, type ProgramJournal } from "./local-programs.js";
 import { localRuntimeLock } from "./local-runtime.js";
@@ -28,6 +29,7 @@ import {
   BrowserWindow,
   ipcMain,
   dialog,
+  clipboard,
   shell,
   safeStorage,
   session,
@@ -709,6 +711,9 @@ async function createWindow() {
     }
     throw new Error("REMOVAL_REQUEST_INVALID");
   });
+  const localAttachments=new LocalAttachments({owner:id=>localAgent.attachmentContext(id),
+    choose:async workspace=>{const chosen=await dialog.showOpenDialog(window!,{title:"選擇本機工作附件 / Choose local work references",defaultPath:workspace,properties:["openFile","multiSelections"]});return chosen.canceled?[]:chosen.filePaths;},
+    image:async()=>{const item=(await clipboard.read()).find(item=>item.types.includes("image/png"));if(!item)return null;const blob=await item.getType("image/png");if(blob.size>4*1024**2)throw new Error("LOCAL_ATTACHMENT_SIZE");return Buffer.from(await blob.arrayBuffer());}});
   ipcMain.handle("local-agent", async (event, action, payload) => updateAdmission.run(async () => {
     const expected = new URL("../renderer-dist/index.html", import.meta.url).href;
     if (event.sender !== window?.webContents || event.senderFrame !== event.sender.mainFrame || event.senderFrame.url.split("#")[0] !== expected)
@@ -724,6 +729,8 @@ async function createWindow() {
       keys["geo.prepare"] = ["tenant", "project", "experiment", "expected_sha256", "name", "budget"];
       keys["geo.list"] = ["tenant", "project"];
       keys["revision"] = ["id", "requestId", "prompt", "budget", "selection"];
+      keys["attachment.choose"]=["id"];keys["attachment.paste-image"]=["id"];
+      keys["attachment.references"]=["id","paths"];
       keys["team.prepare"] = ["tenant", "project", "group", "plan", "mode"];
       keys["team.start"] = ["id", "preflightId"];
       keys["team.resume"] = ["id"];
@@ -737,6 +744,9 @@ async function createWindow() {
       let value;
       switch (action) {
         case "list": value = await localAgent.list(payload); break;
+        case "attachment.choose": value=await localAttachments.choose(payload.id);break;
+        case "attachment.references": value=await localAttachments.references(payload.id,payload.paths);break;
+        case "attachment.paste-image": value=await localAttachments.paste(payload.id);break;
         case "team.prepare": value = await localAgent.prepareTeam(payload); break;
         case "team.start": value = await localAgent.startTeam(payload.id, payload.preflightId); break;
         case "team.resume": value = await localAgent.resumeTeam(payload.id); break;

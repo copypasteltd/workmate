@@ -765,6 +765,12 @@ export class LocalAgentController {
     await this.persist();
     return this.execute(r);
   }
+  async attachmentContext(id:string){
+    const r=await this.record(id);this.grant(r);
+    if(r.team||r.teamMember||r.handoff||this.busy.has(id)||r.operation||this.permissions.has(id)||r.uncertain)throw new LocalAgentError("LOCAL_OPERATION_PENDING");
+    return {actorId:r.actorId,epoch:r.epoch,workspace:r.workspace,permission:r.grant!.mode,revoked:r.revoked,
+      grantRevision:r.grant!.revision,expiresAt:r.grant!.expiresAt};
+  }
   async retry(id: string) {
     const r = await this.record(id);
     if ((r.team || r.teamMember) && r.operation?.phase !== "settling")

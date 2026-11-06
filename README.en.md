@@ -1,3 +1,44 @@
+<!-- integrated-round-195 -->
+
+## 195 · 0.7.5 · 本机客户端 / Local desktop
+
+Local Codex with native full access, local file selection/drop and approved image copies; frameless, no Electron menu, scrollable content and hidden rails.
+
+[Round delivery / 本輪交付](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-195/README.md) · [Download / 下載](https://agent.copypaste.hk/downloads)
+
+![Actual interface / 實際介面](assets/screenshots/195-local-workspace.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-195-v1-local-workspace.gif)
+
+```mermaid
+flowchart LR
+ A[Visit / 訪問] --> B[Email sign-in / 郵箱登入]
+ B --> C[Workspace / 企業與專案]
+ C --> D[Role, files, budget / 角色、檔案、預算]
+ D --> E{Client / 客戶端}
+ E -->|Web or Extension| F[Cloud Codex / 雲端]
+ E -->|Desktop native permission| G[Local Codex / 本機]
+ F --> H[Results, revisions, usage / 成果、修改、費用]
+ G --> H
+```
+
+<!-- usage-195 -->
+
+Using this release:
+
+1. Download the0.7.5 Setup or Portable build and complete account authorization in the system browser.
+2. Choose a local working directory and approve native permissions. Full local access requires explicit confirmation and can be revoked.
+3. Choose/drop local file references. Image paste requires directory write permission and creates an approved copy; referencing an original file does not automatically upload it.
+4. Local Codex reads, executes and writes results on the customer machine while models/billing use company services. Revocation prevents new operations under the old grant.
+
+[Actual recording MP4 / 实际录像](assets/screenshots/workmate-195-v1-local-workspace.mp4)
+
+<!-- /usage-195 -->
+
+本輪實際測試與旅程見報告；保留歷史失敗，不以代碼量替代全部專業/生產驗收。影片/語音/Google/Meta真實配置、至少12角色專業驗收及完整兼容/運營矩陣仍開放。測試郵箱及未簽名安裝按已確認範圍保留。
+
+Selected regression and real journeys are in the report. Historical failures remain. Real video/audio/Google/Meta configuration, at least12 professional role evaluations and the full compatibility/operations matrix remain open. The requested test mailbox and unsigned manual installation remain.
+
 <!-- product-downloads-193 -->
 
 ## Public product downloads · 193

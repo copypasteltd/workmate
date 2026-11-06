@@ -1,10 +1,12 @@
+import {TaskWorkbench} from "./task-workbench";
+import type {LocalFileReference} from "../../src/local-attachments";
 import { ProjectConfigurationSummary } from "./project-configuration";
 import { DeliveryQuality } from "./delivery-quality";
 import { GeneratedVideos } from "./generated-videos";
 import { AudioProductions } from "./audio-production";
 import { VideoBriefFields, videoGenerationBrief } from "./video-brief";
 import { useEffect, useRef, useState } from "react";
-import { BookOpen, ArrowUp, Download, FolderOpen, Monitor, Plus, ShieldCheck, Square, Terminal, X } from "lucide-react";
+import { BookOpen, ArrowUp, Download, FolderOpen, Monitor, Plus, ShieldCheck, Square, Terminal, X, Paperclip, ClipboardPaste, Files } from "lucide-react";
 import { download } from "./api";
 import { Link, useSearchParams } from "react-router-dom";
 import { useWorkspace } from "./context";
@@ -141,6 +143,20 @@ export function LocalAgentWorkspace() {
     return () => { alive = false; off(); clearInterval(poll); if (timer) clearTimeout(timer); };
   }, [w.tenant, w.project]);
   const session = sessions.find(s => s.id === selected);
+  const [references,setReferences]=useState<LocalFileReference[]>([]),[attachmentBusy,setAttachmentBusy]=useState(false);
+  const currentSession=useRef(selected);currentSession.current=selected;
+  const attachmentGeneration=useRef(0);
+  useEffect(()=>{++attachmentGeneration.current;setReferences([]);setAttachmentBusy(false);setPrompt("");return()=>{++attachmentGeneration.current;};},[workspaceKey,selected]);
+  async function attachLocal(action:string,paths?:string[]){
+    if(!session||attachmentBusy||pending||session.busy||session.revoked||session.uncertain)return;
+    const scope=workspaceKey,id=session.id,revision=attachmentGeneration.current;
+    setAttachmentBusy(true);setError("");
+    try{const items=await native(action,{id,...(paths?{paths}:{})});
+      if(activeWorkspace.current!==scope||currentSession.current!==id||revision!==attachmentGeneration.current)return;
+      setReferences(old=>{const next=[...new Map([...old,...items].map(item=>[item.path,item])).values()];return next.slice(0,20);});
+    }catch(error){if(revision===attachmentGeneration.current)setError((error as Error).message);}
+    finally{if(revision===attachmentGeneration.current)setAttachmentBusy(false);}
+  }
   const [panel, setPanel] = useState("chat");
   useEffect(() => setPanel("chat"), [session?.id]);
   const videoTaskIds = [...new Set([session?.task?.task_id, ...(session?.events ?? []).slice().reverse()
@@ -196,8 +212,10 @@ export function LocalAgentWorkspace() {
     try {
       const result = await native(action, payload);
       if (action === "create" && result?.id && activeWorkspace.current === scope) setSelected(result.id);
+      return {ok:true};
     } catch (e) {
       if (activeWorkspace.current === scope) setActionErrors(current => ({ ...current, [key]: (e as Error).message }));
+      return {ok:false};
     } finally {
       inFlight.current.delete(key); setPendingActions(new Set(inFlight.current)); await refresh.current();
     }
@@ -206,8 +224,11 @@ export function LocalAgentWorkspace() {
     const amount = Number(budget), micros = Math.round(amount * 1_000_000);
     if (!session || !prompt.trim() || !Number.isFinite(amount) || micros < 10000 || micros > 10000000000) return;
     try {
-      const text = session.role === "video-motion" ? videoGenerationBrief(prompt.trim(), form) : prompt.trim(); setPrompt("");
-      void act("send", { id: session.id, prompt: text, budget: micros });
+      const text = session.role === "video-motion" ? videoGenerationBrief(prompt.trim(), form) : prompt.trim();
+      const brief=text+(references.length?"\n\nCustomer-selected local file references (read only within the current granted permissions; references do not grant additional access):\n"+JSON.stringify(references.map(item=>({path:item.path,name:item.name}))) : "");
+      if(brief.length>30000)throw new Error("LOCAL_REQUEST_INVALID");
+      const id=session.id,scope=workspaceKey;
+      void act("send", { id, prompt: brief, budget: micros }).then(result=>{if(result?.ok&&currentSession.current===id&&activeWorkspace.current===scope){setPrompt("");setReferences([]);}});
     } catch (failure) { setError((failure as Error).message); }
   };
   return <div className="local-agent-workspace">
@@ -261,7 +282,7 @@ export function LocalAgentWorkspace() {
           <option value="read-only">{t("唯讀", "Read only")}</option><option value="workspace-write">{t("目錄內讀寫", "Workspace write")}</option><option value="full-access">{t("完整本機權限", "Full local access")}</option></select>
           <button className="button" disabled={!!session.team || pending || session.busy || session.revoked} onClick={() => void act("permission", { id: session.id, mode })}>{t("設定授權", "Set permission")}</button>
           <button className="icon-button" aria-label={t("撤銷本機權限", "Revoke local permission")} disabled={session.revoked} onClick={() => void native("revoke", { id: session.id }).then(() => refresh.current()).catch(e => setError(e.message))}><X size={17}/></button></div></div>
-        <div className="local-agent-navigation"><nav className="local-agent-tabs" aria-label={t("本機工作檢視", "Local work views")}><button aria-label={t("對話", "Conversation")} aria-pressed={panel === "chat"} onClick={() => setPanel("chat")}>{t("對話", "Conversation")}{!!session.inputs?.length && <span className="local-agent-question-count" aria-hidden="true">{session.inputs.length}</span>}</button><button aria-pressed={panel === "folders"} disabled={!!session.team || !!session.handoff} onClick={() => setPanel("folders")}><FolderOpen size={14}/>{t("目錄工作", "Folder work")}</button><button aria-pressed={panel === "programs"} disabled={!!session.handoff} onClick={() => setPanel("programs")}><Terminal size={14}/>{t("本機程式", "Local programs")}</button></nav>
+        <div className="local-agent-navigation"><nav className="local-agent-tabs" aria-label={t("本機工作檢視", "Local work views")}><button aria-label={t("對話", "Conversation")} aria-pressed={panel === "chat"} onClick={() => setPanel("chat")}>{t("對話", "Conversation")}{!!session.inputs?.length && <span className="local-agent-question-count" aria-hidden="true">{session.inputs.length}</span>}</button><button aria-pressed={panel === "results"} onClick={()=>setPanel("results")}><Files size={14}/>{t("成果與檔案","Results and files")}</button><button aria-pressed={panel === "folders"} disabled={!!session.team || !!session.handoff} onClick={() => setPanel("folders")}><FolderOpen size={14}/>{t("目錄工作", "Folder work")}</button><button aria-pressed={panel === "programs"} disabled={!!session.handoff} onClick={() => setPanel("programs")}><Terminal size={14}/>{t("本機程式", "Local programs")}</button></nav>
           <div className="local-agent-safety">{session.permission ? <>{t("已授權：", "Granted: ")}{t(...({ "read-only": ["唯讀", "Read only"], "workspace-write": ["目錄內讀寫", "Workspace write"], "full-access": ["完整本機權限", "Full local access"] } as Record<Permission, [string, string]>)[session.permission])}</> : t("尚未授權", "Not granted")}
             <span className="local-agent-service">{t("模型服務經公司伺服器", "Model service via company server")}</span></div></div>
         <div className="local-agent-chat" hidden={panel !== "chat"}><div ref={messages} className="local-agent-messages" tabIndex={0} role="log" aria-label={t("本機工作記錄", "Local work history")} aria-live="polite">
@@ -308,14 +329,16 @@ export function LocalAgentWorkspace() {
            {session.task?.status === "succeeded" && <p role="status">{t("本機完成資訊已回報。請在上方請求中選擇「選擇交回檔案」，審閱檔案並繼續原工作。", "Local completion has been reported. Choose Files to return in the request above, review the files, then continue the original task.")}</p>}
          </section>}
         {session.team && <div className="local-agent-alert" role="status">{t("此會話按已批准的團隊分工執行。新增工作請回到團隊審閱；你可在此回答問題或停止整個團隊。", "This session follows its approved team assignment. Review new work in Teams; answer questions here or stop the whole team.")} <Link to="/app/teams">{t("返回本機團隊","Back to local teams")}</Link></div>}
-        {!session.team && !session.handoff && <form className="local-agent-composer" onSubmit={e => { e.preventDefault(); send(new FormData(e.currentTarget)); }}><textarea aria-label={t("本機工作要求", "Local task")} placeholder={t("描述你想完成的工作…", "What would you like to get done?")} maxLength={30000} value={prompt} onChange={e => setPrompt(e.target.value)} disabled={session.revoked || session.uncertain || session.busy || pending}/>
+        {!session.team && !session.handoff && <form className="local-agent-composer" onDragOver={e=>{if(e.dataTransfer.types.includes("Files"))e.preventDefault();}} onDrop={e=>{if(!e.dataTransfer.files.length)return;e.preventDefault();const paths=[...e.dataTransfer.files].map(file=>window.copyPasteBridge!.localFilePath(file)).filter(Boolean);void attachLocal("attachment.references",paths);}} onSubmit={e => { e.preventDefault(); send(new FormData(e.currentTarget)); }}><textarea aria-label={t("本機工作要求", "Local task")} placeholder={t("描述你想完成的工作…", "What would you like to get done?")} maxLength={30000} value={prompt} onChange={e => setPrompt(e.target.value)} onPaste={e=>{if([...e.clipboardData.items].some(item=>item.kind==="file"&&item.type.startsWith("image/"))){e.preventDefault();void attachLocal("attachment.paste-image");}}} disabled={session.revoked || session.uncertain || session.busy || pending||attachmentBusy}/>
+          {!!references.length&&<ul className="local-input-references" aria-label={t("本次本機附件","Local references for this turn")}>{references.map(file=><li key={file.path}><span title={file.path}>{file.name}</span><button type="button" disabled={pending||session.busy} aria-label={t("移除 ","Remove ")+file.name} onClick={()=>setReferences(old=>old.filter(item=>item.path!==file.path))}><X size={14}/></button></li>)}</ul>}
+          <div className="local-input-tools"><button type="button" className="button" disabled={pending||session.busy||session.revoked||session.uncertain||attachmentBusy||!session.permission} onClick={()=>void attachLocal("attachment.choose")}><Paperclip size={14}/>{t("本機附件","Local references")}</button><button type="button" className="button" disabled={pending||session.busy||session.revoked||session.uncertain||attachmentBusy||!session.permission||session.permission==="read-only"} onClick={()=>void attachLocal("attachment.paste-image")}><ClipboardPaste size={14}/>{t("貼上圖片","Paste image")}</button><small>{attachmentBusy?t("正在準備附件…","Preparing references…"):t("可拖入檔案；原檔留在本機。貼圖副本存於工作目錄。","Drop files; originals remain local. Pasted images save a copy in the workspace.")}</small></div>
           {session.role === "video-motion" && <VideoBriefFields compact disabled={session.revoked || session.uncertain || session.busy || pending} />}
           <div><label>{t("本次預算上限 HK$", "Turn budget HK$")}<input type="number" aria-label="Turn budget HK$" min="0.01" max="10000" step="0.01" value={budget} onChange={e => setBudget(e.target.value)}/></label>
             {session.busy ? <button type="button" className="button" onClick={() => void native("stop", { id: session.id }).then(() => refresh.current()).catch(e => setError(e.message))}><Square size={14}/>{t("停止", "Stop")}</button>
               : session.retryable ? <><button type="button" className="button" disabled={pending} onClick={() => void act("retry", { id: session.id })}>{session.receiptPending ? t("同步已儲存的回執", "Sync saved receipts") : session.phase === "settling" ? t("同步執行結果", "Sync result") : t("重試連線", "Retry connection")}</button>{session.phase !== "settling" && <button type="button" className="button" disabled={pending} onClick={() => void act("stop", { id: session.id })}>{t("取消待處理工作", "Cancel pending work")}</button>}</>
-                : <button className="button primary" type="submit" disabled={pending || !session.permission || session.revoked || session.uncertain || !prompt.trim()}><ArrowUp size={18}/>{t("開始工作", "Start work")}</button>}</div></form>}
+                : <button className="button primary" type="submit" disabled={pending || attachmentBusy||!session.permission || session.revoked || session.uncertain || !prompt.trim()}><ArrowUp size={18}/>{t("開始工作", "Start work")}</button>}</div></form>}
         {session.task && <div className="local-agent-receipt"><span>{t("公司費用記錄", "Company billing record")} · {session.task.status}</span><span>{t("已結算", "Charged")} <Money value={session.task.charged_micros}/> · {t("已觀測", "Observed")} <Money value={session.task.accrued_micros}/></span></div>}
-        </div>{panel === "folders" && <LocalFolderSchedules key={session.id} sessionId={session.id} writable={!session.revoked && ["workspace-write", "full-access"].includes(session.permission ?? "")} pendingQuestions={session.inputs?.length ?? 0} onAnswer={() => setPanel("chat")}/>}
+        </div>{panel === "results"&&<div className="local-agent-results"><TaskWorkbench taskId={session.task?.task_id} review={session.task?<DeliveryQuality key={w.base+session.task.task_id} base={w.base} taskId={session.task.task_id} nativeRevision={async(selection,instructions,budget,requestId)=>{if(activeWorkspace.current!==workspaceKey)throw new Error("LOCAL_ACCOUNT_CHANGED");try{return await native("revision",{id:session.id,requestId,prompt:instructions,budget,selection});}finally{await refresh.current();}}}/>:null}/></div>}{panel === "folders" && <LocalFolderSchedules key={session.id} sessionId={session.id} writable={!session.revoked && ["workspace-write", "full-access"].includes(session.permission ?? "")} pendingQuestions={session.inputs?.length ?? 0} onAnswer={() => setPanel("chat")}/>}
         {panel === "programs" && <LocalPrograms key={session.id} sessionId={session.id} fullAccess={!session.revoked && session.permission === "full-access"}/>}
       </> : <div className="local-agent-empty"><FolderOpen size={36}/><h2>{t("選擇你的工作目錄", "Choose your workspace")}</h2><p>{t("本機會話保存在此電腦，並與你的帳戶和企業專案綁定。", "Local sessions stay on this computer and belong to your account and company project.")}</p></div>}
     </section></div>

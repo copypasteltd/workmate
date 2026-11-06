@@ -1,3 +1,44 @@
+<!-- integrated-round-195 -->
+
+## 195 · 0.7.5 · 本机客户端 / Local desktop
+
+本机Codex、原生完整权限、文件选择/拖入及获准图片副本；无边框、无Electron菜单，保留滚动并隐藏滚动条。
+
+[Round delivery / 本輪交付](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-195/README.md) · [Download / 下載](https://agent.copypaste.hk/downloads)
+
+![Actual interface / 實際介面](assets/screenshots/195-local-workspace.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-195-v1-local-workspace.gif)
+
+```mermaid
+flowchart LR
+ A[Visit / 訪問] --> B[Email sign-in / 郵箱登入]
+ B --> C[Workspace / 企業與專案]
+ C --> D[Role, files, budget / 角色、檔案、預算]
+ D --> E{Client / 客戶端}
+ E -->|Web or Extension| F[Cloud Codex / 雲端]
+ E -->|Desktop native permission| G[Local Codex / 本機]
+ F --> H[Results, revisions, usage / 成果、修改、費用]
+ G --> H
+```
+
+<!-- usage-195 -->
+
+本轮使用流程：
+
+1. 从下载页取得0.7.5安装版或便携版，在系统浏览器完成账户授权。
+2. 选择本机工作目录，并在原生确认中授予所需权限；完整本机权限需要客户明确确认，也可随后撤销。
+3. 选择或拖入本机文件作为引用；粘贴图片需要目录写权限，主进程将副本保存在获准目录，原始本机文件不会因引用自动上传。
+4. 提交本机任务后，由本机 Codex 读取、执行并写出成果，通过公司接口使用模型和结算。撤权后不能继续使用旧授权启动本机操作。
+
+[Actual recording MP4 / 实际录像](assets/screenshots/workmate-195-v1-local-workspace.mp4)
+
+<!-- /usage-195 -->
+
+本輪實際測試與旅程見報告；保留歷史失敗，不以代碼量替代全部專業/生產驗收。影片/語音/Google/Meta真實配置、至少12角色專業驗收及完整兼容/運營矩陣仍開放。測試郵箱及未簽名安裝按已確認範圍保留。
+
+Selected regression and real journeys are in the report. Historical failures remain. Real video/audio/Google/Meta configuration, at least12 professional role evaluations and the full compatibility/operations matrix remain open. The requested test mailbox and unsigned manual installation remain.
+
 <!-- product-downloads-193 -->
 
 ## 產品下載與安裝 · 193
