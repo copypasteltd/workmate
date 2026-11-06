@@ -1,3 +1,30 @@
+<!-- integrated-round-204 -->
+
+## 204 · 0.5.2 · 安全工具反馈与云端执行时效
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-204/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 模型能力继续按每个模型分别管理上游地址与API Key；管理员完整用户、企业、消耗、额度／VIP、权限、批量及内容控制流程保持。最高管理员直接执行，其他角色按策略审批，保留审计。
+
+2. 本轮后台界面和业务代码未改；既有22项相关证据以原样源码沿用，不冒充新增后台全站实测。schema165变更属于云端工作授权时效，未授予管理员新的绕过权限。
+
+```mermaid
+flowchart LR
+ A[Authenticated administrator] --> B[Current role and policy]
+ B --> C[Direct highest admin or approval]
+ C --> D[Audit and current user content controls]
+```
+
+725项相关通过证据区分本轮执行与原样源码沿用。一项关联原失败的营销样例已交付实际文件。四份内网文件完整字节／SHA通过。公网大安装包仅有部分传输证据，完整公网下载检查未通过；本次应用更新与Git同步不代表关闭该项。全部102条／32组、19角色／50Skills专业验收、外部媒体／营销／IdP配置、长稳／设备／并发／灾备及WorkBuddy盲测差距继续保留。原通用错误／租约历史根因、公网默认HTTP/2及正常DNS地址故障转移未因此证明；仅本机验证选用另一个当前公网地址，服务器网络保持不变；不声明完整产品验收通过。
+
+![198轮实际录制，本轮源码未变 · Retained198 capture, identical component source](assets/screenshots/198-v4-service-readiness.png)
+
+![198轮实际录制，本轮源码未变 · Retained198 capture, identical component source](assets/screenshots/workmate-198-v4-service-review.gif)
+
+[Recorded interaction / 实际录影](assets/screenshots/workmate-198-v4-service-review.mp4)
+
+以下历史版本说明及完整安装／使用指南继续保留。
+
 <!-- integrated-round-203 -->
 
 ## 203 · 0.5.2 · 专业输入与可靠交付

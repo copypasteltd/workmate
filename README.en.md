@@ -1,3 +1,30 @@
+<!-- integrated-round-204 -->
+
+## 204 · 0.5.2 · Safe tool feedback and durable cloud ownership
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-204/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Keep per-model upstream URL/API-key configuration and existing complete user/company/usage/credit/VIP/permission/bulk/content administration. Highest administrators act directly; other roles follow policy with complete audit records.
+
+2. Admin UI/business source is unchanged. Retain 22 related cases against identical source; do not claim a new complete admin test run. Schema 165 changes cloud task liveness without adding administrator bypass authority.
+
+```mermaid
+flowchart LR
+ A[Authenticated administrator] --> B[Current role and policy]
+ B --> C[Direct highest admin or approval]
+ C --> D[Audit and current user content controls]
+```
+
+725 qualified related cases distinguish current tests from identical-source retention. One linked marketing sample delivered actual files. All four inner files passed full byte/SHA checks. Public installer transfers remain incomplete; the complete public-download gate has NOT passed. This release update and Git synchronization do not close that check. Original102 requirements/32 groups, professional19-role/50-Skill acceptance, external media/marketing/IdP setup, long-run/device/concurrency/DR qualification and blind WorkBuddy comparison remain explicit. Original generic failure/lease root causes, default public HTTP/2 and normal DNS-address failover remain unproven; QA alone selects another current public address without changing server networking; no full-product acceptance claim.
+
+![198轮实际录制，本轮源码未变 · Retained198 capture, identical component source](assets/screenshots/198-v4-service-readiness.png)
+
+![198轮实际录制，本轮源码未变 · Retained198 capture, identical component source](assets/screenshots/workmate-198-v4-service-review.gif)
+
+[Recorded interaction / 实际录影](assets/screenshots/workmate-198-v4-service-review.mp4)
+
+Historical release notes and the complete setup/usage guide follow.
+
 <!-- integrated-round-203 -->
 
 ## 203 · 0.5.2 · Pinned specialist intake and reliable delivery
