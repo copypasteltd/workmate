@@ -1,0 +1,18 @@
+-- SQL164 is immutable. Preserve the original native transaction-start checks
+-- for the two guards that historically used now(). Cloud ownership continues
+-- to require the canonical, independently renewable wall-clock deadline.
+DO $$ DECLARE f record; definition text; needle text; patched integer:=0; BEGIN
+ needle:='public.task_live_lease_until(t)<=clock_timestamp()';
+ FOR f IN SELECT p.oid,p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+  WHERE n.nspname='public' AND p.proname=ANY(ARRAY['guard_task_tool_receipt','guard_paid_input_checkpoint']) LOOP
+  definition:=pg_get_functiondef(f.oid);
+  IF position(needle IN definition)=0 THEN
+   RAISE EXCEPTION 'Missing original lease predicate in %',f.proname;
+  END IF;
+  EXECUTE replace(definition,needle,
+   'public.task_live_lease_until(t)<=(CASE WHEN t.execution_location=''desktop'' THEN now() ELSE clock_timestamp() END)');
+  patched:=patched+1;
+ END LOOP;
+ IF patched<>2 THEN RAISE EXCEPTION 'Expected two original native transaction guards, got %',patched; END IF;
+END $$;
+INSERT INTO schema_migrations(version) VALUES(165);

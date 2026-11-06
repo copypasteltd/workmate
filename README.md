@@ -1,3 +1,32 @@
+<!-- integrated-round-204 -->
+
+## 204 · 0.5.11 · 安全工具反馈与云端执行时效
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-204/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. 云端 Codex 工具输入校验改为有界字段反馈；不返回参数值、原异常、上游内容、密钥或堆栈。仅明确发生在业务执行前的校验失败可以在原工作／原预算内修正。未知结果不可自动重放。
+
+2. 每次工具调用保存安全结果及参考号；未恢复的图表、图片、软件包等交付失败不能被模型最终文字覆盖成成功；补充资料后的新回合继承原失败，最终任务状态再次核对，只有真实同工具完成才清除。实际成果和真实用量仍是交付及结算依据。
+
+3. schema165 将云端45秒续租存入独立的任务／尝试／fence记录，保留原工具事务权限锁、当前授权、取消／撤权及过期围栏。模型请求恢复、音视频、付费资料检查点和私有云工作流统一使用该时效；Desktop原生认证续租保持原规则。
+
+4. 应用沿原63070／63071／63072入口发布；备份和兼容schema165的代码回退保留。Nginx、DNS、hosts、路由、防火墙及系统代理只读，原数据库／代理进程和凭证保持。
+
+```mermaid
+flowchart LR
+ A[Current scope and original budget] --> B[Independent fenced cloud lease]
+ B --> C[Codex and fixed Skills]
+ C --> D[Trusted input validation]
+ D --> E[Actual transactional output]
+ D --> F[Safe bounded failure]
+ E --> G[Customer review and actual usage]
+ F --> G
+```
+
+725项相关通过证据区分本轮执行与原样源码沿用。一项关联原失败的营销样例已交付实际文件。四份内网文件完整字节／SHA通过。公网大安装包仅有部分传输证据，完整公网下载检查未通过；本次应用更新与Git同步不代表关闭该项。全部102条／32组、19角色／50Skills专业验收、外部媒体／营销／IdP配置、长稳／设备／并发／灾备及WorkBuddy盲测差距继续保留。原通用错误／租约历史根因、公网默认HTTP/2及正常DNS地址故障转移未因此证明；仅本机验证选用另一个当前公网地址，服务器网络保持不变；不声明完整产品验收通过。
+
+以下历史版本说明及完整安装／使用指南继续保留。
+
 <!-- integrated-round-203 -->
 
 ## 203 · 0.5.10 · 专业输入与可靠交付

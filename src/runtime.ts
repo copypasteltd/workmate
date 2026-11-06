@@ -7,6 +7,7 @@ import path from "node:path";
 import type { Config } from "./config.js";
 import { canonical, hash, Problem } from "./lib.js";
 import { runtimeToolContent } from "./runtime-tool-content.js";
+import { RuntimeToolState, safeToolFeedback } from "./runtime-tool-feedback.js";
 import { desktopCompanyToolSchema } from "./desktop-tool-policy.js";
 import {
   startScopedInferenceGateway,
@@ -32,6 +33,8 @@ export interface RuntimeContext {
   // Only the server may derive this from an immutable task capability binding.
   selection?: RuntimeSelection;
   requestAuthority?: AIRequestAuthority;
+  // Server-derived persisted outcomes, never a customer-supplied authority.
+  unresolvedDeliveryToolNames?: readonly string[];
   signal: AbortSignal;
   onEvent: (kind: string, body: any) => Promise<void>;
   tools: {
@@ -373,7 +376,7 @@ export class CodexRuntimeAdapter {
         threadOutput = baselineOutput;
       let completedResult: RuntimeResult | undefined;
       let invalidUsage = false;
-      const failedImageTools = new Set<string>();
+      const toolState = new RuntimeToolState(ctx.unresolvedDeliveryToolNames);
       let stdoutBytes = 0,
         stderrBytes = 0;
       const rpcFailure = (code: string, method: string, startedAt: number) =>
@@ -466,6 +469,11 @@ export class CodexRuntimeAdapter {
         if (m.id !== undefined && m.method) {
           if (m.method === "item/tool/call") {
             const tool = ctx.tools.find((t) => t.name === m.params?.tool);
+            const identity = {
+              tool: tool?.name ?? "unavailable_tool",
+              call_ref: hash(String(m.params?.callId ?? "")).slice(0, 16),
+              arguments_sha256: hash(canonical(m.params?.arguments ?? null)),
+            };
             let result: any;
             try {
               if (
@@ -478,22 +486,21 @@ export class CodexRuntimeAdapter {
                 ctx.signal.aborted
               )
                 throw new Error("Tool not allowed");
-              result = {
-                success: true,
-                contentItems: runtimeToolContent(await tool.run(m.params.arguments, m.params.callId)),
-              };
-              failedImageTools.delete(tool.name);
-            } catch {
-              if (tool && ["image2_generate", "image2_edit"].includes(tool.name)) {
-                failedImageTools.add(tool.name);
-                await ctx.onEvent("runtime.tool.failed", { tool: tool.name, code: "IMAGE_TOOL_FAILED" });
-              }
+              const contentItems = runtimeToolContent(await tool.run(m.params.arguments, m.params.callId));
+              await ctx.onEvent("runtime.tool.completed", identity);
+              const previous = toolState.complete(tool.name);
+              if (previous) await ctx.onEvent("runtime.tool.recovered", { ...identity, code: previous.code });
+              result = { success: true, contentItems };
+            } catch (error) {
+              const feedback = safeToolFeedback(error, tool ?? { name: "unavailable_tool", inputSchema: {} });
+              if (tool) toolState.fail(tool.name, feedback);
+              await ctx.onEvent("runtime.tool.failed", { ...identity, ...feedback });
               result = {
                 success: false,
                 contentItems: [
                   {
                     type: "inputText",
-                    text: "Tool execution failed or permission denied. Do not fabricate a result.",
+                    text: JSON.stringify({ error: { ...feedback, call_ref: identity.call_ref }, instruction: "Use this safe feedback with the existing authorization and original task budget. Never fabricate results or replay unknown side effects." }),
                   },
                 ],
               };
@@ -627,7 +634,7 @@ export class CodexRuntimeAdapter {
           sandbox: "read-only",
           environments: [],
           developerInstructions:
-            "You are a CopyPaste enterprise specialist. Use only the registered tools, bound Skills and current project data. No direct shell, arbitrary network, secrets, local virtualization, unsupported claims or fabricated artifacts. A registered computer_command may operate only its independently customer-confirmed dedicated cloud lease and original private task binding. It cannot purchase, renew or rebind resources. Verify actual command receipts before claiming effects. Deliver editable sources and report unresolved requirements.",
+            "You are a CopyPaste enterprise specialist. Use only the registered tools, bound Skills and current project data. No direct shell, arbitrary network, secrets, local virtualization, unsupported claims or fabricated artifacts. A registered computer_command may operate only its independently customer-confirmed dedicated cloud lease and original private task binding. It cannot purchase, renew or rebind resources. Verify actual command receipts before claiming effects. Correct explicitly not-performed input validation within this same task and original budget; this grants no new permission or spending. Inspect original receipts for an unverified operation and never automatically repeat uncertain side effects. A tool failure is not a completed delivery. Deliver editable sources and report unresolved requirements.",
         };
         const result = await send(
           ctx.thread ? "thread/resume" : "thread/start",
@@ -667,7 +674,7 @@ export class CodexRuntimeAdapter {
         await ctx.onEvent("runtime.turn", { thread_id: thread, turn_id: turn });
         if (ctx.signal.aborted) abort();
         const nativeStatus = await done;
-        const status = nativeStatus === "completed" && failedImageTools.size ? "failed" : nativeStatus;
+        const status = nativeStatus === "completed" && toolState.unresolvedDelivery ? "failed" : nativeStatus;
         await ctx.onEvent("runtime.phase", { phase: "finished", status });
         await chain;
         if (gateway.forwardedRequests === 0) {
@@ -705,7 +712,7 @@ export class CodexRuntimeAdapter {
           thread,
           turn,
           status,
-          ...(status !== "completed" ? { errorCode: failedImageTools.size ? "IMAGE_TOOL_FAILED" : gatewayError ?? "CODEX_TURN_FAILED" } : {}),
+          ...(status !== "completed" ? { errorCode: toolState.unresolvedDelivery ? toolState.terminalCode : gatewayError ?? "CODEX_TURN_FAILED" } : {}),
         };
         return completedResult;
       } catch (e) {

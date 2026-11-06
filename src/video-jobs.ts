@@ -37,10 +37,10 @@ export class GeneratedVideoJobs {
   constructor(private db: Database, private catalog: Catalog, private storage: Storage) {}
 
   private async origin(tx: Tx, job: any, active = true) {
-    const task = (await tx.query("SELECT * FROM tasks WHERE id=$1 AND tenant_id=$2 AND project_id=$3", [job.task_id, job.tenant_id, job.project_id])).rows[0];
+    const task = (await tx.query("SELECT t.*,public.task_live_lease_until(t)>clock_timestamp() AS origin_lease_active FROM tasks t WHERE id=$1 AND tenant_id=$2 AND project_id=$3", [job.task_id, job.tenant_id, job.project_id])).rows[0];
     if (!task || task.created_by !== job.actor_id || task.private_owner !== job.private_owner || task.content_state !== "active"
       || task.cancel_requested || !["running", "succeeded"].includes(task.status)
-      || (active && (task.status !== "running" || new Date(task.lease_until).getTime() <= Date.now()))) throw unavailable("VIDEO_ORIGIN_UNAVAILABLE");
+      || (active && (task.status !== "running" || task.origin_lease_active !== true))) throw unavailable("VIDEO_ORIGIN_UNAVAILABLE");
     const user = (await tx.query("SELECT id,email,name,auth_version FROM users WHERE id=$1", [task.created_by])).rows[0];
     if (!user || user.auth_version !== task.actor_auth_version) throw unavailable("VIDEO_ORIGIN_REVOKED");
     const actor: Principal = { id: user.id, email: user.email, name: user.name, authVersion: user.auth_version, audience: "user", sessionId: "", sessionHash: "" };

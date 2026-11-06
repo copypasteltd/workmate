@@ -189,7 +189,7 @@ export class AudioAuthorizations {
       const rows = (await tx.query(`SELECT a.id,a.task_id FROM audio_authorizations a JOIN tasks t ON t.id=a.task_id
         WHERE a.state IN('pending','confirmed') AND a.data_mode=$1
         AND (a.expires_at<=clock_timestamp() OR t.status<>'running' OR t.fencing_token IS DISTINCT FROM a.origin_fencing
-          OR t.attempt<>a.origin_attempt OR t.lease_until<=clock_timestamp() OR t.cancel_requested OR t.content_state<>'active')
+          OR t.attempt<>a.origin_attempt OR public.task_live_lease_until(t)<=clock_timestamp() OR t.cancel_requested OR t.content_state<>'active')
         AND NOT EXISTS(SELECT 1 FROM ai_audio_jobs j WHERE j.authorization_id=a.id AND j.state IN('dispatched','completed','unknown'))
         ORDER BY a.task_id,a.id`, [this.db.config.DEMO_MODE ? "simulated" : "configured_services"])).rows;
       let changed = 0;
@@ -200,7 +200,7 @@ export class AudioAuthorizations {
           decided_at=clock_timestamp(),revision=revision+1 WHERE id=$1 AND state IN('pending','confirmed')
           AND (expires_at<=clock_timestamp() OR EXISTS(SELECT 1 FROM tasks t WHERE t.id=audio_authorizations.task_id
             AND (t.status<>'running' OR t.fencing_token IS DISTINCT FROM audio_authorizations.origin_fencing
-              OR t.attempt<>audio_authorizations.origin_attempt OR t.lease_until<=clock_timestamp()
+              OR t.attempt<>audio_authorizations.origin_attempt OR public.task_live_lease_until(t)<=clock_timestamp()
               OR t.cancel_requested OR t.content_state<>'active')))
           AND NOT EXISTS(SELECT 1 FROM ai_audio_jobs j WHERE j.authorization_id=$1 AND j.state IN('dispatched','completed','unknown'))`, [row.id])).rowCount ?? 0;
       }

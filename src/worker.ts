@@ -1,3 +1,4 @@
+import { readUnresolvedDeliveryToolNames, deliveryFailureCode } from "./runtime-tool-feedback.js";
 import {conversationMutation} from "./conversation-mutation.js";
 import { completeTaskPause } from "./task-pause.js";
 import { assertLiveEnvironment } from "./recovery-fence.js";
@@ -125,6 +126,51 @@ import {
   inputDependencyBinding,
 } from "./task-dependencies.js";
 
+/** Recover cloud ownership only; native Desktop has its authenticated reaper. */
+export async function recoverExpiredCloudTaskLeases(db: Database): Promise<number> {
+  try {
+    return await db.tx(async tx => {
+      await tx.query("SET LOCAL lock_timeout='250ms'");
+      // Lock the canonical deadline and task together. In-flight renewals and
+      // actual tool transactions are skipped, never read as abandoned owners.
+      const expired = await tx.query(`WITH expired AS MATERIALIZED (
+        SELECT t.id,t.attempt,t.fencing_token FROM cloud_task_leases l
+        JOIN tasks t ON t.id=l.task_id AND t.tenant_id=l.tenant_id
+          AND t.created_by=l.actor_id AND t.attempt=l.attempt AND t.fencing_token=l.fencing_token
+        WHERE t.execution_location='cloud' AND t.status='running' AND l.lease_until<=clock_timestamp()
+        ORDER BY l.lease_until,t.id FOR UPDATE OF t,l SKIP LOCKED LIMIT 100
+      ) UPDATE tasks t SET status='reconciling',error_code='WORKER_LEASE_EXPIRED',
+          updated_at=clock_timestamp(),version=t.version+1
+        FROM expired e WHERE t.id=e.id AND t.status='running' AND t.attempt=e.attempt
+          AND t.fencing_token=e.fencing_token RETURNING t.id,t.tenant_id`);
+      // Explicitly invalidated/missing ownership is closed as well. Existing
+      // canonical rows remain authoritative, including a concurrent renewal.
+      const missing = await tx.query(`WITH missing AS MATERIALIZED (
+        SELECT t.id FROM tasks t WHERE t.execution_location='cloud' AND t.status='running'
+          AND NOT EXISTS(SELECT 1 FROM cloud_task_leases l WHERE l.task_id=t.id
+            AND l.tenant_id=t.tenant_id AND l.actor_id=t.created_by
+            AND l.attempt=t.attempt AND l.fencing_token=t.fencing_token)
+        ORDER BY t.id FOR UPDATE OF t SKIP LOCKED LIMIT 100
+      ) UPDATE tasks t SET status='reconciling',error_code='WORKER_LEASE_EXPIRED',
+          updated_at=clock_timestamp(),version=t.version+1 FROM missing m
+        WHERE t.id=m.id AND t.status='running' RETURNING t.id,t.tenant_id`);
+      const changed = [...expired.rows, ...missing.rows];
+      for (const task of changed) {
+        await tx.query("UPDATE reservations SET status='reconciling' WHERE task_id=$1 AND status='reserved'", [task.id]);
+        await event(tx, task.tenant_id, task.id, "task.finished", {
+          status: "reconciling", error_code: "WORKER_LEASE_EXPIRED",
+        });
+      }
+      return changed.length;
+    }, undefined, true);
+  } catch (error: any) {
+    // Release the whole claim if another actual transaction blocks recovery.
+    // The next maintenance tick can observe it again; no replay or zero cost.
+    if (error.code === "55P03") return 0;
+    throw error;
+  }
+}
+
 export class Worker {
   private boss: PgBoss;
   private timer?: ReturnType<typeof setInterval>;
@@ -224,9 +270,7 @@ export class Worker {
       }
       // Unknown abandoned execution is retained for reconciliation; it is never blindly replayed.
       await new AudioProduction(this.db, this.catalog, this.storage).recover();
-      await this.db.control.query(
-        "UPDATE tasks SET status='reconciling',error_code='WORKER_LEASE_EXPIRED',version=version+1 WHERE status='running' AND lease_until<now()",
-      );
+      await recoverExpiredCloudTaskLeases(this.db);
       await this.db.control.query(
         "UPDATE reservations r SET status='reconciling' FROM tasks t WHERE t.id=r.task_id AND t.status='reconciling' AND r.status='reserved'",
       );
@@ -575,10 +619,11 @@ export class Worker {
               controller.abort();
               return;
             }
-            await tx.query(
-              "UPDATE tasks SET lease_until=now()+interval '45 seconds' WHERE id=$1 AND fencing_token=$2",
+            const renewal = await tx.query(
+              "SELECT renew_cloud_task_lease($1,$2) AS deadline",
               [id, fencing],
             );
+            if (!renewal.rows[0]?.deadline) controller.abort();
           },
           tenant,
           false,
@@ -683,6 +728,8 @@ export class Worker {
         ),
       };
       const result = await this.runtime.start({
+        unresolvedDeliveryToolNames: await this.db.tx(
+          tx => readUnresolvedDeliveryToolNames(tx, tenant, id), tenant, false, owner),
         taskId: id,
         prompt: `${context.instructions}\n\nWork mode: ${task.mode ?? "execute"}. ${task.mode === "execute" ? "Perform the authorized work. If essential business details, authorized files or connections are missing, use request_input and finish the turn. For business details use kind question, ask only what blocks delivery, offer optional suggested choices, and always allow the customer to answer freely. Do not infer missing requirements, collect credentials, or treat a business answer as access, approval or additional budget. Never invent missing data or perform more tool operations after requesting inputs." : "Read-only investigation. Return a written answer or plan; do not create assets or perform business writes."}${task.resume_thread ? "\nContinue the same authorized task from its completed checkpoint and any newly supplied inputs. Reuse completed tool results and artifacts; do not repeat completed operations. If the work is already complete, report the retained result without repeating side effects." : ""}\n\nCurrent user request:\n${task.prompt}${task.input_context?.analysis_report_id ? "\n\n" + analysisReportInstructions : ""}${task.input_context?.seo_audit_id ? "\n\n" + seoAuditInstructions : ""}${task.input_context?.seo_change_task_id ? "\n\n" + seoChangeInstructions : ""}`,
         workspace: path.resolve(this.db.config.DATA_DIR, "runs", tenant, id),
@@ -1006,6 +1053,12 @@ export class Worker {
             text = "";
           }
         }
+        // Input/pause checkpoints above retain their measured wait. A final
+        // success must also satisfy durable outcomes from all prior turns.
+        if (status === "succeeded") {
+          const outstanding = await readUnresolvedDeliveryToolNames(tx, t.tenant_id, t.id);
+          if (outstanding.length) { status = "failed"; error = deliveryFailureCode(outstanding); }
+        }
         await tx.query(
           "UPDATE tasks SET status=$2,output=CASE WHEN content_state='deleted' OR EXISTS(SELECT 1 FROM projects p JOIN tenants w ON w.id=p.tenant_id WHERE p.id=tasks.project_id AND (p.erasure_requested_at IS NOT NULL OR w.erasure_requested_at IS NOT NULL)) THEN NULL ELSE $3 END,input_tokens=$4,output_tokens=$5,error_code=$6,accrued_micros=$7,lease_until=NULL,updated_at=now(),version=version+1 WHERE id=$1",
           [t.id, status, text, input, output, error ?? null, cost],
@@ -1113,7 +1166,7 @@ export class Worker {
     if (
       !(
         await tx.query(
-          "SELECT 1 FROM tasks WHERE id=$1 AND tenant_id=$3 AND project_id=$4 AND created_by=$5 AND fencing_token=$2 AND status='running' AND content_state='active' AND NOT cancel_requested AND lease_until>now()",
+          "SELECT 1 FROM tasks WHERE id=$1 AND tenant_id=$3 AND project_id=$4 AND created_by=$5 AND fencing_token=$2 AND status='running' AND content_state='active' AND NOT cancel_requested AND public.task_live_lease_until(tasks)>clock_timestamp()",
           [t.id, fencing, t.tenant_id, t.project_id, actor.id],
         )
       ).rowCount

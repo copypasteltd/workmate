@@ -1,3 +1,32 @@
+<!-- integrated-round-204 -->
+
+## 204 · 0.5.11 · Safe tool feedback and durable cloud ownership
+
+[Evidence and limits / 证据与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-204/README.md) · [Downloads / 下载](https://agent.copypaste.hk/downloads)
+
+1. Cloud Codex tools return bounded trusted-field feedback without argument values, raw exceptions, upstream replies, keys or stacks. Only validation proven to precede business execution may be corrected within the original task and budget; unknown operations are never automatically replayed.
+
+2. Persist safe per-call outcomes and support references. Unrecovered chart/image/package delivery failures override final completion prose. New turns after input waits inherit durable failures and canonical completion checks them again; only actual same-tool completion clears each failure. Actual artifacts and measured usage remain the delivery and accounting evidence.
+
+3. Schema 165 stores each cloud 45-second lease independently by task/attempt/fence, preserving transaction authority locks, current authorization, cancellation/revocation and expiry fencing. Provider recovery, media, paid checkpoints and private workflows read the same deadline. Authenticated native Desktop heartbeat rules remain intact.
+
+4. Publish through existing63070/63071/63072 entry points, retaining a database backup and forward-schema compatible code fallback. Read-only Nginx/DNS/hosts/routes/firewall/system proxies; preserve DB/proxy processes and credentials.
+
+```mermaid
+flowchart LR
+ A[Current scope and original budget] --> B[Independent fenced cloud lease]
+ B --> C[Codex and fixed Skills]
+ C --> D[Trusted input validation]
+ D --> E[Actual transactional output]
+ D --> F[Safe bounded failure]
+ E --> G[Customer review and actual usage]
+ F --> G
+```
+
+725 qualified related cases distinguish current tests from identical-source retention. One linked marketing sample delivered actual files. All four inner files passed full byte/SHA checks. Public installer transfers remain incomplete; the complete public-download gate has NOT passed. This release update and Git synchronization do not close that check. Original102 requirements/32 groups, professional19-role/50-Skill acceptance, external media/marketing/IdP setup, long-run/device/concurrency/DR qualification and blind WorkBuddy comparison remain explicit. Original generic failure/lease root causes, default public HTTP/2 and normal DNS-address failover remain unproven; QA alone selects another current public address without changing server networking; no full-product acceptance claim.
+
+Historical release notes and the complete setup/usage guide follow.
+
 <!-- integrated-round-203 -->
 
 ## 203 · 0.5.10 · Pinned specialist intake and reliable delivery

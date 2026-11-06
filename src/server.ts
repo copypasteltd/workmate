@@ -32,6 +32,7 @@ import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import multipart from "@fastify/multipart";
 import { ZodError } from "zod";
+import { ToolInputFailure } from "./runtime-tool-feedback.js";
 import { pathToFileURL } from "node:url";
 import { loadConfig, type Config } from "./config.js";
 import { retentionPolicy } from "./retention.js";
@@ -295,7 +296,14 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       code = "INTERNAL_ERROR",
       message = "暫時無法完成，請稍後重試 / Unable to complete this request",
       details: unknown;
-    if (error instanceof ZodError) {
+    if (error instanceof ToolInputFailure) {
+      status = 400;
+      code = "VALIDATION_ERROR";
+      message = "請檢查輸入內容 / Please check your input";
+      // The native HTTP boundary has no trusted tool schema here. Do not
+      // expose rejected values, arbitrary record keys or validator messages.
+      details = { code: "TOOL_INPUT_INVALID", operation_outcome: "not_performed" };
+    } else if (error instanceof ZodError) {
       status = 400;
       code = "VALIDATION_ERROR";
       message = "請檢查輸入內容 / Please check your input";

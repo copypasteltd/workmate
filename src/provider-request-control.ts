@@ -80,7 +80,7 @@ export async function recoverProviderRequests(db: Database): Promise<number> {
             (r.subject_kind='task' AND NOT EXISTS (
               SELECT 1 FROM tasks t WHERE t.id=r.task_id AND t.data_mode=r.data_mode
               AND t.status='running' AND t.attempt=r.attempt AND t.fencing_token=r.fencing_token
-              AND t.lease_until>clock_timestamp() AND NOT t.cancel_requested AND t.content_state='active'))
+              AND public.task_live_lease_until(t)>clock_timestamp() AND NOT t.cancel_requested AND t.content_state='active'))
             OR (r.subject_kind='validation' AND NOT EXISTS (
               SELECT 1 FROM capability_validations v WHERE v.id=r.validation_id
               AND v.state='running' AND v.lease_until>clock_timestamp())))

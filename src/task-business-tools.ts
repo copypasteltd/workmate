@@ -89,6 +89,7 @@ import {
 import { normalizeGeneratedImagePNG } from "./generated-image-normalization.js";
 import path from "node:path";
 import { z } from "zod";
+import { parseToolArguments } from "./runtime-tool-feedback.js";
 import { assertTaskToolNotPausing } from "./task-pause.js";
 import type { Database, Tx } from "./db.js";
 import { saveAsset } from "./storage.js";
@@ -237,7 +238,7 @@ export class TaskBusinessTools {
         this.db.tx(
           async (tx) => {
             await authorize(tx);
-            const a = schema.parse(args);
+            const a = parseToolArguments(schema, args);
             return replay(tx, actor.id, `tool:${t.id}`, callId, a, async () =>
               identity
                 ? reuseCompletedTaskTool(
@@ -269,7 +270,7 @@ export class TaskBusinessTools {
         this.db.tx(
           async (tx) => {
             await authorize(tx);
-            return fn(tx, schema.parse(args));
+            return fn(tx, parseToolArguments(schema, args));
           },
           t.tenant_id,
           false,
@@ -487,7 +488,7 @@ export class TaskBusinessTools {
       {
         name: "chart_render",
         description:
-          "Create actual editable SVG, review PNG, interactive evidence HTML, exact metrics CSV, normalized source-facts CSV, creative brief, source JSON, manifest and ZIP. Supply sheet_calculate's exact specification/hash and up to eight scope IDs/four metrics. Numerical narrative must use {{evidence-id}} placeholders; unverified numerical prose is rejected. Revisions require the original source version/digest. Transactional replay creates no duplicate files; rendering makes no AI calls and shares the task's original fee.",
+          "Create actual editable SVG, review PNG, interactive evidence HTML, exact metrics CSV, normalized source-facts CSV, creative brief, source JSON, manifest and ZIP. Supply sheet_calculate's exact specification/hash and up to eight scope IDs/four metrics. Titles and next_steps must contain no numerical literals, including dates. Narrative observations/hypotheses must use exact returned {{evidence-id}} placeholders and matching evidence_ids; optional narrative may be omitted while preserving the complete requested evidence package. Unverified numerical prose is rejected. Revisions require the original source version/digest. Transactional replay creates no duplicate files; rendering makes no AI calls and shares the task's original fee.",
         inputSchema: z.toJSONSchema(analysisRenderInput),
         run: txTool(
           (tx, a) => deliverTaskAnalysis(tx, this.storage, t, a),
@@ -506,7 +507,7 @@ export class TaskBusinessTools {
               await lockTaskTools(tx, t.id);
               await this.authority.authorize(tx);
               await assertTaskToolNotPausing(tx, t.id);
-              const body = paidInputRequest.parse(args);
+              const body = parseToolArguments(paidInputRequest, args);
               return replay(tx, actor.id, `tool:${t.id}`, callId, body, () =>
                 requestPaidInputs(tx, t, fencing, role, body, callId),
               );
@@ -797,7 +798,7 @@ export class TaskBusinessTools {
             "Read this task's original generated-video operation, confirmed or unknown usage and actual artifact availability. This does not create, retry or bill another generation.",
           inputSchema: z.toJSONSchema(jobRef),
           run: async (args) => {
-            const { job_id } = jobRef.parse(args);
+            const { job_id } = parseToolArguments(jobRef, args);
             return ownJob(job_id);
           },
         },
@@ -807,7 +808,7 @@ export class TaskBusinessTools {
             "Request cancellation of this task's original operation. Cancellation is not confirmation of zero cost; final usage may require reconciliation.",
           inputSchema: z.toJSONSchema(jobRef),
           run: async (args, callId) => {
-            const { job_id } = jobRef.parse(args),
+            const { job_id } = parseToolArguments(jobRef, args),
               job = await ownJob(job_id);
             return jobs.cancel(
               actor,
@@ -1657,7 +1658,7 @@ export class TaskBusinessTools {
             "Preview a specific authorized non-shared Google Ads average daily budget against an existing explicit project policy. Supply exact advertiser account, budget ID and desired positive integer currency micros. Adds no mutation or AI call. Never infer an amount or create authority.",
           inputSchema: z.toJSONSchema(budgetToolPreview),
           run: async (args) => {
-            const { connection_id, ...b } = budgetToolPreview.parse(args);
+            const { connection_id, ...b } = parseToolArguments(budgetToolPreview, args);
             return previewBudget(
               this.db,
               actor,
@@ -1675,7 +1676,7 @@ export class TaskBusinessTools {
             "Prepare the exact immutable budget operation using preview_id and expected_source_sha256 from external_budget_preview. No changed target or amount. Owner/admin confirms each_operation policies in Connections; only explicit bounded within_policy authorization may queue automatically. Never claim applied until status has a provider receipt. Unknown outcomes must never be resent.",
           inputSchema: z.toJSONSchema(budgetToolPrepare),
           run: async (args, callId) => {
-            const { connection_id, ...b } = budgetToolPrepare.parse(args);
+            const { connection_id, ...b } = parseToolArguments(budgetToolPrepare, args);
             return prepareBudget(
               this.db,
               actor,
@@ -1695,7 +1696,7 @@ export class TaskBusinessTools {
             "Read the current authorized project budget operation, including pending confirmation, execution, exact receipt state or unknown attribution. It does not retry or confirm an operation.",
           inputSchema: z.toJSONSchema(budgetToolRead),
           run: async (args) => {
-            const b = budgetToolRead.parse(args);
+            const b = parseToolArguments(budgetToolRead, args);
             return this.db.tx(
               async (tx) => {
                 await authorize(tx);
@@ -1999,7 +2000,7 @@ export class TaskBusinessTools {
         additionalProperties: false,
       },
       run: async (args, callId) => {
-        const b = z
+        const b = parseToolArguments(z
           .object({
             prompt: z.string().min(5).max(12000),
             filename: z.string().min(1).max(160).endsWith(".png"),
@@ -2014,8 +2015,7 @@ export class TaskBusinessTools {
                 }
               : {}),
           })
-          .strict()
-          .parse(args);
+          .strict(), args);
         const binding = await this.db.tx(
           async (tx) => {
             await authorize(tx);

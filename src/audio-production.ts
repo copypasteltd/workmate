@@ -45,10 +45,10 @@ export class AudioProduction {
   private async origin(tx: Tx, job: any, active = true) {
     if (job.authorization_id && !(await tx.query("SELECT audio_authorization_available($1,$2) AS ok",
       [job.authorization_id, active])).rows[0].ok) throw unavailable("AUDIO_AUTHORIZATION_UNAVAILABLE");
-    const task = (await tx.query("SELECT * FROM tasks WHERE id=$1 AND tenant_id=$2 AND project_id=$3", [job.task_id, job.tenant_id, job.project_id])).rows[0];
+    const task = (await tx.query("SELECT t.*,public.task_live_lease_until(t)>clock_timestamp() AS origin_lease_active FROM tasks t WHERE id=$1 AND tenant_id=$2 AND project_id=$3", [job.task_id, job.tenant_id, job.project_id])).rows[0];
     if (!task || task.created_by !== job.actor_id || task.private_owner !== job.private_owner || task.content_state !== "active"
       || task.cancel_requested || !["running", "succeeded"].includes(task.status)
-      || active && (task.status !== "running" || new Date(task.lease_until).getTime() <= Date.now()
+      || active && (task.status !== "running" || task.origin_lease_active !== true
         || task.fencing_token !== job.origin_fencing || task.attempt !== job.origin_attempt)) throw unavailable("AUDIO_ORIGIN_UNAVAILABLE");
     const u = (await tx.query("SELECT id,email,name,auth_version FROM users WHERE id=$1 AND status='active'", [task.created_by])).rows[0];
     if (!u || u.auth_version !== task.actor_auth_version) throw unavailable("AUDIO_ORIGIN_REVOKED");
@@ -359,7 +359,7 @@ export class AudioProduction {
         usage_known=(j.state='prepared'),billable_units=CASE WHEN j.state='prepared' THEN 0 ELSE NULL END,
         error_code='AUDIO_ORIGINATOR_NOT_ACTIVE',finished_at=clock_timestamp(),revision=j.revision+1
         WHERE j.state IN('prepared','dispatched') AND j.data_mode=$1 AND NOT EXISTS(SELECT 1 FROM tasks t WHERE t.id=j.task_id
-          AND t.status='running' AND t.fencing_token=j.origin_fencing AND t.attempt=j.origin_attempt AND t.lease_until>clock_timestamp()
+          AND t.status='running' AND t.fencing_token=j.origin_fencing AND t.attempt=j.origin_attempt AND public.task_live_lease_until(t)>clock_timestamp()
           AND NOT t.cancel_requested AND t.content_state='active') RETURNING j.id,j.state)
         INSERT INTO ai_audio_job_events(job_id,kind) SELECT id,state FROM changed RETURNING job_id`, [currentMode(this.db)]);
       return changed.rowCount ?? 0;

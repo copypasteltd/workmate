@@ -80,6 +80,15 @@ export function canonicalEvent(e: any) {
       amount_micros: String(b.amount_micros),
       cost_state: b.cost_state,
     };
+  } else if (["runtime.tool.failed", "runtime.tool.completed", "runtime.tool.recovered"].includes(e.kind)) {
+    type = e.kind;
+    // Safe, bounded diagnostics only. Never forward arbitrary event bodies or
+    // upstream errors through the customer activity stream.
+    payload = {};
+    if (typeof b.tool === "string" && /^[a-z][a-z0-9_]{0,63}$/.test(b.tool)) payload.tool = b.tool;
+    if (typeof b.call_ref === "string" && /^[a-f0-9]{16}$/.test(b.call_ref)) payload.call_ref = b.call_ref;
+    if (typeof b.code === "string" && /^[A-Z][A-Z0-9_]{2,79}$/.test(b.code)) payload.code = b.code;
+    if (["validation", "source", "permission", "execution"].includes(b.category)) payload.category = b.category;
   } else if (e.kind === "task.finished") {
     type = "task.warning";
     payload = {
