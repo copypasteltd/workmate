@@ -1,3 +1,9 @@
+<!-- integrated-round-202 -->
+
+202轮：来源／报告搜索分页、完整精确证据复核、HTML／CSV／JSON交付及同请求恢复；677项相关用例、实际客户端／下载及服务器网络指纹保持，原始验收持续追溯。
+
+[交付 / Delivery](quality/integrated-round-202/README.md) · [102条 / Scope](quality/integrated-round-202/requirements-102.md) · [实现 / Implementation](development/202-marketing-review.md)
+
 <!-- integrated-round-201 -->
 
 201輪：六款雙語影片版面、原子鏡頭／字幕／幀率、實際轉場與授權畫面預覽、分區草稿及真實MP4交付；624項相關斷言與完整原始驗收邊界。

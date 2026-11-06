@@ -1,3 +1,9 @@
+<!-- integrated-round-202 -->
+
+Round202: searchable source/report history, complete exact evidence review, bounded HTML/CSV/JSON delivery and persisted same-request recovery.677 relevant test cases, actual clients/downloads and unchanged server network fingerprints; all original acceptance remains traceable.
+
+[交付 / Delivery](quality/integrated-round-202/README.md) · [102条 / Scope](quality/integrated-round-202/requirements-102.md) · [实现 / Implementation](development/202-marketing-review.md)
+
 <!-- integrated-round-201 -->
 
 Round201: six bilingual video layouts, atomic timing/captions/rates, actual transitions and authorized frame previews, scoped recovery and real MP4 delivery.624 relevant assertions, exact source-bound evidence and full original acceptance limits.
