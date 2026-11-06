@@ -1,3 +1,25 @@
+<!-- integrated-round-197 -->
+
+## 197 · 0.5.3 · 整批验证与发布
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-197/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 先完成所有本轮代码，再统一六端构建、类型检查、回归和实际客户端联调。本轮 528 项相关测试通过，后端选择与本轮风险相关的用例，没有将全部历史测试写成已重跑。
+2. 不可变 Windows 安装／便携包和 Extension ZIP 挂在公开下载页，所有实际完整下载检查字节数及 SHA-256。部署前核对活动任务、原配置与候选就绪，保留原版本回退路径。
+3. 实际截图、交互 GIF 和 MP4 来自本轮真实界面，保留原失败尝试和脚本版本。服务器凭证继续明文保存在用户要求的 /root/cfg/ 私有目录，不提交到仓库。
+4. 七个独立仓库按对应分支及 docs/main 普通推送，并回读远端；保留用户文件和无关分支。专业、外部与完整生产验收继续按 32 组／102 条追溯。
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[Role and permission / 角色與授權]
+  C --> D[Original task / 原工作]
+  D --> E[Review result and usage / 審閱與費用]
+  E --> F[Explicit next action / 明確下一步]
+```
+
+下方保留較早版本記錄。完整外部、專業與生產驗收仍開放。
+
 <!-- integrated-round-196 -->
 
 ## 196 · 0.5.2 · 整轮开发验证与发布

@@ -1,3 +1,25 @@
+<!-- integrated-round-197 -->
+
+## 197 · 0.5.3 · Integrated validation and publication
+
+[Delivery and limits / 交付與範圍](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-197/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Complete the implementation batch before six-component builds, type checks, regression and actual client journeys. 528 relevant tests pass; selected backend checks are not mislabeled as the complete historical matrix.
+2. Immutable Windows Setup/Portable and Extension ZIP downloads are linked publicly and checked by complete byte count and SHA-256. Deployment checks active work, existing configuration and candidate readiness, retaining the prior rollback path.
+3. Actual screenshots, interaction GIFs and MP4s come from this round’s real interfaces. Original failures/scripts remain. Server credentials stay in the user-requested private /root/cfg/ directory and are excluded from Git.
+4. Publish seven independent repositories to their component branches and docs/main using ordinary pushes with remote readback, preserving user files/unrelated refs. Professional, external and full production acceptance retain all 32 groups/102 requirements.
+
+```mermaid
+flowchart LR
+  A[Sign in / 登入] --> B[Organization and project / 企業與項目]
+  B --> C[Role and permission / 角色與授權]
+  C --> D[Original task / 原工作]
+  D --> E[Review result and usage / 審閱與費用]
+  E --> F[Explicit next action / 明確下一步]
+```
+
+Earlier sections are retained release history. Full external/professional/production acceptance remains open.
+
 <!-- integrated-round-196 -->
 
 ## 196 · 0.5.2 · Integrated implementation and release
