@@ -1,5 +1,5 @@
 import { browserCrypto as crypto } from "./browser-crypto";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import {
   Check,
   Download,
@@ -217,10 +217,13 @@ function CheckAssertions({ result }: { result: CheckResult }) {
 export function SoftwareChecks({
   base,
   taskId,
+  view="all",
 }: {
   base: string;
   taskId: string;
+  view?: "all"|"terminal"|"browser";
 }) {
+  const heading=useId();
   const { t } = useI18n(),
     [refresh, setRefresh] = useState(0),
     [cursors, setCursors] = useState<string[]>([]),
@@ -228,7 +231,7 @@ export function SoftwareChecks({
   const cursor = cursors.at(-1),
     url =
       base +
-      `/tasks/${taskId}/software-checks?limit=10` +
+      `/tasks/${taskId}/software-checks?limit=10&view=${view}` +
       (cursor ? "&before=" + encodeURIComponent(cursor) : "");
   const { data, error, loading } = useData<{
     items: CheckRecord[];
@@ -248,13 +251,13 @@ export function SoftwareChecks({
   return (
     <section
       className="software-checks"
-      aria-labelledby="software-checks-heading"
+      aria-labelledby={heading}
     >
       <header>
         <div>
           <p className="eyebrow">CODE. CHECK. DELIVER.</p>
-          <h3 id="software-checks-heading">
-            {t("軟體檢查記錄", "Software checks")}
+          <h3 id={heading}>
+            {view==="browser"?t("實際網頁記錄","Actual browser records"):view==="terminal"?t("程式執行與輸出","Program runs and output"):t("軟體檢查記錄", "Software checks")}
           </h3>
         </div>
         <button

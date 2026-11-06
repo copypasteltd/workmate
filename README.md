@@ -1,3 +1,35 @@
+<!-- integrated-round-196 -->
+
+## 196 · 0.5.2 · 云端成果与编辑
+
+[完整交付與限制 / Delivery and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-196/README.md) · [下載 / Downloads](https://agent.copypaste.hk/downloads)
+
+1. 使用邮箱验证码登录并选择企业/项目。开始新工作时选择专业角色，可查看当前模板交付格式和依赖状态；“使用示例”只填简报，确认预算并提交后才启动工作。
+2. 在成功任务中使用成果、文件、变更、执行、网页、活动、费用七个标签，左右键或Home/End可导航。文件标签提供受权预览/下载及符合条件的文字编辑。
+3. 打开“查看及编辑文字”，保存会创建新版本并保留原文件，需重新认可新交付；人工编辑不会新建AI任务或模型费用。当前文字限256KiBUTF-8。
+4. 若保存响应丢失，内容冻结并显示核对原保存的入口；明确核对会发送同一请求键和正文。不要另开重复保存；退出会清除本分页暂存文字。版本冲突时先核对最新文件。
+5. 变更标签选择当前交付和有权限的早期版本，显示文字/格式差异及SHA；执行、网页标签读取真实服务器记录。超限比较提供摘要/下载；全部业务仍受租户、项目和原始来源权限控制。
+
+```mermaid
+flowchart LR
+ A[Sign in / 登入] --> B[Project, role and budget / 專案角色預算]
+ B --> C{Execution / 執行}
+ C -->|Web or Extension| D[Company cloud Codex / 公司雲端]
+ C -->|Desktop native permission| E[Local Codex / 本機]
+ D --> F[Results, files and actual usage / 成果檔案實際費用]
+ E --> F
+ F --> G[Review and compare / 審閱比較]
+ G --> H[Explicit revision / 明確修改]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/196-pinned-differences.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-196-v3-workspace-review.gif)
+
+[Actual MP4 / 實際錄影](assets/screenshots/workmate-196-v3-workspace-review.mp4) · [Additional view / 其他頁面](assets/screenshots/196-pending-save.png) · [Additional view / 其他頁面](assets/screenshots/196-role-guidance.png) · [Additional view / 其他頁面](assets/screenshots/196-dark-workspace.png)
+
+範圍：本輪相關旅程通過，原失敗保留。間歇公網連線超時、專業產出、外部接入及完整生產/兼容驗收仍開放。下方較早章節為歷史版本。
+
 <!-- integrated-round-195 -->
 
 ## 195 · 0.5.1 · 云端工作台 / Cloud workspace

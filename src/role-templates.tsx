@@ -47,7 +47,7 @@ export const roleEnglish: Record<string, string> = {
   "workflow-consultant": "Workflow consultant",
   "computer-operator": "Dedicated computer operator",
 };
-const examplesEnglish: Record<string, string> = {
+export const examplesEnglish: Record<string, string> = {
   assistant:
     "Prepare an evidence-based written answer from authorized materials.",
   fullstack:

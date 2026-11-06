@@ -7,6 +7,7 @@ import { ErrorNotice, Field, Loading, Modal, useData, useI18n } from "./ui";
 import { ModeField } from "./persistent-work";
 import { ProjectConfigurationSummary } from "./project-configuration";
 import { roleEnglish } from "./role-templates";
+import {WorkRoleGuide} from "./work-role-guide";
 import { VideoBriefFields, videoGenerationBrief } from "./video-brief";
 import { acceptWorkSubmission, newWorkDraft, openWorkDraft, prepareWorkSubmission, rejectWorkSubmission, removedWorkSubmission,
   saveWorkDraft, updateWorkDraft, type WorkDraft, type WorkSeed, type WorkValues } from "./work-draft";
@@ -100,6 +101,7 @@ export function NewWorkTask({ onClose, role, seed }: { onClose: () => void; role
         <fieldset disabled={busy || pending}>
           <Field label={t("你想完成什麼？", "What would you like to make?")}><textarea name="prompt" value={v.prompt} onChange={e => change({ prompt: e.target.value })}
             rows={5} minLength={5} maxLength={30000} required placeholder={t("說明目標、對象、交付格式和需要保留的內容…", "Describe your goal, audience, deliverables and anything to preserve…")}/></Field>
+          <WorkRoleGuide key={w.tenant+w.project+v.role} role={v.role} disabled={busy||pending} onExample={prompt=>change({prompt})} onExplore={onClose}/>
           <details className="work-intake-options"><summary>{t("角色、預算與更多設定", "Specialist, budget and more settings")} · HK$ {v.budget}</summary>
           <Field label={t("專案", "Project")}><input value={w.projects.find(p => p.id === w.project)?.name ?? ""} readOnly/></Field>
           <Field label={t("專業角色", "Specialist")}><select name="role" value={v.role} onChange={e => change({ role: e.target.value, required_input: "" })}>

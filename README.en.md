@@ -1,3 +1,35 @@
+<!-- integrated-round-196 -->
+
+## 196 · 0.5.2 · Cloud deliverables and editing
+
+[完整交付與限制 / Delivery and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-196/README.md) · [下載 / Downloads](https://agent.copypaste.hk/downloads)
+
+1. Sign in with an email code and choose an organization/project. A new task can show the selected specialist template, deliverable formats and dependency state. Use example only fills the brief; confirm the budget and submit to start work.
+2. A successful task has Results, Files, Changes, Execution, Browser, Activity and Usage tabs, with arrow/Home/End navigation. Files provide authorized previews/downloads and eligible text editing.
+3. Open View and edit text. Saving creates a new immutable version and preserves the original. Review the new delivery again. Manual editing creates no AI task or model charge; supported text is bounded256KiBUTF-8.
+4. If the save response is lost, the editor freezes that content and offers Check original save. This explicitly retries the same key/body. Signing out clears tab-local pending text; a version conflict requires reviewing the current file.
+5. Changes compares the current deliverable with eligible authorized history, including text/format differences and SHA. Execution and Browser read real server records. Oversized comparisons return a summary/download; tenant, project and source permissions still apply.
+
+```mermaid
+flowchart LR
+ A[Sign in / 登入] --> B[Project, role and budget / 專案角色預算]
+ B --> C{Execution / 執行}
+ C -->|Web or Extension| D[Company cloud Codex / 公司雲端]
+ C -->|Desktop native permission| E[Local Codex / 本機]
+ D --> F[Results, files and actual usage / 成果檔案實際費用]
+ E --> F
+ F --> G[Review and compare / 審閱比較]
+ G --> H[Explicit revision / 明確修改]
+```
+
+![Actual interface / 實際頁面](assets/screenshots/196-pinned-differences.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-196-v3-workspace-review.gif)
+
+[Actual MP4 / 實際錄影](assets/screenshots/workmate-196-v3-workspace-review.mp4) · [Additional view / 其他頁面](assets/screenshots/196-pending-save.png) · [Additional view / 其他頁面](assets/screenshots/196-role-guidance.png) · [Additional view / 其他頁面](assets/screenshots/196-dark-workspace.png)
+
+Scope: selected current journeys pass; original failures remain. Intermittent public HTTPS timeouts, professional outcomes, external integrations and full production/compatibility acceptance remain open. Earlier sections below describe historical releases.
+
 <!-- integrated-round-195 -->
 
 ## 195 · 0.5.1 · 云端工作台 / Cloud workspace
