@@ -21,54 +21,22 @@ import {
 } from "./ui";
 import "./video-projects.css";
 
-type Ref = { asset_id: string; version: number } | null;
-type Scene = {
-  key: string;
-  start_frame: number;
-  end_frame: number;
-  direction: string;
-  headline: string;
-  body: string;
-  image: Ref;
-};
-type Cue = {
-  key: string;
-  start_frame: number;
-  end_frame: number;
-  text: string;
-};
-type Definition = {
-  schema_version: "copypaste-video-1";
-  template: "campaign-cuts-1";
-  locale: string;
-  width: number;
-  height: number;
-  frame_rate: { numerator: number; denominator: number };
-  duration_frames: number;
-  script: {
-    title: string;
-    brief: string;
-    narration: string;
-    call_to_action: string;
-  };
-  brand: {
-    label: string;
-    background: string;
-    ink: string;
-    accent: string;
-    logo: Ref;
-  };
-  storyboard: Scene[];
-  subtitles: Cue[];
-  audio: {
-    source: NonNullable<Ref>;
-    source_in_frame: number;
-    gain_db: number;
-    role: string;
-    rights_basis: string;
-    rights_reference: string;
-  } | null;
-};
+import { useWorkspace } from "./context";
+import {
+  motionSeconds,
+  blankMotion,
+  motionValid,
+  type MotionDefinition as Definition,
+  type MotionScene as Scene,
+  type MotionCue as Cue,
+} from "./motion-editor-model";
+import {
+  MotionStarters,
+  MotionTimeline,
+  MotionFramePreview,
+  MotionSourceChoice as SourceChoice,
+} from "./motion-production";
+import { useMotionEditor } from "./use-motion-editor";
 type Render = {
   id: string;
   version: number;
@@ -94,113 +62,8 @@ type Project = {
   renders: Render[];
   versions: { version: number; created_at: string }[];
 };
-const seconds = (d: Definition) =>
-  (d.duration_frames * d.frame_rate.denominator) / d.frame_rate.numerator;
-function initial(locale: string): Definition {
-  const zh = locale !== "en";
-  return {
-    schema_version: "copypaste-video-1",
-    template: "campaign-cuts-1",
-    locale,
-    width: 720,
-    height: 1280,
-    frame_rate: { numerator: 30, denominator: 1 },
-    duration_frames: 450,
-    script: {
-      title: zh ? "下一個創意" : "Your next idea",
-      brief: "",
-      narration: "",
-      call_to_action: zh ? "立即了解" : "Discover more",
-    },
-    brand: {
-      label: "CopyPaste",
-      background: "#F1F2F4",
-      ink: "#17202C",
-      accent: "#2458DF",
-      logo: null,
-    },
-    storyboard: [
-      {
-        key: "opening",
-        start_frame: 0,
-        end_frame: 150,
-        direction: "",
-        headline: zh ? "讓創意落地" : "Make room for an idea",
-        body: "",
-        image: null,
-      },
-      {
-        key: "benefit",
-        start_frame: 150,
-        end_frame: 300,
-        direction: "",
-        headline: zh ? "從想法到成品" : "From idea to delivery",
-        body: "",
-        image: null,
-      },
-      {
-        key: "action",
-        start_frame: 300,
-        end_frame: 450,
-        direction: "",
-        headline: zh ? "開始你的下一步" : "Make your next move",
-        body: "",
-        image: null,
-      },
-    ],
-    subtitles: [],
-    audio: null,
-  };
-}
-function SourceChoice({
-  label,
-  value,
-  assets,
-  audio = false,
-  onChange,
-}: {
-  label: string;
-  value: Ref;
-  assets: any[];
-  audio?: boolean;
-  onChange: (v: Ref) => void;
-}) {
-  const { t } = useI18n(),
-    selected = value ? value.asset_id + ":" + value.version : "";
-  const choices = assets.filter(
-    (a) =>
-      !a.private_owner &&
-      (audio
-        ? ["audio/wav", "audio/mpeg"].includes(a.mime_type)
-        : a.mime_type === "image/png"),
-  );
-  return (
-    <Field label={label}>
-      <select
-        value={selected}
-        onChange={(e) => {
-          const a = choices.find(
-            (a) => a.id + ":" + a.current_version === e.target.value,
-          );
-          onChange(a ? { asset_id: a.id, version: a.current_version } : null);
-        }}
-      >
-        <option value="">{t("不使用", "None")}</option>
-        {choices.map((a) => (
-          <option key={a.id} value={a.id + ":" + a.current_version}>
-            {a.name} · v{a.current_version}
-          </option>
-        ))}
-        {value &&
-          !choices.some((a) => a.id + ":" + a.current_version === selected) && (
-            <option value={selected}>
-              {t("原固定素材", "Original fixed source")} · v{value.version}
-            </option>
-          )}
-      </select>
-    </Field>
-  );
-}
+const seconds = motionSeconds,
+  initial = blankMotion;
 function Editor({
   base,
   assets,
@@ -215,12 +78,21 @@ function Editor({
   onDone: (id: string) => void;
 }) {
   const { t, locale } = useI18n(),
-    [d, set] = useState<Definition>(() =>
-      current ? structuredClone(current.definition) : initial(locale),
-    ),
-    [name, setName] = useState(current?.name ?? ""),
-    [busy, setBusy] = useState(false);
-  const request = useRef<{ signature: string; key: string } | null>(null);
+    w = useWorkspace(),
+    owner = w.me?.user?.id;
+  const editor = useMotionEditor(
+    owner ? owner + ":" + base : "",
+    current?.id ?? "new",
+    current?.version ?? 0,
+    {
+      name: current?.name ?? "",
+      definition: current
+        ? structuredClone(current.definition)
+        : initial(locale),
+    },
+  );
+  const { definition: d, name, setDefinition: set, setName, request } = editor;
+  const [busy, setBusy] = useState(false);
   const change = (patch: Partial<Definition>) =>
     set((d) => ({ ...d, ...patch }));
   const scene = (i: number, patch: Partial<Scene>) =>
@@ -283,39 +155,48 @@ function Editor({
       />
     </Field>
   );
-  const invalid =
-    !Number.isFinite(seconds(d)) ||
-    seconds(d) < 3 ||
-    seconds(d) > 60 ||
-    d.width % 2 !== 0 ||
-    d.height % 2 !== 0 ||
-    d.width * d.height * d.duration_frames > 2_100_000_000 ||
-    !d.storyboard.length ||
-    d.storyboard.some(
-      (s, i) =>
-        s.start_frame !== (i ? d.storyboard[i - 1].end_frame : 0) ||
-        s.end_frame <= s.start_frame,
-    ) ||
-    d.storyboard.at(-1)?.end_frame !== d.duration_frames ||
-    d.subtitles.some(
-      (s, i) =>
-        s.start_frame < (i ? d.subtitles[i - 1].end_frame : 0) ||
-        s.end_frame <= s.start_frame ||
-        s.end_frame > d.duration_frames,
-    );
+  const invalid = !motionValid(d),
+    versionChanged = newer || editor.baseVersion !== (current?.version ?? 0);
+  const locked =
+    busy || !!editor.pending || !!editor.recovery || versionChanged;
+  const captionGap = (() => {
+    let start = 0;
+    for (const c of d.subtitles) {
+      if (c.start_frame > start)
+        return { start_frame: start, end_frame: c.start_frame };
+      start = Math.max(start, c.end_frame);
+    }
+    return start < d.duration_frames
+      ? { start_frame: start, end_frame: d.duration_frames }
+      : null;
+  })();
   return (
     <AsyncForm
-      submitLabel={t("儲存影片工程", "Save video project")}
-      submitDisabled={newer || invalid}
+      submitLabel={
+        editor.pending
+          ? t("重試原儲存請求", "Retry original save")
+          : t("儲存影片工程", "Save video project")
+      }
+      submitDisabled={
+        !!editor.recovery || invalid || (!editor.pending && versionChanged)
+      }
       onSubmit={async () => {
         const body = {
             name,
             definition: d,
-            ...(current ? { expected_version: current.version } : {}),
+            ...(current ? { expected_version: editor.baseVersion } : {}),
           },
           signature = JSON.stringify(body);
-        if (request.current?.signature !== signature)
+        if (request.current && request.current.signature !== signature)
+          throw Error(
+            t(
+              "請先核對原儲存請求。",
+              "Resolve the original save request first.",
+            ),
+          );
+        if (!request.current)
           request.current = { signature, key: crypto.randomUUID() };
+        editor.setPending(request.current);
         setBusy(true);
         try {
           const result = await post(
@@ -325,12 +206,92 @@ function Editor({
             body,
             request.current.key,
           );
+          editor.completed();
           onDone(result.id);
+        } catch (e) {
+          if (
+            [400, 403, 404, 409, 422].includes(
+              Number((e as { status?: number }).status),
+            )
+          )
+            editor.setPending(null);
+          throw e;
         } finally {
           setBusy(false);
         }
       }}
     >
+      <div className="motion-draft-toolbar">
+        <button
+          type="button"
+          className="text-button"
+          disabled={locked || !editor.canUndo}
+          onClick={editor.undo}
+        >
+          {t("復原", "Undo")}
+        </button>
+        <button
+          type="button"
+          className="text-button"
+          disabled={locked || !editor.canRedo}
+          onClick={editor.redo}
+        >
+          {t("重做", "Redo")}
+        </button>
+        <span role="status">
+          {editor.dirty
+            ? editor.stored
+              ? t("草稿已保留在此工作階段", "Draft kept in this session")
+              : t(
+                  "草稿僅保留於目前視窗，關閉前請儲存",
+                  "Draft stays in this window; save before closing",
+                )
+            : t("尚未修改", "No unsaved changes")}
+        </span>
+      </div>
+      {editor.recovery && (
+        <div className="notice" role="status">
+          <p>
+            {t(
+              "找到此帳戶、項目與工程的工作階段草稿。請選擇恢復或捨棄。",
+              "A session draft was found for this account, project and work. Restore or discard it.",
+            )}
+          </p>
+          <button
+            type="button"
+            disabled={
+              editor.recovery.version !== (current?.version ?? 0) &&
+              !editor.recovery.pending
+            }
+            onClick={editor.restore}
+          >
+            {t("恢復草稿", "Restore draft")}
+          </button>
+          <button
+            type="button"
+            disabled={!!editor.recovery.pending}
+            onClick={editor.discard}
+          >
+            {t("捨棄草稿", "Discard draft")}
+          </button>
+          {editor.recovery.pending && (
+            <p>
+              {t(
+                "原儲存請求的結果尚未確認。恢復後重試同一請求，不會建立第二份工程。",
+                "The original save is unconfirmed. Restore and retry the same request to avoid creating a duplicate work.",
+              )}
+            </p>
+          )}
+        </div>
+      )}
+      {editor.pending && (
+        <p className="notice" role="status">
+          {t(
+            "正在核對原儲存請求。連線失敗可按重試；確認結果前暫停編輯並保留原請求鍵。",
+            "Resolving the original save. Retry if the connection failed; editing is paused and the original request key is retained until the result is known.",
+          )}
+        </p>
+      )}
       {newer && (
         <p className="notice" role="status">
           {t(
@@ -345,367 +306,321 @@ function Editor({
           "Provide your script, scenes, sources and captions. Use audio you own or have licensed. Rendering has no AI charge.",
         )}
       </p>
-      <fieldset disabled={busy} className="video-editor-fields">
-        <legend className="sr-only">
-          {t("影片工程內容", "Video project content")}
-        </legend>
-        {text(t("工程名稱", "Project name"), name, 160, setName, false, true)}
-        <h3>{t("腳本與規格", "Script and format")}</h3>
-        {text(
-          t("腳本標題", "Script title"),
-          d.script.title,
-          160,
-          (title) => change({ script: { ...d.script, title } }),
-          false,
-          true,
-        )}
-        {text(
-          t("創作簡報", "Creative brief"),
-          d.script.brief,
-          2000,
-          (brief) => change({ script: { ...d.script, brief } }),
-          true,
-        )}
-        {text(
-          t("提供的旁白文稿", "Provided narration text"),
-          d.script.narration,
-          6000,
-          (narration) => change({ script: { ...d.script, narration } }),
-          true,
-        )}
-        <p className="muted">
-          {t(
-            "文稿不會自動合成語音；需要配音請選擇已上傳的音軌。",
-            "Text is not synthesized into voice. Select an uploaded audio track when voice is needed.",
-          )}
-        </p>
-        {text(
-          t("行動文案", "Call to action"),
-          d.script.call_to_action,
-          100,
-          (call_to_action) =>
-            change({ script: { ...d.script, call_to_action } }),
-        )}
-        <div className="video-form-grid">
-          {number(t("寬度 px", "Width px"), d.width, 256, 1920, (width) =>
-            change({ width }),
-          )}
-          {number(t("高度 px", "Height px"), d.height, 256, 1920, (height) =>
-            change({ height }),
-          )}
-          <Field label={t("幀率", "Frame rate")}>
-            <select
-              value={`${d.frame_rate.numerator}/${d.frame_rate.denominator}`}
-              onChange={(e) => {
-                const [numerator, denominator] = e.target.value
-                  .split("/")
-                  .map(Number);
-                change({ frame_rate: { numerator, denominator } });
-              }}
-            >
-              {["24/1", "25/1", "30/1", "30000/1001"].map((v) => (
-                <option key={v} value={v}>
-                  {v}
-                </option>
-              ))}
-            </select>
-          </Field>
-          {number(
-            t("總幀數", "Total frames"),
-            d.duration_frames,
-            72,
-            1800,
-            (duration_frames) => change({ duration_frames }),
-          )}
-        </div>
-        <p className="muted">
-          {Number.isFinite(seconds(d)) ? seconds(d).toFixed(3) : "—"} s ·{" "}
-          {t(
-            "以整數幀為準。調整總幀數後請同步修改分鏡與字幕。",
-            "Integer frames define the timeline. Update scenes and captions when changing its length.",
-          )}
-        </p>
-        <h3>{t("品牌", "Brand")}</h3>
-        {text(t("品牌名稱", "Brand label"), d.brand.label, 80, (label) =>
-          change({ brand: { ...d.brand, label } }),
-        )}
-        <div className="video-form-grid">
-          {(
-            [
-              ["background", t("背景色", "Background")],
-              ["ink", t("文字色", "Text color")],
-              ["accent", t("強調色", "Accent")],
-            ] as const
-          ).map(([key, label]) => (
-            <Field key={key} label={label}>
-              <input
-                type="color"
-                value={d.brand[key]}
-                onChange={(e) =>
-                  change({ brand: { ...d.brand, [key]: e.target.value } })
-                }
-              />
-            </Field>
-          ))}
-        </div>
-        <SourceChoice
-          label={t("固定品牌標誌 PNG", "Fixed brand logo PNG")}
-          value={d.brand.logo}
-          assets={assets}
-          onChange={(logo) => change({ brand: { ...d.brand, logo } })}
-        />
-        <h3>{t("分鏡時間線", "Storyboard timeline")}</h3>
-        <p className="muted">
-          {t(
-            "首幀為 0，結束幀不包含在片段中。分鏡須無縫涵蓋完整影片。",
-            "Frame zero starts the video; end frames are exclusive. Scenes must cover the full timeline without gaps.",
-          )}
-        </p>
-        {d.storyboard.map((s, i) => (
-          <fieldset
-            className="video-track"
-            key={s.key}
-            aria-label={`${t("分鏡", "Scene")} ${i + 1}`}
-          >
-            <legend>
-              {t("分鏡", "Scene")} {i + 1}
-            </legend>
-            <div className="video-form-grid">
-              {number(
-                t("起始幀", "Start frame"),
-                s.start_frame,
-                0,
-                1800,
-                (start_frame) => scene(i, { start_frame }),
-              )}
-              {number(
-                t("結束幀", "End frame"),
-                s.end_frame,
-                1,
-                1800,
-                (end_frame) => scene(i, { end_frame }),
-              )}
-            </div>
-            {text(
-              t("畫面說明", "Scene direction"),
-              s.direction,
-              1000,
-              (direction) => scene(i, { direction }),
-              true,
-            )}
-            {text(
-              t("畫面標題", "Scene headline"),
-              s.headline,
-              240,
-              (headline) => scene(i, { headline }),
-              false,
-              true,
-            )}
-            {text(
-              t("畫面正文", "Scene body"),
-              s.body,
-              500,
-              (body) => scene(i, { body }),
-              true,
-            )}
-            <SourceChoice
-              label={t("固定畫面 PNG", "Fixed scene PNG")}
-              value={s.image}
-              assets={assets}
-              onChange={(image) => scene(i, { image })}
-            />
-            <button
-              type="button"
-              className="text-button"
-              disabled={d.storyboard.length === 1}
-              onClick={() =>
-                change({ storyboard: d.storyboard.filter((_, n) => n !== i) })
-              }
-            >
-              <X size={14} />
-              {t("移除分鏡", "Remove scene")}
-            </button>
-          </fieldset>
-        ))}
-        <button
-          type="button"
-          className="button secondary"
-          disabled={d.storyboard.length >= 20}
-          onClick={() =>
-            change({
-              storyboard: [
-                ...d.storyboard,
-                {
-                  key: "scene-" + crypto.randomUUID().slice(0, 8),
-                  start_frame: d.storyboard.at(-1)?.end_frame ?? 0,
-                  end_frame: d.duration_frames,
-                  direction: "",
-                  headline: "",
-                  body: "",
-                  image: null,
-                },
-              ],
-            })
-          }
-        >
-          <Plus size={15} />
-          {t("新增分鏡", "Add scene")}
-        </button>
-        <h3>{t("字幕", "Captions")}</h3>
-        {d.subtitles.map((s, i) => (
-          <fieldset
-            className="video-track"
-            key={s.key}
-            aria-label={`${t("字幕", "Caption")} ${i + 1}`}
-          >
-            <legend>
-              {t("字幕", "Caption")} {i + 1}
-            </legend>
-            <div className="video-form-grid">
-              {number(
-                t("起始幀", "Start frame"),
-                s.start_frame,
-                0,
-                1800,
-                (start_frame) => cue(i, { start_frame }),
-              )}
-              {number(
-                t("結束幀", "End frame"),
-                s.end_frame,
-                1,
-                1800,
-                (end_frame) => cue(i, { end_frame }),
-              )}
-            </div>
-            {text(
-              t("字幕文字", "Caption text"),
-              s.text,
-              240,
-              (text) => cue(i, { text }),
-              true,
-              true,
-            )}
-            <button
-              type="button"
-              className="text-button"
-              onClick={() =>
-                change({ subtitles: d.subtitles.filter((_, n) => n !== i) })
-              }
-            >
-              <X size={14} />
-              {t("移除字幕", "Remove caption")}
-            </button>
-          </fieldset>
-        ))}
-        <button
-          type="button"
-          className="button secondary"
-          disabled={d.subtitles.length >= 80}
-          onClick={() =>
-            change({
-              subtitles: [
-                ...d.subtitles,
-                {
-                  key: "cue-" + crypto.randomUUID().slice(0, 8),
-                  start_frame: d.subtitles.at(-1)?.end_frame ?? 0,
-                  end_frame: d.duration_frames,
-                  text: "",
-                },
-              ],
-            })
-          }
-        >
-          <Plus size={15} />
-          {t("新增字幕", "Add caption")}
-        </button>
-        <h3>{t("音軌與授權", "Audio and rights")}</h3>
-        <SourceChoice
-          label={t("固定音軌 WAV / MP3", "Fixed audio WAV / MP3")}
-          value={d.audio?.source ?? null}
-          assets={assets}
-          audio
-          onChange={(source) =>
-            change({
-              audio: source
-                ? {
-                    source,
-                    source_in_frame: 0,
-                    gain_db: -3,
-                    role: "music",
-                    rights_basis: "owned",
-                    rights_reference: "",
-                  }
-                : null,
-            })
-          }
-        />
-        {d.audio ? (
-          <>
-            <div className="video-form-grid">
-              {number(
-                t("音軌入點（幀）", "Audio in point (frames)"),
-                d.audio.source_in_frame,
-                0,
-                108000,
-                (source_in_frame) =>
-                  change({ audio: { ...d.audio!, source_in_frame } }),
-              )}
-              {number(
-                t("增益 dB", "Gain dB"),
-                d.audio.gain_db,
-                -36,
-                0,
-                (gain_db) => change({ audio: { ...d.audio!, gain_db } }),
-              )}
-              <Field label={t("音軌用途", "Audio role")}>
-                <select
-                  value={d.audio.role}
-                  onChange={(e) =>
-                    change({ audio: { ...d.audio!, role: e.target.value } })
-                  }
-                >
-                  <option value="music">{t("配樂", "Music")}</option>
-                  <option value="provided_voice">
-                    {t("提供的配音", "Provided voice")}
-                  </option>
-                </select>
-              </Field>
-              <Field label={t("授權依據", "Rights basis")}>
-                <select
-                  value={d.audio.rights_basis}
-                  onChange={(e) =>
-                    change({
-                      audio: { ...d.audio!, rights_basis: e.target.value },
-                    })
-                  }
-                >
-                  <option value="owned">{t("自有", "Owned")}</option>
-                  <option value="licensed">{t("已獲授權", "Licensed")}</option>
-                </select>
-              </Field>
-            </div>
-            {text(
-              t(
-                "授權引用或自有聲明",
-                "License reference or ownership statement",
-              ),
-              d.audio.rights_reference,
-              500,
-              (rights_reference) =>
-                change({ audio: { ...d.audio!, rights_reference } }),
-              true,
-              true,
-            )}
-          </>
-        ) : (
+      <div className="motion-editor-layout">
+        <fieldset disabled={locked} className="video-editor-fields">
+          <legend className="sr-only">
+            {t("影片工程內容", "Video project content")}
+          </legend>
+          <MotionStarters base={base} disabled={locked} choose={set} />
+          {text(t("工程名稱", "Project name"), name, 160, setName, false, true)}
           <p className="muted">
             {t(
-              "此工程沒有音軌，將交付無聲影片。",
-              "This project has no audio track and will export without audio.",
+              "儲存後，工程將與此項目有權限的成員共用。",
+              "Saving shares this work with authorized members of this project.",
             )}
           </p>
-        )}
-      </fieldset>
+          <MotionTimeline definition={d} disabled={locked} change={set} />
+          <h3>{t("腳本與規格", "Script and format")}</h3>
+          {text(
+            t("腳本標題", "Script title"),
+            d.script.title,
+            160,
+            (title) => change({ script: { ...d.script, title } }),
+            false,
+            true,
+          )}
+          {text(
+            t("創作簡報", "Creative brief"),
+            d.script.brief,
+            2000,
+            (brief) => change({ script: { ...d.script, brief } }),
+            true,
+          )}
+          {text(
+            t("提供的旁白文稿", "Provided narration text"),
+            d.script.narration,
+            6000,
+            (narration) => change({ script: { ...d.script, narration } }),
+            true,
+          )}
+          <p className="muted">
+            {t(
+              "文稿不會自動合成語音；需要配音請選擇已上傳的音軌。",
+              "Text is not synthesized into voice. Select an uploaded audio track when voice is needed.",
+            )}
+          </p>
+          {text(
+            t("行動文案", "Call to action"),
+            d.script.call_to_action,
+            100,
+            (call_to_action) =>
+              change({ script: { ...d.script, call_to_action } }),
+          )}
+          <div className="video-form-grid">
+            {number(t("寬度 px", "Width px"), d.width, 256, 1920, (width) =>
+              change({ width }),
+            )}
+            {number(t("高度 px", "Height px"), d.height, 256, 1920, (height) =>
+              change({ height }),
+            )}
+          </div>
+          <p className="muted">
+            {seconds(d).toFixed(3)} s · {d.duration_frames}{" "}
+            {t(
+              "幀；使用鏡頭編排調整時長與幀率。",
+              "frames; use scene arrangement to change timing and frame rate.",
+            )}
+          </p>
+          <h3>{t("品牌", "Brand")}</h3>
+          {text(t("品牌名稱", "Brand label"), d.brand.label, 80, (label) =>
+            change({ brand: { ...d.brand, label } }),
+          )}
+          <div className="video-form-grid">
+            {(
+              [
+                ["background", t("背景色", "Background")],
+                ["ink", t("文字色", "Text color")],
+                ["accent", t("強調色", "Accent")],
+              ] as const
+            ).map(([key, label]) => (
+              <Field key={key} label={label}>
+                <input
+                  type="color"
+                  value={d.brand[key]}
+                  onChange={(e) =>
+                    change({ brand: { ...d.brand, [key]: e.target.value } })
+                  }
+                />
+              </Field>
+            ))}
+          </div>
+          <SourceChoice
+            base={base}
+            label={t("固定品牌標誌 PNG", "Fixed brand logo PNG")}
+            value={d.brand.logo}
+            assets={assets}
+            onChange={(logo) => change({ brand: { ...d.brand, logo } })}
+          />
+          <h3>{t("分鏡時間線", "Storyboard timeline")}</h3>
+          <p className="muted">
+            {t(
+              "首幀為 0，結束幀不包含在片段中。分鏡須無縫涵蓋完整影片。",
+              "Frame zero starts the video; end frames are exclusive. Scenes must cover the full timeline without gaps.",
+            )}
+          </p>
+          {d.storyboard.map((s, i) => (
+            <fieldset
+              className="video-track"
+              key={s.key}
+              aria-label={`${t("分鏡", "Scene")} ${i + 1}`}
+            >
+              <legend>
+                {t("分鏡", "Scene")} {i + 1}
+              </legend>
+              <p className="muted">
+                {s.start_frame}–{s.end_frame}{" "}
+                {t(
+                  "幀；使用上方編排控制調整。",
+                  "frames; adjust with the arrangement controls above.",
+                )}
+              </p>
+              {text(
+                t("畫面說明", "Scene direction"),
+                s.direction,
+                1000,
+                (direction) => scene(i, { direction }),
+                true,
+              )}
+              {text(
+                t("畫面標題", "Scene headline"),
+                s.headline,
+                240,
+                (headline) => scene(i, { headline }),
+                false,
+                true,
+              )}
+              {text(
+                t("畫面正文", "Scene body"),
+                s.body,
+                500,
+                (body) => scene(i, { body }),
+                true,
+              )}
+              <SourceChoice
+                base={base}
+                label={t("固定畫面 PNG", "Fixed scene PNG")}
+                value={s.image}
+                assets={assets}
+                onChange={(image) => scene(i, { image })}
+              />
+            </fieldset>
+          ))}
+          <h3>{t("字幕", "Captions")}</h3>
+          {d.subtitles.map((s, i) => (
+            <fieldset
+              className="video-track"
+              key={s.key}
+              aria-label={`${t("字幕", "Caption")} ${i + 1}`}
+            >
+              <legend>
+                {t("字幕", "Caption")} {i + 1}
+              </legend>
+              <div className="video-form-grid">
+                {number(
+                  t("起始幀", "Start frame"),
+                  s.start_frame,
+                  0,
+                  1800,
+                  (start_frame) => cue(i, { start_frame }),
+                )}
+                {number(
+                  t("結束幀", "End frame"),
+                  s.end_frame,
+                  1,
+                  1800,
+                  (end_frame) => cue(i, { end_frame }),
+                )}
+              </div>
+              {text(
+                t("字幕文字", "Caption text"),
+                s.text,
+                240,
+                (text) => cue(i, { text }),
+                true,
+                true,
+              )}
+              <button
+                type="button"
+                className="text-button"
+                onClick={() =>
+                  change({ subtitles: d.subtitles.filter((_, n) => n !== i) })
+                }
+              >
+                <X size={14} />
+                {t("移除字幕", "Remove caption")}
+              </button>
+            </fieldset>
+          ))}
+          <button
+            type="button"
+            className="button secondary"
+            disabled={d.subtitles.length >= 80 || !captionGap}
+            onClick={() => {
+              if (captionGap)
+                change({
+                  subtitles: [
+                    ...d.subtitles,
+                    {
+                      key: "cue_" + crypto.randomUUID().replaceAll("-", ""),
+                      ...captionGap,
+                      text: t("加入字幕", "Add your caption"),
+                    },
+                  ].sort((a, b) => a.start_frame - b.start_frame),
+                });
+            }}
+          >
+            <Plus size={15} />
+            {t("新增字幕", "Add caption")}
+          </button>
+          <h3>{t("音軌與授權", "Audio and rights")}</h3>
+          <SourceChoice
+            base={base}
+            label={t("固定音軌 WAV / MP3", "Fixed audio WAV / MP3")}
+            value={d.audio?.source ?? null}
+            assets={assets}
+            audio
+            onChange={(source) =>
+              change({
+                audio: source
+                  ? {
+                      source,
+                      source_in_frame: 0,
+                      gain_db: -3,
+                      role: "music",
+                      rights_basis: "owned",
+                      rights_reference: "",
+                    }
+                  : null,
+              })
+            }
+          />
+          {d.audio ? (
+            <>
+              <div className="video-form-grid">
+                {number(
+                  t("音軌入點（幀）", "Audio in point (frames)"),
+                  d.audio.source_in_frame,
+                  0,
+                  108000,
+                  (source_in_frame) =>
+                    change({ audio: { ...d.audio!, source_in_frame } }),
+                )}
+                {number(
+                  t("增益 dB", "Gain dB"),
+                  d.audio.gain_db,
+                  -36,
+                  0,
+                  (gain_db) => change({ audio: { ...d.audio!, gain_db } }),
+                )}
+                <Field label={t("音軌用途", "Audio role")}>
+                  <select
+                    value={d.audio.role}
+                    onChange={(e) =>
+                      change({ audio: { ...d.audio!, role: e.target.value } })
+                    }
+                  >
+                    <option value="music">{t("配樂", "Music")}</option>
+                    <option value="provided_voice">
+                      {t("提供的配音", "Provided voice")}
+                    </option>
+                  </select>
+                </Field>
+                <Field label={t("授權依據", "Rights basis")}>
+                  <select
+                    value={d.audio.rights_basis}
+                    onChange={(e) =>
+                      change({
+                        audio: { ...d.audio!, rights_basis: e.target.value },
+                      })
+                    }
+                  >
+                    <option value="owned">{t("自有", "Owned")}</option>
+                    <option value="licensed">
+                      {t("已獲授權", "Licensed")}
+                    </option>
+                  </select>
+                </Field>
+              </div>
+              {text(
+                t(
+                  "授權引用或自有聲明",
+                  "License reference or ownership statement",
+                ),
+                d.audio.rights_reference,
+                500,
+                (rights_reference) =>
+                  change({ audio: { ...d.audio!, rights_reference } }),
+                true,
+                true,
+              )}
+            </>
+          ) : (
+            <p className="muted">
+              {t(
+                "此工程沒有音軌，將交付無聲影片。",
+                "This project has no audio track and will export without audio.",
+              )}
+            </p>
+          )}
+        </fieldset>
+        <MotionFramePreview
+          base={base}
+          definition={d}
+          video={current?.id}
+          version={editor.baseVersion}
+          disabled={invalid || locked}
+        />
+      </div>
       {invalid && (
         <p className="notice" role="status">
           {t(
@@ -717,7 +632,7 @@ function Editor({
     </AsyncForm>
   );
 }
-function Player({
+export function VideoPlayer({
   base,
   video,
   render,
@@ -1060,7 +975,12 @@ export function VideoProjects({
                     ))}
                   </div>
                   {preview === r.id && (
-                    <Player key={r.id} base={base} video={p.id} render={r.id} />
+                    <VideoPlayer
+                      key={r.id}
+                      base={base}
+                      video={p.id}
+                      render={r.id}
+                    />
                   )}
                   <p className="muted">
                     {r.probe.duration_frames} {t("幀", "frames")} ·{" "}
@@ -1084,6 +1004,11 @@ export function VideoProjects({
           onClose={() => setEditing(null)}
         >
           <Editor
+            key={
+              base +
+              ":" +
+              (editing === "new" ? "new" : editing.id + ":" + editing.version)
+            }
             base={base}
             assets={assets}
             current={editing === "new" ? null : editing}

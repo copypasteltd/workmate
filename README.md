@@ -1,3 +1,38 @@
+<!-- integrated-round-201 -->
+
+## 201 · 0.5.10 · 影片製作與實際交付
+
+[Evidence and limits / 證據與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-201/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. 登入→選企業與項目→設計畫布→新建影片工程→展開「從影片版面開始」→選六種版面之一及畫幅→填寫真實文案和獲准素材。儲存後與此項目有權成員共用；私人附件不會自動發布。
+
+2. 可新增／複製／排序／移除鏡頭及調整時長，字幕跟隨原鏡頭並在跨鏡頭時分段；移除鏡頭同時移除其字幕，撤銷可恢復。變幀率保留時間與音軌入點，超限或字幕折疊整次拒絕。
+
+3. 選擇當前幀並按預覽，取得伺服器實際PNG；字幕保持畫面固定位置。這只是畫面預覽，音軌與整片要儲存後正式渲染才核驗。原固定PNG／音軌可搜尋和分頁選擇；配音文字不會自行合成聲音。
+
+4. 撤銷／重做和8小時／8份／2MB上限的分區工作階段草稿，恢復必須明確確認。儲存結果不明時保留原請求鍵並暫停編輯，重試不建重複工程；顯式登出清除。真實390幀MP4下載／播放、跨端版本及四寬度無橫向溢出已核查。
+
+```mermaid
+flowchart LR
+ A[Sign in and choose project] --> B[Six bilingual layouts]
+ B --> C[Scenes captions transitions and sources]
+ C --> D[Explicit actual frame preview]
+ C --> E[Undo and scoped draft recovery]
+ D --> F[Immutable save]
+ E --> F
+ F --> G[Render play and download]
+```
+
+Actual deployed Web201 / 真實已上線Web201
+
+![Actual interface / 實際頁面](assets/screenshots/201-v3-motion-production-live.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-201-v3-motion-production-live.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-201-v3-motion-production-live.mp4)
+
+以下保留完整安裝、架構和使用細則。
+
 <!-- integrated-round-200 -->
 
 ## 200 · 0.5.9 · 從版面開工到可核對交付

@@ -1,3 +1,4 @@
+import { clearMotionDrafts } from "./motion-draft-state";
 import { browserCrypto as crypto } from "./browser-crypto";
 import { redactWorkspaceAttempts } from "./workspace-creation";
 import { saveScopeArchive } from "./scope-export-download";
@@ -6,7 +7,7 @@ import { clearWorkDrafts } from "./work-draft";
 import { clearDeliveryRevisionDrafts } from "./delivery-revision-state";
 import { clearEditableProjectRequests } from "./editable-project-state";
 import { clearDesignDrafts } from "./design-draft-state";
-import {clearWorkspaceSaves} from "./workspace-edit-state";
+import { clearWorkspaceSaves } from "./workspace-edit-state";
 import { sessionProtectedRequest } from "./session-request";
 export let csrfToken = "";
 let sessionRevision = 0;
@@ -17,11 +18,24 @@ export const clientSessionGeneration = () => sessionRevision;
 // Non-secret browser-history partition. Never a credential or server authority.
 let navigationEpoch = "";
 export function clientNavigationEpoch() {
- if(navigationEpoch)return navigationEpoch;
- try{const saved=sessionStorage.getItem("cp_navigation_epoch");if(saved&&/^[a-f\d-]{36}$/i.test(saved))navigationEpoch=saved;}catch{/* Memory-only fallback. */}
- if(!navigationEpoch)rotateNavigationEpoch();return navigationEpoch;
+  if (navigationEpoch) return navigationEpoch;
+  try {
+    const saved = sessionStorage.getItem("cp_navigation_epoch");
+    if (saved && /^[a-f\d-]{36}$/i.test(saved)) navigationEpoch = saved;
+  } catch {
+    /* Memory-only fallback. */
+  }
+  if (!navigationEpoch) rotateNavigationEpoch();
+  return navigationEpoch;
 }
-function rotateNavigationEpoch(){navigationEpoch=crypto.randomUUID();try{sessionStorage.setItem("cp_navigation_epoch",navigationEpoch);}catch{/* Memory-only fallback. */}}
+function rotateNavigationEpoch() {
+  navigationEpoch = crypto.randomUUID();
+  try {
+    sessionStorage.setItem("cp_navigation_epoch", navigationEpoch);
+  } catch {
+    /* Memory-only fallback. */
+  }
+}
 export function endClientSession(
   broadcast = true,
   reason: "sign_out" | "expired" = "sign_out",
@@ -30,7 +44,15 @@ export function endClientSession(
   ++sessionRevision;
   if (reason === "sign_out") ++authenticationRevision;
   csrfToken = "";
-  if (reason === "sign_out") { redactWorkspaceAttempts(); clearWorkDrafts(); clearDeliveryRevisionDrafts(); clearEditableProjectRequests(); clearDesignDrafts(); clearWorkspaceSaves(); }
+  if (reason === "sign_out") {
+    redactWorkspaceAttempts();
+    clearWorkDrafts();
+    clearDeliveryRevisionDrafts();
+    clearEditableProjectRequests();
+    clearDesignDrafts();
+    clearMotionDrafts();
+    clearWorkspaceSaves();
+  }
   window.dispatchEvent(new Event("copypaste:session-ended"));
   if (broadcast)
     localStorage.setItem(
@@ -88,7 +110,10 @@ declare global {
       ) => Promise<unknown>;
       openExternal: (url: string) => Promise<void>;
       authorizeConnector: (state: string) => Promise<void>;
-      publicationMedia?: (path: string, tenantId: string) => Promise<{ id: string; url: string }>;
+      publicationMedia?: (
+        path: string,
+        tenantId: string,
+      ) => Promise<{ id: string; url: string }>;
       closePublicationMedia?: (id: string) => Promise<void>;
       onAuthChanged: (fn: () => void) => () => void;
       version: string;
@@ -112,17 +137,26 @@ export async function api<T = any>(
 ): Promise<T> {
   const revision = sessionRevision;
   const authRevision = authenticationRevision;
-  const authenticationRequest = options.method === "POST" && ["/v1/auth/challenges", "/v1/auth/sessions"].includes(path);
+  const authenticationRequest =
+    options.method === "POST" &&
+    ["/v1/auth/challenges", "/v1/auth/sessions"].includes(path);
   const protectedRequest = sessionProtectedRequest(path, options.method);
   // Public deployment settings do not belong to a signed-in identity. An
   // initial unauthenticated session check must not discard this parallel read.
-  const sessionIndependent = path === "/v1/public/config" && (!options.method || options.method === "GET");
+  const sessionIndependent =
+    path === "/v1/public/config" &&
+    (!options.method || options.method === "GET");
   const headers = new Headers(options.headers);
   const pathTenant = /^\/v1\/tenants\/([a-f0-9-]{36})(?:\/|$)/i.exec(path)?.[1];
   if (pathTenant && !headers.has("X-Tenant-ID"))
     headers.set("X-Tenant-ID", pathTenant);
   const current = () => {
-    if (!sessionIndependent && (authenticationRequest ? authRevision !== authenticationRevision : revision !== sessionRevision))
+    if (
+      !sessionIndependent &&
+      (authenticationRequest
+        ? authRevision !== authenticationRevision
+        : revision !== sessionRevision)
+    )
       throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
     if (options.signal?.aborted) throw options.signal.reason;
   };
@@ -136,40 +170,74 @@ export async function api<T = any>(
         const a = new Uint8Array(await file.arrayBuffer());
         let binary = "";
         for (let i = 0; i < a.length; i++) binary += String.fromCharCode(a[i]);
-        const body = { name: file.name, mime: file.type, base64: btoa(binary), expected_version: options.body.get("expected_version") };
+        const body = {
+          name: file.name,
+          mime: file.type,
+          base64: btoa(binary),
+          expected_version: options.body.get("expected_version"),
+        };
         invoke = () => window.copyPasteBridge!.upload(path, body);
       } else {
-        const body = typeof options.body === "string" ? JSON.parse(options.body) : undefined;
-        invoke = () => window.copyPasteBridge!.request(path, {
-          method: options.method,
-          idempotencyKey: headers.get("Idempotency-Key") ?? undefined,
-          tenantId: headers.get("X-Tenant-ID") ?? undefined,
-          body,
-        });
+        const body =
+          typeof options.body === "string"
+            ? JSON.parse(options.body)
+            : undefined;
+        invoke = () =>
+          window.copyPasteBridge!.request(path, {
+            method: options.method,
+            idempotencyKey: headers.get("Idempotency-Key") ?? undefined,
+            tenantId: headers.get("X-Tenant-ID") ?? undefined,
+            body,
+          });
       }
       let result;
-      try { result = await invoke(); }
-      catch { throw connectionFailure(options.method); }
+      try {
+        result = await invoke();
+      } catch {
+        throw connectionFailure(options.method);
+      }
       status = result.status;
       data = result.body;
     } else {
-      if (options.body && !(options.body instanceof FormData)) headers.set("Content-Type", "application/json");
+      if (options.body && !(options.body instanceof FormData))
+        headers.set("Content-Type", "application/json");
       if (!["GET", "HEAD", "OPTIONS"].includes(options.method ?? "GET")) {
         if (csrfToken) headers.set("X-CSRF-Token", csrfToken);
-        headers.set("Idempotency-Key", headers.get("Idempotency-Key") ?? crypto.randomUUID());
+        headers.set(
+          "Idempotency-Key",
+          headers.get("Idempotency-Key") ?? crypto.randomUUID(),
+        );
       }
-      const r = await clientFetch(base + path, { ...options, headers, credentials: "include" });
+      const r = await clientFetch(base + path, {
+        ...options,
+        headers,
+        credentials: "include",
+      });
       status = r.status;
       // Authentication is determined by the HTTP status, including a proxy's HTML/empty response.
-      data = status === 401 && protectedRequest
-        ? { error: { code: "AUTH_REQUIRED", message: "Your session ended. Sign in again." } }
-        : await clientJson(r, options.method, options.signal ?? undefined);
+      data =
+        status === 401 && protectedRequest
+          ? {
+              error: {
+                code: "AUTH_REQUIRED",
+                message: "Your session ended. Sign in again.",
+              },
+            }
+          : await clientJson(r, options.method, options.signal ?? undefined);
     }
-  } catch (error) { current(); throw error; }
+  } catch (error) {
+    current();
+    throw error;
+  }
   current();
   if (status === 401 && protectedRequest) endClientSession(false, "expired");
   if (status < 200 || status >= 300)
-    throw new ApiError(data?.error?.code ?? "REQUEST_FAILED", data?.error?.message ?? "Request failed", status, data?.error?.details);
+    throw new ApiError(
+      data?.error?.code ?? "REQUEST_FAILED",
+      data?.error?.message ?? "Request failed",
+      status,
+      data?.error?.details,
+    );
   if (path === "/v1/auth/verify" || path === "/v1/auth/sessions") {
     changeClientSession();
     localStorage.setItem(
@@ -200,14 +268,26 @@ export async function download(
 ) {
   const revision = sessionRevision;
   const current = () => {
-    if (revision !== sessionRevision) throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
+    if (revision !== sessionRevision)
+      throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
   };
   if (window.copyPasteBridge) {
     let result: unknown;
-    try { result = await window.copyPasteBridge.download(path, filename, tenantId); }
-    catch { current(); throw connectionFailure(); }
+    try {
+      result = await window.copyPasteBridge.download(path, filename, tenantId);
+    } catch {
+      current();
+      throw connectionFailure();
+    }
     current();
-    return { saved: !(result && typeof result === "object" && "saved" in result && result.saved === false) };
+    return {
+      saved: !(
+        result &&
+        typeof result === "object" &&
+        "saved" in result &&
+        result.saved === false
+      ),
+    };
   }
   let response: Response;
   try {
@@ -215,16 +295,32 @@ export async function download(
       credentials: "include",
       ...(tenantId ? { headers: { "X-Tenant-ID": tenantId } } : {}),
     });
-  } catch (error) { current(); throw error; }
+  } catch (error) {
+    current();
+    throw error;
+  }
   current();
   if (response.status === 401) {
     endClientSession(false, "expired");
-    throw new ApiError("AUTH_REQUIRED", "Your session ended. Sign in again.", 401);
+    throw new ApiError(
+      "AUTH_REQUIRED",
+      "Your session ended. Sign in again.",
+      401,
+    );
   }
-  if (!response.ok) throw new ApiError("DOWNLOAD_UNAVAILABLE", "Download unavailable", response.status);
+  if (!response.ok)
+    throw new ApiError(
+      "DOWNLOAD_UNAVAILABLE",
+      "Download unavailable",
+      response.status,
+    );
   let blob: Blob;
-  try { blob = await response.blob(); }
-  catch { current(); throw connectionFailure(); }
+  try {
+    blob = await response.blob();
+  } catch {
+    current();
+    throw connectionFailure();
+  }
   current();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -235,12 +331,30 @@ export async function download(
   return { saved: true };
 }
 
-export async function downloadScopeArchive(path: string, filename: string, tenantId?: string, signal?: AbortSignal) {
+export async function downloadScopeArchive(
+  path: string,
+  filename: string,
+  tenantId?: string,
+  signal?: AbortSignal,
+) {
   const generation = clientSessionGeneration();
-  return saveScopeArchive({ path, filename, signal,
-    current: () => { if (generation !== clientSessionGeneration()) throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409); },
-    native: window.copyPasteBridge ? () => window.copyPasteBridge!.download(path, filename, tenantId) : undefined,
-    fetch: signal => clientFetch(base + path, { credentials: "include", signal, ...(tenantId ? { headers: { "X-Tenant-ID": tenantId } } : {}) }),
+  return saveScopeArchive({
+    path,
+    filename,
+    signal,
+    current: () => {
+      if (generation !== clientSessionGeneration())
+        throw new ApiError("SESSION_CHANGED", "Sign-in state changed", 409);
+    },
+    native: window.copyPasteBridge
+      ? () => window.copyPasteBridge!.download(path, filename, tenantId)
+      : undefined,
+    fetch: (signal) =>
+      clientFetch(base + path, {
+        credentials: "include",
+        signal,
+        ...(tenantId ? { headers: { "X-Tenant-ID": tenantId } } : {}),
+      }),
     unauthorized: () => endClientSession(false, "expired"),
   });
 }

@@ -1,3 +1,38 @@
+<!-- integrated-round-201 -->
+
+## 201 · 0.5.10 · Motion production and actual delivery
+
+[Evidence and limits / 證據與邊界](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-round-201/README.md) · [Downloads / 下載](https://agent.copypaste.hk/downloads)
+
+1. Sign in→choose workspace/project→Design canvas→New video project→Start with a video layout→choose one of six layouts and format→add actual copy and authorized sources. Saving shares with authorized project members; private attachments are never implicitly published.
+
+2. Add/copy/reorder/remove scenes and change duration. Captions follow their original scene, split at cuts and are removed with deleted scenes; Undo restores them. Frame-rate changes retain timing/audio in points. Invalid/collapsed/out-of-budget changes are rejected atomically.
+
+3. Choose a frame and explicitly request the actual server PNG. Captions stay fixed on screen. This visual-only preview does not validate audio/full video; save/render for that. Search/page fixed shared images/audio; narration text is not synthesized voice.
+
+4. Undo/redo and scoped session drafts have8-hour/8-entry/2MB bounds and explicit recovery. Uncertain saves retain the original key and pause editing; retry does not duplicate the work. Explicit sign-out clears drafts. Actual390-frame MP4 play/download, cross-client versions and four exact widths without horizontal overflow are qualified.
+
+```mermaid
+flowchart LR
+ A[Sign in and choose project] --> B[Six bilingual layouts]
+ B --> C[Scenes captions transitions and sources]
+ C --> D[Explicit actual frame preview]
+ C --> E[Undo and scoped draft recovery]
+ D --> F[Immutable save]
+ E --> F
+ F --> G[Render play and download]
+```
+
+Actual deployed Web201 / 真實已上線Web201
+
+![Actual interface / 實際頁面](assets/screenshots/201-v3-motion-production-live.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-201-v3-motion-production-live.gif)
+
+[Actual recording / 實際錄影](assets/screenshots/workmate-201-v3-motion-production-live.mp4)
+
+Earlier installation, architecture and use details remain below.
+
 <!-- integrated-round-200 -->
 
 ## 200 · 0.5.9 · From editable layout to verifiable delivery
